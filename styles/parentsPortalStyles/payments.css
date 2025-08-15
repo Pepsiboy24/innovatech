@@ -1,0 +1,116 @@
+.container{
+   width: 100%;
+   height: 100%;
+   display: flex;
+   justify-content: center;
+}
+.paymentForm{
+    width: 80vw;
+    height: 100%;
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+}
+.paymentForm > header{
+    width: 100%;
+    padding-bottom: 40px;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    justify-content: space-between;
+}
+.paymentForm > header > .left > .heading{
+    display: flex;
+    align-items: center;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+.paymentForm > header > .left > .heading > .icon{
+    margin-right: 20px;
+}
+.paymentForm > header > .left > p{
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: #2f2b2b;
+}
+.paymentForm > header > .right{
+    font-size: 1.5rem;
+}
+.itemToSelect > header{
+    margin: 2rem 0 3rem 0;
+    font-size: 1.4rem;
+}
+.itemToSelect > .item{
+    width: 100%;
+    height: 70px;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+.itemToSelect > .item > .left{
+    display: flex;
+    align-items: center;
+}
+.itemToSelect > .item > .left > .description, .itemToSelect > .item > .right > h2{
+    display: flex;
+    align-items: center;
+    font-size: 1.4rem;
+    
+}
+.itemToSelect > .item > .left > input{
+    /* margin-left: 20px; */
+    height: 20px;
+    width: 20px;
+}
+.itemToSelect > .item > .left > .description > .icon{
+    margin: 0 0.8rem 0 1rem;
+}
+
+.paymentOverview{
+    width: 100%;
+    height: 100%;
+    background-color: #ececec;
+    padding: 20px 20px 5px 20px;
+    border-radius: 12px;
+    margin-bottom: 40px;
+}
+.paymentOverview > .overview{
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+    margin-bottom: 30px;
+}
+.paymentOverview > .overview > .itemPaidFor, .paymentOverview > .totalAmount{
+    font-size: 1.4rem;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    /* padding: 20px 0; */
+}
+.paymentOverview > .totalAmount{
+    margin-bottom: 0;
+}
+.paymentOverview > header, .totalAmount > header{
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+}
+.payBtn{
+    width: 100%;
+    display: flex;
+    justify-content: end;
+}
+.payBtn > button{
+    padding: 12px 30px;
+    background-color: blue;
+    color: #fff;
+    border: 0;
+    outline: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1.3rem;
+}

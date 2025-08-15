@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Attendance</title>
+    <!-- <link rel="stylesheet" href="../../assets/fontawesome-free-7.0.0-web/css/all.min.css"> -->
+    <link rel="stylesheet" href="../../styles/navbarStyles.css">
+    <link rel="stylesheet" href="../../styles/teachersPortalStyles/attendance.css">
+</head>
+<body>
+    <div class="wrapper">
+        <div class="sidebar-container" data-sidebar>
+        <div class="sidebar" data-sidebarBar>
+          <header>
+            <h4>
+             EdTech
+            </h4>
+          <div class="sideBarClsoeIcon" data-sideBarClose><i class="fa fa-times"></i></div>
+   
+          </header>
+          <div class="content">
+            <ul>
+             <div class="item">
+               <li><a href="./teachersPortal.html"><i class="fa fa-home"></i> Home</a></li>
+             </div>
+             <div class="item">
+               <li><a href="./listOfStudents.html"><i class="fa fa-users"></i> Students</a></li>
+             </div>
+             <div class="item">
+               <li><a href="#"><i class="fa fa-list"></i> Attendance</a></li>
+             </div>
+             <!-- <div class="item">
+               <li><a href="#"><i class="fa fa-video"></i> Online Classes</a></li>
+             </div> -->
+             <div class="item">
+               <li><a href="#">🤖 AI Assistant</a></li>
+              </div>
+              <!-- <div class="item">
+                <li><a href="#"><i class="fa fa-envelope"></i> Messages</a></li>
+              </div> -->
+            </ul>
+            <div class="profileSettings">
+              <div class="userSettings">
+                <a href="#"><i class="fa fa-user"></i> <span> UserName</span></a>
+              </div>
+              <div class="logout">
+                <button>Logout</button>
+              </div>
+            </div>
+          </div>
+         </div>
+       </div>
+
+       <header>
+        <div class="welcomeMsg">
+          <h2>Welcome back, <span>Mrs</span>.<span>Johnson</span></h2>
+          <p>Tuesday, 15 September 2025</p>
+        </div>
+        <div class="profilePic">
+          <div class="icon"><i class="fa fa-bell"></i></div>
+          <div class=" icon sideBarOpenIcon" data-sideBarOpen><i class="fa fa-bars"></i></div>
+          <!-- <div class="icon user"><i class="fa fa-user"></i></div> -->
+        </div>
+
+        <!-- Side bar -->
+      </header>
+
+      <!-- List of Students -->
+       <div class="studentsList">
+        <header>
+          <h3>Students</h3>
+        </header>
+
+        <div class="studentList">
+          <header>
+            <p class=" header nameHeader">Name</p>
+            <p class=" header attendanceHeader">Attendance</p>
+            <p class=" header remarksHeader">Remarks (optional)</p>
+            <!-- <p class=" header ageHeader">Age</p>
+            <p class=" header classHeader">Class</p>
+            <p class=" header performanceHeader">Performance</p>
+            <p class=" header actionHeader">Action</p> -->
+          </header>
+          
+          <div class="studentItem">
+            <div class="studentName item">
+              <div class="icon"><i class="fa fa-user"></i></div>
+              <p>John Smith</p>
+            </div>
+            <!-- <p class="attendance item">13</p> -->
+            <div class="attendance item">
+                <div class="present attendanceItem">
+                    <input type="radio" name="attendance1">
+                    <p>prensent</p>
+                </div>
+                <div class="absent attendanceItem">
+                    <input type="radio" name="attendance1">
+                    <p>absent</p>
+                </div>
+                <div class="late attendanceItem">
+                    <input type="radio" name="attendance1">
+                    <p>late</p>
+                </div>
+              <!-- <p>PRY <span>5B</span></p> -->
+            </div>
+            <div class="remarks item">
+              <input type="text">
+            </div>
+          </div>
+
+          <div class="studentItem">
+            <div class="studentName item">
+              <div class="icon"><i class="fa fa-user"></i></div>
+              <p>Sarah Johnson</p>
+            </div>
+            <!-- <p class="attendance item">13</p> -->
+            <div class="attendance item">
+                <div class="present attendanceItem">
+                    <input type="radio" name="attendance2" id="">
+                    <p>prensent</p>
+                </div>
+                <div class="absent attendanceItem">
+                    <input type="radio" name="attendance2">
+                    <p>absent</p>
+                </div>
+                <div class="late attendanceItem">
+                    <input type="radio" name="attendance2">
+                    <p>late</p>
+                </div>
+              <!-- <p>PRY <span>5B</span></p> -->
+            </div>
+            <div class="remarks item">
+              <input type="text">
+            </div>
+          </div>
+
+          <div class="studentItem">
+            <div class="studentName item">
+              <div class="icon"><i class="fa fa-user"></i></div>
+              <p>John Doe</p>
+            </div>
+            <!-- <p class="attendance item">13</p> -->
+            <div class="attendance item">
+                <div class="present attendanceItem">
+                    <input type="radio" name="attendance3" id="">
+                    <p>prensent</p>
+                </div>
+                <div class="absent attendanceItem">
+                    <input type="radio" name="attendance3">
+                    <p>absent</p>
+                </div>
+                <div class="late attendanceItem">
+                    <input type="radio" name="attendance3">
+                    <p>late</p>
+                </div>
+              <!-- <p>PRY <span>5B</span></p> -->
+            </div>
+            <div class="remarks item">
+              <input type="text">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../scripts/fontawesome.js"></script>
+    <script src="../../scripts/sideBar.js"></script>
+</body>
+</html>
