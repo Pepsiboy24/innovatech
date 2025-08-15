@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Timetable 8–3</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f3f4f6;
+      margin: 0;
+      padding: 1rem;
+    }
+
+    .timetable {
+      display: flex;
+      overflow-x: auto;
+      gap: 1rem;
+      padding-bottom: 1rem;
+    }
+
+    .day-column {
+      min-width: 220px;
+      background-color: #ffffff;
+      border-radius: 10px;
+      padding: 1rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+      flex-shrink: 0;
+    }
+
+    .day-column h3 {
+      font-size: 1.1rem;
+      color: #111827;
+      margin-bottom: 0.75rem;
+      border-bottom: 2px solid #facc15;
+      padding-bottom: 0.5rem;
+    }
+
+    .time-card {
+      background-color: #fef08a;
+      color: #1f2937;
+      border-radius: 6px;
+      padding: 0.6rem;
+      margin-bottom: 0.4rem;
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    @media screen and (max-width: 600px) {
+      .time-card {
+        font-size: 0.8rem;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="timetable">
+
+    <div class="day-column">
+      <h3>Mon</h3>
+      <div class="time-card"><span>8:00</span><span>Math</span></div>
+      <div class="time-card"><span>9:00</span><span>English</span></div>
+      <div class="time-card"><span>10:00</span><span>Physics</span></div>
+      <div class="time-card"><span>11:00</span><span>Biology</span></div>
+      <div class="time-card"><span>12:00</span><span>Free Period</span></div>
+      <div class="time-card"><span>1:00</span><span>Geography</span></div>
+      <div class="time-card"><span>2:00</span><span>Economics</span></div>
+      <div class="time-card"><span>3:00</span><span>Civic</span></div>
+    </div>
+
+    <div class="day-column">
+      <h3>Tue</h3>
+      <div class="time-card"><span>8:00</span><span>Chemistry</span></div>
+      <div class="time-card"><span>9:00</span><span>Math</span></div>
+      <div class="time-card"><span>10:00</span><span>English</span></div>
+      <div class="time-card"><span>11:00</span><span>Free Period</span></div>
+      <div class="time-card"><span>12:00</span><span>Lit</span></div>
+      <div class="time-card"><span>1:00</span><span>Biology</span></div>
+      <div class="time-card"><span>2:00</span><span>Physics</span></div>
+      <div class="time-card"><span>3:00</span><span>Computer</span></div>
+    </div>
+
+    <div class="day-column">
+      <h3>Wed</h3>
+      <div class="time-card"><span>8:00</span><span>English</span></div>
+      <div class="time-card"><span>9:00</span><span>Math</span></div>
+      <div class="time-card"><span>10:00</span><span>ICT</span></div>
+      <div class="time-card"><span>11:00</span><span>Physics</span></div>
+      <div class="time-card"><span>12:00</span><span>Free Period</span></div>
+      <div class="time-card"><span>1:00</span><span>Biology</span></div>
+      <div class="time-card"><span>2:00</span><span>Civic</span></div>
+      <div class="time-card"><span>3:00</span><span>Lit</span></div>
+    </div>
+
+    <div class="day-column">
+      <h3>Thu</h3>
+      <div class="time-card"><span>8:00</span><span>Math</span></div>
+      <div class="time-card"><span>9:00</span><span>English</span></div>
+      <div class="time-card"><span>10:00</span><span>Geography</span></div>
+      <div class="time-card"><span>11:00</span><span>Physics</span></div>
+      <div class="time-card"><span>12:00</span><span>ICT</span></div>
+      <div class="time-card"><span>1:00</span><span>Computer</span></div>
+      <div class="time-card"><span>2:00</span><span>Chemistry</span></div>
+      <div class="time-card"><span>3:00</span><span>Lit</span></div>
+    </div>
+
+    <div class="day-column">
+      <h3>Fri</h3>
+      <div class="time-card"><span>8:00</span><span>Biology</span></div>
+      <div class="time-card"><span>9:00</span><span>Math</span></div>
+      <div class="time-card"><span>10:00</span><span>English</span></div>
+      <div class="time-card"><span>11:00</span><span>Civic</span></div>
+      <div class="time-card"><span>12:00</span><span>Free Period</span></div>
+      <div class="time-card"><span>1:00</span><span>Geography</span></div>
+      <div class="time-card"><span>2:00</span><span>Physics</span></div>
+      <div class="time-card"><span>3:00</span><span>Economics</span></div>
+    </div>
+
+  </div>
+
+<!-- NOte this is the new time table to be implemented tomporow -->
+
+</body>
+</html>

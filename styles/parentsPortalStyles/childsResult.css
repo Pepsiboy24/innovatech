@@ -1,0 +1,97 @@
+/* Achievements Section Styles */
+.achievements{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+.achievements > .achievement{
+  /* width: 24%; */
+  height: 150px;
+  background-color: #ffffff;
+  padding: 1rem;
+  /* margin: 20px; */
+  border-radius: 12px;
+  /* margin: 20px; */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0px 1px 3px rgba(0,0,0,0.05);
+  position: relative;
+}
+.achievements > .achievement > .top{
+  height: 30%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  /* justify-content: space-between; */
+}
+.achievements > .achievement > .top > .type{
+  color: #6B7280 
+}
+.achievements > .achievement > .top > .icon{
+  font-size: 2.3rem;
+}
+.achievements > .achievement > .top > .gradeIcon{
+  color: blue;
+}
+.achievements > .achievement > .top > .pointIcon{
+  color: gold;
+}
+.achievements > .achievement > .top > .calendarIcon{
+  color: rgb(36, 219, 36);
+}
+/* .achievements > .achievement > .top > .achivementIcon{
+  color: gold
+} */
+.achievements > .achievement > .bottom > h3{
+  font-size: 2rem;
+  font-weight: 600;
+  color: #111827;
+}
+.achievements > .achievement > .bottom{
+  width: 100%;
+  /* height: 60%; */
+  position: absolute;
+  bottom: 10px;
+}
+.achievements > .achievement > .bottom > p{
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #6B7280;
+}
+
+.grades{
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  padding: 1rem;
+  margin-top: 20px;
+  border-radius: 12px;
+}
+.grades > header{
+  font-size: 1.3rem;
+}
+.grades > .subjectGrades > header, .subjectGrades > .grade{
+  display: flex;
+  padding: 30px 0 20px 0;
+  border-bottom: 1px solid #ccc;
+}
+.grades > .subjectGrades > header div{
+  font-size: 1.4rem;
+}
+.subjectGrades > .grade{
+  font-size: 1.7rem;
+}
+.subjectGrades > header > .subject, .subjectGrades > .grade > .subject {
+  width: 25%;
+}
+.subjectGrades > header > .marks, .subjectGrades > .grade > .marks {
+  width: 15%;
+}
+.subjectGrades > header > .grade, .subjectGrades > .grade > .grade {
+  width: 10%;
+}
+.subjectGrades > header > .remarks, .subjectGrades > .grade > .remarks {
+  width: 10%;
+}

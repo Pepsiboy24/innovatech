@@ -1,0 +1,237 @@
+  /* Achievements Section Styles */
+.tasks{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-bottom: 20px;
+}
+.tasks > .taskItem{
+  /* width: 24%; */
+  height: 160px;
+  background-color: #ffffff;
+  padding: 2rem;
+  /* margin: 20px; */
+  border-radius: 12px;
+  /* margin: 20px; */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0px 1px 3px rgba(0,0,0,0.05);
+  position: relative;
+}
+.tasks > .taskItem > .top{
+  height: 30%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
+.tasks > .taskItem > .top > .type{
+  color: #6B7280 
+}
+.tasks > .taskItem > .top > .type > h3{
+  font-size: 2.4rem;
+}
+.tasks > .taskItem > .top > .icon{
+  font-size: 2rem;
+  padding: 10px;
+  margin: 20px 0 0 0;
+  border-radius: 8px;
+}
+.tasks > .taskItem > .top > .rankIcon{
+  background: rgb(52, 179, 238);
+  color: blue;
+}
+.tasks > .taskItem > .top > .usersIcon{
+  background: rgb(104, 253, 104);;
+  color: rgb(13, 105, 13);
+}
+.tasks > .taskItem > .top > .classesIcon{
+  background: rgb(184, 133, 235);
+  color: rgb(67, 27, 107);
+}
+.tasks > .taskItem > .top > .anouncementsIcon{
+  color: gold
+}
+.tasks > .taskItem > .bottom > p{
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: #111827;
+}
+.tasks > .taskItem > .bottom{
+  width: 100%;
+  /* height: 60%; */
+  /* position: absolute; */
+  /* bottom: 10px; */
+}
+/* .tasks > .taskItem > .bottom > p{
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #6B7280;
+} */
+  .teachersTools{
+  width: 100%;
+  /* height: 300px; */
+  display: flex;
+  justify-content: space-between;
+  }
+  .teachersTools > .aiAssistant, .teachersTools > .upcomingClassses{
+  width: 60%;
+  height: 100%;
+  background-color: #ffffff;
+  height: 100%;
+  padding: 20px;
+  border-radius: 12px;
+  min-height: 370px;
+  }
+  .teachersTools > .aiAssistant > header > h3, .teachersTools > .upcomingClassses > header > h3, .studentList > header > h3{
+    font-size: 1.5rem;
+    padding: 1rem 0;
+    margin-bottom: 20px;
+  }
+  .teachersTools > .aiAssistant > .tools > .tool, .teachersTools > .upcomingClassses > .classes > .class{
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 66px;
+    font-size: 1.4rem;
+    background-color: #F3F4F6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .teachersTools > .aiAssistant > .tools > .tool > .icon{
+    color: rgb(84, 84, 241);
+    margin-right: 20px;
+  }
+  .teachersTools > .aiAssistant > .tools > .tool > p{
+    font-weight: 500;
+  }
+  .teachersTools > .upcomingClassses{
+    width: 38%;
+  }
+  .teachersTools > .upcomingClassses > .classes > .class{
+    height: 100%;
+    /* min-height: 100px; */
+    justify-content: space-between;
+    position: relative;
+  }
+  .teachersTools > .upcomingClassses > .classes > .class > .left > h3{
+    margin-bottom: 13px;
+    font-weight: 500;
+  }
+  .teachersTools > .upcomingClassses > .classes > .class p{
+    font-size: 1.2rem;
+  }
+  .teachersTools > .upcomingClassses > .classes > .class > .right{
+    position: absolute;
+    top: 20px;
+    right: 20px;
+  }
+
+.studentsList{
+  height: 100%;
+  /* max-height: 600px; */
+  /* position: relative; */
+  width: 100%;
+  border-radius: 12px;
+  /* min-height: 300px; */
+  background-color: #fff;;
+  margin-top: 20px;
+  overflow-x: scroll;
+}
+.studentsList::-webkit-scrollbar{
+  display: none;
+}
+.studentsList > .studentList{
+  /* position: absolute; */
+  height: 100%;
+  min-width: 100%;
+}
+.studentsList > header{
+  padding: 20px;
+  font-size: 1.5rem;
+}
+.studentList > header, .studentList > .studentItem{
+  width: 100%;
+}
+.studentList > header, .studentList > .studentItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+}
+.studentList > .studentItem{
+  border-bottom: 3px solid #F9FAFB;
+}
+.studentList > header > .header, .studentItem > .item{
+  /* background-color: #ff0000; */
+  display: flex;
+  align-items: center;
+  /* height: 100px; */
+}
+.studentList > header{
+  background-color: #F9FAFB;
+}
+.studentList > header p{
+  font-size: 1.3rem;
+  font-weight: 540;
+}
+.studentItem > .item{
+  font-size: 1.4rem;
+}
+.nameHeader, .studentName{
+  width: 30%;
+}
+.ageHeader, .studentAge{
+  width: 5%
+}
+.classHeader, .studentClass{
+  width: 10%;
+}
+.performanceHeader, .studentPerformance{
+  width: 25%;
+}
+.actionHeader, .action{
+  width: 10%;
+}
+.studentList > .studentItem > .studentName >.icon{
+  margin-right: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ccc;
+}
+.studentList > .studentItem > .studentPerformance > .performance{
+  width: 70%;
+  height: 30px;
+  border: 1px solid #000;
+  border-radius: 8px;
+  margin-right: 20px;
+}
+.studentList > .studentItem > .studentPerformance > .performance > .performanceBar{
+  width: 80%;
+  height: 100%;
+  background-color: blue;
+}
+.studentList > .studentItem > .action > a{
+  text-decoration: none;
+  color: blue;
+}
+
+
+@media screen and (max-width: 800px){
+  .teachersTools{
+    flex-direction: column;
+  }
+    .teachersTools > .aiAssistant, .teachersTools > .upcomingClassses{
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    .studentsList > .studentList{
+      min-width: 900px;
+    }
+}

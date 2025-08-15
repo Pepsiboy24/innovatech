@@ -1,0 +1,254 @@
+.timetable > header{
+  width: 100%;
+  height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  letter-spacing: 0.5px;
+  justify-content: space-between;
+}
+
+
+/* Wrapper Styles */
+.wrapper{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  padding: 2rem 1.5rem;
+}
+
+/* Achievements Section Styles */
+.achievements{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+.achievements > .achievement{
+  /* width: 24%; */
+  height: 150px;
+  background-color: #ffffff;
+  padding: 1rem;
+  /* margin: 20px; */
+  border-radius: 12px;
+  /* margin: 20px; */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0px 1px 3px rgba(0,0,0,0.05);
+  position: relative;
+}
+.achievements > .achievement > .top{
+  height: 30%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
+.achievements > .achievement > .top > .type{
+  color: #6B7280 
+}
+.achievements > .achievement > .top > .icon{
+  font-size: 3rem;
+}
+.achievements > .achievement > .top > .rankIcon{
+  color: blue;
+}
+.achievements > .achievement > .top > .pointIcon{
+  color: rgb(20, 133, 204);
+}
+.achievements > .achievement > .top > .badgeIcon{
+  color: rgb(36, 219, 36);
+}
+.achievements > .achievement > .top > .achivementIcon{
+  color: gold
+}
+.achievements > .achievement > .bottom > h3{
+  font-size: 2rem;
+  font-weight: 600;
+  color: #111827;
+}
+.achievements > .achievement > .bottom{
+  width: 100%;
+  /* height: 60%; */
+  position: absolute;
+  bottom: 10px;
+}
+.achievements > .achievement > .bottom > p{
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #6B7280;
+}
+
+/* Tiime Table Styles */
+.timetable{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  margin: 20px 0 20px 0;
+}
+.timetable > header{
+  font-size: 1.5rem;
+  padding: 1rem 0;
+}
+.timetable > header > .viewAll{
+  display: flex;
+}
+.timetable > header > .viewAll > a{
+  text-decoration: none;
+  color: #000;
+}
+.timetable > .upcommingClasses{
+  display: flex;
+  overflow-x: auto;
+  gap: 20px;
+  padding-bottom: 1rem;
+}
+.day-column {
+  width: 19%;
+  /* min-width: 220px; */
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  flex-shrink: 0;
+}
+
+.day-column h3 {
+  font-size: 1.6rem;
+  color: #111827;
+  margin-bottom: 0.75rem;
+  border-bottom: 2px solid #F3F4F6;
+  padding-bottom: 0.5rem;
+}
+
+.time-card {
+  background-color: #F3F4F6;
+  color: #1f2937;
+  border-radius: 6px;
+  padding: 0.6rem;
+  margin-bottom: 0.4rem;
+  font-size: 1.3rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+
+/* LeaderBoards styles */
+.leaderboards{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  margin: 20px 0 20px 0;
+}
+.leaderboards > .schoolLeaderBoard, .leaderboards > .classLeaderboard{
+  width: 48%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+}
+.schoolLeaderBoard > header, .classLeaderboard > header{
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+.schoolLeaderBoard > header > .viewAllLink > a, .classLeaderboard > header > .viewAllLink > a{
+  text-decoration: none;
+  color: #000;
+}
+.schoolLeaderBoard > .leaderboardItem, .classLeaderboard > .leaderboardItem{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  width: 100%;
+  font-size: 1.5rem;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 12px;
+  background-color: #F3F4F6;
+}
+.leaderboardItem  .left{
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.leaderboardItem > .left > .rank, .classLeaderboard > .left > .rank{
+  color: blue;
+}
+.leaderboardItem > .left > .icon, .classLeaderboard > .left > .icon{
+  margin: 0 20px 0 20px;
+}
+
+/* Responsiveness styles */
+@media screen and (max-width: 800px) {
+  
+  /* Existing adjustments */
+  .leaderboards {
+    flex-direction: column;
+  }
+
+  .leaderboards > .schoolLeaderBoard,
+  .leaderboards > .classLeaderboard {
+    width: 100%;
+  }
+
+  
+
+  /* ✅ Fix heading sizes and layout spacing on mobile */
+  .timetable > header{
+    /* flex-direction: column; */
+    align-items: flex-start;
+    gap: 8px;
+    height: auto;
+  }
+
+  
+
+  .timetable > header h3,
+  .schoolLeaderBoard > header h3,
+  .classLeaderboard > header h3 {
+    font-size: 1.2rem;
+  }
+
+  .timetable > header .viewAll,
+  .schoolLeaderBoard > header .viewAllLink,
+  .classLeaderboard > header .viewAllLink {
+    font-size: 0.9rem;
+  }
+  .wrapper {
+    padding: 1rem;
+  }
+  .day-column {
+    width: 300px;
+  }
+  .achievements > .achievement > .bottom > h3 {
+    font-size: 1.2rem;
+  }
+
+  .achievements > .achievement > .bottom > p {
+    font-size: 1rem;
+  }
+
+  .schoolLeaderBoard,
+  .classLeaderboard{
+    margin-bottom: 1rem;
+    box-shadow: 0px 1px 3px rgba(0,0,0,0.05);
+  }
+  .schoolLeaderBoard > .leaderboardItem,
+  .classLeaderboard > .leaderboardItem {
+    font-size: 1rem;
+  }
+}
