@@ -1,0 +1,31 @@
+.addNewStudents{
+  background: #fff;
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(600px, 1fr));
+  gap: 2rem;
+  align-items: center;
+}
+.addNewStudents > .add{
+  /* width: 45%; */
+  height: 80px;
+  background: #E0E7FF;
+  color: #4F46E5;
+  border: 3px solid #342dc2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 12px;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+.addNewStudents > .addsMultipleStudent{
+  background-color: #DCFCE7;
+  color: #5ABA81;
+  border: 3px solid green;
+}
+.addNewStudents > .add > .icon{
+  margin-right: 20px;
+}
