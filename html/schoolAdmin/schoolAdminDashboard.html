@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Admin Dashboard</title>
+    <link rel="stylesheet" href="../../styles/navbarStyles.css">
+    <link rel="stylesheet" href="../../styles/schoolAdminStyles/schoolAdminDashboard.css">
+</head>
+<body>
+    <div class="wrapper">
+      <div class="sidebar-container" data-sidebar>
+        <div class="sidebar" data-sidebarBar>
+          <header>
+            <h4>
+             School Admin
+            </h4>
+          <div class="sideBarClsoeIcon" data-sideBarClose><i class="fa fa-times"></i></div>
+   
+          </header>
+          <div class="content">
+            <ul>
+             <div class="item">
+               <li><a href="#"><i class="fa fa-tachometer-alt"></i> Dashboard</a></li>
+             </div>
+             <div class="item">
+               <li><a href="./listOfStudents.html"><i class="fa fa-user-graduate"></i> Students</a></li>
+             </div>
+             <div class="item">
+               <li><a href="./listOfStudents.html"><i class="fa fa-person-chalkboard"></i> Teachers</a></li>
+             </div>
+             <div class="item">
+               <li><a href="./attendance.html"><i class="fa fa-calendar-days"></i> Schedule</a></li>
+             </div>
+             <div class="item">
+               <li><a href="./attendance.html"><i class="fa fa-chart-column"></i> Attendance</a></li>
+             </div>
+             <div class="item">
+               <li><a href="./attendance.html"><i class="fas fa-receipt"></i> Recipts</a></li>
+             </div>
+            </ul>
+            <div class="profileSettings">
+              <div class="userSettings">
+                <a href="#"><i class="fa fa-user"></i> <span> UserName</span></a>
+              </div>
+              <div class="logout">
+                <button>Logout</button>
+              </div>
+            </div>
+          </div>
+         </div>
+       </div>
+       <!-- Header/Welcome message section -->
+      <header>
+        <div class="welcomeMsg">
+          <h2>Welcome back, <span>Mrs</span>.<span>Johnson</span></h2>
+          <p>Tuesday, 15 September 2025</p>
+        </div>
+        <div class="profilePic">
+          <div class="icon"><i class="fa fa-bell"></i></div>
+          <div class=" icon sideBarOpenIcon" data-sideBarOpen><i class="fa fa-bars"></i></div>
+          <!-- <div class="icon user"><i class="fa fa-user"></i></div> -->
+        </div>
+
+        <!-- Side bar -->
+      </header>
+
+      <div class="achievements">
+      <div class="achievement">
+        <div class="top">
+          <div class="icon studentIcon"><i class="fa fa-user-graduate"></i></div>
+          <!-- <div class="type"><span>Rank</span></div> -->
+        </div>
+        <div class="  bottom">
+          <h3>2,523</h3>
+          <p>Total Students</p>
+        </div>
+      </div>
+
+      <div class="achievement">
+        <div class="top">
+          <div class="icon teacherIcon"><i class="fa fa-person-chalkboard"></i></div>
+          <!-- <div class="type"><span>Points</span></div> -->
+        </div>
+        <div class="  bottom">
+          <h3>2,405</h3>
+          <p>Total points</p>
+        </div>
+      </div>
+
+      <div class="achievement">
+        <div class="top">
+          <div class="icon attendanceIcon"><i class="fa fa-chart-column"></i></div>
+          <!-- <div class="type"><span>Badges</span></div> -->
+        </div>
+        <div class="  bottom">
+          <h3>12</h3>
+          <p>Earned</p>
+        </div>
+      </div>
+
+      <div class="achievement">
+        <div class="top">
+          <div class="icon reciptIcon"><i class="fas fa-receipt"></i></div>
+          <!-- <div class="type"><span>Achievements</span></div> -->
+        </div>
+        <div class="  bottom">
+          <h3>8</h3>
+          <p>Unlocked</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="recentActivity">
+      <header>
+        <h2>Recent Activity</h2>
+      </header>
+      <div class="activity">
+        <div class="icon"><i class="fa fa-users"></i></div>
+        <div class="description">
+          <h3>John Smith Submitted the monthly attendance report</h3>
+          <p>2 hours Ago</p>
+        </div>
+      </div>
+      <div class="activity">
+        <div class="icon"><i class="fa fa-users"></i></div>
+        <div class="description">
+          <h3>Sarah Johnson updated the class Schedule</h3>
+          <p>4 hours Ago</p>
+        </div>
+      </div>
+      <div class="activity">
+        <div class="icon"><i class="fa fa-users"></i></div>
+        <div class="description">
+          <h3>Mike Brown processed fee payments</h3>
+          <p>6 hours Ago</p>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <script src="../../scripts/fontawesome.js"></script>
+    <script src="../../scripts/sideBar.js"></script>
+</body>
+</html>

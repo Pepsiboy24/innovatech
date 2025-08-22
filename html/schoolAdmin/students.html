@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Mangment</title>
+  <link rel="stylesheet" href="../../styles/navbarStyles.css">
+  <link rel="stylesheet" href="../../styles/schoolAdminStyles/students.css">
+  <link rel="stylesheet" href="../../styles/teachersPortalStyles/listOfStudents.css">
+</head>
+<body>
+  <div class="wrapper">
+    <div class="sidebar-container" data-sidebar>
+        <div class="sidebar" data-sidebarBar>
+          <header>
+            <h4>
+             School Admin
+            </h4>
+          <div class="sideBarClsoeIcon" data-sideBarClose><i class="fa fa-times"></i></div>
+   
+          </header>
+          <div class="content">
+            <ul>
+             <div class="item">
+               <li><a href="#"><i class="fa fa-tachometer-alt"></i> Dashboard</a></li>
+             </div>
+             <div class="item">
+               <li><a href="./listOfStudents.html"><i class="fa fa-user-graduate"></i> Students</a></li>
+             </div>
+             <div class="item">
+               <li><a href="./listOfStudents.html"><i class="fa fa-person-chalkboard"></i> Teachers</a></li>
+             </div>
+             <div class="item">
+               <li><a href="./attendance.html"><i class="fa fa-calendar-days"></i> Schedule</a></li>
+             </div>
+             <div class="item">
+               <li><a href="./attendance.html"><i class="fa fa-chart-column"></i> Attendance</a></li>
+             </div>
+             <div class="item">
+               <li><a href="./attendance.html"><i class="fas fa-receipt"></i> Recipts</a></li>
+             </div>
+            </ul>
+            <div class="profileSettings">
+              <div class="userSettings">
+                <a href="#"><i class="fa fa-user"></i> <span> UserName</span></a>
+              </div>
+              <div class="logout">
+                <button>Logout</button>
+              </div>
+            </div>
+          </div>
+         </div>
+       </div>
+
+       <header>
+        <div class="welcomeMsg">
+          <h2>Student Management</h2>
+          <!-- <p>Tuesday, 15 September 2025</p> -->
+        </div>
+        <div class="profilePic">
+          <div class="icon"><i class="fa fa-bell"></i></div>
+          <div class=" icon sideBarOpenIcon" data-sideBarOpen><i class="fa fa-bars"></i></div>
+          <!-- <div class="icon user"><i class="fa fa-user"></i></div> -->
+        </div>
+
+        <!-- Side bar -->
+      </header>
+
+      <div class="addNewStudents">
+        <div class="addsSingleStudent add">
+          <div class="icon"><i class="fa fa-user"></i></div>
+          <h2>Add One New Student</h2>
+        </div>
+        <div class="addsMultipleStudent add">
+          <div class="icon"><i class="fa fa-file-excel"></i></div>
+          <h2>Upload Excel Sheet</h2>
+        </div>
+      </div>
+
+
+
+      <!-- List of Students -->
+       <div class="studentsList">
+        <header>
+          <h3>Students</h3>
+        </header>
+
+        <div class="studentList">
+          <header>
+            <p class=" header nameHeader">Students Name</p>
+            <p class=" header ageHeader">Age</p>
+            <p class=" header classHeader">Class</p>
+            <p class=" header performanceHeader">Attendance</p>
+            <p class=" header actionHeader">Action</p>
+          </header>
+          <div class="studentItem">
+            <div class="studentName item">
+              <div class="icon"><i class="fa fa-user"></i></div>
+              <p>Sean Cook</p>
+            </div>
+            <p class="studentAge item">13</p>
+            <div class="studentClass item">
+              <p>PRY <span>5B</span></p>
+            </div>
+            <div class="studentPerformance item">
+              <div class="performance">
+                <div class="performanceBar"></div>
+              </div>
+              <span>80%</span>
+            </div>
+            <div class="action item">
+              <a href="#">View All</a>
+            </div>
+          </div>
+          <div class="studentItem">
+            <div class="studentName item">
+              <div class="icon"><i class="fa fa-user"></i></div>
+              <p>John Smith</p>
+            </div>
+            <p class="studentAge item">13</p>
+            <div class="studentClass item">
+              <p>PRY <span>5B</span></p>
+            </div>
+            <div class="studentPerformance item">
+              <div class="performance">
+                <div class="performanceBar"></div>
+              </div>
+              <span>80%</span>
+            </div>
+            <div class="action item">
+              <a href="#">View All</a>
+            </div>
+          </div>
+          <div class="studentItem">
+            <div class="studentName item">
+              <div class="icon"><i class="fa fa-user"></i></div>
+              <p>John Smith</p>
+            </div>
+            <p class="studentAge item">13</p>
+            <div class="studentClass item">
+              <p>PRY <span>5B</span></p>
+            </div>
+            <div class="studentPerformance item">
+              <div class="performance">
+                <div class="performanceBar"></div>
+              </div>
+              <span>80%</span>
+            </div>
+            <div class="action item">
+              <a href="#">View All</a>
+            </div>
+          </div>
+          <div class="studentItem">
+            <div class="studentName item">
+              <div class="icon"><i class="fa fa-user"></i></div>
+              <p>John Smith</p>
+            </div>
+            <p class="studentAge item">13</p>
+            <div class="studentClass item">
+              <p>PRY <span>5B</span></p>
+            </div>
+            <div class="studentPerformance item">
+              <div class="performance">
+                <div class="performanceBar"></div>
+              </div>
+              <span>80%</span>
+            </div>
+            <div class="action item">
+              <a href="#">View All</a>
+            </div>
+          </div>
+          <div class="studentItem">
+            <div class="studentName item">
+              <div class="icon"><i class="fa fa-user"></i></div>
+              <p>John Smith</p>
+            </div>
+            <p class="studentAge item">13</p>
+            <div class="studentClass item">
+              <p>PRY <span>5B</span></p>
+            </div>
+            <div class="studentPerformance item">
+              <div class="performance">
+                <div class="performanceBar"></div>
+              </div>
+              <span>80%</span>
+            </div>
+            <div class="action item">
+              <a href="#">View All</a>
+            </div>
+          </div>
+          <div class="studentItem">
+            <div class="studentName item">
+              <div class="icon"><i class="fa fa-user"></i></div>
+              <p>John Smith</p>
+            </div>
+            <p class="studentAge item">13</p>
+            <div class="studentClass item">
+              <p>PRY <span>5B</span></p>
+            </div>
+            <div class="studentPerformance item">
+              <div class="performance">
+                <div class="performanceBar"></div>
+              </div>
+              <span>80%</span>
+            </div>
+            <div class="action item">
+              <a href="#">View All</a>
+            </div>
+          </div>
+          <div class="studentItem">
+            <div class="studentName item">
+              <div class="icon"><i class="fa fa-user"></i></div>
+              <p>Sarah Johnson</p>
+            </div>
+            <p class="studentAge item">16</p>
+            <div class="studentClass item">
+              <p>PRY <span>5B</span></p>
+            </div>
+            <div class="studentPerformance item">
+              <div class="performance">
+                <div class="performanceBar"></div>
+              </div>
+              <span>80%</span>
+            </div>
+            <div class="action item">
+              <a href="#">View All</a>
+            </div>
+          </div>
+          <div class="studentItem">
+            <div class="studentName item">
+              <div class="icon"><i class="fa fa-user"></i></div>
+              <p>Sarah Johnson</p>
+            </div>
+            <p class="studentAge item">16</p>
+            <div class="studentClass item">
+              <p>PRY <span>5B</span></p>
+            </div>
+            <div class="studentPerformance item">
+              <div class="performance">
+                <div class="performanceBar"></div>
+              </div>
+              <span>80%</span>
+            </div>
+            <div class="action item">
+              <a href="#">View All</a>
+            </div>
+          </div>
+          <div class="studentItem">
+            <div class="studentName item">
+              <div class="icon"><i class="fa fa-user"></i></div>
+              <p>Sarah Johnson</p>
+            </div>
+            <p class="studentAge item">16</p>
+            <div class="studentClass item">
+              <p>PRY <span>5B</span></p>
+            </div>
+            <div class="studentPerformance item">
+              <div class="performance">
+                <div class="performanceBar"></div>
+              </div>
+              <span>80%</span>
+            </div>
+            <div class="action item">
+              <a href="#">View All</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <script src="../../scripts/font-awesome.js"></script>
+    <script src="../../scripts/sideBar.js"></script>
+  </body>
+</html>
