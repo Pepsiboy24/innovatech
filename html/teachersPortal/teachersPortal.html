@@ -3,268 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher's Portal</title>
-    <!-- <link rel="stylesheet" href="../../assets/fontawesome-free-7.0.0-web/css/all.min.css"> -->
-    <link rel="stylesheet" href="../../styles/navbarStyles.css">
+    <title>TeachSmart Dashboard</title>
     <link rel="stylesheet" href="../../styles/teachersPortalStyles/teachersPortal.css">
 </head>
 <body>
-     <!-- 
-    wrapper Section: this is where everything in the page is this controls the flow and aligment of everything
-  -->
-    <div class="wrapper">
-      <div class="sidebar-container" data-sidebar>
-        <div class="sidebar" data-sidebarBar>
-          <header>
-            <h4>
-             EdTech
-            </h4>
-          <div class="sideBarClsoeIcon" data-sideBarClose><i class="fa fa-times"></i></div>
-   
-          </header>
-          <div class="content">
-            <ul>
-             <div class="item">
-               <li><a href="#"><i class="fa fa-home"></i> Home</a></li>
-             </div>
-             <div class="item">
-               <li><a href="./listOfStudents.html"><i class="fa fa-users"></i> Students</a></li>
-             </div>
-             <div class="item">
-               <li><a href="./attendance.html"><i class="fa fa-list"></i> Attendance</a></li>
-             </div>
-             <!-- <div class="item">
-               <li><a href="#"><i class="fa fa-video"></i> Online Classes</a></li>
-             </div> -->
-             <div class="item">
-               <li><a href="#">🤖 AI Assistant</a></li>
-              </div>
-              <!-- <div class="item">
-                <li><a href="#"><i class="fa fa-envelope"></i> Messages</a></li>
-              </div> -->
-            </ul>
-            <div class="profileSettings">
-              <div class="userSettings">
-                <a href="#"><i class="fa fa-user"></i> <span> UserName</span></a>
-              </div>
-              <div class="logout">
-                <button>Logout</button>
-              </div>
+    <!-- Sidebar -->
+    <nav class="sidebar" data-nav>
+        <div class="logo">TeachSmart</div>
+        <ul class="sidebar-menu">
+            <li><a href="#" class="active">
+                <span class="icon">🏠</span>
+                Dashboard
+            </a></li>
+            <li><a href="./listOfStudents.html">
+                <span class="icon">👥</span>
+                Students
+            </a></li>
+            <li><a href="./attendance.html">
+                <span class="icon">📊</span>
+                Attendance
+            </a></li>
+            <li><a href="#">
+                <span class="icon">💻</span>
+                Online Classes
+            </a></li>
+            <li><a href="#">
+                <span class="icon">🤖</span>
+                AI Assistant
+            </a></li>
+            <li><a href="#">
+                <span class="icon">💬</span>
+                Messages
+            </a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1>Welcome back, Mrs. Anderson</h1>
+                <p>Tuesday, 15 August 2023</p>
             </div>
-          </div>
-         </div>
-       </div>
-       <!-- Header/Welcome message section -->
-      <header>
-        <div class="welcomeMsg">
-          <h2>Welcome back, <span>Mrs</span>.<span>Johnson</span></h2>
-          <p>Tuesday, 15 September 2025</p>
-        </div>
-        <div class="profilePic">
-          <div class="icon"><i class="fa fa-bell"></i></div>
-          <div class=" icon sideBarOpenIcon" data-sideBarOpen><i class="fa fa-bars"></i></div>
-          <!-- <div class="icon user"><i class="fa fa-user"></i></div> -->
-        </div>
-
-        <!-- Side bar -->
-      </header>
-
-      <!-- Tasks Section -->
-
-    <!-- 
-      Task: this is a container for the first thing ontop of the screen  and the div Achivment is simply what holds the cards in this container
-    -->
-    <div class="tasks">
-      <div class="taskItem">
-        <div class="top">
-          <div class="icon rankIcon"><i class="fa fa-book"></i></div>
-          <div class="type"><h3>21</h3></div>
-        </div>
-        <div class="  bottom">
-          <p>My Subjects</p>
-          <!-- <p>Subjects you take</p> -->
-        </div>
-      </div>
-
-      <div class="taskItem">
-        <div class="top">
-          <div class="icon usersIcon"><i class="fa fa-users"></i></div>
-          <div class="type"><h3>156</h3></div>
-        </div>
-        <div class="  bottom">
-          <p>Total Students</p>
-          <!-- <p>Total points</p> -->
-        </div>
-      </div>
-
-      <div class="taskItem">
-        <div class="top">
-          <div class="icon classesIcon"><i class="fa fa-video"></i></div>
-          <div class="type"><h3>3</h3></div>
-        </div>
-        <div class="  bottom">
-          <p>Upcoming Classes</p>
-          <!-- <p>Earned</p> -->
-        </div>
-      </div>
-
-      <div class="taskItem">
-        <div class="top">
-          <div class="icon anouncementsIcon"><i class="fa fa-voice"></i></div>
-          <div class="type"><span>Achievements</span></div>
-        </div>
-        <div class="  bottom">
-          <h3></h3>
-          <p>Unlocked</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Teachers tools section -->
-     <div class="teachersTools">
-      <div class="aiAssistant side">
-        <header>
-          <h3>AI Assistant</h3>
-        </header>
-        <div class="tools">
-          <div class="tool">
-            <div class="icon"><i class="fa fa-file"></i></div>
-            <p>Generate Lesson Note</p>
-          </div>
-          <div class="tool">
-            <div class="icon"><i class="fa fa-clipboard"></i></div>
-            <p>Create Test Questions</p>
-          </div>
-          <div class="tool">
-            <div class="icon">📈</div>
-            <p>Create Test Questions</p>
-          </div>
-        </div>
-      </div>
-      <div class="upcomingClassses side">
-        <header>
-          <h3>Upcoming Classes</h3>
-        </header>
-        <div class="classes">
-          
-          <div class="class">
-            <div class="left">
-              <h3>Mathematics</h3>
-              <p>Primary 1A</p>
+            <div class="header-right">
+                <button class="notification-btn"><i class="fa fa-bell"></i></button>
+                <div class="user-avatar">MA</div>
+                <div class="navOpenIcon" data-nav-dispaly><i class="fa fa-bars" data-ie></i></div>
             </div>
-            <div class="right">
-              <p>10:00AM</p>
-            </div>
-          </div>
-
-          <div class="class">
-            <div class="left">
-              <h3>Mathematics</h3>
-              <p>Primary 1A</p>
-            </div>
-            <div class="right">
-              <p>10:00AM</p>
-            </div>
-          </div>
-        </div>
-      </div>
-     </div>
-
-     <!-- Student List -->
-      <div class="studentsList">
-        <header>
-          <h3>Students</h3>
         </header>
 
-        <div class="studentList">
-          <header>
-            <p class=" header nameHeader">Students Name</p>
-            <p class=" header ageHeader">Age</p>
-            <p class=" header classHeader">Class</p>
-            <p class=" header performanceHeader">Performance</p>
-            <p class=" header actionHeader">Action</p>
-          </header>
-          <div class="studentItem">
-            <div class="studentName item">
-              <div class="icon"><i class="fa fa-user"></i></div>
-              <p>John Smith</p>
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-book"></i></div>
+                <div class="stat-content">
+                    <h3>24</h3>
+                    <p>Active Courses</p>
+                </div>
             </div>
-            <p class="studentAge item">13</p>
-            <div class="studentClass item">
-              <p>PRY <span>5B</span></p>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fa fa-people-group"></i></div>
+                <div class="stat-content">
+                    <h3>156</h3>
+                    <p>Total Students</p>
+                </div>
             </div>
-            <div class="studentPerformance item">
-              <div class="performance">
-                <div class="performanceBar"></div>
-              </div>
-              <span>80%</span>
+            <div class="stat-card">
+                <div class="stat-icon purple"><i class="fa fa-person-chalkboard"></i></div>
+                <div class="stat-content">
+                    <h3>3</h3>
+                    <p>Upcoming Classes</p>
+                </div>
             </div>
-            <div class="action item">
-              <a href="#">View All</a>
+            <div class="stat-card">
+                <div class="stat-icon red"><i class="fa fa-envelope"></i></div>
+                <div class="stat-content">
+                    <h3>12</h3>
+                    <p>New Messages</p>
+                </div>
             </div>
-          </div>
-          <div class="studentItem">
-            <div class="studentName item">
-              <div class="icon"><i class="fa fa-user"></i></div>
-              <p>Sarah Johnson</p>
-            </div>
-            <p class="studentAge item">16</p>
-            <div class="studentClass item">
-              <p>PRY <span>5B</span></p>
-            </div>
-            <div class="studentPerformance item">
-              <div class="performance">
-                <div class="performanceBar"></div>
-              </div>
-              <span>80%</span>
-            </div>
-            <div class="action item">
-              <a href="#">View All</a>
-            </div>
-          </div>
-          <div class="studentItem">
-            <div class="studentName item">
-              <div class="icon"><i class="fa fa-user"></i></div>
-              <p>Sarah Johnson</p>
-            </div>
-            <p class="studentAge item">16</p>
-            <div class="studentClass item">
-              <p>PRY <span>5B</span></p>
-            </div>
-            <div class="studentPerformance item">
-              <div class="performance">
-                <div class="performanceBar"></div>
-              </div>
-              <span>80%</span>
-            </div>
-            <div class="action item">
-              <a href="#">View All</a>
-            </div>
-          </div>
-          <div class="studentItem">
-            <div class="studentName item">
-              <div class="icon"><i class="fa fa-user"></i></div>
-              <p>Sarah Johnson</p>
-            </div>
-            <p class="studentAge item">16</p>
-            <div class="studentClass item">
-              <p>PRY <span>5B</span></p>
-            </div>
-            <div class="studentPerformance item">
-              <div class="performance">
-                <div class="performanceBar"></div>
-              </div>
-              <span>80%</span>
-            </div>
-            <div class="action item">
-              <a href="#">View All</a>
-            </div>
-          </div>
         </div>
-      </div>
-    </div>
 
+        <!-- Content Grid -->
+        <div class="content-grid">
+            <!-- AI Assistant -->
+            <div class="card">
+                <h2 class="card-title">AI Assistant</h2>
+                <div class="ai-feature">
+                    <div class="ai-feature-icon">📝</div>
+                    <div class="ai-feature-text">Generate Lesson Notes</div>
+                </div>
+                <div class="ai-feature">
+                    <div class="ai-feature-icon"><i class="fa fa-question"></i></div>
+                    <div class="ai-feature-text">Create Test Questions</div>
+                </div>
+                <div class="ai-feature">
+                    <div class="ai-feature-icon"><i class="fa fa-chart-column"></i></div>
+                    <div class="ai-feature-text">Analyze Student Performance</div>
+                </div>
+            </div>
+
+            <!-- Upcoming Classes -->
+            <div class="card">
+                <h2 class="card-title">Upcoming Classes</h2>
+                <div class="class-item">
+                    <div class="class-info">
+                        <h4>Mathematics</h4>
+                        <p>Grade 10-A</p>
+                    </div>
+                    <div class="class-time">9:00 AM</div>
+                </div>
+                <div class="class-item">
+                    <div class="class-info">
+                        <h4>Physics</h4>
+                        <p>Grade 11-B</p>
+                    </div>
+                    <div class="class-time">11:00 AM</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Students Section -->
+        <section class="students-section">
+            <h2 class="card-title">Students</h2>
+            <table class="students-table">
+                <thead>
+                    <tr>
+                        <th>NAME</th>
+                        <th>AGE</th>
+                        <th>CLASS</th>
+                        <th>PERFORMANCE</th>
+                        <th>ACTION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="student-name">
+                                <div class="student-avatar">JS</div>
+                                <span>John Smith</span>
+                            </div>
+                        </td>
+                        <td>15</td>
+                        <td>10-A</td>
+                        <td>
+                            <div style="display: flex; align-items: center;">
+                                <div class="performance-bar">
+                                    <div class="performance-fill excellent" style="width: 85%;"></div>
+                                </div>
+                                <span class="performance-text">85%</span>
+                            </div>
+                        </td>
+                        <td><a href="#" class="view-details">View Details</a></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="student-name">
+                                <div class="student-avatar">JS</div>
+                                <span>John Smith</span>
+                            </div>
+                        </td>
+                        <td>15</td>
+                        <td>10-A</td>
+                        <td>
+                            <div style="display: flex; align-items: center;">
+                                <div class="performance-bar">
+                                    <div class="performance-fill excellent" style="width: 85%;"></div>
+                                </div>
+                                <span class="performance-text">85%</span>
+                            </div>
+                        </td>
+                        <td><a href="#" class="view-details">View Details</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
     <script src="../../scripts/fontawesome.js"></script>
-    <script src="../../scripts/sideBar.js"></script>
+    <script>
+      const navOpen = document.querySelector("[data-nav-dispaly]");
+      const nav = document.querySelector("[data-nav]");
+      const i = document.querySelector("[data-ie]")
+      navOpen.addEventListener("click", () => {
+        if(i.className == "fa fa-bars"){
+          i.className = "";
+          i.classList.add("fa", "fa-times"); 
+        }else if(i.className == "fa fa-times"){
+          i.className = "";
+          i.classList.add("fa", "fa-bars"); 
+        }
+        nav.classList.toggle("show")
+      })
+    </script>
 </body>
 </html>
