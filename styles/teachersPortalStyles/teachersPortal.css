@@ -1,237 +1,409 @@
-  /* Achievements Section Styles */
-.tasks{
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1rem;
-  margin-bottom: 20px;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
-.tasks > .taskItem{
-  /* width: 24%; */
-  height: 160px;
-  background-color: #ffffff;
-  padding: 2rem;
-  /* margin: 20px; */
-  border-radius: 12px;
-  /* margin: 20px; */
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 0px 1px 3px rgba(0,0,0,0.05);
-  position: relative;
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #f8f9fa;
+    display: flex;
+    min-height: 100vh;
 }
-.tasks > .taskItem > .top{
-  height: 30%;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  justify-content: space-between;
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    background-color: #ffffff;
+    border-right: 1px solid #e9ecef;
+    padding: 24px 0;
+    position: fixed;
+    min-height: 100vh;
+    height: 100%;
+    overflow-y: auto;
 }
-.tasks > .taskItem > .top > .type{
-  color: #6B7280 
+
+.logo {
+    padding: 0 24px 40px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a202c;
 }
-.tasks > .taskItem > .top > .type > h3{
-  font-size: 2.4rem;
+
+.sidebar-menu {
+    list-style: none;
 }
-.tasks > .taskItem > .top > .icon{
-  font-size: 2rem;
-  padding: 10px;
-  margin: 20px 0 0 0;
-  border-radius: 8px;
+
+.sidebar-menu li {
+    margin-bottom: 4px;
 }
-.tasks > .taskItem > .top > .rankIcon{
-  background: rgb(52, 179, 238);
-  color: blue;
-}
-.tasks > .taskItem > .top > .usersIcon{
-  background: rgb(104, 253, 104);;
-  color: rgb(13, 105, 13);
-}
-.tasks > .taskItem > .top > .classesIcon{
-  background: rgb(184, 133, 235);
-  color: rgb(67, 27, 107);
-}
-.tasks > .taskItem > .top > .anouncementsIcon{
-  color: gold
-}
-.tasks > .taskItem > .bottom > p{
-  font-size: 1.5rem;
-  font-weight: 400;
-  color: #111827;
-}
-.tasks > .taskItem > .bottom{
-  width: 100%;
-  /* height: 60%; */
-  /* position: absolute; */
-  /* bottom: 10px; */
-}
-/* .tasks > .taskItem > .bottom > p{
-  font-size: 1.2rem;
-  font-weight: 500;
-  color: #6B7280;
-} */
-  .teachersTools{
-  width: 100%;
-  /* height: 300px; */
-  display: flex;
-  justify-content: space-between;
-  }
-  .teachersTools > .aiAssistant, .teachersTools > .upcomingClassses{
-  width: 60%;
-  height: 100%;
-  background-color: #ffffff;
-  height: 100%;
-  padding: 20px;
-  border-radius: 12px;
-  min-height: 370px;
-  }
-  .teachersTools > .aiAssistant > header > h3, .teachersTools > .upcomingClassses > header > h3, .studentList > header > h3{
-    font-size: 1.5rem;
-    padding: 1rem 0;
-    margin-bottom: 20px;
-  }
-  .teachersTools > .aiAssistant > .tools > .tool, .teachersTools > .upcomingClassses > .classes > .class{
+
+.sidebar-menu a {
     display: flex;
     align-items: center;
-    width: 100%;
-    height: 66px;
-    font-size: 1.4rem;
-    background-color: #F3F4F6;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-  }
-  .teachersTools > .aiAssistant > .tools > .tool > .icon{
-    color: rgb(84, 84, 241);
-    margin-right: 20px;
-  }
-  .teachersTools > .aiAssistant > .tools > .tool > p{
+    padding: 12px 24px;
+    text-decoration: none;
+    color: #718096;
+    font-size: 14px;
     font-weight: 500;
-  }
-  .teachersTools > .upcomingClassses{
-    width: 38%;
-  }
-  .teachersTools > .upcomingClassses > .classes > .class{
-    height: 100%;
-    /* min-height: 100px; */
+    transition: all 0.2s;
+}
+
+.sidebar-menu a:hover {
+    background-color: #f7fafc;
+    color: #2d3748;
+}
+
+.sidebar-menu a.active {
+    background-color: #ebf8ff;
+    color: #3182ce;
+}
+
+.sidebar-menu .icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    font-size: 16px;
+}
+
+/* Main Content */
+.main-content {
+    margin-left: 250px;
+    flex: 1;
+    padding: 24px 32px;
+}
+
+/* Header */
+.header {
+    display: flex;
     justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.header-left h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1a202c;
+    margin-bottom: 4px;
+}
+
+.header-left p {
+    font-size: 14px;
+    color: #718096;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.notification-btn {
+    width: 40px;
+    height: 40px;
+    background: #f7fafc;
+    border: none;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #4a5568;
     position: relative;
-  }
-  .teachersTools > .upcomingClassses > .classes > .class > .left > h3{
-    margin-bottom: 13px;
-    font-weight: 500;
-  }
-  .teachersTools > .upcomingClassses > .classes > .class p{
-    font-size: 1.2rem;
-  }
-  .teachersTools > .upcomingClassses > .classes > .class > .right{
+}
+
+.notification-btn::after {
+    content: '';
     position: absolute;
-    top: 20px;
-    right: 20px;
-  }
-
-.studentsList{
-  height: 100%;
-  /* max-height: 600px; */
-  /* position: relative; */
-  width: 100%;
-  border-radius: 12px;
-  /* min-height: 300px; */
-  background-color: #fff;;
-  margin-top: 20px;
-  overflow-x: scroll;
-}
-.studentsList::-webkit-scrollbar{
-  display: none;
-}
-.studentsList > .studentList{
-  /* position: absolute; */
-  height: 100%;
-  min-width: 100%;
-}
-.studentsList > header{
-  padding: 20px;
-  font-size: 1.5rem;
-}
-.studentList > header, .studentList > .studentItem{
-  width: 100%;
-}
-.studentList > header, .studentList > .studentItem {
-  display: flex;
-  justify-content: space-between;
-  padding: 20px;
-}
-.studentList > .studentItem{
-  border-bottom: 3px solid #F9FAFB;
-}
-.studentList > header > .header, .studentItem > .item{
-  /* background-color: #ff0000; */
-  display: flex;
-  align-items: center;
-  /* height: 100px; */
-}
-.studentList > header{
-  background-color: #F9FAFB;
-}
-.studentList > header p{
-  font-size: 1.3rem;
-  font-weight: 540;
-}
-.studentItem > .item{
-  font-size: 1.4rem;
-}
-.nameHeader, .studentName{
-  width: 30%;
-}
-.ageHeader, .studentAge{
-  width: 5%
-}
-.classHeader, .studentClass{
-  width: 10%;
-}
-.performanceHeader, .studentPerformance{
-  width: 25%;
-}
-.actionHeader, .action{
-  width: 10%;
-}
-.studentList > .studentItem > .studentName >.icon{
-  margin-right: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #ccc;
-}
-.studentList > .studentItem > .studentPerformance > .performance{
-  width: 70%;
-  height: 30px;
-  border: 1px solid #000;
-  border-radius: 8px;
-  margin-right: 20px;
-}
-.studentList > .studentItem > .studentPerformance > .performance > .performanceBar{
-  width: 80%;
-  height: 100%;
-  background-color: blue;
-}
-.studentList > .studentItem > .action > a{
-  text-decoration: none;
-  color: blue;
+    top: 8px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    background: #e53e3e;
+    border-radius: 50%;
 }
 
+.user-avatar{
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.user-avatar, .navOpenIcon{
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+}
+.navOpenIcon{
+  /* background-color: #fff; */
+  color: #000;
+  cursor: pointer;
+  border-radius: 6px;
+  background-color: #fff;
+  border: 1px solid #e2e8f0;
+}
 
-@media screen and (max-width: 800px){
-  .teachersTools{
-    flex-direction: column;
-  }
-    .teachersTools > .aiAssistant, .teachersTools > .upcomingClassses{
-      width: 100%;
-      margin-bottom: 20px;
+/* Stats Cards */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.stat-icon.blue { background: #ebf8ff; }
+.stat-icon.green { background: #f0fff4; }
+.stat-icon.purple { background: #faf5ff; }
+.stat-icon.red { background: #fef5e7; }
+
+.stat-content h3 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 4px;
+}
+
+.stat-content p {
+    font-size: 14px;
+    color: #718096;
+    font-weight: 500;
+}
+
+/* Content Grid */
+.content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-bottom: 32px;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a202c;
+    margin-bottom: 20px;
+}
+
+/* AI Assistant */
+.ai-feature {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 0;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ai-feature:last-child {
+    border-bottom: none;
+}
+
+.ai-feature:hover {
+    background: #f8fafc;
+    margin: 0 -16px;
+    padding: 16px;
+    border-radius: 8px;
+}
+
+.ai-feature-icon {
+    width: 40px;
+    height: 40px;
+    background: #ebf8ff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #3182ce;
+    font-size: 16px;
+}
+
+.ai-feature-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: #2d3748;
+}
+
+/* Upcoming Classes */
+.class-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.class-item:last-child {
+    border-bottom: none;
+}
+
+.class-info h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 4px;
+}
+
+.class-info p {
+    font-size: 12px;
+    color: #718096;
+}
+
+.class-time {
+    font-size: 14px;
+    font-weight: 500;
+    color: #4a5568;
+}
+
+/* Students Table */
+.students-section {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.students-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.students-table th {
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.students-table td {
+    padding: 16px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 14px;
+}
+
+.student-name {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.student-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.performance-bar {
+    width: 60px;
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-right: 8px;
+}
+
+.performance-fill {
+    height: 100%;
+    border-radius: 3px;
+}
+
+.performance-fill.excellent { background: #48bb78; }
+.performance-fill.good { background: #ed8936; }
+
+.performance-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: #2d3748;
+}
+
+.view-details {
+    color: #3182ce;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.view-details:hover {
+    text-decoration: underline;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #718096;
+    font-size: 14px;
+}
+
+.action-btn:hover {
+    background: #f7fafc;
+    border-color: #cbd5e0;
+}
+.sidebar.show{
+  transform: translateX(0);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
     }
-    .studentsList > .studentList{
-      min-width: 900px;
+    .main-content {
+        margin-left: 0;
     }
-}
+  }

@@ -1,251 +1,265 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Portal</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
-      rel="stylesheet"
-    />
-    <!-- <link rel="stylesheet" href="../../assets/fontawesome-free-7.0.0-web/css/all.min.css"> -->
-    <link rel="stylesheet" href="../../styles/navbarStyles.css">
-    <link rel="stylesheet" href="../../styles/studentsPortalStyles/studentPortal.css" />
+    <title>EduHub - Student Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../../styles/studentsPortalStyles/studentPortal.css">
 </head>
 <body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" data-nav>
+            <div class="sidebar-header">
+                <h2>EduHub</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active">
+                    <i class="fas fa-home"></i>
+                    Dashboard
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    Classes
+                </a>
+                <a href="./studyMaterials.html" class="nav-item">
+                    <i class="fas fa-book"></i>
+                    Study Materials
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    Social
+                </a>
+            </nav>
+        </aside>
 
-  
-  <!-- 
-    wrapper Section: this is where everything in the page is this controls the flow and aligment of everything
-  -->
-  <div class="wrapper">
-    <div class="sidebar-container" data-sidebar>
-     <div class="sidebar" data-sidebarBar>
-       <header>
-         <h4>
-          EdTech
-         </h4>
-       <div class="sideBarClsoeIcon" data-sideBarClose><i class="fa fa-times"></i></div>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="welcome-section">
+                    <h1>Welcome back, <span>Alex!</span></h1>
+                    <p>Keep up the great work!</p>
+                </div>
+                <div class="header-actions">
+                    <button class="notification-btn">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <button class="profile-btn">
+                        A
+                    </button>
+                    <button class="nav-btn" data-nav-dispaly>
+                      <i class="fa fa-bars" data-ie></i>
+                    </button>
+                </div>
+            </header>
 
-       </header>
-       <div class="content">
-         <ul>
-          <div class="item">
-            <li><a href="#"><i class="fa fa-home"></i> Home</a></li>
-          </div>
-          <div class="item">
-            <li><a href="./schedule.html"><i class="fa fa-graduation-cap"></i> schedule</a></li>
-          </div>
-          <div class="item">
-            <li><a href="./studyMaterials.html"><i class="fa fa-book"></i> Study Materials</a></li>
-          </div>
-         </ul>
-         <div class="profileSettings">
-           <div class="userSettings">
-             <a href="./studyMaterials.html"><i class="fa fa-user"></i> <span>UserName</span></a>
-           </div>
-           <div class="logout">
-             <button>Logout</button>
-           </div>
-         </div>
-       </div>
-      </div>
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon rank">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <div class="stat-label">Rank</div>
+                    <div class="stat-value">5th</div>
+                    <div class="stat-description">In Class</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon points">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="stat-label">Points</div>
+                    <div class="stat-value">2,450</div>
+                    <div class="stat-description">Total Points</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon badges">
+                        <i class="fas fa-medal"></i>
+                    </div>
+                    <div class="stat-label">Badges</div>
+                    <div class="stat-value">12</div>
+                    <div class="stat-description">Earned</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon achievements">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-label">Achievements</div>
+                    <div class="stat-value">8</div>
+                    <div class="stat-description">Unlocked</div>
+                </div>
+            </div>
+
+            <!-- Upcoming Classes -->
+            <section class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Upcoming Classes</h2>
+                </div>
+                <div class="classes-grid">
+                    <div class="class-card">
+                        <div class="class-header">
+                            <div class="class-icon math">
+                                <i class="fas fa-calculator"></i>
+                            </div>
+                            <div class="class-info">
+                                <h4>Mathematics</h4>
+                                <p>Advanced Algebra</p>
+                            </div>
+                        </div>
+                        <div class="class-time">Today, 2:30 PM</div>
+                        <button class="class-btn join-btn">Join Class</button>
+                    </div>
+                    <div class="class-card">
+                        <div class="class-header">
+                            <div class="class-icon chemistry">
+                                <i class="fas fa-flask"></i>
+                            </div>
+                            <div class="class-info">
+                                <h4>Chemistry</h4>
+                                <p>Organic Chemistry</p>
+                            </div>
+                        </div>
+                        <div class="class-time">Today, 4:00 PM</div>
+                        <button class="class-btn join-btn">Join Class</button>
+                    </div>
+                    <div class="class-card">
+                        <div class="class-header">
+                            <div class="class-icon english">
+                                <i class="fas fa-book-open"></i>
+                            </div>
+                            <div class="class-info">
+                                <h4>English</h4>
+                                <p>Literature</p>
+                            </div>
+                        </div>
+                        <div class="class-time">Tomorrow, 10:00 AM</div>
+                        <button class="class-btn upcoming-btn">Upcoming</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI Study Buddy -->
+            <section class="ai-buddy">
+                <div class="ai-header">
+                    <h3 class="ai-title">AI Study Buddy</h3>
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="ai-input-container">
+                    <input type="text" class="ai-input" placeholder="Ask me anything about your studies...">
+                    <button class="ask-ai-btn">Ask AI</button>
+                </div>
+            </section>
+
+            <!-- Bottom Section -->
+            <div class="bottom-section">
+                <!-- Class Leaderboard -->
+                <section class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Class Leaderboard</h2>
+                    </div>
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-left">
+                            <span class="rank-number">1.</span>
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <span class="user-name">John Doe</span>
+                        </div>
+                        <span class="points"><span>3,240</span> pts</span>
+                    </div>
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-left">
+                            <span class="rank-number">2.</span>
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <span class="user-name">Sarah Smith</span>
+                        </div>
+                        <span class="points"><span>2,890</span> pts</span>
+                    </div>
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-left">
+                            <span class="rank-number">3.</span>
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <span class="user-name">Mike Johnson</span>
+                        </div>
+                        <span class="points"><span>2,650</span> pts</span>
+                    </div>
+                </section>
+
+                <!-- Social Feed -->
+                <section class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Social Feed</h2>
+                    </div>
+                    <div class="feed-item">
+                        <div class="feed-header">
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <span class="feed-user">Emma Wilson</span>
+                                <div class="feed-time">10 mins ago</div>
+                            </div>
+                        </div>
+                        <div class="feed-content">
+                            Anyone want to join our study group for tomorrow's math test?
+                        </div>
+                        <div class="feed-reactions">
+                            <div class="reaction">
+                                <i class="fas fa-heart"></i>
+                                <span>12</span>
+                            </div>
+                            <div class="reaction">
+                                <i class="fas fa-comment"></i>
+                                <span>5</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feed-item">
+                        <div class="feed-header">
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <span class="feed-user">David Chen</span>
+                                <div class="feed-time">1 hour ago</div>
+                            </div>
+                        </div>
+                        <div class="feed-content">
+                            Just finished the chemistry project! Check it out 🧪
+                        </div>
+                        <div class="feed-reactions">
+                            <div class="reaction">
+                                <i class="fas fa-heart"></i>
+                                <span>24</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
     </div>
-    <!-- Header/Welcome message section -->
-    <header>
-      <div class="welcomeMsg">
-        <h2>Welcome back, <span>Alex</span></h2>
-        <p>Keep up the great work</p>
-      </div>
-      <div class="profilePic">
-        <div class="icon"><i class="fa fa-bell"></i></div>
-        <div class="sideBarOpenIcon icon" data-sideBarOpen><i class="fa fa-bars"></i></div>
-        <!-- <div class="icon user"><i class="fa fa-user"></i></div> -->
-      </div>
-
-      <!-- Side bar -->
-    </header>
-    <!-- Achievements Section -->
-
-    <!-- 
-      Achivements: this is a container for the first thing ontop of the screen  and the div Achivment is simply what holds the cards in this container
-    -->
-    <div class="achievements">
-      <div class="achievement">
-        <div class="top">
-          <div class="icon rankIcon"><i class="fa fa-certificate"></i></div>
-          <div class="type"><span>Rank</span></div>
-        </div>
-        <div class="  bottom">
-          <h3>5th</h3>
-          <p>In Class</p>
-        </div>
-      </div>
-
-      <div class="achievement">
-        <div class="top">
-          <div class="icon pointIcon"><i class="fas fa-trophy"></i></div>
-          <div class="type"><span>Points</span></div>
-        </div>
-        <div class="  bottom">
-          <h3>2,405</h3>
-          <p>Total points</p>
-        </div>
-      </div>
-
-      <div class="achievement">
-        <div class="top">
-          <div class="icon badgeIcon"><i class="fas fa-medal"></i></div>
-          <div class="type"><span>Badges</span></div>
-        </div>
-        <div class="  bottom">
-          <h3>12</h3>
-          <p>Earned</p>
-        </div>
-      </div>
-
-      <div class="achievement">
-        <div class="top">
-          <div class="icon achivementIcon"><i class="fa fa-star"></i></div>
-          <div class="type"><span>Achievements</span></div>
-        </div>
-        <div class="  bottom">
-          <h3>8</h3>
-          <p>Unlocked</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Time-Tabel: a div displaying the users time tables -->
-     <div class="timetable">
-      <!-- Header Section -->
-      <header>
-        <h3>Upcomming Classes</h3>
-        <div class="viewAll">
-          <a href="#">view Time Table <i class="fa fa-arrow-right"></i></a>
-        </div>
-      </header>
-      <!-- Section to show studnts upcoming classes -->
-      <div class="upcommingClasses">
-        <div class="day-column">
-          <h3>Mon</h3>
-          <div class="time-card"><span>8:00</span><span>Math</span></div>
-          <div class="time-card"><span>9:00</span><span>English</span></div>
-          <div class="time-card"><span>10:00</span><span>Physics</span></div>
-          <div class="time-card"><span>11:00</span><span>Biology</span></div>
-          <div class="time-card"><span>12:00</span><span>Free Period</span></div>
-          <div class="time-card"><span>1:00</span><span>Geography</span></div>
-          <div class="time-card"><span>2:00</span><span>Economics</span></div>
-          <div class="time-card"><span>3:00</span><span>Civic</span></div>
-        </div>
-    
-        <div class="day-column">
-          <h3>Tue</h3>
-          <div class="time-card"><span>8:00</span><span>Chemistry</span></div>
-          <div class="time-card"><span>9:00</span><span>Math</span></div>
-          <div class="time-card"><span>10:00</span><span>English</span></div>
-          <div class="time-card"><span>11:00</span><span>Free Period</span></div>
-          <div class="time-card"><span>12:00</span><span>Lit</span></div>
-          <div class="time-card"><span>1:00</span><span>Biology</span></div>
-          <div class="time-card"><span>2:00</span><span>Physics</span></div>
-          <div class="time-card"><span>3:00</span><span>Computer</span></div>
-        </div>
-    
-        <div class="day-column">
-          <h3>Wed</h3>
-          <div class="time-card"><span>8:00</span><span>English</span></div>
-          <div class="time-card"><span>9:00</span><span>Math</span></div>
-          <div class="time-card"><span>10:00</span><span>ICT</span></div>
-          <div class="time-card"><span>11:00</span><span>Physics</span></div>
-          <div class="time-card"><span>12:00</span><span>Free Period</span></div>
-          <div class="time-card"><span>1:00</span><span>Biology</span></div>
-          <div class="time-card"><span>2:00</span><span>Civic</span></div>
-          <div class="time-card"><span>3:00</span><span>Lit</span></div>
-        </div>
-    
-        <div class="day-column">
-          <h3>Thu</h3>
-          <div class="time-card"><span>8:00</span><span>Math</span></div>
-          <div class="time-card"><span>9:00</span><span>English</span></div>
-          <div class="time-card"><span>10:00</span><span>Geography</span></div>
-          <div class="time-card"><span>11:00</span><span>Physics</span></div>
-          <div class="time-card"><span>12:00</span><span>ICT</span></div>
-          <div class="time-card"><span>1:00</span><span>Computer</span></div>
-          <div class="time-card"><span>2:00</span><span>Chemistry</span></div>
-          <div class="time-card"><span>3:00</span><span>Lit</span></div>
-        </div>
-    
-        <div class="day-column">
-          <h3>Fri</h3>
-          <div class="time-card"><span>8:00</span><span>Biology</span></div>
-          <div class="time-card"><span>9:00</span><span>Math</span></div>
-          <div class="time-card"><span>10:00</span><span>English</span></div>
-          <div class="time-card"><span>11:00</span><span>Civic</span></div>
-          <div class="time-card"><span>12:00</span><span>Free Period</span></div>
-          <div class="time-card"><span>1:00</span><span>Geography</span></div>
-          <div class="time-card"><span>2:00</span><span>Physics</span></div>
-          <div class="time-card"><span>3:00</span><span>Economics</span></div>
-        </div>
-      </div>
-     </div>
- 
-     <!-- leaderboard Section -->
-
-     <div class="leaderboards">
-      <!-- SchoolLeaderboard shows the ranking of the students in the school -->
-      <div class="schoolLeaderBoard">
-        <header>
-          <h3>School leaderboard</h3>
-          <div class="viewAllLink">
-            <a href="#">
-              View All <i class="fa fa-arrow-right"></i>
-            </a>
-          </div>
-        </header>
-        <div class="leaderboardItem">
-          <div class="left">
-            <span class="rank">1.</span>
-            <div class="icon pfp"><i class="fa fa-user"></i></div>
-            <span class="name">John Doe</span>
-          </div>
-          <span class="points"><i>3200</i> points</span>
-        </div>
-      </div>
-
-      <!-- Class leaderboard to show student ranking in his class -->
-      <div class="classLeaderboard">
-        <header>
-          <h3>Class leaderboard</h3>
-          <div class="viewAllLink">
-            <a href="#">
-              View All <i class="fa fa-arrow-right"></i>
-            </a>
-          </div>
-        </header>
-        <div class="leaderboardItem">
-          <div class="left">
-            <span class="rank">1.</span>
-            <div class="icon pfp"><i class="fa fa-user"></i></div>
-            <span class="name">Sam Tucker</span>
-          </div>
-          <span class="points"><i>10,000</i> points</span>
-        </div>
-      </div>
-     </div>
-
-  </div>
-
-  
-
-
-
-  <!-- <script
-      src="https://kit.fontawesome.com/c2dbebd088.js"
-      crossorigin="anonymous"
-    ></script> -->
-    <script src="../../scripts/fontawesome.js"></script>
-    <script src="../../scripts/sideBar.js"></script>
+    <script>
+      const navOpen = document.querySelector("[data-nav-dispaly]");
+      const nav = document.querySelector("[data-nav]");
+      const i = document.querySelector("[data-ie]")
+      navOpen.addEventListener("click", () => {
+        if(i.className == "fa fa-bars"){
+          i.className = "";
+          i.classList.add("fa", "fa-times"); 
+        }else if(i.className == "fa fa-times"){
+          i.className = "";
+          i.classList.add("fa", "fa-bars"); 
+        }
+        nav.classList.toggle("show")
+      })
+    </script>
 </body>
 </html>

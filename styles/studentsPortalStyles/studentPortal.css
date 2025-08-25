@@ -1,254 +1,488 @@
-.timetable > header{
-  width: 100%;
-  height: 80px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  letter-spacing: 0.5px;
-  justify-content: space-between;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-
-/* Wrapper Styles */
-.wrapper{
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  width: 100%;
-  padding: 2rem 1.5rem;
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f8fafc;
+    color: #1e293b;
+    line-height: 1.6;
 }
 
-/* Achievements Section Styles */
-.achievements{
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1rem;
-}
-.achievements > .achievement{
-  /* width: 24%; */
-  height: 150px;
-  background-color: #ffffff;
-  padding: 1rem;
-  /* margin: 20px; */
-  border-radius: 12px;
-  /* margin: 20px; */
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 0px 1px 3px rgba(0,0,0,0.05);
-  position: relative;
-}
-.achievements > .achievement > .top{
-  height: 30%;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  justify-content: space-between;
-}
-.achievements > .achievement > .top > .type{
-  color: #6B7280 
-}
-.achievements > .achievement > .top > .icon{
-  font-size: 3rem;
-}
-.achievements > .achievement > .top > .rankIcon{
-  color: blue;
-}
-.achievements > .achievement > .top > .pointIcon{
-  color: rgb(20, 133, 204);
-}
-.achievements > .achievement > .top > .badgeIcon{
-  color: rgb(36, 219, 36);
-}
-.achievements > .achievement > .top > .achivementIcon{
-  color: gold
-}
-.achievements > .achievement > .bottom > h3{
-  font-size: 2rem;
-  font-weight: 600;
-  color: #111827;
-}
-.achievements > .achievement > .bottom{
-  width: 100%;
-  /* height: 60%; */
-  position: absolute;
-  bottom: 10px;
-}
-.achievements > .achievement > .bottom > p{
-  font-size: 1.2rem;
-  font-weight: 500;
-  color: #6B7280;
+.container {
+    display: flex;
+    min-height: 100vh;
 }
 
-/* Tiime Table Styles */
-.timetable{
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  margin: 20px 0 20px 0;
-}
-.timetable > header{
-  font-size: 1.5rem;
-  padding: 1rem 0;
-}
-.timetable > header > .viewAll{
-  display: flex;
-}
-.timetable > header > .viewAll > a{
-  text-decoration: none;
-  color: #000;
-}
-.timetable > .upcommingClasses{
-  display: flex;
-  overflow-x: auto;
-  gap: 20px;
-  padding-bottom: 1rem;
-}
-.day-column {
-  width: 19%;
-  /* min-width: 220px; */
-  background-color: #ffffff;
-  border-radius: 10px;
-  padding: 1rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
-  flex-shrink: 0;
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    background-color: white;
+    border-right: 1px solid #e2e8f0;
+    padding: 1.5rem 0;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
 }
 
-.day-column h3 {
-  font-size: 1.6rem;
-  color: #111827;
-  margin-bottom: 0.75rem;
-  border-bottom: 2px solid #F3F4F6;
-  padding-bottom: 0.5rem;
+.sidebar-header {
+    padding: 0 1.5rem 2rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
 }
 
-.time-card {
-  background-color: #F3F4F6;
-  color: #1f2937;
-  border-radius: 6px;
-  padding: 0.6rem;
-  margin-bottom: 0.4rem;
-  font-size: 1.3rem;
-  display: flex;
-  justify-content: space-between;
+.sidebar-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
 }
 
-
-/* LeaderBoards styles */
-.leaderboards{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  margin: 20px 0 20px 0;
-}
-.leaderboards > .schoolLeaderBoard, .leaderboards > .classLeaderboard{
-  width: 48%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 8px;
-}
-.schoolLeaderBoard > header, .classLeaderboard > header{
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  font-size: 1.4rem;
-  font-weight: 600;
-}
-.schoolLeaderBoard > header > .viewAllLink > a, .classLeaderboard > header > .viewAllLink > a{
-  text-decoration: none;
-  color: #000;
-}
-.schoolLeaderBoard > .leaderboardItem, .classLeaderboard > .leaderboardItem{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  width: 100%;
-  font-size: 1.5rem;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-top: 12px;
-  background-color: #F3F4F6;
-}
-.leaderboardItem  .left{
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-.leaderboardItem > .left > .rank, .classLeaderboard > .left > .rank{
-  color: blue;
-}
-.leaderboardItem > .left > .icon, .classLeaderboard > .left > .icon{
-  margin: 0 20px 0 20px;
+.sidebar-nav {
+    padding-top: 1rem;
 }
 
-/* Responsiveness styles */
-@media screen and (max-width: 800px) {
-  
-  /* Existing adjustments */
-  .leaderboards {
-    flex-direction: column;
-  }
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    color: #64748b;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
 
-  .leaderboards > .schoolLeaderBoard,
-  .leaderboards > .classLeaderboard {
-    width: 100%;
-  }
+.nav-item:hover,
+.nav-item.active {
+    background-color: #f1f5f9;
+    color: #3b82f6;
+    border-left-color: #3b82f6;
+}
 
-  
+.nav-item i {
+    width: 20px;
+    margin-right: 0.75rem;
+}
 
-  /* ✅ Fix heading sizes and layout spacing on mobile */
-  .timetable > header{
-    /* flex-direction: column; */
-    align-items: flex-start;
-    gap: 8px;
-    height: auto;
-  }
+/* Main Content */
+.main-content {
+    flex: 1;
+    margin-left: 250px;
+    padding: 2rem;
+}
 
-  
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
 
-  .timetable > header h3,
-  .schoolLeaderBoard > header h3,
-  .classLeaderboard > header h3 {
-    font-size: 1.2rem;
-  }
+.welcome-section h1 {
+    font-size: 1.875rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+}
 
-  .timetable > header .viewAll,
-  .schoolLeaderBoard > header .viewAllLink,
-  .classLeaderboard > header .viewAllLink {
-    font-size: 0.9rem;
-  }
-  .wrapper {
+.welcome-section h1 span {
+    color: #3b82f6;
+}
+
+.welcome-section p {
+    color: #64748b;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.notification-btn,
+.profile-btn,
+.nav-btn
+{
+  width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background-color: white;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.notification-btn:hover,
+.profile-btn:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+    font-weight: 600;
+}
+
+.nav-btn{
+  display: none;
+}
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    text-align: center;
+}
+
+.stat-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-icon.rank { color: #8b5cf6; }
+.stat-icon.points { color: #3b82f6; }
+.stat-icon.badges { color: #10b981; }
+.stat-icon.achievements { color: #f59e0b; }
+
+.stat-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.05em;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+}
+
+.stat-description {
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+/* Upcoming Classes */
+.section {
+    background-color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.classes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.class-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
     padding: 1rem;
-  }
-  .day-column {
-    width: 300px;
-  }
-  .achievements > .achievement > .bottom > h3 {
-    font-size: 1.2rem;
-  }
+    background-color: #f8fafc;
+}
 
-  .achievements > .achievement > .bottom > p {
-    font-size: 1rem;
-  }
+.class-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
 
-  .schoolLeaderBoard,
-  .classLeaderboard{
+.class-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.875rem;
+}
+
+.class-icon.math { background-color: #3b82f6; }
+.class-icon.chemistry { background-color: #10b981; }
+.class-icon.english { background-color: #8b5cf6; }
+
+.class-info h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.class-info p {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.class-time {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-bottom: 0.75rem;
+}
+
+.class-btn {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.join-btn {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.join-btn:hover {
+    background-color: #2563eb;
+}
+
+.upcoming-btn {
+    background-color: #e2e8f0;
+    color: #64748b;
+}
+
+/* AI Study Buddy */
+.ai-buddy {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-buddy::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="30" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="30" cy="70" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="70" cy="80" r="1" fill="rgba(255,255,255,0.1)"/></svg>') repeat;
+    pointer-events: none;
+}
+
+.ai-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 1rem;
-    box-shadow: 0px 1px 3px rgba(0,0,0,0.05);
-  }
-  .schoolLeaderBoard > .leaderboardItem,
-  .classLeaderboard > .leaderboardItem {
-    font-size: 1rem;
-  }
+    position: relative;
+    z-index: 1;
+}
+
+.ai-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.ai-input-container {
+    position: relative;
+    margin-bottom: 1rem;
+    z-index: 1;
+}
+
+.ai-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: none;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #1e293b;
+    font-size: 0.875rem;
+    outline: none;
+}
+
+.ai-input::placeholder {
+    color: #94a3b8;
+}
+
+.ask-ai-btn {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* Bottom Section */
+.bottom-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.leaderboard-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    border-radius: 8px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 0.75rem;
+}
+
+.leaderboard-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.rank-number {
+    color: #3b82f6;
+    font-weight: 600;
+    min-width: 16px;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+}
+
+.user-name {
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.points {
+    font-weight: 600;
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+.points span {
+    color: #3b82f6;
+}
+
+/* Social Feed */
+.feed-item {
+    padding: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.feed-item:last-child {
+    border-bottom: none;
+}
+
+.feed-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.feed-user {
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.feed-time {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.feed-content {
+    color: #64748b;
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+}
+
+.feed-reactions {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.reaction {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    cursor: pointer;
+}
+.sidebar.show{
+  transform: translateX(0);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+
+    .main-content {
+        margin-left: 0;
+        padding: 1rem;
+    }
+    .nav-btn{
+        display: flex;
+    }
+    .profile-btn{
+      display: none;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .classes-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bottom-section {
+        grid-template-columns: 1fr;
+    }
 }
