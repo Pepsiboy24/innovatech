@@ -1,274 +1,364 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Mangment</title>
-  <link rel="stylesheet" href="../../styles/navbarStyles.css">
-  <link rel="stylesheet" href="../../styles/schoolAdminStyles/students.css">
-  <link rel="stylesheet" href="../../styles/teachersPortalStyles/listOfStudents.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management</title>
+    <link rel="stylesheet" href="../../styles/schoolAdminStyles/students.css">
 </head>
 <body>
-  <div class="wrapper">
-    <div class="sidebar-container" data-sidebar>
-        <div class="sidebar" data-sidebarBar>
-          <header>
-            <h4>
-             School Admin
-            </h4>
-          <div class="sideBarClsoeIcon" data-sideBarClose><i class="fa fa-times"></i></div>
-   
-          </header>
-          <div class="content">
-            <ul>
-             <div class="item">
-               <li><a href="#"><i class="fa fa-tachometer-alt"></i> Dashboard</a></li>
-             </div>
-             <div class="item">
-               <li><a href="./listOfStudents.html"><i class="fa fa-user-graduate"></i> Students</a></li>
-             </div>
-             <div class="item">
-               <li><a href="./listOfStudents.html"><i class="fa fa-person-chalkboard"></i> Teachers</a></li>
-             </div>
-             <div class="item">
-               <li><a href="./attendance.html"><i class="fa fa-calendar-days"></i> Schedule</a></li>
-             </div>
-             <div class="item">
-               <li><a href="./attendance.html"><i class="fa fa-chart-column"></i> Attendance</a></li>
-             </div>
-             <div class="item">
-               <li><a href="./attendance.html"><i class="fas fa-receipt"></i> Recipts</a></li>
-             </div>
-            </ul>
-            <div class="profileSettings">
-              <div class="userSettings">
-                <a href="#"><i class="fa fa-user"></i> <span> UserName</span></a>
-              </div>
-              <div class="logout">
-                <button>Logout</button>
-              </div>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" data-sidebar>
+            <div class="logo">
+                <div>School Admin</div>
+                <div class="icon" data-sideBarClose><i class="fa fa-times"></i></div>
             </div>
-          </div>
-         </div>
-       </div>
-
-       <header>
-        <div class="welcomeMsg">
-          <h2>Student Management</h2>
-          <!-- <p>Tuesday, 15 September 2025</p> -->
+            <nav>
+                <a href="#" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="#" class="nav-item active">
+                    <svg class="nav-icon" viewBox="0 0 20 20">
+                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                    </svg>
+                    Students
+                </a>
+                <a href="#" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 20 20">
+                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+                    </svg>
+                    Teachers
+                </a>
+                <a href="#" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                    </svg>
+                    Schedule
+                </a>
+                <a href="#" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    Attendance
+                </a>
+                <a href="#" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 20 20">
+                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                        <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd" />
+                    </svg>
+                    Receipts
+                </a>
+            </nav>
+            
+            <div class="profile-settings">
+                <div class="user-settings">
+                    <a href="#">
+                        <svg style="width: 16px; height: 16px; margin-right: 8px;" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                        </svg>
+                        UserName
+                    </a>
+                </div>
+                <button class="logout-btn">Logout</button>
+            </div>
         </div>
-        <div class="profilePic">
-          <div class="icon"><i class="fa fa-bell"></i></div>
-          <div class=" icon sideBarOpenIcon" data-sideBarOpen><i class="fa fa-bars"></i></div>
-          <!-- <div class="icon user"><i class="fa fa-user"></i></div> -->
+
+        <!-- Main Content -->
+        <div class="main">
+            <div class="header">
+                <div class="header-top">
+                    <div class="header-left">
+                        <button class="mobile-menu-btn" id="mobileMenuBtn" data-sideBarOpen>
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <h1 class="page-title">Student Management</h1>
+                    </div>
+                    <div class="header-right">
+                        <button class="notification-btn">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+                            </svg>
+                        </button>
+                        <div class="profile"></div>
+                    </div>
+                </div>
+                
+                <div class="search-container">
+                    <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input type="text" class="search-input" placeholder="Search students...">
+                </div>
+            </div>
+
+            <!-- Action Cards -->
+            <div class="action-cards">
+                <div class="action-card" onclick="addSingleStudent()">
+                    <div class="action-icon add-single">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"/>
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3>Add New Student</h3>
+                        <p>Add a single student to the system</p>
+                    </div>
+                </div>
+                
+                <div class="action-card" onclick="uploadExcelSheet()">
+                    <div class="action-icon add-multiple">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3>Upload Excel Sheet</h3>
+                        <p>Bulk import students from Excel file</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Students Table -->
+            <div class="students-section">
+                <div class="section-header">
+                    <h2 class="section-title">Students List</h2>
+                    <div class="filter-tabs">
+                        <div class="filter-tab active">All</div>
+                        <div class="filter-tab">Primary</div>
+                        <div class="filter-tab">Secondary</div>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="students-table">
+                    <thead class="table-header">
+                        <tr>
+                            <th>Student</th>
+                            <th>Age</th>
+                            <th>Class</th>
+                            <th>Attendance</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="student-row">
+                            <td>
+                                <div class="student-info">
+                                    <div class="student-avatar">SC</div>
+                                    <div class="student-details">
+                                        <h4>Sean Cook</h4>
+                                        <p>Student ID: #ST001</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>13</td>
+                            <td>
+                                <div class="class-badge">PRY <span>5B</span></div>
+                            </td>
+                            <td>
+                                <div class="attendance-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 85%;"></div>
+                                    </div>
+                                    <span class="attendance-percent">85%</span>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="#" class="action-btn">View Details</a>
+                            </td>
+                        </tr>
+                        
+                        <tr class="student-row">
+                            <td>
+                                <div class="student-info">
+                                    <div class="student-avatar">JS</div>
+                                    <div class="student-details">
+                                        <h4>John Smith</h4>
+                                        <p>Student ID: #ST002</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>14</td>
+                            <td>
+                                <div class="class-badge">PRY <span>5A</span></div>
+                            </td>
+                            <td>
+                                <div class="attendance-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 92%;"></div>
+                                    </div>
+                                    <span class="attendance-percent">92%</span>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="#" class="action-btn">View Details</a>
+                            </td>
+                        </tr>
+                        
+                        <tr class="student-row">
+                            <td>
+                                <div class="student-info">
+                                    <div class="student-avatar">SJ</div>
+                                    <div class="student-details">
+                                        <h4>Sarah Johnson</h4>
+                                        <p>Student ID: #ST003</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>16</td>
+                            <td>
+                                <div class="class-badge">SEC <span>2A</span></div>
+                            </td>
+                            <td>
+                                <div class="attendance-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 78%;"></div>
+                                    </div>
+                                    <span class="attendance-percent">78%</span>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="#" class="action-btn">View Details</a>
+                            </td>
+                        </tr>
+                        
+                        <tr class="student-row">
+                            <td>
+                                <div class="student-info">
+                                    <div class="student-avatar">MB</div>
+                                    <div class="student-details">
+                                        <h4>Mike Brown</h4>
+                                        <p>Student ID: #ST004</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>15</td>
+                            <td>
+                                <div class="class-badge">SEC <span>1B</span></div>
+                            </td>
+                            <td>
+                                <div class="attendance-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 88%;"></div>
+                                    </div>
+                                    <span class="attendance-percent">88%</span>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="#" class="action-btn">View Details</a>
+                            </td>
+                        </tr>
+                        
+                        <tr class="student-row">
+                            <td>
+                                <div class="student-info">
+                                    <div class="student-avatar">EM</div>
+                                    <div class="student-details">
+                                        <h4>Emma Wilson</h4>
+                                        <p>Student ID: #ST005</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>12</td>
+                            <td>
+                                <div class="class-badge">PRY <span>4C</span></div>
+                            </td>
+                            <td>
+                                <div class="attendance-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 95%;"></div>
+                                    </div>
+                                    <span class="attendance-percent">95%</span>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="#" class="action-btn">View Details</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
         </div>
-
-        <!-- Side bar -->
-      </header>
-
-      <div class="addNewStudents">
-        <div class="addsSingleStudent add">
-          <div class="icon"><i class="fa fa-user"></i></div>
-          <h2>Add One New Student</h2>
-        </div>
-        <div class="addsMultipleStudent add">
-          <div class="icon"><i class="fa fa-file-excel"></i></div>
-          <h2>Upload Excel Sheet</h2>
-        </div>
-      </div>
-
-
-
-      <!-- List of Students -->
-       <div class="studentsList">
-        <header>
-          <h3>Students</h3>
-        </header>
-
-        <div class="studentList">
-          <header>
-            <p class=" header nameHeader">Students Name</p>
-            <p class=" header ageHeader">Age</p>
-            <p class=" header classHeader">Class</p>
-            <p class=" header performanceHeader">Attendance</p>
-            <p class=" header actionHeader">Action</p>
-          </header>
-          <div class="studentItem">
-            <div class="studentName item">
-              <div class="icon"><i class="fa fa-user"></i></div>
-              <p>Sean Cook</p>
-            </div>
-            <p class="studentAge item">13</p>
-            <div class="studentClass item">
-              <p>PRY <span>5B</span></p>
-            </div>
-            <div class="studentPerformance item">
-              <div class="performance">
-                <div class="performanceBar"></div>
-              </div>
-              <span>80%</span>
-            </div>
-            <div class="action item">
-              <a href="#">View All</a>
-            </div>
-          </div>
-          <div class="studentItem">
-            <div class="studentName item">
-              <div class="icon"><i class="fa fa-user"></i></div>
-              <p>John Smith</p>
-            </div>
-            <p class="studentAge item">13</p>
-            <div class="studentClass item">
-              <p>PRY <span>5B</span></p>
-            </div>
-            <div class="studentPerformance item">
-              <div class="performance">
-                <div class="performanceBar"></div>
-              </div>
-              <span>80%</span>
-            </div>
-            <div class="action item">
-              <a href="#">View All</a>
-            </div>
-          </div>
-          <div class="studentItem">
-            <div class="studentName item">
-              <div class="icon"><i class="fa fa-user"></i></div>
-              <p>John Smith</p>
-            </div>
-            <p class="studentAge item">13</p>
-            <div class="studentClass item">
-              <p>PRY <span>5B</span></p>
-            </div>
-            <div class="studentPerformance item">
-              <div class="performance">
-                <div class="performanceBar"></div>
-              </div>
-              <span>80%</span>
-            </div>
-            <div class="action item">
-              <a href="#">View All</a>
-            </div>
-          </div>
-          <div class="studentItem">
-            <div class="studentName item">
-              <div class="icon"><i class="fa fa-user"></i></div>
-              <p>John Smith</p>
-            </div>
-            <p class="studentAge item">13</p>
-            <div class="studentClass item">
-              <p>PRY <span>5B</span></p>
-            </div>
-            <div class="studentPerformance item">
-              <div class="performance">
-                <div class="performanceBar"></div>
-              </div>
-              <span>80%</span>
-            </div>
-            <div class="action item">
-              <a href="#">View All</a>
-            </div>
-          </div>
-          <div class="studentItem">
-            <div class="studentName item">
-              <div class="icon"><i class="fa fa-user"></i></div>
-              <p>John Smith</p>
-            </div>
-            <p class="studentAge item">13</p>
-            <div class="studentClass item">
-              <p>PRY <span>5B</span></p>
-            </div>
-            <div class="studentPerformance item">
-              <div class="performance">
-                <div class="performanceBar"></div>
-              </div>
-              <span>80%</span>
-            </div>
-            <div class="action item">
-              <a href="#">View All</a>
-            </div>
-          </div>
-          <div class="studentItem">
-            <div class="studentName item">
-              <div class="icon"><i class="fa fa-user"></i></div>
-              <p>John Smith</p>
-            </div>
-            <p class="studentAge item">13</p>
-            <div class="studentClass item">
-              <p>PRY <span>5B</span></p>
-            </div>
-            <div class="studentPerformance item">
-              <div class="performance">
-                <div class="performanceBar"></div>
-              </div>
-              <span>80%</span>
-            </div>
-            <div class="action item">
-              <a href="#">View All</a>
-            </div>
-          </div>
-          <div class="studentItem">
-            <div class="studentName item">
-              <div class="icon"><i class="fa fa-user"></i></div>
-              <p>Sarah Johnson</p>
-            </div>
-            <p class="studentAge item">16</p>
-            <div class="studentClass item">
-              <p>PRY <span>5B</span></p>
-            </div>
-            <div class="studentPerformance item">
-              <div class="performance">
-                <div class="performanceBar"></div>
-              </div>
-              <span>80%</span>
-            </div>
-            <div class="action item">
-              <a href="#">View All</a>
-            </div>
-          </div>
-          <div class="studentItem">
-            <div class="studentName item">
-              <div class="icon"><i class="fa fa-user"></i></div>
-              <p>Sarah Johnson</p>
-            </div>
-            <p class="studentAge item">16</p>
-            <div class="studentClass item">
-              <p>PRY <span>5B</span></p>
-            </div>
-            <div class="studentPerformance item">
-              <div class="performance">
-                <div class="performanceBar"></div>
-              </div>
-              <span>80%</span>
-            </div>
-            <div class="action item">
-              <a href="#">View All</a>
-            </div>
-          </div>
-          <div class="studentItem">
-            <div class="studentName item">
-              <div class="icon"><i class="fa fa-user"></i></div>
-              <p>Sarah Johnson</p>
-            </div>
-            <p class="studentAge item">16</p>
-            <div class="studentClass item">
-              <p>PRY <span>5B</span></p>
-            </div>
-            <div class="studentPerformance item">
-              <div class="performance">
-                <div class="performanceBar"></div>
-              </div>
-              <span>80%</span>
-            </div>
-            <div class="action item">
-              <a href="#">View All</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
     </div>
-    <script src="../../scripts/fontawesome.js"></script>
-    <script src="../../scripts/sideBar.js"></script>
-  </body>
+
+    <script>
+        // Navigation functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Search functionality
+            const searchInput = document.querySelector('.search-input');
+            const studentRows = document.querySelectorAll('.student-row');
+
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                
+                studentRows.forEach(row => {
+                    const studentName = row.querySelector('.student-details h4').textContent.toLowerCase();
+                    const studentId = row.querySelector('.student-details p').textContent.toLowerCase();
+                    
+                    if (studentName.includes(searchTerm) || studentId.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+
+            // Filter tabs functionality
+            const filterTabs = document.querySelectorAll('.filter-tab');
+            
+            filterTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    filterTabs.forEach(t => t.classList.remove('active'));
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    const filterType = this.textContent.toLowerCase();
+                    
+                    studentRows.forEach(row => {
+                        const classText = row.querySelector('.class-badge').textContent.toLowerCase();
+                        
+                        if (filterType === 'all') {
+                            row.style.display = '';
+                        } else if (filterType === 'primary' && classText.includes('pry')) {
+                            row.style.display = '';
+                        } else if (filterType === 'secondary' && classText.includes('sec')) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            // Navigation item clicks
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        });
+
+        // Action card functions
+        function addSingleStudent() {
+            alert('Add Single Student functionality would be implemented here');
+        }
+
+        function uploadExcelSheet() {
+            alert('Upload Excel Sheet functionality would be implemented here');
+        }
+    </script>
+    <script src="../../scripts/font-awesome.js"></script>
+    <script src="../../scripts/side.js"></script>
+</body>
 </html>

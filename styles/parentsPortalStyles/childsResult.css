@@ -1,97 +1,389 @@
-/* Achievements Section Styles */
-.achievements{
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1rem;
-}
-.achievements > .achievement{
-  /* width: 24%; */
-  height: 150px;
-  background-color: #ffffff;
-  padding: 1rem;
-  /* margin: 20px; */
-  border-radius: 12px;
-  /* margin: 20px; */
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 0px 1px 3px rgba(0,0,0,0.05);
-  position: relative;
-}
-.achievements > .achievement > .top{
-  height: 30%;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  /* justify-content: space-between; */
-}
-.achievements > .achievement > .top > .type{
-  color: #6B7280 
-}
-.achievements > .achievement > .top > .icon{
-  font-size: 2.3rem;
-}
-.achievements > .achievement > .top > .gradeIcon{
-  color: blue;
-}
-.achievements > .achievement > .top > .pointIcon{
-  color: gold;
-}
-.achievements > .achievement > .top > .calendarIcon{
-  color: rgb(36, 219, 36);
-}
-/* .achievements > .achievement > .top > .achivementIcon{
-  color: gold
-} */
-.achievements > .achievement > .bottom > h3{
-  font-size: 2rem;
-  font-weight: 600;
-  color: #111827;
-}
-.achievements > .achievement > .bottom{
-  width: 100%;
-  /* height: 60%; */
-  position: absolute;
-  bottom: 10px;
-}
-.achievements > .achievement > .bottom > p{
-  font-size: 1.2rem;
-  font-weight: 500;
-  color: #6B7280;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-.grades{
-  width: 100%;
-  height: 100%;
-  background: #fff;
-  padding: 1rem;
-  margin-top: 20px;
-  border-radius: 12px;
-}
-.grades > header{
-  font-size: 1.3rem;
-}
-.grades > .subjectGrades > header, .subjectGrades > .grade{
-  display: flex;
-  padding: 30px 0 20px 0;
-  border-bottom: 1px solid #ccc;
-}
-.grades > .subjectGrades > header div{
-  font-size: 1.4rem;
-}
-.subjectGrades > .grade{
-  font-size: 1.7rem;
-}
-.subjectGrades > header > .subject, .subjectGrades > .grade > .subject {
-  width: 25%;
-}
-.subjectGrades > header > .marks, .subjectGrades > .grade > .marks {
-  width: 15%;
-}
-.subjectGrades > header > .grade, .subjectGrades > .grade > .grade {
-  width: 10%;
-}
-.subjectGrades > header > .remarks, .subjectGrades > .grade > .remarks {
-  width: 10%;
-}
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            padding: 2rem 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 0 2rem 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 1.5rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-bottom: 0.5rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .user-details h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+
+        .user-details p {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 2rem;
+            color: #64748b;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-right: 3px solid transparent;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: #f1f5f9;
+            color: #3b82f6;
+            border-right-color: #3b82f6;
+        }
+
+        .nav-link i {
+            width: 18px;
+            font-size: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: white;
+            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .welcome-section h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+
+        .welcome-section p {
+            color: #64748b;
+            font-size: 1rem;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .notification-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: #f1f5f9;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .notification-btn:hover {
+            background: #e2e8f0;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border-left: 4px solid transparent;
+        }
+
+        .stat-card.average {
+            border-left-color: #10b981;
+        }
+
+        .stat-card.position {
+            border-left-color: #f59e0b;
+        }
+
+        .stat-card.attendance {
+            border-left-color: #3b82f6;
+        }
+
+        .stat-card.absent {
+            border-left-color: #ef4444;
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .stat-card.average .stat-icon {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .stat-card.position .stat-icon {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .stat-card.attendance .stat-icon {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .stat-card.absent .stat-icon {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .stat-title {
+            font-size: 0.9rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-subtitle {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        /* Grades Section */
+        .grades-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+
+        .section-header h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .grades-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .grades-table th {
+            background: #f8fafc;
+            padding: 1rem 1.5rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .grades-table td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .grades-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .subject-name {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .grade-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .grade-a {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .grade-b {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .grade-c {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .remarks {
+            font-size: 0.9rem;
+        }
+
+        .remarks.excellent {
+            color: #16a34a;
+            font-weight: 500;
+        }
+
+        .remarks.good {
+            color: #2563eb;
+            font-weight: 500;
+        }
+
+        .remarks.fair {
+            color: #d97706;
+            font-weight: 500;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .grades-table {
+                font-size: 0.85rem;
+            }
+
+            .grades-table th,
+            .grades-table td {
+                padding: 0.75rem 1rem;
+            }
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: #f1f5f9;
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: flex;
+            }
+        }
