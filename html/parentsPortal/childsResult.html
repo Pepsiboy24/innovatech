@@ -3,180 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Child's Result</title>
-    <link rel="stylesheet" href="../../styles/navbarStyles.css">
+    <title>Parent Portal - Child's Result</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../../styles/parentsPortalStyles/childsResult.css">
-    <!-- <link rel="stylesheet" href="../../assets/fontawesome-free-7.0.0-web/css/all.min.css"> -->
 </head>
 <body>
-    <div class="wrapper">
-        <div class="sidebar-container" data-sidebar>
-            <div class="sidebar" data-sidebarBar>
-              <header>
-                <h4>
-                 EdTech
-                </h4>
-              <div class="sideBarClsoeIcon" data-sideBarClose><i class="fa fa-times"></i></div>
-       
-              </header>
-              <div class="content">
-                <ul>
-                 <div class="item">
-                   <li><a href="./parentsPortal.html"><i class="fa fa-home"></i> Home</a></li>
-                 </div>
-                 <div class="item">
-                   <li><a href="#"><i class="fa fa-file"></i> Report Cards</a></li>
-                 </div>
-                 <!-- <div class="item">
-                   <li><a href="#"><i class="fa fa-envelope"></i> Message</a></li>
-                 </div> -->
-                 <div class="item">
-                   <li><a href="./payments.html"><i class="fa fa-credit-card"></i> Payments</a></li>
-                 </div>
-                </ul>
-                <div class="profileSettings">
-                  <div class="userSettings">
-                    <a href="#"><i class="fa fa-user"></i> <span> UserName</span></a>
-                  </div>
-                  <div class="logout">
-                    <button>Logout</button>
-                  </div>
+    <div class="container">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">EdTech</div>
+                <div class="user-info">
+                    <div class="user-avatar">JS</div>
+                    <div class="user-details">
+                        <h4>John Smith</h4>
+                        <p>Parent of Alex Smith</p>
+                    </div>
                 </div>
-              </div>
-             </div>
-           </div>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="./parentsPortal.html" class="nav-link">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link active">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Report Cards</span>
+                    </a>
+                </li>
+                <!-- <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-envelope"></i>
+                        <span>Messages</span>
+                    </a>
+                </li> -->
+                <li class="nav-item">
+                    <a href="./payments.html" class="nav-link">
+                        <i class="fas fa-credit-card"></i>
+                        <span>Payments</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
 
-        <header>
-      <div class="welcomeMsg">
-        <h2>Welcome back, <span>Alex</span></h2>
-        <p>Keep up the great work</p>
-      </div>
-      <div class="profilePic">
-        <div class="icon"><i class="fa fa-bell"></i></div>
-        <div class="sideBarOpenIcon icon" data-sideBarOpen><i class="fa fa-bars"></i></div>
-        <!-- <div class="icon user"><i class="fa fa-user"></i></div> -->
-      </div>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="welcome-section">
+                    <h1>Academic Performance</h1>
+                    <p>Track your child's progress and achievements</p>
+                </div>
+                <div class="header-actions">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <button class="notification-btn">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                </div>
+            </div>
 
-      <!-- Side bar -->
-    </header>
+            <!-- Statistics Grid -->
+            <div class="stats-grid">
+                <div class="stat-card average">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-title">Average Grade</div>
+                    </div>
+                    <div class="stat-value">85.2%</div>
+                    <div class="stat-subtitle">Overall performance</div>
+                </div>
 
+                <div class="stat-card position">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="stat-title">Class Position</div>
+                    </div>
+                    <div class="stat-value">5th</div>
+                    <div class="stat-subtitle">of 45 students</div>
+                </div>
 
-     <div class="achievements">
-      <div class="achievement">
-        <div class="top">
-          <div class="icon gradeIcon"><i class="fas fa-chart-line"></i></div>
-          <div class="type"><h2><span>Average</span></h2></div>
-        </div>
-        <div class="  bottom">
-          <h3>55.7%</h3>
-          <!-- <p>out of <span>100</span>%</p> -->
-        </div>
-      </div>
+                <div class="stat-card attendance">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="stat-title">Days Present</div>
+                    </div>
+                    <div class="stat-value">115</div>
+                    <div class="stat-subtitle">This semester</div>
+                </div>
 
-      <div class="achievement">
-        <div class="top">
-          <div class="icon pointIcon"><i class="fas fa-trophy"></i></div>
-          <div class="type"><h2><span>Postion in Class</span></h2></div>
-        </div>
-        <div class="  bottom">
-          <h3>5th</h3>
-          <p>of <span>45</span> students</p>
-        </div>
-      </div>
+                <div class="stat-card absent">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-times"></i>
+                        </div>
+                        <div class="stat-title">Days Absent</div>
+                    </div>
+                    <div class="stat-value">7</div>
+                    <div class="stat-subtitle">This semester</div>
+                </div>
+            </div>
 
-      <div class="achievement">
-        <div class="top">
-          <div class="icon calendarIcon"><i class="fas fa-calendar"></i></div>
-          <div class="type"><h2><span>Attendance</span></h2></div>
-        </div>
-        <div class="  bottom">
-          <h3>115</h3>
-          <p>Days Present</p>
-        </div>
-      </div>
-      <div class="achievement">
-        <div class="top">
-          <div class="icon calendarIcon"><i class="fas fa-calendar"></i></div>
-          <div class="type"><h2><span>Attendance</span></h2></div>
-        </div>
-        <div class="  bottom">
-          <h3>7</h3>
-          <p>Days Absent</p>
-        </div>
-      </div>
-
-      <!-- <div class="achievement">
-        <div class="top">
-          <div class="icon gradeIcon"><i class="fas fa-chart-line"></i></div>
-          <div class="type"><h2><span>Lowest Grade</span></h2></div>
-        </div>
-        <div class="  bottom">
-          <h3>C</h3>
-          <p><span>55.5</span>%</p>
-        </div>
-      </div> -->
+            <!-- Grades Table -->
+            <div class="grades-section">
+                <div class="section-header">
+                    <h2>Subject Grades</h2>
+                </div>
+                
+                <table class="grades-table">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>C.A (40%)</th>
+                            <th>Exam (60%)</th>
+                            <th>Total (100%)</th>
+                            <th>Grade</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="subject-name">Mathematics</td>
+                            <td>35/40</td>
+                            <td>50/60</td>
+                            <td><strong>85/100</strong></td>
+                            <td><span class="grade-badge grade-a">A</span></td>
+                            <td><span class="remarks excellent">Excellent</span></td>
+                        </tr>
+                        <tr>
+                            <td class="subject-name">English Language</td>
+                            <td>34/40</td>
+                            <td>48/60</td>
+                            <td><strong>82/100</strong></td>
+                            <td><span class="grade-badge grade-a">A</span></td>
+                            <td><span class="remarks excellent">Excellent</span></td>
+                        </tr>
+                        <tr>
+                            <td class="subject-name">History</td>
+                            <td>32/40</td>
+                            <td>46/60</td>
+                            <td><strong>78/100</strong></td>
+                            <td><span class="grade-badge grade-b">B</span></td>
+                            <td><span class="remarks good">Good</span></td>
+                        </tr>
+                        <tr>
+                            <td class="subject-name">French</td>
+                            <td>30/40</td>
+                            <td>44/60</td>
+                            <td><strong>74/100</strong></td>
+                            <td><span class="grade-badge grade-b">B</span></td>
+                            <td><span class="remarks good">Good</span></td>
+                        </tr>
+                        <tr>
+                            <td class="subject-name">Basic Science & Technology</td>
+                            <td>33/40</td>
+                            <td>47/60</td>
+                            <td><strong>80/100</strong></td>
+                            <td><span class="grade-badge grade-a">A</span></td>
+                            <td><span class="remarks excellent">Excellent</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
     </div>
-
-    <div class="grades">
-      <header>
-        <h1>Grades</h1>
-      </header>
-      <div class="subjectGrades">
-        <header>
-          <div class="subject"><h2>Subjects</h2></div>
-          <div class="marks"><h2>C.A(40%)</h2></div>
-          <div class="marks"><h2>EXAM(60%)</h2></div>
-          <div class="grade"><h2>GRADE</h2></div>
-          <div class="marks"><h2>Total(100%)</h2></div>
-          <div class="remarks"><h2>Remarks</h2></div>
-        </header>
-        <div class="grade">
-          <p class="subject">Mathematics</p>
-          <p class="marks">20</p>
-          <p class="marks">40</p>
-          <p class="grade">A</p>
-          <p class="marks">60</p>
-          <p class="remarks">Excellent</p>
-        </div>
-        <div class="grade">
-          <p class="subject">English</p>
-          <p class="marks">20</p>
-          <p class="marks">40</p>
-          <p class="grade">A</p>
-          <p class="marks">60</p>
-          <p class="remarks">Excellent</p>
-        </div>
-        <div class="grade">
-          <p class="subject">History</p>
-          <p class="marks">20</p>
-          <p class="marks">40</p>
-          <p class="grade">A</p>
-          <p class="marks">60</p>
-          <p class="remarks">Excellent</p>
-        </div>
-        <div class="grade">
-          <p class="subject">French</p>
-          <p class="marks">20</p>
-          <p class="marks">40</p>
-          <p class="grade">A</p>
-          <p class="marks">60</p>
-          <p class="remarks">Excellent</p>
-        </div>
-        <div class="grade">
-          <p class="subject">Basic Sci & Tech</p>
-          <p class="marks">20</p>
-          <p class="marks">40</p>
-          <p class="grade">A</p>
-          <p class="marks">60</p>
-          <p class="remarks">Excellent</p>
-        </div>
-      </div>
-
-    </div>
-
-    </div>
-
-    <script src="../../scripts/fontawesome.js"></script>
-    <script src="../../scripts/sideBar.js"></script>
+    <script src="../../scripts/parnetsPortalScripts/childResult.js"></script>
 </body>
 </html>
