@@ -1,4 +1,4 @@
-import { signUpUser } from "./singleStudentRegScript.js";
+import { registerNewStudent } from "./singleStudentRegScript.js";
 
 let currentStep = 1;
 const totalSteps = 3;
@@ -129,9 +129,9 @@ previousBtn.addEventListener("click", () => {
   changeStep(-1);
 });
 
-submitBtns.addEventListener("click", () => {
-  signUpUser("amramgadzama7@gmail.com", "Innovatech123!");
-});
+// submitBtns.addEventListener("click", () => {
+//   registerNewStudent("amramgadzama7@gmail.com", "Innovatech123!");
+// });
 
 
 function showError(errorId) {
@@ -190,7 +190,17 @@ function populateReview() {
                   admissionDate
                 ).toLocaleDateString()}</p>
             `;
+
+  return {
+    fullName,
+    email,
+    dateOfBirth,
+    gender,
+    classValue,
+    admissionDate,
+  };
 }
+
 
 function resetForm() {
   document.getElementById("registrationForm").reset();
@@ -200,20 +210,32 @@ function resetForm() {
 }
 
 // Form submission
+// ... (code trimmed for brevity) ...
 document
-  .getElementById("registrationForm")
-  .addEventListener("submit", function (e) {
-    e.preventDefault();
+  .getElementById("registrationForm")
+  .addEventListener("submit", async function (e) {
+    e.preventDefault();
 
-    if (validateStep(currentStep)) {
-      // Simulate form submission
-      setTimeout(() => {
-        document.getElementById("step3").classList.remove("active");
-        document.getElementById("successStep").classList.add("active");
-        document.querySelector(".buttons").style.display = "none";
-      }, 500);
-    }
-  });
+    if (validateStep(currentStep)) {
+      const fullName = document.getElementById("fullName").value;
+      const email = document.getElementById("email").value;
+//       const password = document.getElementById("password").value; // Added password retrieval
+      const dateOfBirth = document.getElementById("dateOfBirth").value;
+      const admissionDate = document.getElementById("admissionDate").value;
+      const profilePicUrl = "https://placehold.co/150x150/e8e8e8/363636?text=Profile"; // Placeholder URL
+      
+      const registrationResult = await registerNewStudent(fullName, email, "123456", dateOfBirth, admissionDate, profilePicUrl);
+
+      if (registrationResult) {
+        document.getElementById("step3").classList.remove("active");
+        document.getElementById("successStep").classList.add("active");
+        document.querySelector(".buttons").style.display = "none";
+      } else {
+        console.error("Registration failed. Please try again.");
+      }
+    }
+  });
+// ... (code trimmed for brevity) ...
 
 // Set default admission date to today
 document.getElementById("admissionDate").valueAsDate = new Date();
