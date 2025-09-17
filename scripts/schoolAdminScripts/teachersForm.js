@@ -182,10 +182,10 @@ function validateStep(step) {
                 ${errorMessages.map((msg) => `<li>${msg}</li>`).join("")}
             </ul>
         `;
-    // stepContainer.insertBefore(
-    //   errorDiv,
-    //   stepContainer.querySelector(".form-group")
-    // );
+    stepContainer.insertBefore(
+      errorDiv,
+      stepContainer.querySelector("[data-form-group]")
+    );
 
     // Scroll to top of step to show errors
     stepContainer.scrollIntoView({ behavior: "smooth", block: "start" });
