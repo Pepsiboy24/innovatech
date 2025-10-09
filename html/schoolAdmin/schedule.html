@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Academic Calendar Management</title>
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: #f9fafb;
+      }
+
+      .sidebar {
+        width: 256px;
+        background: white;
+        border-right: 1px solid #e5e7eb;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        position: fixed;
+        left: 0;
+        top: 0;
+      }
+
+      .main-content {
+        margin-left: 256px;
+        padding: 2rem;
+        min-height: 100vh;
+      }
+
+      .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+      }
+
+      .calendar-day {
+        min-height: 100px;
+        border: 1px solid #e5e7eb;
+        padding: 0.5rem;
+        background: white;
+      }
+
+      .calendar-day.prev-month,
+      .calendar-day.next-month {
+        background: #f9fafb;
+        color: #9ca3af;
+      }
+
+      .calendar-day.highlighted {
+        background: #eff6ff;
+      }
+
+      .nav-btn {
+        padding: 0.5rem 1rem;
+        border: 1px solid #d1d5db;
+        background: white;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: background 0.2s;
+      }
+
+      .nav-btn:hover {
+        background: #f9fafb;
+      }
+
+      .btn-primary {
+        background: #2563eb;
+        color: white;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: background 0.2s;
+      }
+
+      .btn-primary:hover {
+        background: #1d4ed8;
+      }
+
+      .sidebar-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.625rem 1rem;
+        color: #374151;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        width: 100%;
+        text-align: left;
+        transition: background 0.2s;
+      }
+
+      .sidebar-item:hover {
+        background: #f3f4f6;
+      }
+
+      .sidebar-item.active {
+        background: #f3f4f6;
+      }
+
+      .input-field {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        outline: none;
+      }
+
+      .input-field:focus {
+        border-color: #2563eb;
+        ring: 2px solid #2563eb;
+      }
+
+      .upload-zone {
+        border: 2px dashed #d1d5db;
+        border-radius: 0.5rem;
+        padding: 2rem;
+        text-align: center;
+      }
+
+      .day-header {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        padding: 0.75rem;
+        text-align: center;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div style="padding: 1.5rem; border-bottom: 1px solid #e5e7eb;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <svg style="color: #2563eb; width: 24px; height: 24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <h1 style="font-size: 1.25rem; font-weight: 700; color: #111827;">EduHubAdmin</h1>
+        </div>
+      </div>
+
+      <nav style="flex: 1; padding: 1rem;">
+        <button class="sidebar-item">
+          <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+          </svg>
+          <span>Dashboard</span>
+        </button>
+        <button class="sidebar-item active">
+          <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          <span>Academic Calendar</span>
+        </button>
+        <button class="sidebar-item">
+          <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span>Events Calendar</span>
+        </button>
+        <button class="sidebar-item">
+          <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+          <span>Holiday Calendar</span>
+        </button>
+      </nav>
+
+      <div style="padding: 1rem; border-top: 1px solid #e5e7eb;">
+        <button class="sidebar-item">
+          <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+          <span>Admin Settings</span>
+        </button>
+        <button class="sidebar-item">
+          <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
+          <span>System Status</span>
+        </button>
+      </div>
+
+      <div style="padding: 1rem; border-top: 1px solid #e5e7eb;">
+        <p style="font-size: 0.75rem; color: #6b7280;">
+          Made with <span style="color: #2563eb; font-weight: 600;">Visily</span>
+        </p>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div style="max-width: 1400px; margin: 0 auto;">
+        <!-- Header -->
+        <div style="margin-bottom: 2rem;">
+          <h1 style="font-size: 2.25rem; font-weight: 700; color: #111827; margin-bottom: 0.75rem;">
+            Academic Calendar Management
+          </h1>
+          <p style="color: #6b7280; font-size: 1rem;">
+            Oversee and manage all academic schedules, event deadlines, and holiday periods. Create new calendars and upload external schedule files with ease.
+          </p>
+        </div>
+
+        <div style="display: flex; gap: 2rem;">
+          <!-- Calendar Section -->
+          <div style="flex: 1;">
+            <div style="background: white; border-radius: 0.5rem; border: 1px solid #e5e7eb; padding: 1.5rem;">
+              <!-- Calendar Header -->
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.5rem; font-weight: 700; color: #111827;">Academic Calendar</h2>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <button class="nav-btn" onclick="changeMonth(-1)">
+                    <svg style="width: 20px; height: 20px; display: inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                  </button>
+                  <button class="nav-btn" onclick="goToToday()">Today</button>
+                  <button class="nav-btn" onclick="changeMonth(1)">
+                    <svg style="width: 20px; height: 20px; display: inline;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                  </button>
+                  <span id="monthYear" style="font-size: 1.125rem; font-weight: 600; color: #111827; min-width: 160px; margin-left: 0.5rem;"></span>
+                </div>
+              </div>
+
+              <!-- Calendar Grid -->
+              <div style="border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden;">
+                <!-- Day Headers -->
+                <div class="calendar-grid">
+                  <div class="day-header">SUN</div>
+                  <div class="day-header">MON</div>
+                  <div class="day-header">TUE</div>
+                  <div class="day-header">WED</div>
+                  <div class="day-header">THU</div>
+                  <div class="day-header">FRI</div>
+                  <div class="day-header">SAT</div>
+                </div>
+
+                <!-- Calendar Days -->
+                <div id="calendarDays" class="calendar-grid"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Sidebar -->
+          <div style="width: 320px;">
+            <div style="background: white; border-radius: 0.5rem; border: 1px solid #e5e7eb; padding: 1.5rem; position: sticky; top: 2rem;">
+              <!-- Header with Button -->
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+                <h3 style="font-size: 1.125rem; font-weight: 700; color: #111827;">Calendar Management</h3>
+                <button class="btn-primary" style="display: flex; align-items: center; gap: 0.5rem;">
+                  <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                  </svg>
+                  Add New Event
+                </button>
+              </div>
+
+              <!-- Create New Calendar -->
+              <div style="margin-bottom: 2rem;">
+                <h4 style="font-size: 1rem; font-weight: 700; color: #111827; margin-bottom: 1rem;">Create New Calendar</h4>
+
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                  <div>
+                    <label style="display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.5rem;">
+                      Calendar Name
+                    </label>
+                    <input type="text" class="input-field" placeholder="e.g., Spring 2025 Semester">
+                  </div>
+
+                  <div>
+                    <label style="display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.5rem;">
+                      Description
+                    </label>
+                    <input type="text" class="input-field" placeholder="Optional brief description">
+                  </div>
+
+                  <button class="btn-primary" style="width: 100%; padding: 0.625rem;">Create Calendar</button>
+                </div>
+              </div>
+
+              <!-- Upload Calendar File -->
+              <div>
+                <h4 style="font-size: 1rem; font-weight: 700; color: #111827; margin-bottom: 1rem;">Upload Calendar File</h4>
+
+                <div class="upload-zone">
+                  <div style="display: flex; flex-direction: column; align-items: center;">
+                    <svg style="width: 32px; height: 32px; color: #9ca3af; margin-bottom: 0.75rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                    <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">
+                      Drag and drop files here, or
+                    </p>
+                    <button style="font-size: 0.875rem; font-weight: 500; color: #2563eb; background: none; border: none; cursor: pointer; margin-bottom: 0.75rem;">
+                      Browse Files
+                    </button>
+                    <p style="font-size: 0.75rem; color: #9ca3af;">
+                      .ics, .csv, or .xlsx files
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      let currentDate = new Date(2025, 9, 1);
+
+      function renderCalendar() {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const startingDayOfWeek = firstDay.getDay();
+        const daysInMonth = lastDay.getDate();
+
+        const monthYear = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+        document.getElementById('monthYear').textContent = monthYear;
+
+        const calendarDays = document.getElementById('calendarDays');
+        calendarDays.innerHTML = '';
+
+        const prevMonthLastDay = new Date(year, month, 0).getDate();
+        for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+          const day = prevMonthLastDay - i;
+          const dayDiv = document.createElement('div');
+          dayDiv.className = 'calendar-day prev-month';
+          dayDiv.innerHTML = `<span style="font-size: 0.875rem;">${day}</span>`;
+          calendarDays.appendChild(dayDiv);
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+          const dayDiv = document.createElement('div');
+          dayDiv.className = 'calendar-day' + (day === 7 ? ' highlighted' : '');
+          dayDiv.innerHTML = `<span style="font-size: 0.875rem; font-weight: 500; color: #111827;">${day}</span>`;
+          calendarDays.appendChild(dayDiv);
+        }
+
+        const totalCells = calendarDays.children.length;
+        const remainingCells = 42 - totalCells;
+        for (let day = 1; day <= remainingCells; day++) {
+          const dayDiv = document.createElement('div');
+          dayDiv.className = 'calendar-day next-month';
+          dayDiv.innerHTML = `<span style="font-size: 0.875rem;">${day}</span>`;
+          calendarDays.appendChild(dayDiv);
+        }
+      }
+
+      function changeMonth(direction) {
+        currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + direction, 1);
+        renderCalendar();
+      }
+
+      function goToToday() {
+        currentDate = new Date();
+        renderCalendar();
+      }
+
+      renderCalendar();
+    </script>
+  </body>
+</html>
