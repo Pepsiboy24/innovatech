@@ -187,7 +187,7 @@ Ensure all file paths are relative for proper asset loading.
 
 ---
 
-## 🏁 Final Words
+## Final Words
 
 InnovaTech represents the future of school management – efficient, accessible, and student-centered. By providing intuitive tools for all stakeholders, we aim to enhance educational outcomes and streamline administrative processes.
 
