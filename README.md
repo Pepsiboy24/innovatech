@@ -4,7 +4,7 @@
 
 ## What is InnovaTech?
 
-** InnovaTech** is a modern, web-based School Management System designed to streamline educational administration and enhance the learning experience for students, teachers, and parents. Built with a focus on user-friendly interfaces and comprehensive functionality, EduHub provides:
+**InnovaTech** is a modern, web-based School Management System designed to streamline educational administration and enhance the learning experience for students, teachers, and parents. Built with a focus on user-friendly interfaces and comprehensive functionality, EduHub provides:
 
 - **Multi-Role Dashboards** – Dedicated portals for students, teachers, parents, and school administrators.
 - **Real-Time Analytics** – Track attendance, performance, and school metrics.
