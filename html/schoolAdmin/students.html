@@ -490,11 +490,110 @@
             alert('Add Single Student functionality would be implemented here');
         }
 
-        function uploadExcelSheet() {
-            alert('Upload Excel Sheet functionality would be implemented here');
+        async function uploadExcelSheet() {
+            // Create a modal or overlay for the upload interface
+            const modal = document.createElement('div');
+            modal.className = 'upload-modal';
+            modal.innerHTML = `
+                <div class="upload-modal-content">
+                    <div class="upload-modal-header">
+                        <h2>Upload Student Excel Sheet</h2>
+                        <button class="close-modal" onclick="closeUploadModal()">&times;</button>
+                    </div>
+                    <div class="upload-modal-body">
+                        <p>Please upload an Excel file with the following columns:</p>
+                        <ul>
+                            <li>Full Name (required)</li>
+                            <li>Email (required)</li>
+                            <li>Date of Birth (optional)</li>
+                            <li>Gender (optional)</li>
+                            <li>Admission Date (optional)</li>
+                        </ul>
+                        <div id="dragDropContainer"></div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Import the multiple student registration module
+            const { createDragDropArea } = await import('../../scripts/schoolAdminScripts/multipleStudentReg.js');
+
+            // Create and append the drag-drop area
+            const dragDropArea = createDragDropArea();
+            document.getElementById('dragDropContainer').appendChild(dragDropArea);
+
+            // Add some basic styling for the modal
+            const style = document.createElement('style');
+            style.textContent = `
+                .upload-modal {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000;
+                }
+                .upload-modal-content {
+                    background: white;
+                    padding: 20px;
+                    border-radius: 8px;
+                    max-width: 500px;
+                    width: 90%;
+                }
+                .upload-modal-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 20px;
+                }
+                .close-modal {
+                    background: none;
+                    border: none;
+                    font-size: 24px;
+                    cursor: pointer;
+                }
+                #dragDropArea {
+                    border: 2px dashed #ccc;
+                    border-radius: 8px;
+                    padding: 40px;
+                    text-align: center;
+                    margin: 20px 0;
+                    transition: border-color 0.3s;
+                }
+                #dragDropArea.drag-over {
+                    border-color: #007bff;
+                    background-color: #f8f9fa;
+                }
+                .drag-drop-content h3 {
+                    margin: 10px 0;
+                    color: #333;
+                }
+                .drag-drop-content p {
+                    color: #666;
+                }
+                .file-link {
+                    color: #007bff;
+                    cursor: pointer;
+                    text-decoration: underline;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        function closeUploadModal() {
+            const modal = document.querySelector('.upload-modal');
+            if (modal) {
+                modal.remove();
+            }
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="../../scripts/config.js"></script>
     <script src="../../scripts/font-awesome.js"></script>
     <script src="../../scripts/side.js"></script>
