@@ -215,6 +215,17 @@ function changeStep(direction) {
     });
   }
 }
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
+
+prevBtn.addEventListener("click", () => {
+  changeStep(-1)
+})
+
+nextBtn.addEventListener("click", () => {
+  changeStep(1);
+});
+
 
 function populateReview() {
   const formData = new FormData(document.getElementById("teacherForm"));
@@ -490,7 +501,7 @@ function startAutoSave() {
 }
 
 // Form submission
-document.getElementById("teacherForm").addEventListener("submit", function (e) {
+document.getElementById("teacherForm").addEventListener("submit", async function (e) {
   e.preventDefault();
 
   if (!validateStep(currentStep)) {
@@ -503,19 +514,50 @@ document.getElementById("teacherForm").addEventListener("submit", function (e) {
   submitBtn.textContent = "Submitting...";
   submitBtn.disabled = true;
 
-  // Simulate form submission
-  setTimeout(() => {
-    document.getElementById("step7").classList.remove("active");
-    document.getElementById("successStep").classList.add("active");
-    document.querySelector(".buttons").style.display = "none";
+  try {
+    // Collect form data
+    const formData = new FormData(this);
+    const teacherData = {};
 
-    // Clear saved data after successful submission
-    window.tempFormData = null;
+    // Process regular fields
+    for (let [key, value] of formData.entries()) {
+      if (teacherData[key]) {
+        // Handle multiple values (checkboxes)
+        if (Array.isArray(teacherData[key])) {
+          teacherData[key].push(value);
+        } else {
+          teacherData[key] = [teacherData[key], value];
+        }
+      } else {
+        teacherData[key] = value;
+      }
+    }
 
+    // Import the register function
+    const { registerNewTeacher } = await import('./teachersFormDB.js');
+
+    // Submit to database
+    const success = await registerNewTeacher(teacherData);
+
+    if (success) {
+      document.getElementById("step7").classList.remove("active");
+      document.getElementById("successStep").classList.add("active");
+      document.querySelector(".buttons").style.display = "none";
+
+      // Clear saved data after successful submission
+      window.tempFormData = null;
+    } else {
+      // Show error message
+      alert("Failed to register teacher. Please try again.");
+    }
+  } catch (error) {
+    console.error("Submission error:", error);
+    alert("An error occurred during submission. Please try again.");
+  } finally {
     // Reset submit button
     submitBtn.textContent = originalText;
     submitBtn.disabled = false;
-  }, 1500);
+  }
 });
 
 // Add keyboard navigation

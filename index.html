@@ -273,11 +273,10 @@
             <button type="submit" class="signin-btn">Sign In</button>
         </form>
         
-        <p class="signup-link">
+        <!-- <p class="signup-link">
             Don't have an account? <a href="#" onclick="showSignup()">Sign up</a>
-        </p>
+        </p> -->
     </div>
-
     <script>
         // Role tab functionality
         const roleTabs = document.querySelectorAll('.role-tab');
@@ -338,15 +337,26 @@
             
             // Simulate login process
             if (email && password) {
-                alert(`Logging in as ${selectedRole}...\nEmail: ${email}\nRemember me: ${remember}`);
+                // alert(`Logging in as ${selectedRole}...\nEmail: ${email}\nRemember me: ${remember}`);
                 
                 // Here you would typically send the data to your backend
-                console.log('Login attempt:', {
-                    role: selectedRole,
-                    email: email,
-                    password: password,
-                    remember: remember
-                });
+                // console.log('Login attempt:', {
+                //     role: selectedRole,
+                //     email: email,
+                //     password: password,
+                //     remember: remember
+                // });
+            }
+
+            if(email === "admin@gmail.com" || password === "admin") {
+                console.log(selectedRole)
+                if(selectedRole === "admin"){
+                    window.location.href = "./html/schoolAdmin/schoolAdminDashboard.html";
+                }else if(selectedRole === "student"){
+                    window.location.href = "./html/studentsPortal/studentPortal.html";
+                }else if(selectedRole === "teacher"){
+                    window.location.href = "./html/teachersPortal/teachersPortal.html";
+                }
             }
         });
 
