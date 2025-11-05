@@ -30,14 +30,6 @@
                     <i class="fas fa-book"></i>
                     Study Materials
                 </a>
-                <a href="./Social.html" class="nav-item">
-                    <i class="fas fa-users"></i>
-                    Social
-                </a>
-                <a href="./teacherMessaging.html" class="nav-item">
-                    <i class="fas fa-envelope"></i>
-                    Message Teachers
-                </a>
             </nav>
         </aside>
 
@@ -56,7 +48,7 @@
                     <button class="profile-btn">
                         A
                     </button>
-                    <button class="nav-btn" data-nav-dispaly>
+                    <button class="nav-btn" data-nav-display>
                       <i class="fa fa-bars" data-ie></i>
                     </button>
                 </div>
@@ -200,72 +192,16 @@
                         <span class="points"><span>2,650</span> pts</span>
                     </div>
                 </section>
-
-                <!-- Social Feed -->
-                <section class="section">
-                    <div class="section-header">
-                        <h2 class="section-title">Social Feed</h2>
-                    </div>
-                    <div class="feed-item">
-                        <div class="feed-header">
-                            <div class="user-avatar">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <div>
-                                <span class="feed-user">Emma Wilson</span>
-                                <div class="feed-time">10 mins ago</div>
-                            </div>
-                        </div>
-                        <div class="feed-content">
-                            Anyone want to join our study group for tomorrow's math test?
-                        </div>
-                        <div class="feed-reactions">
-                            <div class="reaction">
-                                <i class="fas fa-heart"></i>
-                                <span>12</span>
-                            </div>
-                            <div class="reaction">
-                                <i class="fas fa-comment"></i>
-                                <span>5</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="feed-item">
-                        <div class="feed-header">
-                            <div class="user-avatar">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <div>
-                                <span class="feed-user">David Chen</span>
-                                <div class="feed-time">1 hour ago</div>
-                            </div>
-                        </div>
-                        <div class="feed-content">
-                            Just finished the chemistry project! Check it out 🧪
-                        </div>
-                        <div class="feed-reactions">
-                            <div class="reaction">
-                                <i class="fas fa-heart"></i>
-                                <span>24</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
             </div>
         </main>
     </div>
     <script>
-      const navOpen = document.querySelector("[data-nav-dispaly]");
+      const navOpen = document.querySelector("[data-nav-display]");
       const nav = document.querySelector("[data-nav]");
       const i = document.querySelector("[data-ie]")
       navOpen.addEventListener("click", () => {
-        if(i.className == "fa fa-bars"){
-          i.className = "";
-          i.classList.add("fa", "fa-times");
-        }else if(i.className == "fa fa-times"){
-          i.className = "";
-          i.classList.add("fa", "fa-bars");
-        }
+        i.classList.toggle("fa-bars");
+        i.classList.toggle("fa-times");
         nav.classList.toggle("show")
       })
 
@@ -363,28 +299,7 @@
       // Initialize ranking
       updateLeaderboard();
 
-      // Social Feed functionality
-      const feedItems = document.querySelectorAll('.feed-item');
-      feedItems.forEach(item => {
-        const heartBtn = item.querySelector('.fa-heart');
-        const commentBtn = item.querySelector('.fa-comment');
-        const heartCount = item.querySelector('.reaction:has(.fa-heart) span');
-        const commentCount = item.querySelector('.reaction:has(.fa-comment) span');
 
-        let isLiked = false;
-        let likes = parseInt(heartCount.textContent);
-
-        heartBtn.addEventListener('click', () => {
-          isLiked = !isLiked;
-          heartBtn.style.color = isLiked ? '#e53e3e' : '#718096';
-          heartCount.textContent = isLiked ? likes + 1 : likes;
-        });
-
-        commentBtn.addEventListener('click', () => {
-          const currentComments = parseInt(commentCount.textContent);
-          commentCount.textContent = currentComments + 1;
-        });
-      });
     </script>
 </body>
 </html>

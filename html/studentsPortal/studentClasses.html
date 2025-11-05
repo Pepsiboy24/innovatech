@@ -30,14 +30,7 @@
                     <i class="fas fa-book"></i>
                     Study Materials
                 </a>
-                <a href="./Social.html" class="nav-item">
-                    <i class="fas fa-users"></i>
-                    Social
-                </a>
-                <a href="./teacherMessaging.html" class="nav-item">
-                    <i class="fas fa-envelope"></i>
-                    Message Teachers
-                </a>
+
             </nav>
         </aside>
 
@@ -56,7 +49,7 @@
                     <button class="profile-btn">
                         A
                     </button>
-                    <button class="nav-btn" data-nav-dispaly>
+                    <button class="nav-btn" data-nav-display>
                       <i class="fa fa-bars" data-ie></i>
                     </button>
                 </div>
@@ -264,17 +257,12 @@
     </div>
 
     <script>
-      const navOpen = document.querySelector("[data-nav-dispaly]");
+      const navOpen = document.querySelector("[data-nav-display]");
       const nav = document.querySelector("[data-nav]");
       const i = document.querySelector("[data-ie]")
       navOpen.addEventListener("click", () => {
-        if(i.className == "fa fa-bars"){
-          i.className = "";
-          i.classList.add("fa", "fa-times");
-        }else if(i.className == "fa fa-times"){
-          i.className = "";
-          i.classList.add("fa", "fa-bars");
-        }
+        i.classList.toggle("fa-bars");
+        i.classList.toggle("fa-times");
         nav.classList.toggle("show")
       })
     </script>
