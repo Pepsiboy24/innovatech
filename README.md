@@ -175,7 +175,7 @@ Ensure all file paths are relative for proper asset loading.
 3. Commit your changes (`git commit -am 'Add new feature'`)
 4. Push to the branch (`git push origin feature/new-feature`)
 5. Create a Pull Request
-6. We will respond in a jiffy.
+6. We will respond in a jiffy...
 
 ---
 
