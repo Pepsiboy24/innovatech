@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Attendance - EdTech</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background-color: #ffffff;
+            border-right: 1px solid #e9ecef;
+            padding: 24px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar.mobile-hidden {
+            transform: translateX(-100%);
+        }
+
+        .sidebar header {
+            padding: 0 24px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar header h4 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a202c;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #718096;
+            display: none;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            margin-bottom: 40px;
+        }
+
+        .sidebar .item {
+            margin-bottom: 4px;
+        }
+
+        .sidebar .item a {
+            display: flex;
+            align-items: center;
+            padding: 12px 24px;
+            text-decoration: none;
+            color: #718096;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .sidebar .item a:hover,
+        .sidebar .item a.active {
+            background-color: #ebf8ff;
+            color: #3182ce;
+        }
+
+        .sidebar .item a i {
+            width: 20px;
+            margin-right: 12px;
+            font-size: 16px;
+        }
+
+        .profile-settings {
+            position: absolute;
+            bottom: 24px;
+            left: 0;
+            right: 0;
+            padding: 0 24px;
+        }
+
+        .user-settings a {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            text-decoration: none;
+            color: #718096;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .user-settings a i {
+            margin-right: 12px;
+        }
+
+        .logout button {
+            width: 100%;
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .logout button:hover {
+            background: #c53030;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            padding: 24px 32px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.full-width {
+            margin-left: 0;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .welcome-msg h2 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 4px;
+        }
+
+        .welcome-msg p {
+            font-size: 14px;
+            color: #718096;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .notification-btn, .menu-btn {
+            width: 40px;
+            height: 40px;
+            background: #f7fafc;
+            border: none;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #4a5568;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+
+        .notification-btn:hover, .menu-btn:hover {
+            background: #edf2f7;
+        }
+
+        .menu-btn {
+            display: none;
+        }
+
+        /* Attendance Section */
+        .attendance-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a202c;
+        }
+
+        .date-class-selector {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .date-input, .class-select {
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #2d3748;
+            background: white;
+        }
+
+        .date-input:focus, .class-select:focus {
+            outline: none;
+            border-color: #3182ce;
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .quick-action-btn {
+            padding: 8px 16px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #4a5568;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-action-btn:hover {
+            background: #f7fafc;
+            border-color: #cbd5e0;
+        }
+
+        .quick-action-btn.present {
+            background: #f0fff4;
+            border-color: #9ae6b4;
+            color: #38a169;
+        }
+
+        .quick-action-btn.absent {
+            background: #fef5e7;
+            border-color: #f6ad55;
+            color: #d69e2e;
+        }
+
+        /* Attendance Table */
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .attendance-table thead th {
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 16px 12px;
+            border-bottom: 2px solid #e2e8f0;
+            background: #f8f9fa;
+        }
+
+        .attendance-table tbody tr {
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.2s;
+        }
+
+        .attendance-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .attendance-table tbody td {
+            padding: 16px 12px;
+            font-size: 14px;
+            color: #2d3748;
+            vertical-align: middle;
+        }
+
+        .student-name {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .student-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .student-info p {
+            font-weight: 500;
+            color: #2d3748;
+        }
+
+        /* Radio Button Groups */
+        .attendance-options {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .radio-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .radio-group input[type="radio"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #3182ce;
+            cursor: pointer;
+        }
+
+        .radio-group label {
+            font-size: 14px;
+            color: #4a5568;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .radio-group.present label {
+            color: #38a169;
+        }
+
+        .radio-group.absent label {
+            color: #e53e3e;
+        }
+
+        .radio-group.late label {
+            color: #d69e2e;
+        }
+
+        /* Remarks Input */
+        .remarks-input {
+            width: 100%;
+            max-width: 200px;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #2d3748;
+            background: white;
+            transition: all 0.2s;
+        }
+
+        .remarks-input:focus {
+            outline: none;
+            border-color: #3182ce;
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+        }
+
+        .remarks-input::placeholder {
+            color: #a0aec0;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            margin-top: 24px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .save-btn {
+            background: #38a169;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .save-btn:hover {
+            background: #2f855a;
+        }
+
+        .cancel-btn {
+            background: #f7fafc;
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .cancel-btn:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+        }
+
+        /* Summary Stats */
+        .attendance-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .summary-item {
+            text-align: center;
+        }
+
+        .summary-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 4px;
+        }
+
+        .summary-label {
+            font-size: 12px;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .summary-item.present .summary-number { color: #38a169; }
+        .summary-item.absent .summary-number { color: #e53e3e; }
+        .summary-item.late .summary-number { color: #d69e2e; }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.mobile-visible {
+                transform: translateX(0);
+            }
+
+            .close-btn {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+            }
+
+            .menu-btn {
+                display: flex;
+            }
+
+            .attendance-options {
+                flex-direction: column;
+                gap: 8px;
+                align-items: flex-start;
+            }
+
+            .attendance-table {
+                font-size: 12px;
+            }
+
+            .attendance-table thead th,
+            .attendance-table tbody td {
+                padding: 8px 6px;
+            }
+
+            .student-avatar {
+                width: 32px;
+                height: 32px;
+                font-size: 12px;
+            }
+
+            .remarks-input {
+                max-width: 150px;
+            }
+        }
+
+        /* Overlay for mobile sidebar */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <header>
+            <h4>EdTech</h4>
+            <button class="close-btn" id="closeSidebar">✕</button>
+        </header>
+        
+        <div class="content">
+            <ul>
+                <div class="item">
+                    <li><a href="./teachersPortal.html">🏠 Home</a></li>
+                </div>
+                <div class="item">
+                    <li><a href="./listOfStudents.html">👥 Students</a></li>
+                </div>
+                <div class="item">
+                    <li><a href="#" class="active">📋 Attendance</a></li>
+                </div>
+                <div class="item">
+                    <li><a href="#">🤖 AI Assistant</a></li>
+                </div>
+            </ul>
+            
+            <div class="profile-settings">
+                <div class="user-settings">
+                    <a href="#"><i>👤</i> <span>UserName</span></a>
+                </div>
+                <div class="logout">
+                    <button>Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <!-- Header -->
+        <header class="header">
+            <div class="welcome-msg">
+                <h2>Welcome back, <span>Mrs</span>.<span>Johnson</span></h2>
+                <p>Tuesday, 15 September 2025</p>
+            </div>
+            <div class="header-right">
+                <button class="notification-btn">🔔</button>
+                <button class="menu-btn" id="openSidebar">☰</button>
+            </div>
+        </header>
+
+        <!-- Attendance Section -->
+        <section class="attendance-section">
+            <div class="section-header">
+                <h3 class="section-title">Class Attendance</h3>
+                <div class="date-class-selector">
+                    <input type="date" class="date-input" value="2025-09-15">
+                    <select class="class-select">
+                        <option>PRY 5B</option>
+                        <option>PRY 5A</option>
+                        <option>PRY 6A</option>
+                        <option>PRY 6B</option>
+                        <option>SEC 1A</option>
+                        <option>SEC 2B</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <button class="quick-action-btn" onclick="markAllPresent()">Mark All Present</button>
+                <button class="quick-action-btn" onclick="markAllAbsent()">Mark All Absent</button>
+                <button class="quick-action-btn" onclick="clearAll()">Clear All</button>
+            </div>
+
+            <!-- Attendance Summary -->
+            <div class="attendance-summary">
+                <div class="summary-item present">
+                    <div class="summary-number" id="presentCount">0</div>
+                    <div class="summary-label">Present</div>
+                </div>
+                <div class="summary-item absent">
+                    <div class="summary-number" id="absentCount">0</div>
+                    <div class="summary-label">Absent</div>
+                </div>
+                <div class="summary-item late">
+                    <div class="summary-number" id="lateCount">0</div>
+                    <div class="summary-label">Late</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-number" id="totalCount">6</div>
+                    <div class="summary-label">Total</div>
+                </div>
+            </div>
+
+            <table class="attendance-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Attendance</th>
+                        <th>Remarks (Optional)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="student-name">
+                                <div class="student-avatar">JS</div>
+                                <div class="student-info">
+                                    <p>John Smith</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="attendance-options">
+                                <div class="radio-group present">
+                                    <input type="radio" name="attendance1" value="present" id="present1" onchange="updateSummary()">
+                                    <label for="present1">Present</label>
+                                </div>
+                                <div class="radio-group absent">
+                                    <input type="radio" name="attendance1" value="absent" id="absent1" onchange="updateSummary()">
+                                    <label for="absent1">Absent</label>
+                                </div>
+                                <div class="radio-group late">
+                                    <input type="radio" name="attendance1" value="late" id="late1" onchange="updateSummary()">
+                                    <label for="late1">Late</label>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <input type="text" class="remarks-input" placeholder="Add remarks...">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="student-name">
+                                <div class="student-avatar">SJ</div>
+                                <div class="student-info">
+                                    <p>Sarah Johnson</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="attendance-options">
+                                <div class="radio-group present">
+                                    <input type="radio" name="attendance2" value="present" id="present2" onchange="updateSummary()">
+                                    <label for="present2">Present</label>
+                                </div>
+                                <div class="radio-group absent">
+                                    <input type="radio" name="attendance2" value="absent" id="absent2" onchange="updateSummary()">
+                                    <label for="absent2">Absent</label>
+                                </div>
+                                <div class="radio-group late">
+                                    <input type="radio" name="attendance2" value="late" id="late2" onchange="updateSummary()">
+                                    <label for="late2">Late</label>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <input type="text" class="remarks-input" placeholder="Add remarks...">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="student-name">
+                                <div class="student-avatar">JD</div>
+                                <div class="student-info">
+                                    <p>John Doe</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="attendance-options">
+                                <div class="radio-group present">
+                                    <input type="radio" name="attendance3" value="present" id="present3" onchange="updateSummary()">
+                                    <label for="present3">Present</label>
+                                </div>
+                                <div class="radio-group absent">
+                                    <input type="radio" name="attendance3" value="absent" id="absent3" onchange="updateSummary()">
+                                    <label for="absent3">Absent</label>
+                                </div>
+                                <div class="radio-group late">
+                                    <input type="radio" name="attendance3" value="late" id="late3" onchange="updateSummary()">
+                                    <label for="late3">Late</label>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <input type="text" class="remarks-input" placeholder="Add remarks...">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="student-name">
+                                <div class="student-avatar">EM</div>
+                                <div class="student-info">
+                                    <p>Emma Martinez</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="attendance-options">
+                                <div class="radio-group present">
+                                    <input type="radio" name="attendance4" value="present" id="present4" onchange="updateSummary()">
+                                    <label for="present4">Present</label>
+                                </div>
+                                <div class="radio-group absent">
+                                    <input type="radio" name="attendance4" value="absent" id="absent4" onchange="updateSummary()">
+                                    <label for="absent4">Absent</label>
+                                </div>
+                                <div class="radio-group late">
+                                    <input type="radio" name="attendance4" value="late" id="late4" onchange="updateSummary()">
+                                    <label for="late4">Late</label>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <input type="text" class="remarks-input" placeholder="Add remarks...">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="student-name">
+                                <div class="student-avatar">MB</div>
+                                <div class="student-info">
+                                    <p>Michael Brown</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="attendance-options">
+                                <div class="radio-group present">
+                                    <input type="radio" name="attendance5" value="present" id="present5" onchange="updateSummary()">
+                                    <label for="present5">Present</label>
+                                </div>
+                                <div class="radio-group absent">
+                                    <input type="radio" name="attendance5" value="absent" id="absent5" onchange="updateSummary()">
+                                    <label for="absent5">Absent</label>
+                                </div>
+                                <div class="radio-group late">
+                                    <input type="radio" name="attendance5" value="late" id="late5" onchange="updateSummary()">
+                                    <label for="late5">Late</label>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <input type="text" class="remarks-input" placeholder="Add remarks...">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="student-name">
+                                <div class="student-avatar">LT</div>
+                                <div class="student-info">
+                                    <p>Lisa Thompson</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="attendance-options">
+                                <div class="radio-group present">
+                                    <input type="radio" name="attendance6" value="present" id="present6" onchange="updateSummary()">
+                                    <label for="present6">Present</label>
+                                </div>
+                                <div class="radio-group absent">
+                                    <input type="radio" name="attendance6" value="absent" id="absent6" onchange="updateSummary()">
+                                    <label for="absent6">Absent</label>
+                                </div>
+                                <div class="radio-group late">
+                                    <input type="radio" name="attendance6" value="late" id="late6" onchange="updateSummary()">
+                                    <label for="late6">Late</label>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <input type="text" class="remarks-input" placeholder="Add remarks...">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="action-buttons">
+                <button class="cancel-btn">Cancel</button>
+                <button class="save-btn">Save Attendance</button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Sidebar functionality
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const openSidebarBtn = document.getElementById('openSidebar');
+        const closeSidebarBtn = document.getElementById('closeSidebar');
+
+        function openSidebar() {
+            sidebar.classList.add('mobile-visible');
+            sidebarOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('mobile-visible');
+            sidebarOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        openSidebarBtn.addEventListener('click', openSidebar);
+        closeSidebarBtn.addEventListener('click', closeSidebar);
+        sidebarOverlay.addEventListener('click', closeSidebar);
+
+        // Attendance functionality
+        function updateSummary() {
+            const presentInputs = document.querySelectorAll('input[value="present"]:checked');
+            const absentInputs = document.querySelectorAll('input[value="absent"]:checked');
+            const lateInputs = document.querySelectorAll('input[value="late"]:checked');
+
+            document.getElementById('presentCount').textContent = presentInputs.length;
+            document.getElementById('absentCount').textContent = absentInputs.length;
+            document.getElementById('lateCount').textContent = lateInputs.length;
+        }
+
+        function markAllPresent() {
+            const presentInputs = document.querySelectorAll('input[value="present"]');
+            presentInputs.forEach(input => {
+                input.checked = true;
+            });
+            updateSummary();
+        }
+
+        function markAllAbsent() {
+            const absentInputs = document.querySelectorAll('input[value="absent"]');
+            absentInputs.forEach(input => {
+                input.checked = true;
+            });
+            updateSummary();
+        }
+
+        function clearAll() {
+            const allInputs = document.querySelectorAll('input[type="radio"]');
+            const remarkInputs = document.querySelectorAll('.remarks-input');
+            
+            allInputs.forEach(input => {
+                input.checked = false;
+            });
+            
+            remarkInputs.forEach(input => {
+                input.value = '';
+            });
+            
+            updateSummary();
+        }
+
+        // Close sidebar on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSidebar();
+            }
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                closeSidebar();
+            }
+        });
+
+        // Initialize summary on page load
+        updateSummary();
+    </script>
+</body>
+</html>

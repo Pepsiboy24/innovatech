@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Materials - EduHub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../styles/studentsPortalStyles/studyMaterials.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>EduHub</h2>
+            </div>
+            
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="./studentPortal.html" class="nav-link">
+                            <i class="fas fa-home"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-calendar-alt"></i>
+                            Classes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active">
+                            <i class="fas fa-book"></i>
+                            Study Materials
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-users"></i>
+                            Social
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="header">
+                <div class="header-top">
+                    <div class="welcome-text">
+                        <h1>Welcome back, <span class="username">Alex!</span></h1>
+                        <p>Keep up the great work</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="notification-btn" title="Notifications">
+                            <i class="fas fa-bell"></i>
+                        </button>
+                        <div class="user-avatar">A</div>
+                    </div>
+                </div>
+                
+                <div class="search-section">
+                    <i class="fas fa-search"></i>
+                    <input type="search" placeholder="Search study materials...">
+                </div>
+            </div>
+
+            <div class="content">
+                <h2 class="page-title">Study Materials</h2>
+                
+                <!-- Stats Overview -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="stat-number">12</div>
+                        <div class="stat-label">Textbooks</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-sticky-note"></i>
+                        </div>
+                        <div class="stat-number">8</div>
+                        <div class="stat-label">Notes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="stat-number">8</div>
+                        <div class="stat-label">Past Papers</div>
+                    </div>
+                </div>
+
+                <div class="materials-grid">
+                    <!-- TextBooks -->
+                    <div class="material-category textbooks">
+                        <div class="category-header">
+                            <h3 class="category-title">TextBooks</h3>
+                            <p class="category-count"><span class="number">12</span> books</p>
+                        </div>
+                        <div class="materials-list">
+                            <div class="material-item">
+                                <div class="material-info">
+                                    <div class="material-icon">
+                                        <i class="fas fa-book"></i>
+                                    </div>
+                                    <div class="material-details">
+                                        <h4>Mathematics</h4>
+                                        <div class="material-meta">
+                                            <span class="format-tag">PDF</span>
+                                            <span>15MB</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="download-btn">
+                                    <i class="fas fa-download"></i>
+                                    Download
+                                </button>
+                            </div>
+                            
+                            <div class="material-item">
+                                <div class="material-info">
+                                    <div class="material-icon">
+                                        <i class="fas fa-book"></i>
+                                    </div>
+                                    <div class="material-details">
+                                        <h4>English</h4>
+                                        <div class="material-meta">
+                                            <span class="format-tag">PDF</span>
+                                            <span>18MB</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="download-btn">
+                                    <i class="fas fa-download"></i>
+                                    Download
+                                </button>
+                            </div>
+                            
+                            <div class="material-item">
+                                <div class="material-info">
+                                    <div class="material-icon">
+                                        <i class="fas fa-book"></i>
+                                    </div>
+                                    <div class="material-details">
+                                        <h4>P.H.E</h4>
+                                        <div class="material-meta">
+                                            <span class="format-tag">PDF</span>
+                                            <span>12MB</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="download-btn">
+                                    <i class="fas fa-download"></i>
+                                    Download
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="material-category notes">
+                        <div class="category-header">
+                            <h3 class="category-title">Notes</h3>
+                            <p class="category-count"><span class="number">8</span> books</p>
+                        </div>
+                        <div class="materials-list">
+                            <div class="material-item">
+                                <div class="material-info">
+                                    <div class="material-icon">
+                                        <i class="fas fa-sticky-note"></i>
+                                    </div>
+                                    <div class="material-details">
+                                        <h4>Mathematics</h4>
+                                        <div class="material-meta">
+                                            <span class="format-tag">PDF</span>
+                                            <span>8MB</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="download-btn">
+                                    <i class="fas fa-download"></i>
+                                    Download
+                                </button>
+                            </div>
+                            
+                            <div class="material-item">
+                                <div class="material-info">
+                                    <div class="material-icon">
+                                        <i class="fas fa-sticky-note"></i>
+                                    </div>
+                                    <div class="material-details">
+                                        <h4>English</h4>
+                                        <div class="material-meta">
+                                            <span class="format-tag">PDF</span>
+                                            <span>6MB</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="download-btn">
+                                    <i class="fas fa-download"></i>
+                                    Download
+                                </button>
+                            </div>
+                            
+                            <div class="material-item">
+                                <div class="material-info">
+                                    <div class="material-icon">
+                                        <i class="fas fa-sticky-note"></i>
+                                    </div>
+                                    <div class="material-details">
+                                        <h4>P.H.E</h4>
+                                        <div class="material-meta">
+                                            <span class="format-tag">PDF</span>
+                                            <span>4MB</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="download-btn">
+                                    <i class="fas fa-download"></i>
+                                    Download
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Past Q & A -->
+                    <div class="material-category past-papers">
+                        <div class="category-header">
+                            <h3 class="category-title">Past Q & A</h3>
+                            <p class="category-count"><span class="number">8</span> Papers</p>
+                        </div>
+                        <div class="materials-list">
+                            <div class="material-item">
+                                <div class="material-info">
+                                    <div class="material-icon">
+                                        <i class="fas fa-file-alt"></i>
+                                    </div>
+                                    <div class="material-details">
+                                        <h4>Mathematics</h4>
+                                        <div class="material-meta">
+                                            <span class="format-tag">PDF</span>
+                                            <span>3MB</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="download-btn">
+                                    <i class="fas fa-download"></i>
+                                    Download
+                                </button>
+                            </div>
+                            
+                            <div class="material-item">
+                                <div class="material-info">
+                                    <div class="material-icon">
+                                        <i class="fas fa-file-alt"></i>
+                                    </div>
+                                    <div class="material-details">
+                                        <h4>English</h4>
+                                        <div class="material-meta">
+                                            <span class="format-tag">PDF</span>
+                                            <span>2MB</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="download-btn">
+                                    <i class="fas fa-download"></i>
+                                    Download
+                                </button>
+                            </div>
+                            
+                            <div class="material-item">
+                                <div class="material-info">
+                                    <div class="material-icon">
+                                        <i class="fas fa-file-alt"></i>
+                                    </div>
+                                    <div class="material-details">
+                                        <h4>P.H.E</h4>
+                                        <div class="material-meta">
+                                            <span class="format-tag">PDF</span>
+                                            <span>2MB</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="download-btn">
+                                    <i class="fas fa-download"></i>
+                                    Download
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Add interactive functionality
+        document.querySelectorAll('.download-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const originalContent = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-check"></i> Downloaded';
+                this.style.background = '#10b981';
+                
+                setTimeout(() => {
+                    this.innerHTML = originalContent;
+                    this.style.background = '#3b82f6';
+                }, 2000);
+            });
+        });
+
+        // Search functionality
+        const searchInput = document.querySelector('.search-section input');
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const materialItems = document.querySelectorAll('.material-item');
+            
+            materialItems.forEach(item => {
+                const materialName = item.querySelector('h4').textContent.toLowerCase();
+                if (materialName.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

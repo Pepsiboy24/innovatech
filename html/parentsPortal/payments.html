@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Payments - EduPay Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            padding: 24px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 0 24px 32px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .logo .icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 24px 0;
+        }
+
+        .nav-item {
+            margin-bottom: 4px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            color: #64748b;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background: #f1f5f9;
+            color: #3b82f6;
+        }
+
+        .nav-link.active {
+            background: #eff6ff;
+            color: #3b82f6;
+            border-right: 3px solid #3b82f6;
+        }
+
+        .nav-link i {
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .user-section {
+            position: absolute;
+            bottom: 24px;
+            left: 24px;
+            right: 24px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: #3b82f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 10px;
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background: #fecaca;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 32px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+            margin-bottom: 32px;
+        }
+
+        .header-content h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .header-content p {
+            color: #64748b;
+            font-size: 16px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            margin-left: auto;
+        }
+
+        .icon-btn {
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .icon-btn:hover {
+            background: #f8fafc;
+        }
+
+        /* Payment Card */
+        .payment-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .payment-header {
+            padding: 32px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .fee-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .fee-details h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .fee-icon {
+            width: 32px;
+            height: 32px;
+            background: #3b82f6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .fee-amount {
+            font-size: 36px;
+            font-weight: 800;
+            color: #3b82f6;
+        }
+
+        .fee-period {
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        /* Additional Services */
+        .services-section {
+            padding: 32px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 24px;
+        }
+
+        .service-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border: 2px solid #f1f5f9;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .service-item:hover {
+            border-color: #cbd5e1;
+        }
+
+        .service-item.selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .service-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .service-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .service-checkbox.checked {
+            background: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        .service-checkbox.checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .service-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .service-icon {
+            width: 40px;
+            height: 40px;
+            background: #f1f5f9;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+        }
+
+        .service-name {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .service-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        /* Payment Summary */
+        .summary-section {
+            background: #f8fafc;
+            padding: 32px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .summary-items {
+            margin-bottom: 24px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-top: 2px solid #e2e8f0;
+            margin-top: 16px;
+        }
+
+        .total-label {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .total-amount {
+            font-size: 28px;
+            font-weight: 800;
+            color: #3b82f6;
+        }
+
+        .pay-button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 24px;
+        }
+
+        .pay-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .header-actions {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <span>EduPay Portal</span>
+                </div>
+            </div>
+            
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="./parentsPortal.html" class="nav-link">
+                            <i class="fas fa-home"></i>
+                            <span>Home</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="./childsResult.html" class="nav-link">
+                            <i class="fas fa-file-alt"></i>
+                            <span>Report Cards</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active">
+                            <i class="fas fa-credit-card"></i>
+                            <span>Payments</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="user-section">
+                <div class="user-info">
+                    <div class="user-avatar">SJ</div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 14px;">Sarah Johnson</div>
+                        <div style="font-size: 12px; color: #64748b;">Parent</div>
+                    </div>
+                </div>
+                <button class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="header">
+                <div class="header-content">
+                    <h1>School Payments</h1>
+                    <p>Select the items you'd like to pay for</p>
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <button class="icon-btn" id="menuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="payment-card">
+                <div class="payment-header">
+                    <div class="fee-info">
+                        <div class="fee-details">
+                            <h2>
+                                <div class="fee-icon">
+                                    <i class="fas fa-book-open"></i>
+                                </div>
+                                School Fees
+                            </h2>
+                            <div class="fee-period">2nd Term - 2023/2024 Academic Session</div>
+                        </div>
+                        <div class="fee-amount">₦50,000</div>
+                    </div>
+                </div>
+
+                <div class="services-section">
+                    <h3 class="section-title">Additional Services</h3>
+                    
+                    <div class="service-item" onclick="toggleService(this, 2000)">
+                        <div class="service-left">
+                            <div class="service-checkbox"></div>
+                            <div class="service-info">
+                                <div class="service-icon">
+                                    <i class="fas fa-home"></i>
+                                </div>
+                                <div class="service-name">Hostel Accommodation</div>
+                            </div>
+                        </div>
+                        <div class="service-price">₦2,000</div>
+                    </div>
+
+                    <div class="service-item" onclick="toggleService(this, 1500)">
+                        <div class="service-left">
+                            <div class="service-checkbox"></div>
+                            <div class="service-info">
+                                <div class="service-icon">
+                                    <i class="fas fa-bus"></i>
+                                </div>
+                                <div class="service-name">School Bus Service</div>
+                            </div>
+                        </div>
+                        <div class="service-price">₦1,500</div>
+                    </div>
+
+                    <div class="service-item" onclick="toggleService(this, 3000)">
+                        <div class="service-left">
+                            <div class="service-checkbox"></div>
+                            <div class="service-info">
+                                <div class="service-icon">
+                                    <i class="fas fa-mountain"></i>
+                                </div>
+                                <div class="service-name">Educational Excursion</div>
+                            </div>
+                        </div>
+                        <div class="service-price">₦3,000</div>
+                    </div>
+                </div>
+
+                <div class="summary-section">
+                    <h3 class="section-title">Payment Summary</h3>
+                    
+                    <div class="summary-items" id="summaryItems">
+                        <div class="summary-item">
+                            <span>School Fees</span>
+                            <span>₦50,000</span>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-total">
+                        <span class="total-label">Total Amount</span>
+                        <span class="total-amount" id="totalAmount">₦50,000</span>
+                    </div>
+                    
+                    <button class="pay-button">
+                        <i class="fas fa-lock"></i> Proceed to Payment
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let selectedServices = [];
+        const baseAmount = 50000;
+
+        function toggleService(element, price) {
+            const checkbox = element.querySelector('.service-checkbox');
+            const serviceName = element.querySelector('.service-name').textContent;
+            const isSelected = element.classList.contains('selected');
+
+            if (isSelected) {
+                element.classList.remove('selected');
+                checkbox.classList.remove('checked');
+                selectedServices = selectedServices.filter(service => service.name !== serviceName);
+            } else {
+                element.classList.add('selected');
+                checkbox.classList.add('checked');
+                selectedServices.push({ name: serviceName, price: price });
+            }
+
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const summaryItems = document.getElementById('summaryItems');
+            const totalAmount = document.getElementById('totalAmount');
+            
+            // Clear current items except school fees
+            summaryItems.innerHTML = `
+                <div class="summary-item">
+                    <span>School Fees</span>
+                    <span>₦50,000</span>
+                </div>
+            `;
+            
+            let total = baseAmount;
+            
+            selectedServices.forEach(service => {
+                const item = document.createElement('div');
+                item.className = 'summary-item';
+                item.innerHTML = `
+                    <span>${service.name}</span>
+                    <span>₦${service.price.toLocaleString()}</span>
+                `;
+                summaryItems.appendChild(item);
+                total += service.price;
+            });
+            
+            totalAmount.textContent = `₦${total.toLocaleString()}`;
+        }
+
+        // Mobile menu toggle
+        document.getElementById('menuToggle').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('active');
+        });
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768) {
+                if (!e.target.closest('.sidebar') && !e.target.closest('#menuToggle')) {
+                    document.querySelector('.sidebar').classList.remove('active');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Registration</title>
+    <link rel="stylesheet" href="../../styles/schoolAdminStyles/teachers.css">
+    <link rel="stylesheet" href="../../styles/schoolAdminStyles/teacher_popup.css">
+</head>
+<body>
+     <div class="container">
+        <div class="popup" data-popup>
+            <div class="containment">
+        <div class="header">
+            <div class="closeIcon" data-closeIcon><i class="fa fa-times"></i></div>
+            <h1>Teacher Registration</h1>
+            <p>Complete your professional profile in 7 steps</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div class="step-indicators">
+            <div class="step-indicator active" id="indicator1">
+                <div class="step-circle">1</div>
+                <span>Personal</span>
+            </div>
+            <div class="step-indicator" id="indicator2">
+                <div class="step-circle">2</div>
+                <span>Contact</span>
+            </div>
+            <div class="step-indicator" id="indicator3">
+                <div class="step-circle">3</div>
+                <span>Qualifications</span>
+            </div>
+            <div class="step-indicator" id="indicator4">
+                <div class="step-circle">4</div>
+                <span>Experience</span>
+            </div>
+            <div class="step-indicator" id="indicator5">
+                <div class="step-circle">5</div>
+                <span>Employment</span>
+            </div>
+            <div class="step-indicator" id="indicator6">
+                <div class="step-circle">6</div>
+                <span>Background</span>
+            </div>
+            <div class="step-indicator" id="indicator7">
+                <div class="step-circle">7</div>
+                <span>Review</span>
+            </div>
+        </div>
+
+        <div class="form-content">
+            <form id="teacherForm">
+                <!-- Step 1: Personal Information -->
+                <div class="step active" id="step1">
+                    <h2>Personal Information</h2>
+                    <p>Basic identifying information for official records</p>
+                    
+                    <!-- <div class="form-row-three"> -->
+                        <div class="form-group" data-form-group>
+                            <label for="firstName">First Name <span class="required">*</span></label>
+                            <input type="text" id="firstName" name="firstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="middleName">Middle Name</label>
+                            <input type="text" id="middleName" name="middleName">
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name <span class="required">*</span></label>
+                            <input type="text" id="lastName" name="lastName" required>
+                        </div>
+                    <!-- </div> -->
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dateOfBirth">Date of Birth <span class="required">*</span></label>
+                            <input type="date" id="dateOfBirth" name="dateOfBirth" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Gender <span class="required">*</span></label>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" id="male" name="gender" value="male" required>
+                                    <label for="male">Male</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" id="female" name="gender" value="female" required>
+                                    <label for="female">Female</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" id="other" name="gender" value="other" required>
+                                    <label for="other">Other</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Contact Details -->
+                <div class="step" id="step2">
+                    <h2>Contact Information</h2>
+                    <p>Address and contact details for communication</p>
+                    
+                    <div class="form-group">
+                        <label for="address">Residential Address <span class="required">*</span></label>
+                        <textarea id="address" name="address" required></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="mobilePhone">Mobile Phone <span class="required">*</span></label>
+                            <input type="tel" id="mobilePhone" name="mobilePhone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="homePhone">Home Phone</label>
+                            <input type="tel" id="homePhone" name="homePhone">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="personalEmail">Personal Email <span class="required">*</span></label>
+                        <input type="email" id="personalEmail" name="personalEmail" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="emergencyContactName">Emergency Contact Name <span class="required">*</span></label>
+                            <input type="text" id="emergencyContactName" name="emergencyContactName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="emergencyContactRelation">Relationship <span class="required">*</span></label>
+                            <select id="emergencyContactRelation" name="emergencyContactRelation" required>
+                                <option value="">Select relationship</option>
+                                <option value="spouse">Spouse</option>
+                                <option value="parent">Parent</option>
+                                <option value="sibling">Sibling</option>
+                                <option value="child">Child</option>
+                                <option value="friend">Friend</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="emergencyContactPhone">Emergency Contact Phone <span class="required">*</span></label>
+                        <input type="tel" id="emergencyContactPhone" name="emergencyContactPhone" required>
+                    </div>
+                </div>
+
+                <!-- Step 3: Professional Qualifications -->
+                <div class="step" id="step3">
+                    <h2>Professional Qualifications</h2>
+                    <p>Academic credentials and professional certifications</p>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="highestDegree">Highest Degree <span class="required">*</span></label>
+                            <select id="highestDegree" name="highestDegree" required>
+                                <option value="">Select degree</option>
+                                <option value="bachelor">Bachelor's Degree</option>
+                                <option value="master">Master's Degree</option>
+                                <option value="doctorate">Doctorate/PhD</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="degreeMajor">Major/Field of Study <span class="required">*</span></label>
+                            <input type="text" id="degreeMajor" name="degreeMajor" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="institution">Institution <span class="required">*</span></label>
+                            <input type="text" id="institution" name="institution" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="graduationYear">Graduation Year <span class="required">*</span></label>
+                            <input type="number" id="graduationYear" name="graduationYear" required min="1950" max="2024">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="teachingLicense">Teaching License Number</label>
+                            <input type="text" id="teachingLicense" name="teachingLicense">
+                        </div>
+                        <div class="form-group">
+                            <label for="licenseExpiry">License Expiry Date</label>
+                            <input type="date" id="licenseExpiry" name="licenseExpiry">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Certified Subjects <span class="required">*</span></label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="math" name="subjects" value="mathematics">
+                                <label for="math">Mathematics</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="english" name="subjects" value="english">
+                                <label for="english">English</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="science" name="subjects" value="science">
+                                <label for="science">Science</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="history" name="subjects" value="history">
+                                <label for="history">History</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="arts" name="subjects" value="arts">
+                                <label for="arts">Arts</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="pe" name="subjects" value="physical_education">
+                                <label for="pe">Physical Education</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Grade Levels <span class="required">*</span></label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="elementary" name="gradeLevels" value="elementary">
+                                <label for="elementary">Elementary (K-5)</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="middle" name="gradeLevels" value="middle">
+                                <label for="middle">Middle School (6-8)</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="high" name="gradeLevels" value="high">
+                                <label for="high">High School (9-12)</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Teaching Experience -->
+                <div class="step" id="step4">
+                    <h2>Teaching Experience</h2>
+                    <p>Previous employment and professional development history</p>
+                    
+                    <div class="form-group">
+                        <label for="totalExperience">Total Years of Teaching Experience <span class="required">*</span></label>
+                        <select id="totalExperience" name="totalExperience" required>
+                            <option value="">Select experience</option>
+                            <option value="new">New Teacher (0 years)</option>
+                            <option value="1-2">1-2 years</option>
+                            <option value="3-5">3-5 years</option>
+                            <option value="6-10">6-10 years</option>
+                            <option value="11-15">11-15 years</option>
+                            <option value="16-20">16-20 years</option>
+                            <option value="20+">20+ years</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="previousSchool">Most Recent School/Institution</label>
+                        <input type="text" id="previousSchool" name="previousSchool">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="previousPosition">Position Held</label>
+                            <input type="text" id="previousPosition" name="previousPosition">
+                        </div>
+                        <div class="form-group">
+                            <label for="previousDuration">Duration</label>
+                            <input type="text" id="previousDuration" name="previousDuration">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="professionalDevelopment">Recent Professional Development</label>
+                        <textarea id="professionalDevelopment" name="professionalDevelopment" placeholder="List workshops, certifications, training programs attended in the last 3 years"></textarea>
+                    </div>
+                </div>
+
+                <!-- Step 5: Employment Details -->
+                <div class="step" id="step5">
+                    <h2>Employment Information</h2>
+                    <p>Position details and work arrangements</p>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="startDate">Start Date <span class="required">*</span></label>
+                            <input type="date" id="startDate" name="startDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="jobTitle">Job Title <span class="required">*</span></label>
+                            <select id="jobTitle" name="jobTitle" required>
+                                <option value="">Select position</option>
+                                <option value="teacher">Teacher</option>
+                                <option value="lead_teacher">Lead Teacher</option>
+                                <option value="department_head">Department Head</option>
+                                <option value="assistant_principal">Assistant Principal</option>
+                                <option value="substitute">Substitute Teacher</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="contractType">Contract Type <span class="required">*</span></label>
+                            <select id="contractType" name="contractType" required>
+                                <option value="">Select contract type</option>
+                                <option value="full_time_permanent">Full-time Permanent</option>
+                                <option value="full_time_temporary">Full-time Temporary</option>
+                                <option value="part_time_permanent">Part-time Permanent</option>
+                                <option value="part_time_temporary">Part-time Temporary</option>
+                                <option value="substitute">Substitute</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="salary">Annual Salary</label>
+                            <input type="number" id="salary" name="salary" placeholder="50000">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Specialized Roles</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="coach" name="specializedRoles" value="coach">
+                                <label for="coach">Sports Coach</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="clubLeader" name="specializedRoles" value="club_leader">
+                                <label for="clubLeader">Club Leader</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="mentor" name="specializedRoles" value="mentor">
+                                <label for="mentor">Mentor Teacher</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="coordinator" name="specializedRoles" value="coordinator">
+                                <label for="coordinator">Program Coordinator</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 6: Background & Medical Info -->
+                <div class="step" id="step6">
+                    <h2>Background & Medical Information</h2>
+                    <p>Safety and compliance requirements</p>
+                    
+                    <div class="form-group">
+                        <label for="workAuthorization">Legal Authorization to Work <span class="required">*</span></label>
+                        <select id="workAuthorization" name="workAuthorization" required>
+                            <option value="">Select status</option>
+                            <option value="citizen">U.S. Citizen</option>
+                            <option value="permanent_resident">Permanent Resident</option>
+                            <option value="work_visa">Work Visa</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="backgroundCheck">Background Check Status</label>
+                        <select id="backgroundCheck" name="backgroundCheck">
+                            <option value="">Select status</option>
+                            <option value="completed">Completed - Clear</option>
+                            <option value="pending">Pending</option>
+                            <option value="not_started">Not Started</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="references">Professional References</label>
+                        <textarea id="references" name="references" placeholder="List 3 professional references with contact information"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="allergies">Known Allergies</label>
+                        <textarea id="allergies" name="allergies" placeholder="List any severe allergies that may require emergency attention"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="medicalConditions">Medical Conditions</label>
+                        <textarea id="medicalConditions" name="medicalConditions" placeholder="List any medical conditions relevant to your work environment"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="medications">Current Medications</label>
+                        <textarea id="medications" name="medications" placeholder="List any medications that may affect your work performance"></textarea>
+                    </div>
+                </div>
+
+                <!-- Step 7: Review & Submit -->
+                <div class="step" id="step7">
+                    <h2>Review Your Information</h2>
+                    <p>Please review all details before submitting</p>
+                    
+                    <div id="reviewContent" style="background: #f8fafc; padding: 24px; border-radius: 8px; margin: 20px 0;">
+                        <!-- Review content populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Success Message -->
+                <div class="step" id="successStep">
+                    <div class="success-message">
+                        <div class="success-icon">✓</div>
+                        <h2>Registration Successful!</h2>
+                        <p>Welcome to our teaching staff! Your registration has been submitted for HR review. You will receive confirmation within 2-3 business days.</p>
+                        <button type="button" class="btn btn-primary" onclick="resetForm()" style="margin-top: 20px;">Register Another Teacher</button>
+                    </div>
+                </div>
+
+                <div class="buttons">
+                    <button type="button" class="btn btn-secondary" id="prevBtn" style="display: none;">Previous</button>
+                    <button type="button" class="btn btn-primary" id="nextBtn">Next</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn" style="display: none;">Submit Registration</button>
+                </div>
+            </form>
+        </div>
+    </div>
+        </div>
+        <!-- Sidebar -->
+        <div class="sidebar" data-sidebar>
+            <div class="logo">
+                <div>School Admin</div>
+                <div class="icon" data-sideBarClose><i class="fa fa-times"></i></div>
+            </div>
+            <nav>
+                <a href="./schoolAdminDashboard.html" class="nav-item">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="./students.html" class="nav-item ">
+                    <svg class="nav-icon" viewBox="0 0 20 20">
+                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                    </svg>
+                    Students
+                </a>
+                <a href="#" class="nav-item active">
+                    <svg class="nav-icon" viewBox="0 0 20 20">
+                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+                    </svg>
+                    Teachers
+                </a>
+                <a href="./schedule.html" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                    </svg>
+                    Schedule
+                </a>
+                <a href="#" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                    </svg>
+                    Time Table
+                </a>
+                <a href="#" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    Attendance
+                </a>
+                <a href="#" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 20 20">
+                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                        <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd" />
+                    </svg>
+                    Receipts
+                </a>
+            </nav>
+            
+            <div class="profile-settings">
+                <div class="user-settings">
+                    <a href="#">
+                        <svg style="width: 16px; height: 16px; margin-right: 8px;" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                        </svg>
+                        UserName
+                    </a>
+                </div>
+                <button class="logout-btn">Logout</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main">
+            <div class="header">
+                <div class="header-top">
+                    <div class="header-left">
+                        <button class="mobile-menu-btn" id="mobileMenuBtn" data-sideBarOpen>
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <h1 class="page-title">Teacher Management</h1>
+                    </div>
+                    <div class="header-right">
+                        <button class="notification-btn">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+                            </svg>
+                        </button>
+                        <div class="profile"></div>
+                    </div>
+                </div>
+                
+                <div class="search-container">
+                    <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input type="text" class="search-input" placeholder="Search students...">
+                </div>
+            </div>
+
+            <!-- Action Cards -->
+            <div class="action-cards">
+                <div class="action-card" data-singleReg>
+                    <div class="action-icon add-single">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"/>
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3>Add New Teacher</h3>
+                        <p>Add a single teacher to the system</p>
+                    </div>
+                </div>
+                
+                <div class="action-card" onclick="uploadExcelSheet()">
+                    <div class="action-icon add-multiple">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3>Upload Excel Sheet</h3>
+                        <p>Bulk import teachers from Excel file</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Students Table -->
+            <div class="students-section">
+                <div class="section-header">
+                    <h2 class="section-title">Teacher List</h2>
+                    <div class="filter-tabs">
+                        <div class="filter-tab active">All</div>
+                        <div class="filter-tab">Primary</div>
+                        <div class="filter-tab">Secondary</div>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="students-table">
+                    <thead class="table-header">
+                        <tr>
+                            <th>teacher</th>
+                            <th>Age</th>
+                            <th>Title</th>
+                            <th>Attendance</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="student-row">
+                            <td>
+                                <div class="student-info">
+                                    <div class="student-avatar">SC</div>
+                                    <div class="student-details">
+                                        <h4>Sean Cook</h4>
+                                        <p>teacher ID: #ST001</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>13</td>
+                            <td>
+                                <div class="class-badge">PRY <span>5B</span></div>
+                            </td>
+                            <td>
+                                <div class="attendance-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 85%;"></div>
+                                    </div>
+                                    <span class="attendance-percent">85%</span>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="#" class="action-btn">View Details</a>
+                            </td>
+                        </tr>
+                        
+                        <tr class="student-row">
+                            <td>
+                                <div class="student-info">
+                                    <div class="student-avatar">JS</div>
+                                    <div class="student-details">
+                                        <h4>John Smith</h4>
+                                        <p>teacher ID: #ST002</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>14</td>
+                            <td>
+                                <div class="class-badge">PRY <span>5A</span></div>
+                            </td>
+                            <td>
+                                <div class="attendance-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 92%;"></div>
+                                    </div>
+                                    <span class="attendance-percent">92%</span>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="#" class="action-btn">View Details</a>
+                            </td>
+                        </tr>
+                        
+                        <tr class="student-row">
+                            <td>
+                                <div class="student-info">
+                                    <div class="student-avatar">SJ</div>
+                                    <div class="student-details">
+                                        <h4>Sarah Johnson</h4>
+                                        <p>teacher ID: #ST003</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>16</td>
+                            <td>
+                                <div class="class-badge">SEC <span>2A</span></div>
+                            </td>
+                            <td>
+                                <div class="attendance-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 78%;"></div>
+                                    </div>
+                                    <span class="attendance-percent">78%</span>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="#" class="action-btn">View Details</a>
+                            </td>
+                        </tr>
+                        
+                        <tr class="student-row">
+                            <td>
+                                <div class="student-info">
+                                    <div class="student-avatar">MB</div>
+                                    <div class="student-details">
+                                        <h4>Mike Brown</h4>
+                                        <p>teacher ID: #ST004</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>15</td>
+                            <td>
+                                <div class="class-badge">SEC <span>1B</span></div>
+                            </td>
+                            <td>
+                                <div class="attendance-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 88%;"></div>
+                                    </div>
+                                    <span class="attendance-percent">88%</span>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="#" class="action-btn">View Details</a>
+                            </td>
+                        </tr>
+                        
+                        <tr class="student-row">
+                            <td>
+                                <div class="student-info">
+                                    <div class="student-avatar">EM</div>
+                                    <div class="student-details">
+                                        <h4>Emma Wilson</h4>
+                                        <p>teacher ID: #ST005</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>12</td>
+                            <td>
+                                <div class="class-badge">PRY <span>4C</span></div>
+                            </td>
+                            <td>
+                                <div class="attendance-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 95%;"></div>
+                                    </div>
+                                    <span class="attendance-percent">95%</span>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="#" class="action-btn">View Details</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="../../scripts/font-awesome.js"></script>
+    <script src="../../scripts/side.js"></script>
+    <script src="../../scripts/schoolAdminScripts/popup.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="../../scripts/config.js"></script>
+    <script src="../../scripts/schoolAdminScripts/teachersForm.js" type="module"></script>
+    <script src="../../scripts/schoolAdminScripts/teachersFormDB.js" type="module"></script>
+    <script src="../../scripts/schoolAdminScripts/viewAllTeachers.js" type="module"></script>
+    <script>
+        // Navigation functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Search functionality
+            const searchInput = document.querySelector('.search-input');
+            const studentRows = document.querySelectorAll('.student-row');
+
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+
+                studentRows.forEach(row => {
+                    const studentName = row.querySelector('.student-details h4').textContent.toLowerCase();
+                    const studentId = row.querySelector('.student-details p').textContent.toLowerCase();
+
+                    if (studentName.includes(searchTerm) || studentId.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+
+            // Filter tabs functionality
+            const filterTabs = document.querySelectorAll('.filter-tab');
+
+            filterTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    filterTabs.forEach(t => t.classList.remove('active'));
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+
+                    const filterType = this.textContent.toLowerCase();
+
+                    studentRows.forEach(row => {
+                        const classText = row.querySelector('.class-badge').textContent.toLowerCase();
+
+                        if (filterType === 'all') {
+                            row.style.display = '';
+                        } else if (filterType === 'primary' && classText.includes('pry')) {
+                            row.style.display = '';
+                        } else if (filterType === 'secondary' && classText.includes('sec')) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            // Navigation item clicks
+            // const navItems = document.querySelectorAll('.nav-item');
+            // navItems.forEach(item => {
+            //     item.addEventListener('click', function(e) {
+            //         e.preventDefault();
+            //         navItems.forEach(nav => nav.classList.remove('active'));
+            //         this.classList.add('active');
+            //     });
+            // });
+        });
+
+        // Action card functions
+        function addSingleTeacher() {
+            alert('Add Single Teacher functionality would be implemented here');
+        }
+
+        async function uploadExcelSheet() {
+            // Create a modal or overlay for the upload interface
+            const modal = document.createElement('div');
+            modal.className = 'upload-modal';
+            modal.innerHTML = `
+                <div class="upload-modal-content">
+                    <div class="upload-modal-header">
+                        <h2>Upload Teacher Excel Sheet</h2>
+                        <button class="close-modal" onclick="closeUploadModal()">&times;</button>
+                    </div>
+                    <div class="upload-modal-body">
+                        <p>Please upload an Excel file with the following columns:</p>
+                        <div id="dragDropContainer"></div>
+                        <ul>
+                            <li>First Name (required)</li>
+                            <li>Last Name (required)</li>
+                            <li>Email (required)</li>
+                            <li>Date of Birth (optional)</li>
+                            <li>Gender (optional)</li>
+                            <li>Address (optional)</li>
+                            <li>Mobile Phone (optional)</li>
+                            <li>Home Phone (optional)</li>
+                            <li>Emergency Contact Name (optional)</li>
+                            <li>Emergency Contact Relation (optional)</li>
+                            <li>Emergency Contact Phone (optional)</li>
+                            <li>Highest Degree (optional)</li>
+                            <li>Degree Major (optional)</li>
+                            <li>Institution (optional)</li>
+                            <li>Graduation Year (optional)</li>
+                            <li>Teaching License (optional)</li>
+                            <li>License Expiry (optional)</li>
+                            <li>Subjects (comma-separated, optional)</li>
+                            <li>Grade Levels (comma-separated, optional)</li>
+                            <li>Total Experience (optional)</li>
+                            <li>Previous School (optional)</li>
+                            <li>Previous Position (optional)</li>
+                            <li>Previous Duration (optional)</li>
+                            <li>Professional Development (optional)</li>
+                            <li>Start Date (optional)</li>
+                            <li>Job Title (optional)</li>
+                            <li>Contract Type (optional)</li>
+                            <li>Salary (optional)</li>
+                            <li>Specialized Roles (comma-separated, optional)</li>
+                            <li>Work Authorization (optional)</li>
+                            <li>Background Check (optional)</li>
+                            <li>References (optional)</li>
+                            <li>Allergies (optional)</li>
+                            <li>Medical Conditions (optional)</li>
+                            <li>Medications (optional)</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Import the multiple teacher registration module
+            const { createDragDropArea } = await import('../../scripts/schoolAdminScripts/multipleTeacherReg.js');
+
+            // Create and append the drag-drop area
+            const dragDropArea = createDragDropArea();
+            document.getElementById('dragDropContainer').appendChild(dragDropArea);
+
+            // Add some basic styling for the modal
+            const style = document.createElement('style');
+            style.textContent = `
+                .upload-modal {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000;
+                }
+                .upload-modal-content {
+                    background: white;
+                    padding: 20px;
+                    height: 70vh;
+                    overflow: scroll;
+                    border-radius: 8px;
+                    max-width: 500px;
+                    width: 90%;
+                    }
+                .upload-modal-content::-webkit-scrollbar{
+                    height: 20px;
+                }
+                .upload-modal-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 20px;
+                }
+                .close-modal {
+                    background: none;
+                    border: none;
+                    font-size: 24px;
+                    cursor: pointer;
+                }
+                #dragDropArea {
+                    border: 2px dashed #ccc;
+                    border-radius: 8px;
+                    padding: 40px;
+                    text-align: center;
+                    margin: 20px 0;
+                    transition: border-color 0.3s;
+                }
+                #dragDropArea.drag-over {
+                    border-color: #007bff;
+                    background-color: #f8f9fa;
+                }
+                .drag-drop-content h3 {
+                    margin: 10px 0;
+                    color: #333;
+                }
+                .drag-drop-content p {
+                    color: #666;
+                }
+                .file-link {
+                    color: #007bff;
+                    cursor: pointer;
+                    text-decoration: underline;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        function closeUploadModal() {
+            const modal = document.querySelector('.upload-modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+    </script>
+</body>
+</html>

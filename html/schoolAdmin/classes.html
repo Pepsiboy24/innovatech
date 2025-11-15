@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduHub - My Classes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="../../styles/schoolAdminStyles/classes.css">
+  </head>
+  <body>
+    <div id="app">
+      <!-- Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <div class="logo">
+            <i class="fas fa-graduation-cap"></i>
+            <span>EduHub</span>
+          </div>
+          <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="#" class="nav-item">
+            <i class="fas fa-home"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="#" class="nav-item active">
+            <i class="fas fa-th-large"></i>
+            <span>Classes</span>
+          </a>
+          <a href="#" class="nav-item">
+            <i class="fas fa-book"></i>
+            <span>Study Materials</span>
+          </a>
+          <a href="#" class="nav-item">
+            <i class="fas fa-users"></i>
+            <span>Social</span>
+          </a>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Top Bar -->
+        <header class="top-bar">
+          <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search classes..." />
+          </div>
+          <div class="top-bar-actions">
+            <button class="notification-btn">
+              <i class="fas fa-bell"></i>
+              <span>Notifications</span>
+            </button>
+            <div class="user-avatar">
+              <img src="https://i.pravatar.cc/150?img=1" alt="User" />
+            </div>
+          </div>
+        </header>
+
+        <!-- Classes Section -->
+        <section class="classes-section">
+          <div class="section-header">
+            <h1>My Classes</h1>
+            <button class="btn-primary" id="createClassBtn">
+              <i class="fas fa-plus"></i>
+              <span>Create New Class</span>
+            </button>
+          </div>
+
+          <div class="filter-bar">
+            <select class="filter-select" id="filterSelect">
+              <option value="all">All</option>
+              <option value="active">Active</option>
+              <option value="archived">Archived</option>
+            </select>
+          </div>
+
+          <div class="classes-grid" id="classesGrid">
+            <!-- Classes will be dynamically loaded here -->
+             <template data-template>
+              <div class="card">
+                <header>
+                    <h2>JSS 2</h2>
+                    <p>Junior Secondary School 2</p>
+                </header>
+                <div class="body">
+                    <p>Teacher: <span>Mr John</span></p>
+                    <p>Students: <span>45</span></p>
+                </div>
+                <div class="footer">
+                    <div class="editBtn cardBtnIcon">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                        </svg>
+                    </div>
+                    <div class="viewBtn cardBtnIcon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye">
+                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </div>
+                </div>
+             </div>
+             </template>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Create Class Modal -->
+    <div class="modal" id="createClassModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Create New Class</h2>
+          <button class="modal-close" id="closeModal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <form id="createClassForm">
+          <div class="form-group">
+            <label for="className">Class Name</label>
+            <input type="text" id="className" required placeholder="e.g., Junior Secondary School 1" />
+            <!-- <select id="classTitleSelect" required>
+              <option value="">Select Class</option>
+            </select> -->
+            <input type="text" id="newClassTitle" placeholder="Enter new class name" style="display:none; margin-top: 10px;" />
+          </div>
+          <div class="form-group">
+            <label for="section">Section</label>
+            <input type="text" id="section" required placeholder="e.g., A, B, C, Sci, Sci 1" />
+          </div>
+          <div class="form-group">
+            <label for="teacherSelect">Teacher Name</label>
+            <div class="searchable-dropdown">
+              <input type="text" id="teacherSearchInput" placeholder="Search teachers..." autocomplete="off" data-searchBar>
+              <!-- <div class="dropdown-arrow">▼</div> -->
+              <div class="dropdown-options" id="teacherDropdownOptions" data-dropDownBox>
+                <!-- Options will be populated by JS -->
+              </div>
+            </div>
+            <!-- Hidden select for form submission -->
+            <!-- <select id="teacherSelect" required style="display: none;">
+              <option value="">Select Teacher</option>
+            </select> -->
+          </div>
+          <div class="form-group">
+            <label for="studentsCount">Number of Students</label>
+            <input type="number" id="studentsCount" required min="0" value="0" />
+          </div>
+          <div class="form-group">
+            <label for="classIcon">Icon</label>
+            <select id="classIcon">
+              <option value="book">Book</option>
+              <option value="flask">Flask</option>
+              <option value="calculator">Calculator</option>
+              <option value="atom">Atom</option>
+              <option value="palette">Palette</option>
+              <option value="globe">Globe</option>
+              <option value="lightbulb">Lightbulb</option>
+              <option value="laptop">Laptop</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" id="cancelBtn">Cancel</button>
+            <button type="submit" class="btn-primary">Create Class</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+
+    <!-- <script type="module" src="/main.js"></script> -->
+     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="../../scripts/config.js" type="module"></script>
+    <script type="module" src="../../scripts/schoolAdminScripts/classesModal.js"></script>
+    <script type="module" src="../../scripts/schoolAdminScripts/searchableDropdown.js"></script>
+    <script type="module" src="../../scripts/schoolAdminScripts/classes.js"></script>
+  </body>
+</html>

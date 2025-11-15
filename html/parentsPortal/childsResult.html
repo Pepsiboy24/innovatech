@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Portal - Child's Result</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../../styles/parentsPortalStyles/childsResult.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">EdTech</div>
+                <div class="user-info">
+                    <div class="user-avatar">JS</div>
+                    <div class="user-details">
+                        <h4>John Smith</h4>
+                        <p>Parent of Alex Smith</p>
+                    </div>
+                </div>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="./parentsPortal.html" class="nav-link">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link active">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Report Cards</span>
+                    </a>
+                </li>
+                <!-- <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-envelope"></i>
+                        <span>Messages</span>
+                    </a>
+                </li> -->
+                <li class="nav-item">
+                    <a href="./payments.html" class="nav-link">
+                        <i class="fas fa-credit-card"></i>
+                        <span>Payments</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="welcome-section">
+                    <h1>Academic Performance</h1>
+                    <p>Track your child's progress and achievements</p>
+                </div>
+                <div class="header-actions">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <button class="notification-btn">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Statistics Grid -->
+            <div class="stats-grid">
+                <div class="stat-card average">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-title">Average Grade</div>
+                    </div>
+                    <div class="stat-value">85.2%</div>
+                    <div class="stat-subtitle">Overall performance</div>
+                </div>
+
+                <div class="stat-card position">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="stat-title">Class Position</div>
+                    </div>
+                    <div class="stat-value">5th</div>
+                    <div class="stat-subtitle">of 45 students</div>
+                </div>
+
+                <div class="stat-card attendance">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="stat-title">Days Present</div>
+                    </div>
+                    <div class="stat-value">115</div>
+                    <div class="stat-subtitle">This session</div>
+                </div>
+
+                <div class="stat-card absent">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-times"></i>
+                        </div>
+                        <div class="stat-title">Days Absent</div>
+                    </div>
+                    <div class="stat-value">7</div>
+                    <div class="stat-subtitle">This semester</div>
+                </div>
+            </div>
+
+            <!-- Grades Table -->
+            <div class="grades-section">
+                <div class="section-header">
+                    <h2>Subject Grades</h2>
+                </div>
+                
+                <table class="grades-table">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>C.A (40%)</th>
+                            <th>Exam (60%)</th>
+                            <th>Total (100%)</th>
+                            <th>Grade</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="subject-name">Mathematics</td>
+                            <td>35/40</td>
+                            <td>50/60</td>
+                            <td><strong>85/100</strong></td>
+                            <td><span class="grade-badge grade-a">A</span></td>
+                            <td><span class="remarks excellent">Excellent</span></td>
+                        </tr>
+                        <tr>
+                            <td class="subject-name">English Language</td>
+                            <td>34/40</td>
+                            <td>48/60</td>
+                            <td><strong>82/100</strong></td>
+                            <td><span class="grade-badge grade-a">A</span></td>
+                            <td><span class="remarks excellent">Excellent</span></td>
+                        </tr>
+                        <tr>
+                            <td class="subject-name">History</td>
+                            <td>32/40</td>
+                            <td>46/60</td>
+                            <td><strong>78/100</strong></td>
+                            <td><span class="grade-badge grade-b">B</span></td>
+                            <td><span class="remarks good">Good</span></td>
+                        </tr>
+                        <tr>
+                            <td class="subject-name">French</td>
+                            <td>30/40</td>
+                            <td>44/60</td>
+                            <td><strong>74/100</strong></td>
+                            <td><span class="grade-badge grade-b">B</span></td>
+                            <td><span class="remarks good">Good</span></td>
+                        </tr>
+                        <tr>
+                            <td class="subject-name">Basic Science & Technology</td>
+                            <td>33/40</td>
+                            <td>47/60</td>
+                            <td><strong>80/100</strong></td>
+                            <td><span class="grade-badge grade-a">A</span></td>
+                            <td><span class="remarks excellent">Excellent</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+    <script src="../../scripts/parnetsPortalScripts/childResult.js"></script>
+</body>
+</html>

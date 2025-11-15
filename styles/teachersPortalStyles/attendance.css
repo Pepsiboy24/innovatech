@@ -1,0 +1,136 @@
+.studentsList{
+  height: 100%;
+  /* max-height: 600px; */
+  /* position: relative; */
+  width: 100%;
+  border-radius: 12px;
+  /* min-height: 300px; */
+  background-color: #fff;;
+  margin-top: 20px;
+  overflow-x: scroll;
+}
+.studentsList::-webkit-scrollbar{
+  display: none;
+}
+.studentsList > .studentList{
+  /* position: absolute; */
+  height: 100%;
+  min-width: 100%;
+  /* background-color: #ff0000; */
+}
+.studentsList > header{
+  padding: 20px;
+  font-size: 1.5rem;
+}
+.studentList > header, .studentList > .studentItem{
+  width: 100%;
+}
+.studentList > header, .studentList > .studentItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+}
+.studentList > .studentItem{
+    border-bottom: 3px solid #F9FAFB;
+}
+.studentList > header > .header, .studentItem > .item{
+  /* background-color: #ff0000; */
+  display: flex;
+  align-items: center;
+  margin: 0 20px 0 20px;
+
+  /* height: 100px; */
+}
+.studentList > header{
+  background-color: #F9FAFB;
+}
+.studentList > header p{
+  font-size: 1.3rem;
+  font-weight: 540;
+}
+.studentItem > .item{
+  font-size: 1.4rem;
+}
+.nameHeader, .studentName{
+  width: 30%;
+}
+.attendanceHeader, .attendance{
+  width: 30%
+}
+.attendance{
+    display: flex;
+    flex-wrap: wrap;
+}
+.attendance > .attendanceItem{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin:  4px 15px 4px 0;
+}
+.attendance > .attendanceItem > p{
+    margin-left: 10px;
+    font-size: 20px;
+}
+.attendance > .attendanceItem > input{
+    width: 18px;
+    height: 18px
+}
+
+/* .performanceHeader, .studentPerformance{
+  width: 25%;
+} */
+.remarksHeader, .remarks{
+  width: 30%;
+}
+.remarks > input{
+    padding: 10px;
+    border: none;
+    outline: none;
+    background-color: transparent;
+    border-bottom: 1px solid #000;
+}
+.remarks > input:focus{
+  border-bottom: 2px solid #59a1ff;
+  /*border-radius: 14px;*/
+  transition: 1s ease-in-out;
+}
+.studentList > .studentItem > .studentName >.icon{
+  margin-right: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ccc;
+}
+.studentList > .studentItem > .studentPerformance > .performance{
+  width: 70%;
+  height: 30px;
+  border: 1px solid #000;
+  border-radius: 8px;
+  margin-right: 20px;
+}
+.studentList > .studentItem > .studentPerformance > .performance > .performanceBar{
+  width: 80%;
+  height: 100%;
+  background-color: blue;
+}
+.studentList > .studentItem > .action > a{
+  text-decoration: none;
+  color: blue;
+}
+
+
+@media screen and (max-width: 800px){
+    .teachersTools{
+      flex-direction: column;
+    }
+    .teachersTools > .aiAssistant, .teachersTools > .upcomingClassses{
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    .studentsList > .studentList{
+      min-width: 900px;
+    }
+}
