@@ -3,7 +3,7 @@
 const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
 
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentFilter = "all";
 
@@ -230,6 +230,7 @@ function initializeEventListeners() {
   const cancelBtn = document.getElementById("cancelBtn");
   const overlay = document.getElementById("overlay");
   const createClassForm = document.getElementById("createClassForm");
+  const createNewClass = document.querySelector("[data-create-class]")
   const filterSelect = document.getElementById("filterSelect");
   const mobileMenuBtn = document.getElementById("mobileMenuBtn");
   const menuToggle = document.getElementById("menuToggle");
@@ -244,7 +245,7 @@ function initializeEventListeners() {
   closeModalBtn.addEventListener("click", closeModal);
   cancelBtn.addEventListener("click", closeModal);
   overlay.addEventListener("click", closeModal);
-  createClassForm.addEventListener("submit", handleCreateClass);
+  createNewClass.addEventListener("click", handleCreateClass);
 
   // Filter
   filterSelect.addEventListener("change", (e) => {
@@ -276,7 +277,7 @@ function initializeEventListeners() {
  * Application entry point.
  */
 async function init() {
-  await renderClasses(); // Start by displaying existing classes
+  // await renderClasses(); // Start by displaying existing classes
   initializeEventListeners(); // Set up all interactions
 }
 

@@ -1,8 +1,8 @@
-<<<<<<< HEAD
+<!-- <<<<<<< HEAD
 // content from the current branch (main)
 =======
 // content from the branch being merged (master)
->>>>>>> master
+>>>>>>> master -->
 
 <!doctype html>
 <html lang="en">
@@ -87,17 +87,17 @@
             </select>
           </div>
 
-          <div class="classes-grid" id="classesGrid">
+          <div class="classes-grid" id="classesGrid" data-container>
             <!-- Classes will be dynamically loaded here -->
              <template data-template>
               <div class="card">
                 <header>
-                    <h2>JSS 2</h2>
+                    <h2 data-class-name>JSS 2 <span data-class-section></span></h2>
                     <p>Junior Secondary School 2</p>
                 </header>
                 <div class="body">
-                    <p>Teacher: <span>Mr John</span></p>
-                    <p>Students: <span>45</span></p>
+                    <p>Teacher: <span data-teacher-name>Mr John</span></p>
+                    <p>Students: <span data-student-no>45</span></p>
                 </div>
                 <div class="footer">
                     <div class="editBtn cardBtnIcon">
@@ -174,7 +174,7 @@
           </div>
           <div class="modal-actions">
             <button type="button" class="btn-secondary" id="cancelBtn">Cancel</button>
-            <button type="submit" class="btn-primary">Create Class</button>
+            <button type="submit" class="btn-primary" data-create-class>Create Class</button>
           </div>
         </form>
       </div>
@@ -189,5 +189,6 @@
     <script type="module" src="../../scripts/schoolAdminScripts/classesModal.js"></script>
     <script type="module" src="../../scripts/schoolAdminScripts/searchableDropdown.js"></script>
     <script type="module" src="../../scripts/schoolAdminScripts/classes.js"></script>
+    <script type="module" src="../../scripts/schoolAdminScripts/render_classes.js"></script>
   </body>
 </html>
