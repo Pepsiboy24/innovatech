@@ -6,7 +6,7 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Academic Calendar Management</title>
-    <link rel="stylesheet" href="../../styles/schoolAdminStyles/schedule.css"> 
+    <link rel="stylesheet" href="../../styles/schoolAdminStyles/schedule.css">
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css' rel='stylesheet' />
 </head>
 
@@ -225,9 +225,15 @@
                                     <p class="upload-p1">
                                         Drag and drop files here, or
                                     </p>
-                                    <button class="browse-btn">
+
+                                    <input type="file" id="fileInput" accept=".ics, .csv, .xlsx" style="display: none;">
+
+                                    <button class="browse-btn" id="browseButton">
                                         Browse Files
                                     </button>
+
+                                    <p id="fileNameDisplay" class="upload-p2 file-name-display"></p>
+
                                     <p class="upload-p2">
                                         .ics, .csv, or .xlsx files
                                     </p>
@@ -250,7 +256,8 @@
             <form id="addEventForm">
                 <div class="form-group">
                     <label for="academicSession">Academic Session *</label>
-                    <input type="text" id="academicSession" name="academicSession" required placeholder="e.g., 2024/2025">
+                    <input type="text" id="academicSession" name="academicSession" required
+                        placeholder="e.g., 2024/2025">
                 </div>
                 <div class="form-group">
                     <label for="termPeriod">Term/Period *</label>
@@ -264,7 +271,8 @@
                 </div>
                 <div class="form-group">
                     <label for="activityEvent">Activity/Event *</label>
-                    <input type="text" id="activityEvent" name="activityEvent" required placeholder="e.g., Mid-Term Break">
+                    <input type="text" id="activityEvent" name="activityEvent" required
+                        placeholder="e.g., Mid-Term Break">
                 </div>
                 <div class="form-group">
                     <label for="startDate">Start Date *</label>
@@ -294,6 +302,8 @@
     <script src="../../scripts/config.js" type="module"></script>
     <script src="../../scripts/schoolAdminScripts/shedule_scripts/calendar_display.js" type="module"></script>
     <script src="../../scripts/schoolAdminScripts/shedule_scripts/add_single_event.js" type="module"></script>
+    <script src="../../scripts/schoolAdminScripts/shedule_scripts/upload_calendar.js"></script>
+
 
 </body>
 

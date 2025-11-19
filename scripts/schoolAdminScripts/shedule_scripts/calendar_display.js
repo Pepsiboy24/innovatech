@@ -65,6 +65,12 @@ document.addEventListener('DOMContentLoaded', async function () {
     let academicEvents = await fetchEvents();
     populateTable(academicEvents);
 
+    // Expose refresh function globally
+    window.refreshAcademicTable = async function() {
+        academicEvents = await fetchEvents();
+        populateTable(academicEvents);
+    };
+
     // Set initial month/year display
     monthYearSpan.textContent = '2024/2025 Academic Session';
 
