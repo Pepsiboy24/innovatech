@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classes - EduHub Student Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../../styles/studentsPortalStyles/studentClasses.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" data-nav>
+            <div class="sidebar-header">
+                <h2>EduHub</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="./studentPortal.html" class="nav-item">
+                    <i class="fas fa-home"></i>
+                    Dashboard
+                </a>
+                <a href="#" class="nav-item active">
+                    <i class="fas fa-calendar-alt"></i>
+                    Classes
+                </a>
+                <a href="./studyMaterials.html" class="nav-item">
+                    <i class="fas fa-book"></i>
+                    Study Materials
+                </a>
+
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="welcome-section">
+                    <h1>My Classes</h1>
+                    <p>Manage your classes, assignments, and projects</p>
+                </div>
+                <div class="header-actions">
+                    <button class="notification-btn">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <button class="profile-btn">
+                        A
+                    </button>
+                    <button class="nav-btn" data-nav-display>
+                      <i class="fa fa-bars" data-ie></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Weekly Timetable -->
+            <section class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Weekly Timetable</h2>
+                    <a href="./schedule.html" class="view-all-btn">View Full Schedule</a>
+                </div>
+                <div class="timetable-grid">
+                    <div class="day-column">
+                        <h3>Monday</h3>
+                        <div class="class-slot">
+                            <div class="time">8:00 AM</div>
+                            <div class="subject">Mathematics</div>
+                            <div class="teacher">Mr. Johnson</div>
+                        </div>
+                        <div class="class-slot">
+                            <div class="time">9:00 AM</div>
+                            <div class="subject">English</div>
+                            <div class="teacher">Mrs. Smith</div>
+                        </div>
+                        <div class="class-slot">
+                            <div class="time">10:00 AM</div>
+                            <div class="subject">Physics</div>
+                            <div class="teacher">Dr. Brown</div>
+                        </div>
+                    </div>
+                    <div class="day-column">
+                        <h3>Tuesday</h3>
+                        <div class="class-slot">
+                            <div class="time">8:00 AM</div>
+                            <div class="subject">Chemistry</div>
+                            <div class="teacher">Ms. Davis</div>
+                        </div>
+                        <div class="class-slot">
+                            <div class="time">9:00 AM</div>
+                            <div class="subject">Mathematics</div>
+                            <div class="teacher">Mr. Johnson</div>
+                        </div>
+                        <div class="class-slot">
+                            <div class="time">10:00 AM</div>
+                            <div class="subject">English</div>
+                            <div class="teacher">Mrs. Smith</div>
+                        </div>
+                    </div>
+                    <div class="day-column">
+                        <h3>Wednesday</h3>
+                        <div class="class-slot">
+                            <div class="time">8:00 AM</div>
+                            <div class="subject">English</div>
+                            <div class="teacher">Mrs. Smith</div>
+                        </div>
+                        <div class="class-slot">
+                            <div class="time">9:00 AM</div>
+                            <div class="subject">Mathematics</div>
+                            <div class="teacher">Mr. Johnson</div>
+                        </div>
+                        <div class="class-slot">
+                            <div class="time">10:00 AM</div>
+                            <div class="subject">ICT</div>
+                            <div class="teacher">Mr. Wilson</div>
+                        </div>
+                    </div>
+                    <div class="day-column">
+                        <h3>Thursday</h3>
+                        <div class="class-slot">
+                            <div class="time">8:00 AM</div>
+                            <div class="subject">Mathematics</div>
+                            <div class="teacher">Mr. Johnson</div>
+                        </div>
+                        <div class="class-slot">
+                            <div class="time">9:00 AM</div>
+                            <div class="subject">English</div>
+                            <div class="teacher">Mrs. Smith</div>
+                        </div>
+                        <div class="class-slot">
+                            <div class="time">10:00 AM</div>
+                            <div class="subject">Geography</div>
+                            <div class="teacher">Ms. Taylor</div>
+                        </div>
+                    </div>
+                    <div class="day-column">
+                        <h3>Friday</h3>
+                        <div class="class-slot">
+                            <div class="time">8:00 AM</div>
+                            <div class="subject">Biology</div>
+                            <div class="teacher">Dr. Green</div>
+                        </div>
+                        <div class="class-slot">
+                            <div class="time">9:00 AM</div>
+                            <div class="subject">Mathematics</div>
+                            <div class="teacher">Mr. Johnson</div>
+                        </div>
+                        <div class="class-slot">
+                            <div class="time">10:00 AM</div>
+                            <div class="subject">English</div>
+                            <div class="teacher">Mrs. Smith</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Assignments -->
+            <section class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Assignments</h2>
+                    <button class="add-btn">+ New Assignment</button>
+                </div>
+                <div class="assignments-grid">
+                    <div class="assignment-card">
+                        <div class="assignment-header">
+                            <h4>Math Homework - Algebra</h4>
+                            <span class="status pending">Pending</span>
+                        </div>
+                        <p class="assignment-desc">Complete exercises 1-20 from chapter 5</p>
+                        <div class="assignment-meta">
+                            <span class="due-date">Due: Tomorrow</span>
+                            <span class="subject-tag">Mathematics</span>
+                        </div>
+                        <div class="assignment-actions">
+                            <button class="submit-btn">Submit</button>
+                            <button class="view-btn">View Details</button>
+                        </div>
+                    </div>
+                    <div class="assignment-card">
+                        <div class="assignment-header">
+                            <h4>English Essay</h4>
+                            <span class="status submitted">Submitted</span>
+                        </div>
+                        <p class="assignment-desc">Write a 500-word essay on Shakespeare's Hamlet</p>
+                        <div class="assignment-meta">
+                            <span class="due-date">Due: Friday</span>
+                            <span class="subject-tag">English</span>
+                        </div>
+                        <div class="assignment-actions">
+                            <button class="view-btn">View Feedback</button>
+                        </div>
+                    </div>
+                    <div class="assignment-card">
+                        <div class="assignment-header">
+                            <h4>Physics Lab Report</h4>
+                            <span class="status overdue">Overdue</span>
+                        </div>
+                        <p class="assignment-desc">Submit lab report on Newton's laws experiment</p>
+                        <div class="assignment-meta">
+                            <span class="due-date">Due: Yesterday</span>
+                            <span class="subject-tag">Physics</span>
+                        </div>
+                        <div class="assignment-actions">
+                            <button class="submit-btn">Submit Late</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Projects -->
+            <section class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Projects</h2>
+                    <button class="add-btn">+ New Project</button>
+                </div>
+                <div class="projects-grid">
+                    <div class="project-card">
+                        <div class="project-header">
+                            <h4>Science Fair Project</h4>
+                            <span class="progress">75% Complete</span>
+                        </div>
+                        <p class="project-desc">Build a model demonstrating renewable energy sources</p>
+                        <div class="project-meta">
+                            <span class="due-date">Due: Next Month</span>
+                            <span class="team-size">Group Project (4 members)</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 75%;"></div>
+                        </div>
+                        <div class="project-actions">
+                            <button class="update-btn">Update Progress</button>
+                            <button class="view-btn">View Details</button>
+                        </div>
+                    </div>
+                    <div class="project-card">
+                        <div class="project-header">
+                            <h4>History Presentation</h4>
+                            <span class="progress">50% Complete</span>
+                        </div>
+                        <p class="project-desc">Present on the Industrial Revolution</p>
+                        <div class="project-meta">
+                            <span class="due-date">Due: 2 Weeks</span>
+                            <span class="team-size">Individual Project</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 50%;"></div>
+                        </div>
+                        <div class="project-actions">
+                            <button class="update-btn">Update Progress</button>
+                            <button class="view-btn">View Details</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+      const navOpen = document.querySelector("[data-nav-display]");
+      const nav = document.querySelector("[data-nav]");
+      const i = document.querySelector("[data-ie]")
+      navOpen.addEventListener("click", () => {
+        i.classList.toggle("fa-bars");
+        i.classList.toggle("fa-times");
+        nav.classList.toggle("show")
+      })
+    </script>
+</body>
+</html>
