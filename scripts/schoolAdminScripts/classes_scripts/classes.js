@@ -254,15 +254,15 @@ function initializeEventListeners() {
   });
 
   // Mobile Menu
-  mobileMenuBtn.addEventListener("click", () => {
-    sidebar.classList.add("active");
-    overlay.classList.add("active");
-  });
+  // mobileMenuBtn.addEventListener("click", () => {
+  //   sidebar.classList.add("active");
+  //   overlay.classList.add("active");
+  // });
 
-  menuToggle.addEventListener("click", () => {
-    sidebar.classList.remove("active");
-    overlay.classList.remove("active");
-  });
+  // menuToggle.addEventListener("click", () => {
+  //   sidebar.classList.remove("active");
+  //   overlay.classList.remove("active");
+  // });
 
   // Close sidebar/modal on overlay click
   overlay.addEventListener("click", () => {

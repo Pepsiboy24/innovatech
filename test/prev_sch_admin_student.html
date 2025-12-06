@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management</title>
+    <link rel="stylesheet" href="../../styles/schoolAdminStyles/students.css">
+    <link rel="stylesheet" href="../../styles/schoolAdminStyles/popup.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="popup" data-popup>
+            <div class="containment">
+                <div class="header">
+                    <div class="icon" data-closeIcon><i class="fa fa-times"></i></div>
+                    <h1>Student Registration</h1>
+                    <p>Complete your enrollment in just 3 easy steps</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+
+                <div class="step-indicators">
+                    <div class="step-indicator active" id="indicator1">
+                        <div class="step-circle">1</div>
+                        <span>Personal Info</span>
+                    </div>
+                    <div class="step-indicator" id="indicator2">
+                        <div class="step-circle">2</div>
+                        <span>Academic Details</span>
+                    </div>
+                    <div class="step-indicator" id="indicator3">
+                        <div class="step-circle">3</div>
+                        <span>Review & Submit</span>
+                    </div>
+                </div>
+
+                <div class="form-content">
+                    <form id="registrationForm">
+                        <!-- Step 1: Fill with personal infomation -->
+                        <div class="step active" id="step1">
+                            <h2>Personal Information</h2>
+                            <p>Let's start with your basic details</p>
+
+                            <div class="form-group">
+                                <label for="fullName">Full Name *</label>
+                                <input type="text" id="fullName" name="fullName" required
+                                    placeholder="Enter your full name">
+                                <div class="error-message" id="fullNameError">Please enter your full name</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email">Email Address *</label>
+                                <input type="email" id="email" name="email" required
+                                    placeholder="your.email@example.com">
+                                <div class="error-message" id="emailError">Please enter a valid email address</div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="dateOfBirth">Date of Birth *</label>
+                                    <input type="date" id="dateOfBirth" name="dateOfBirth" required>
+                                    <div class="error-message" id="dobError">Please select your date of birth</div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Gender *</label>
+                                    <div class="radio-group">
+                                        <div class="radio-option">
+                                            <input type="radio" id="male" name="gender" value="male" required>
+                                            <label for="male">Male</label>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" id="female" name="gender" value="female" required>
+                                            <label for="female">Female</label>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" id="other" name="gender" value="other" required>
+                                            <label for="other">Other</label>
+                                        </div>
+                                    </div>
+                                    <div class="error-message" id="genderError">Please select your gender</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Academic Details -->
+                        <div class="step" id="step2">
+                            <h2>Academic Details</h2>
+                            <p>Tell us about your academic information</p>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="class">Class/Grade *</label>
+                                    <select id="class" name="class" required>
+                                        <option value="">Select your class</option>
+                                        <!-- <option value="13">Kindergarten</option> -->
+                                        <option value="1">Primary 1</option>
+                                        <option value="2">Primary 2</option>
+                                        <option value="3">Primary 3</option>
+                                        <option value="4">Primary 4</option>
+                                        <option value="5">Primary 5</option>
+                                        <option value="6">Primary 6</option>
+                                        <option value="7">JSS 1</option>
+                                        <option value="8">JSS 2</option>
+                                        <option value="9">JSS 3</option>
+                                        <option value="10">SSS 1</option>
+                                        <option value="11">SSS 2</option>
+                                        <option value="12">SSS 3</option>
+                                    </select>
+                                    <div class="error-message" id="classError">Please select your class</div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="admissionDate">Admission Date *</label>
+                                    <input type="date" id="admissionDate" name="admissionDate" required>
+                                    <div class="error-message" id="admissionDateError">Please select admission date
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Review & Submit -->
+                        <div class="step" id="step3">
+                            <h2>Review Your Information</h2>
+                            <p>Please review your details before submitting</p>
+
+                            <div id="reviewContent"
+                                style="background: #f8fafc; padding: 24px; border-radius: 8px; margin: 20px 0;">
+                                <!-- Review content will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Success Message -->
+                        <div class="step" id="successStep">
+                            <div class="success-message">
+                                <div class="success-icon">✓</div>
+                                <h2>Registration Successful!</h2>
+                                <p>Welcome to EdTech Portal! Your registration has been completed successfully. You will
+                                    receive a confirmation email shortly.</p>
+                                <button type="button" class="btn btn-primary" onclick="resetForm()"
+                                    style="margin-top: 20px;">Register Another Student</button>
+                            </div>
+                        </div>
+
+                        <div class="buttons">
+                            <button type="button" class="btn btn-secondary" id="prevBtn"
+                                style="display: none;">Previous</button>
+                            <button type="button" class="btn btn-primary" id="nextBtn">Next</button>
+                            <button type="submit" class="btn btn-primary" id="submitBtn" style="display: none;">Submit
+                                Registration</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Sidebar -->
+        <div class="sidebar" data-sidebar>
+            <div class="logo">
+                <div>School Admin</div>
+                <div class="icon" data-sideBarClose><i class="fa fa-times"></i></div>
+            </div>
+            <nav>
+                <a href="./schoolAdminDashboard.html" class="nav-item">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                        </path>
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="./classes.html" class="nav-item sidebar-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="4" y="16" width="16" height="4" rx="1" fill="#4A4A4A" />
+                        <rect x="5" y="11" width="14" height="4" rx="1" fill="#6B6B6B" />
+                        <rect x="6" y="6" width="12" height="4" rx="1" fill="#8C8C8C" />
+                        <path d="M12 6V10" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+                    </svg>
+                    <span>Classes</span>
+                </a>
+                <a href="#" class="nav-item active">
+                    <svg class="nav-icon" viewBox="0 0 20 20">
+                        <path
+                            d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                    </svg>
+                    Students
+                </a>
+                <a href="./teachers.html" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 20 20">
+                        <path
+                            d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
+                    </svg>
+                    Teachers
+                </a>
+                <a href="./schedule.html" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Schedule
+                </a>
+                <a href="./timeTable.html" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Time Table
+                </a>
+                <a href="#" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Attendance
+                </a>
+                <a href="#" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 20 20">
+                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                        <path fill-rule="evenodd"
+                            d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Receipts
+                </a>
+            </nav>
+
+            <div class="profile-settings">
+                <div class="user-settings">
+                    <a href="#">
+                        <svg style="width: 16px; height: 16px; margin-right: 8px;" fill="currentColor"
+                            viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        UserName
+                    </a>
+                </div>
+                <button class="logout-btn">Logout</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main">
+            <div class="header">
+                <div class="header-top">
+                    <div class="header-left">
+                        <button class="mobile-menu-btn" id="mobileMenuBtn" data-sideBarOpen>
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <h1 class="page-title">Student Management</h1>
+                    </div>
+                    <div class="header-right">
+                        <button class="notification-btn">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+                            </svg>
+                        </button>
+                        <div class="profile"></div>
+                    </div>
+                </div>
+
+                <div class="search-container">
+                    <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input type="text" class="search-input" placeholder="Search students...">
+                </div>
+            </div>
+
+            <!-- Action Cards -->
+            <div class="action-cards">
+                <div class="action-card" data-singleReg>
+                    <div class="action-icon add-single">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3>Add New Student</h3>
+                        <p>Add a single student to the system</p>
+                    </div>
+                </div>
+
+                <div class="action-card" >
+                    <div class="action-icon add-multiple">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3>Upload Excel Sheet</h3>
+                        <p>Bulk import students from Excel file</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Students Table -->
+            <div class="students-section">
+                <div class="section-header">
+                    <h2 class="section-title">Students List</h2>
+                    <div class="filter-tabs">
+                        <div class="filter-tab active">All</div>
+                        <div class="filter-tab">Primary</div>
+                        <div class="filter-tab">Secondary</div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="students-table">
+                        <thead class="table-header">
+                            <tr>
+                                <th>Student</th>
+                                <th>Age</th>
+                                <th>Class</th>
+                                <th>Attendance</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="student-row">
+                                <td>
+                                    <div class="student-info">
+                                        <div class="student-avatar">SC</div>
+                                        <div class="student-details">
+                                            <h4>Sean Cook</h4>
+                                            <p>Student ID: #ST001</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>13</td>
+                                <td>
+                                    <div class="class-badge">PRY <span>5B</span></div>
+                                </td>
+                                <td>
+                                    <div class="attendance-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 85%;"></div>
+                                        </div>
+                                        <span class="attendance-percent">85%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="#" class="action-btn">View Details</a>
+                                </td>
+                            </tr>
+
+                            <tr class="student-row">
+                                <td>
+                                    <div class="student-info">
+                                        <div class="student-avatar">JS</div>
+                                        <div class="student-details">
+                                            <h4>John Smith</h4>
+                                            <p>Student ID: #ST002</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>14</td>
+                                <td>
+                                    <div class="class-badge">PRY <span>5A</span></div>
+                                </td>
+                                <td>
+                                    <div class="attendance-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 92%;"></div>
+                                        </div>
+                                        <span class="attendance-percent">92%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="#" class="action-btn">View Details</a>
+                                </td>
+                            </tr>
+
+                            <tr class="student-row">
+                                <td>
+                                    <div class="student-info">
+                                        <div class="student-avatar">SJ</div>
+                                        <div class="student-details">
+                                            <h4>Sarah Johnson</h4>
+                                            <p>Student ID: #ST003</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>16</td>
+                                <td>
+                                    <div class="class-badge">SEC <span>2A</span></div>
+                                </td>
+                                <td>
+                                    <div class="attendance-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 78%;"></div>
+                                        </div>
+                                        <span class="attendance-percent">78%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="#" class="action-btn">View Details</a>
+                                </td>
+                            </tr>
+
+                            <tr class="student-row">
+                                <td>
+                                    <div class="student-info">
+                                        <div class="student-avatar">MB</div>
+                                        <div class="student-details">
+                                            <h4>Mike Brown</h4>
+                                            <p>Student ID: #ST004</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>15</td>
+                                <td>
+                                    <div class="class-badge">SEC <span>1B</span></div>
+                                </td>
+                                <td>
+                                    <div class="attendance-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 88%;"></div>
+                                        </div>
+                                        <span class="attendance-percent">88%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="#" class="action-btn">View Details</a>
+                                </td>
+                            </tr>
+
+                            <tr class="student-row">
+                                <td>
+                                    <div class="student-info">
+                                        <div class="student-avatar">EM</div>
+                                        <div class="student-details">
+                                            <h4>Emma Wilson</h4>
+                                            <p>Student ID: #ST005</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>12</td>
+                                <td>
+                                    <div class="class-badge">PRY <span>4C</span></div>
+                                </td>
+                                <td>
+                                    <div class="attendance-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 95%;"></div>
+                                        </div>
+                                        <span class="attendance-percent">95%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="#" class="action-btn">View Details</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation functionality
+        document.addEventListener('DOMContentLoaded', function () {
+            // Search functionality
+            const searchInput = document.querySelector('.search-input');
+            const studentRows = document.querySelectorAll('.student-row');
+
+            searchInput.addEventListener('input', function () {
+                const searchTerm = this.value.toLowerCase();
+
+                studentRows.forEach(row => {
+                    const studentName = row.querySelector('.student-details h4').textContent.toLowerCase();
+                    const studentId = row.querySelector('.student-details p').textContent.toLowerCase();
+
+                    if (studentName.includes(searchTerm) || studentId.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+
+            // Filter tabs functionality
+            const filterTabs = document.querySelectorAll('.filter-tab');
+
+            filterTabs.forEach(tab => {
+                tab.addEventListener('click', function () {
+                    // Remove active class from all tabs
+                    filterTabs.forEach(t => t.classList.remove('active'));
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+
+                    const filterType = this.textContent.toLowerCase();
+
+                    studentRows.forEach(row => {
+                        const classText = row.querySelector('.class-badge').textContent.toLowerCase();
+
+                        if (filterType === 'all') {
+                            row.style.display = '';
+                        } else if (filterType === 'primary' && classText.includes('pry')) {
+                            row.style.display = '';
+                        } else if (filterType === 'secondary' && classText.includes('sec')) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            // Navigation item clicks
+            // const navItems = document.querySelectorAll('.nav-item');
+            // navItems.forEach(item => {
+            //     item.addEventListener('click', function(e) {
+            //         e.preventDefault();
+            //         navItems.forEach(nav => nav.classList.remove('active'));
+            //         this.classList.add('active');
+            //     });
+            // });
+        });
+
+        // Action card functions
+        function addSingleStudent() {
+            alert('Add Single Student functionality would be implemented here');
+        }
+
+        async function uploadExcelSheet() {
+            // Create a modal or overlay for the upload interface
+            const modal = document.createElement('div');
+            modal.className = 'upload-modal';
+            modal.innerHTML = `
+                <div class="upload-modal-content">
+                    <div class="upload-modal-header">
+                        <h2>Upload Student Excel Sheet</h2>
+                        <button class="close-modal" onclick="closeUploadModal()">&times;</button>
+                    </div>
+                    <div class="upload-modal-body">
+                        <p>Please upload an Excel file with the following columns:</p>
+                        <ul>
+                            <li>Full Name (required)</li>
+                            <li>Email (required)</li>
+                            <li>Date of Birth (optional)</li>
+                            <li>Gender (optional)</li>
+                            <li>Admission Date (optional)</li>
+                        </ul>
+                        <div id="dragDropContainer"></div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Import the multiple student registration module
+            const { createDragDropArea } = await import('../../scripts/schoolAdminScripts/multipleStudentReg.js');
+
+            // Create and append the drag-drop area
+            const dragDropArea = createDragDropArea();
+            document.getElementById('dragDropContainer').appendChild(dragDropArea);
+
+            // Add some basic styling for the modal
+            const style = document.createElement('style');
+            style.textContent = `
+                .upload-modal {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000;
+                }
+                .upload-modal-content {
+                    background: white;
+                    padding: 20px;
+                    border-radius: 8px;
+                    max-width: 500px;
+                    width: 90%;
+                }
+                .upload-modal-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 20px;
+                }
+                .close-modal {
+                    background: none;
+                    border: none;
+                    font-size: 24px;
+                    cursor: pointer;
+                }
+                #dragDropArea {
+                    border: 2px dashed #ccc;
+                    border-radius: 8px;
+                    padding: 40px;
+                    text-align: center;
+                    margin: 20px 0;
+                    transition: border-color 0.3s;
+                }
+                #dragDropArea.drag-over {
+                    border-color: #007bff;
+                    background-color: #f8f9fa;
+                }
+                .drag-drop-content h3 {
+                    margin: 10px 0;
+                    color: #333;
+                }
+                .drag-drop-content p {
+                    color: #666;
+                }
+                .file-link {
+                    color: #007bff;
+                    cursor: pointer;
+                    text-decoration: underline;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        function closeUploadModal() {
+            const modal = document.querySelector('.upload-modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- <script src="../../scripts/config.js"></script> -->
+    <script src="../../scripts/font-awesome.js"></script>
+    <script src="../../scripts/side.js"></script>
+
+    <script src="../../scripts/schoolAdminScripts/students_scripts/singleStudentRegScript.js" type="module"></script>
+
+    <script src="../../scripts/schoolAdminScripts/students_scripts/singleStudentRegForm.js" type="module"></script>
+
+    <script src="../../scripts/schoolAdminScripts/students_scripts/viewAllStudents.js" type="module"></script>
+
+    <script src="../../scripts/schoolAdminScripts/popup.js"></script>
+</body>
+
+</html>

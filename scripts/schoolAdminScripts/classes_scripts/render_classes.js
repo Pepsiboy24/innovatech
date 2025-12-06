@@ -34,7 +34,7 @@ loadClasses()
             container.append(card)
             class_name.textContent = elem.class_name
             class_section.textContent = elem.section
-            teacher_name.textContent = elem.Teachers.first_name
+            teacher_name.textContent = `${elem.Teachers.first_name} ${elem.Teachers.last_name}`
             class_name.textContent = elem.class_name
 
 
