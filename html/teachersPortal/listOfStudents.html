@@ -1,5 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+<<<<<<< HEAD
+=======
+<html lang="en">
+>>>>>>> Collins
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -636,6 +640,7 @@
     </main>
 
     <script>
+<<<<<<< HEAD
         // Sidebar functionality
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -675,3 +680,96 @@
     </script>
 </body>
 </html>
+=======
+        // Supabase configuration
+        const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentTeacher = { id: 'teacher_johnson', name: 'Mrs. Johnson', classes: ['5B', '6A'] };
+        let currentClass = '5B';
+        let allStudents = [];
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDate();
+            loadTeacherClasses();
+            loadStudents(currentClass);
+            setupEventListeners();
+        });
+
+        // Function definitions
+        function updateDate() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const dateString = now.toLocaleDateString('en-US', options);
+            document.querySelector('.welcome-msg p').textContent = dateString;
+        }
+
+        function loadTeacherClasses() {
+            // Load teacher classes from Supabase or local storage
+            // For now, using static data
+            console.log('Loading teacher classes...');
+        }
+
+        function loadStudents(className) {
+            // Load students for the selected class
+            // For now, using static data
+            console.log('Loading students for class:', className);
+        }
+
+        function setupEventListeners() {
+            // Setup mobile sidebar toggle
+            const openSidebarBtn = document.getElementById('openSidebar');
+            const closeSidebarBtn = document.getElementById('closeSidebar');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const mainContent = document.getElementById('mainContent');
+
+            if (openSidebarBtn) {
+                openSidebarBtn.addEventListener('click', function() {
+                    sidebar.classList.add('mobile-visible');
+                    overlay.classList.add('active');
+                    mainContent.classList.add('full-width');
+                });
+            }
+
+            if (closeSidebarBtn) {
+                closeSidebarBtn.addEventListener('click', function() {
+                    sidebar.classList.remove('mobile-visible');
+                    overlay.classList.remove('active');
+                    mainContent.classList.remove('full-width');
+                });
+            }
+
+            if (overlay) {
+                overlay.addEventListener('click', function() {
+                    sidebar.classList.remove('mobile-visible');
+                    overlay.classList.remove('active');
+                    mainContent.classList.remove('full-width');
+                });
+            }
+
+            // Add student button functionality
+            const addStudentBtn = document.querySelector('.add-student-btn');
+            if (addStudentBtn) {
+                addStudentBtn.addEventListener('click', function() {
+                    alert('Add student functionality would be implemented here');
+                });
+            }
+
+            // View all buttons functionality
+            const viewAllBtns = document.querySelectorAll('.view-all-btn');
+            viewAllBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const studentName = this.closest('tr').querySelector('.student-info p').textContent;
+                    alert(`View all details for ${studentName}`);
+                });
+            });
+        }
+    </script>
+
+</body>
+</html>
+>>>>>>> Collins

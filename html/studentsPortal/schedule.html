@@ -18,11 +18,19 @@
                 <h2>EduHub</h2>
             </div>
             <nav class="sidebar-nav">
+<<<<<<< HEAD
                 <a href="#" class="nav-item active">
                     <i class="fas fa-home"></i>
                     Dashboard
                 </a>
                 <a href="#" class="nav-item">
+=======
+                <a href="./studentPortal.html" class="nav-item">
+                    <i class="fas fa-home"></i>
+                    Dashboard
+                </a>
+                <a href="./studentClasses.html" class="nav-item">
+>>>>>>> Collins
                     <i class="fas fa-calendar-alt"></i>
                     Classes
                 </a>
@@ -30,10 +38,14 @@
                     <i class="fas fa-book"></i>
                     Study Materials
                 </a>
+<<<<<<< HEAD
                 <a href="#" class="nav-item">
                     <i class="fas fa-users"></i>
                     Social
                 </a>
+=======
+
+>>>>>>> Collins
             </nav>
         </aside>
 
@@ -52,7 +64,11 @@
                     <button class="profile-btn">
                         A
                     </button>
+<<<<<<< HEAD
                     <button class="nav-btn" data-nav-dispaly>
+=======
+                    <button class="nav-btn" data-nav-display>
+>>>>>>> Collins
                       <i class="fa fa-bars" data-ie></i>
                     </button>
                 </div>
@@ -257,6 +273,7 @@
         </main>
     </div>
     <script>
+<<<<<<< HEAD
       const navOpen = document.querySelector("[data-nav-dispaly]");
       const nav = document.querySelector("[data-nav]");
       const i = document.querySelector("[data-ie]")
@@ -268,6 +285,14 @@
           i.className = "";
           i.classList.add("fa", "fa-bars"); 
         }
+=======
+      const navOpen = document.querySelector("[data-nav-display]");
+      const nav = document.querySelector("[data-nav]");
+      const i = document.querySelector("[data-ie]")
+      navOpen.addEventListener("click", () => {
+        i.classList.toggle("fa-bars");
+        i.classList.toggle("fa-times");
+>>>>>>> Collins
         nav.classList.toggle("show")
       })
     </script>
