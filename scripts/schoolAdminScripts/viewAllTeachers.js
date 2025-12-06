@@ -24,6 +24,29 @@ async function fetchTeachers() {
     }
 }
 
+// Function to fetch all classes and create a map of teacher_id to class name
+async function fetchTeacherClasses() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('Classes')
+            .select('teacher_id, class_name, section');
+
+        if (error) {
+            console.error('Error fetching classes:', error);
+            return {};
+        }
+
+        const classMap = {};
+        data.forEach(cls => {
+            classMap[cls.teacher_id] = `${cls.class_name} ${cls.section}`;
+        });
+        return classMap;
+    } catch (err) {
+        console.error('Unexpected error fetching classes:', err);
+        return {};
+    }
+}
+
 // Function to calculate age from date of birth
 function calculateAge(dateOfBirth) {
     if (!dateOfBirth) return 'N/A';
@@ -88,7 +111,7 @@ function getPrimarySubject(subjects) {
 }
 
 // Function to render teachers in the table
-function renderTeachers(teachers) {
+function renderTeachers(teachers, classMap = {}) {
     const tbody = document.querySelector('.students-table tbody');
     if (!tbody) {
         console.error('Teachers table tbody not found');
@@ -116,6 +139,9 @@ function renderTeachers(teachers) {
         const jobTitle = getJobTitleDisplay(teacher.job_title);
         const primarySubject = getPrimarySubject(teacher.subjects);
 
+        // Get the class name from the classMap, fallback to job title if no class assigned
+        const className = classMap[teacher.teacher_id] || jobTitle;
+
         // For now, using a default attendance percentage since it's not in the teachers table
         // In a real implementation, you might fetch this from an attendance table
         const attendancePercent = 90; // Default value for teachers
@@ -133,7 +159,7 @@ function renderTeachers(teachers) {
                 </td>
                 <td>${age}</td>
                 <td>
-                    <div class="class-badge">${jobTitle}</div>
+                    <div class="class-badge">${className}</div>
                 </td>
                 <td>
                     <div class="attendance-progress">
@@ -144,7 +170,7 @@ function renderTeachers(teachers) {
                     </div>
                 </td>
                 <td>
-                    <a href="#" class="action-btn" data-teacher-id="${teacher.id}">View Details</a>
+                    <a href="#" class="action-btn" data-teacher-id="${teacher.id}">View</a>
                 </td>
             </tr>
         `;
@@ -198,9 +224,10 @@ function filterTeachersByGrade(teachers, gradeFilter) {
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('Loading teachers...');
     let allTeachers = await fetchTeachers();
+    let classMap = await fetchTeacherClasses();
     let filteredTeachers = [...allTeachers];
 
-    renderTeachers(filteredTeachers);
+    renderTeachers(filteredTeachers, classMap);
     console.log(`Loaded ${allTeachers.length} teachers`);
 
     // Set up search functionality
@@ -209,7 +236,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         searchInput.addEventListener('input', function() {
             const searchTerm = this.value.trim();
             filteredTeachers = filterTeachers(allTeachers, searchTerm);
-            renderTeachers(filteredTeachers);
+            renderTeachers(filteredTeachers, classMap);
         });
     }
 
@@ -225,11 +252,128 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const filterType = this.textContent.toLowerCase();
                 filteredTeachers = filterTeachersByGrade(allTeachers, filterType);
-                renderTeachers(filteredTeachers);
+                renderTeachers(filteredTeachers, classMap);
             });
         });
     }
 });
 
+// Function to populate teacher details popup
+function populateTeacherDetails(teacher, classMap = {}) {
+    // Basic info
+    const fullName = getFullName(teacher.first_name, teacher.last_name, teacher.middle_name);
+    const initials = getInitials(teacher.first_name, teacher.last_name);
+    const age = calculateAge(teacher.date_of_birth);
+    const jobTitle = getJobTitleDisplay(teacher.job_title);
+    const className = classMap[teacher.teacher_id] || jobTitle;
+
+    document.getElementById('teacherAvatarLarge').textContent = initials;
+    document.getElementById('teacherFullName').textContent = fullName;
+    document.getElementById('teacherId').textContent = `Teacher ID: #T${teacher.id || 'N/A'}`;
+    document.getElementById('teacherJobTitle').textContent = jobTitle;
+    document.getElementById('teacherClass').textContent = className;
+
+    // Personal Information
+    document.getElementById('detailFirstName').textContent = teacher.first_name || 'N/A';
+    document.getElementById('detailMiddleName').textContent = teacher.middle_name || 'N/A';
+    document.getElementById('detailLastName').textContent = teacher.last_name || 'N/A';
+    document.getElementById('detailDateOfBirth').textContent = teacher.date_of_birth ? new Date(teacher.date_of_birth).toLocaleDateString() : 'N/A';
+    document.getElementById('detailAge').textContent = age;
+    document.getElementById('detailGender').textContent = teacher.gender ? teacher.gender.charAt(0).toUpperCase() + teacher.gender.slice(1) : 'N/A';
+
+    // Contact Information
+    document.getElementById('detailAddress').textContent = teacher.address || 'N/A';
+    document.getElementById('detailMobilePhone').textContent = teacher.mobile_phone || 'N/A';
+    document.getElementById('detailHomePhone').textContent = teacher.home_phone || 'N/A';
+    document.getElementById('detailPersonalEmail').textContent = teacher.personal_email || 'N/A';
+    document.getElementById('detailEmergencyContact').textContent = teacher.emergency_contact_name || 'N/A';
+    document.getElementById('detailEmergencyPhone').textContent = teacher.emergency_contact_phone || 'N/A';
+
+    // Professional Qualifications
+    document.getElementById('detailHighestDegree').textContent = teacher.highest_degree || 'N/A';
+    document.getElementById('detailDegreeMajor').textContent = teacher.degree_major || 'N/A';
+    document.getElementById('detailInstitution').textContent = teacher.institution || 'N/A';
+    document.getElementById('detailGraduationYear').textContent = teacher.graduation_year || 'N/A';
+    document.getElementById('detailTeachingLicense').textContent = teacher.teaching_license || 'N/A';
+    document.getElementById('detailLicenseExpiry').textContent = teacher.license_expiry ? new Date(teacher.license_expiry).toLocaleDateString() : 'N/A';
+
+    // Subjects
+    const subjectsContainer = document.getElementById('detailSubjects');
+    subjectsContainer.innerHTML = '';
+    if (teacher.subjects && Array.isArray(teacher.subjects)) {
+        teacher.subjects.forEach(subject => {
+            const span = document.createElement('span');
+            span.textContent = subject;
+            subjectsContainer.appendChild(span);
+        });
+    } else {
+        subjectsContainer.innerHTML = '<span>N/A</span>';
+    }
+
+    // Grade Levels
+    const gradeLevelsContainer = document.getElementById('detailGradeLevels');
+    gradeLevelsContainer.innerHTML = '';
+    if (teacher.grade_levels && Array.isArray(teacher.grade_levels)) {
+        teacher.grade_levels.forEach(level => {
+            const span = document.createElement('span');
+            span.textContent = level;
+            gradeLevelsContainer.appendChild(span);
+        });
+    } else {
+        gradeLevelsContainer.innerHTML = '<span>N/A</span>';
+    }
+
+    // Teaching Experience
+    document.getElementById('detailTotalExperience').textContent = teacher.total_experience || 'N/A';
+    document.getElementById('detailPreviousSchool').textContent = teacher.previous_school || 'N/A';
+    document.getElementById('detailPreviousPosition').textContent = teacher.previous_position || 'N/A';
+    document.getElementById('detailPreviousDuration').textContent = teacher.previous_duration || 'N/A';
+    document.getElementById('detailProfessionalDevelopment').textContent = teacher.professional_development || 'N/A';
+
+    // Employment Details
+    document.getElementById('detailStartDate').textContent = teacher.start_date ? new Date(teacher.start_date).toLocaleDateString() : 'N/A';
+    document.getElementById('detailJobTitle').textContent = jobTitle;
+    document.getElementById('detailContractType').textContent = teacher.contract_type || 'N/A';
+    document.getElementById('detailSalary').textContent = teacher.salary ? `$${teacher.salary.toLocaleString()}` : 'N/A';
+
+    // Specialized Roles
+    const rolesContainer = document.getElementById('detailSpecializedRoles');
+    rolesContainer.innerHTML = '';
+    if (teacher.specialized_roles && Array.isArray(teacher.specialized_roles)) {
+        teacher.specialized_roles.forEach(role => {
+            const span = document.createElement('span');
+            span.textContent = role;
+            rolesContainer.appendChild(span);
+        });
+    } else {
+        rolesContainer.innerHTML = '<span>N/A</span>';
+    }
+
+    // Background & Medical Info
+    document.getElementById('detailWorkAuthorization').textContent = teacher.work_authorization || 'N/A';
+    document.getElementById('detailBackgroundCheck').textContent = teacher.background_check || 'N/A';
+    document.getElementById('detailReferences').textContent = teacher.references || 'N/A';
+    document.getElementById('detailAllergies').textContent = teacher.allergies || 'N/A';
+    document.getElementById('detailMedicalConditions').textContent = teacher.medical_conditions || 'N/A';
+    document.getElementById('detailMedications').textContent = teacher.medications || 'N/A';
+}
+
+// Function to show teacher details popup
+function showTeacherDetailsPopup(teacher, classMap) {
+    populateTeacherDetails(teacher, classMap);
+    const popup = document.getElementById('teacherDetailsPopup');
+    if (popup) {
+        popup.style.display = 'flex';
+    }
+}
+
+// Function to hide teacher details popup
+function hideTeacherDetailsPopup() {
+    const popup = document.getElementById('teacherDetailsPopup');
+    if (popup) {
+        popup.style.display = 'none';
+    }
+}
+
 // Export functions for potential use in other modules
-export { fetchTeachers, renderTeachers, calculateAge, getJobTitleDisplay, getInitials, getFullName, getPrimarySubject, filterTeachers, filterTeachersByGrade };
+export { fetchTeachers, fetchTeacherClasses, renderTeachers, calculateAge, getJobTitleDisplay, getInitials, getFullName, getPrimarySubject, filterTeachers, filterTeachersByGrade, populateTeacherDetails, showTeacherDetailsPopup, hideTeacherDetailsPopup };

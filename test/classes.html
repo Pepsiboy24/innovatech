@@ -108,10 +108,17 @@
         <section class="classes-section">
           <div class="section-header">
             <h1>My Classes</h1>
-            <button class="btn-primary" id="createClassBtn">
-              <i class="fas fa-plus"></i>
-              <span>Create New Class</span>
-            </button>
+            <div class="header-actions">
+              <input type="file" id="csvUpload" accept=".csv" style="display: none;" />
+              <button class="btn-secondary" id="uploadCsvBtn">
+                <i class="fas fa-upload"></i>
+                <span>Upload CSV</span>
+              </button>
+              <button class="btn-primary" id="createClassBtn">
+                <i class="fas fa-plus"></i>
+                <span>Create New Class</span>
+              </button>
+            </div>
           </div>
 
           <div class="filter-bar">
@@ -225,6 +232,8 @@
     <script type="module" src="../../scripts/schoolAdminScripts/classes_scripts/classesModal.js"></script>
 
     <script type="module" src="../../scripts/schoolAdminScripts/classes_scripts/searchableDropdown.js"></script>
+
+    <script type="module" src="../../scripts/schoolAdminScripts/classes_scripts/csvUpload.js"></script>
 
     <script type="module" src="../../scripts/schoolAdminScripts/classes_scripts/classes.js"></script>
     <script type="module" src="../../scripts/schoolAdminScripts/classes_scripts/render_classes.js"></script>

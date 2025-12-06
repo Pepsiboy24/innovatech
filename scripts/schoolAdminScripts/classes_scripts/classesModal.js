@@ -50,16 +50,16 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-mobileMenuBtn.addEventListener("click", () => {
-  sidebar.classList.add("active");
-  overlay.classList.add("active");
-});
+// mobileMenuBtn.addEventListener("click", () => {
+//   sidebar.classList.add("active");
+//   overlay.classList.add("active");
+// });
 
-menuToggle.addEventListener("click", () => {
-  sidebar.classList.remove("active");
-  overlay.classList.remove("active");
-});
+// menuToggle.addEventListener("click", () => {
+//   sidebar.classList.remove("active");
+//   overlay.classList.remove("active");
+// });
 
-overlay.addEventListener("click", () => {
-  sidebar.classList.remove("active");
-});
+// overlay.addEventListener("click", () => {
+//   sidebar.classList.remove("active");
+// });
