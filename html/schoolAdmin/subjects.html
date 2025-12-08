@@ -356,11 +356,11 @@
         <div class="students-section">
             <div class="section-header">
                 <h2 class="section-title">Subject List</h2>
-                <div class="filter-tabs">
+                <!-- <div class="filter-tabs">
                     <div class="filter-tab active">All</div>
                     <div class="filter-tab">Primary</div>
                     <div class="filter-tab">Secondary</div>
-                </div>
+                </div> -->
             </div>
 
             <div class="table-container">
@@ -369,111 +369,30 @@
                         <tr>
                             <th>Subject Name</th>
                             <th>Type</th>
-                            <th>Classes Offered</th>
-                            <th>Teachers Assigned</th>
+                            <!-- <th>Classes Offered</th>
+                            <th>Teachers Assigned</th> -->
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="student-row">
-                            <td>
-                                <div class="student-info">
-                                    <div class="student-avatar">MA</div>
-                                    <div class="student-details">
-                                        <h4>Mathematics</h4>
-                                        <p>ID: #SUB001</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="class-badge">Core</div>
-                            </td>
-                            <td>JSS1, JSS2, JSS3, SSS1, SSS2, SSS3</td>
-                            <td>3 Teachers</td>
-                            <td><a href="#" class="action-btn">View</a></td>
-                        </tr>
-                        <tr class="student-row">
-                            <td>
-                                <div class="student-info">
-                                    <div class="student-avatar">EN</div>
-                                    <div class="student-details">
-                                        <h4>English Language</h4>
-                                        <p>ID: #SUB002</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="class-badge">Core</div>
-                            </td>
-                            <td>JSS1, JSS2, JSS3, SSS1, SSS2, SSS3</td>
-                            <td>4 Teachers</td>
-                            <td><a href="#" class="action-btn">View</a></td>
-                        </tr>
-                        <tr class="student-row">
-                            <td>
-                                <div class="student-info">
-                                    <div class="student-avatar">SC</div>
-                                    <div class="student-details">
-                                        <h4>Basic Science</h4>
-                                        <p>ID: #SUB003</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="class-badge">Core</div>
-                            </td>
-                            <td>JSS1, JSS2, JSS3</td>
-                            <td>2 Teachers</td>
-                            <td><a href="#" class="action-btn">View</a></td>
-                        </tr>
-                        <tr class="student-row">
-                            <td>
-                                <div class="student-info">
-                                    <div class="student-avatar">HI</div>
-                                    <div class="student-details">
-                                        <h4>History</h4>
-                                        <p>ID: #SUB004</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="class-badge">Elective</div>
-                            </td>
-                            <td>SSS1, SSS2, SSS3</td>
-                            <td>1 Teacher</td>
-                            <td><a href="#" class="action-btn">View</a></td>
-                        </tr>
-                        <tr class="student-row">
-                            <td>
-                                <div class="student-info">
-                                    <div class="student-avatar">AR</div>
-                                    <div class="student-details">
-                                        <h4>Art & Design</h4>
-                                        <p>ID: #SUB005</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="class-badge">Elective</div>
-                            </td>
-                            <td>JSS1, JSS2, JSS3, SSS1, SSS2, SSS3</td>
-                            <td>2 Teachers</td>
-                            <td><a href="#" class="action-btn">View</a></td>
-                        </tr>
+                        
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
     <script src="../../scripts/font-awesome.js"></script>
-    <!-- <script src="../../scripts/side.js"></script> -->
-    <!-- <script src="../../scripts/schoolAdminScripts/popup.js"></script> -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- <script src="../../scripts/config.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../../scripts/config.js" type="module"></script>
+    <script src="../../scripts/schoolAdminScripts/subjects_scripts/single_subject_upload.js"></script>
+    <script src="../../scripts/schoolAdminScripts/subjects_scripts/excel_subject_upload.js"></script>
+    <script src="../../scripts/schoolAdminScripts/subjects_scripts/display_subects.js"></script>
+
+
     <!-- <script src="../../scripts/schoolAdminScripts/teachersForm.js" type="module"></script>
     <script src="../../scripts/schoolAdminScripts/teachersFormDB.js" type="module"></script> -->
-    <script src="../../scripts/schoolAdminScripts/viewAllTeachers.js" type="module"></script>
+    <!-- <script src="../../scripts/schoolAdminScripts/viewAllTeachers.js" type="module"></script> -->
 
     <script>
         // Sidebar Toggle
@@ -515,26 +434,7 @@
             });
         }
 
-        // Handle Form Submission
-        document.getElementById('subjectForm').addEventListener('submit', (e) => {
-            e.preventDefault();
 
-            const subjectName = document.getElementById('subjectName').value;
-            const subjectType = document.querySelector('input[name="subjectType"]:checked').value;
-
-            // Here you would typically send the data to your backend
-            console.log('Subject Name:', subjectName);
-            console.log('Subject Type:', subjectType);
-
-            // Close the popup
-            document.getElementById('registrationPopup').style.display = 'none';
-
-            // Reset form
-            document.getElementById('subjectForm').reset();
-
-            // You could add a success message or refresh the table here
-            alert(`Subject "${subjectName}" (${subjectType}) added successfully!`);
-        });
 
         // Search and Filter Functionality
         document.addEventListener('DOMContentLoaded', function () {
@@ -588,120 +488,7 @@
             });
         });
 
-        // Upload Excel Functionality
-        async function uploadExcelSheet() {
-            // Create a modal or overlay for the upload interface
-            const modal = document.createElement('div');
-            modal.className = 'upload-modal';
-            modal.innerHTML = `
-                <div class="upload-modal-content">
-                    <div class="upload-modal-header">
-                        <h2>Upload Teacher Excel Sheet</h2>
-                        <button class="close-modal" onclick="closeUploadModal()">&times;</button>
-                    </div>
-                    <div class="upload-modal-body">
-                        <p>Please upload an Excel file with the required columns (First Name, Last Name, Email, etc.)</p>
-                        <div id="dragDropContainer"></div>
-                    </div>
-                </div>
-            `;
 
-            document.body.appendChild(modal);
-
-            // Add styles dynamically if not present
-            if (!document.getElementById('upload-modal-styles')) {
-                const style = document.createElement('style');
-                style.id = 'upload-modal-styles';
-                style.textContent = `
-                    .upload-modal {
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        background: rgba(0, 0, 0, 0.5);
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        z-index: 10001;
-                        backdrop-filter: blur(4px);
-                    }
-                    .upload-modal-content {
-                        background: white;
-                        padding: 32px;
-                        border-radius: 16px;
-                        max-width: 500px;
-                        width: 90%;
-                        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-                    }
-                    .upload-modal-header {
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        margin-bottom: 24px;
-                    }
-                    .upload-modal-header h2 {
-                        font-size: 20px;
-                        font-weight: 700;
-                        color: #1e293b;
-                    }
-                    .close-modal {
-                        background: none;
-                        border: none;
-                        font-size: 24px;
-                        cursor: pointer;
-                        color: #64748b;
-                    }
-                    .upload-modal-body p {
-                        color: #64748b;
-                        margin-bottom: 12px;
-                    }
-                    #dragDropArea {
-                        border: 2px dashed #e2e8f0;
-                        border-radius: 12px;
-                        padding: 40px;
-                        text-align: center;
-                        margin: 20px 0;
-                        transition: all 0.3s;
-                        background: #f8fafc;
-                        cursor: pointer;
-                    }
-                    #dragDropArea:hover, #dragDropArea.drag-over {
-                        border-color: #6200ea;
-                        background-color: #ede7f6;
-                    }
-                `;
-                document.head.appendChild(style);
-            }
-
-            // Placeholder for drag drop area
-            const container = document.getElementById('dragDropContainer');
-            container.innerHTML = `
-                <div id="dragDropArea">
-                    <i class="fa-solid fa-cloud-arrow-up" style="font-size: 48px; color: #6200ea; margin-bottom: 16px;"></i>
-                    <h3>Drag & Drop or Click to Upload</h3>
-                    <p>Supported formats: .xlsx, .xls</p>
-                </div>
-            `;
-
-            // Add click listener to placeholder
-            document.getElementById('dragDropArea').addEventListener('click', () => {
-                alert('File selection dialog would open here');
-            });
-        }
-
-        function closeUploadModal() {
-            const modal = document.querySelector('.upload-modal');
-            if (modal) {
-                modal.remove();
-            }
-        }
-
-        // Attach upload function to the button
-        const uploadBtn = document.querySelector('.action-icon.add-multiple').parentElement;
-        if (uploadBtn) {
-            uploadBtn.addEventListener('click', uploadExcelSheet);
-        }
     </script>
 </body>
 
