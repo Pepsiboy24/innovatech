@@ -78,7 +78,7 @@
         </div>
 
         <div class="toolbar">
-            <button class="btn btn-primary" data-create_time_table>
+            <button class="btn btn-primary" onclick="window.location.href='./create_timetable_setup.html'" data-create_time_table>
                 <i class="fa-solid fa-plus"></i>
                 Create New Timetable
             </button>
@@ -90,124 +90,13 @@
             </button>
         </div>
 
+
         <!-- Timetables Grid -->
-        <div class="timetables-grid">
-            <!-- JSS1 Timetable -->
-            <div class="timetable-card" data-class-id="1">
-                <div class="timetable-header">
-                    <div>
-                        <h3 class="timetable-title">JSS1 Timetable</h3>
-                        <p class="timetable-subtitle">Junior Secondary School Year 1</p>
-                    </div>
-                    <div class="icon"><i class="fa-solid fa-ellipsis"></i></div>
-                </div>
-
-                <table class="schedule-table">
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Mon</th>
-                            <th>Tue</th>
-                            <th>Wed</th>
-                            <th>Thu</th>
-                            <th>Fri</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>08:00</td>
-                            <td><span class="subject-cell">MATH</span><span class="room-cell">Rm 101</span></td>
-                            <td><span class="subject-cell">SCI</span><span class="room-cell">Lab 1</span></td>
-                            <td><span class="subject-cell">ENG</span><span class="room-cell">Rm 102</span></td>
-                            <td><span class="subject-cell">MATH</span><span class="room-cell">Rm 101</span></td>
-                            <td><span class="subject-cell">ART</span><span class="room-cell">Art Rm</span></td>
-                        </tr>
-                        <tr>
-                            <td>09:00</td>
-                            <td><span class="subject-cell">ENG</span><span class="room-cell">Rm 102</span></td>
-                            <td>-</td>
-                            <td><span class="subject-cell">ICT</span><span class="room-cell">Comp Lab</span></td>
-                            <td>-</td>
-                            <td>-</td>
-                        </tr>
-                        <tr>
-                            <td>10:00</td>
-                            <td colspan="5" class="break">Break</td>
-                        </tr>
-                        <tr>
-                            <td>10:30</td>
-                            <td>-</td>
-                            <td><span class="subject-cell">HIS</span><span class="room-cell">Rm 103</span></td>
-                            <td>-</td>
-                            <td><span class="subject-cell">ENG</span><span class="room-cell">Rm 102</span></td>
-                            <td>-</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <div class="card-footer">
-                    <button class="btn-view">View Full Timetable</button>
-                    <button class="btn-icon"><i class="fa-solid fa-pen"></i></button>
-                </div>
-            </div>
-
-            <!-- Year 1 Math Timetable -->
-            <div class="timetable-card" data-class-id="2">
-                <div class="timetable-header">
-                    <div>
-                        <h3 class="timetable-title">Year 1 Math Stream</h3>
-                        <p class="timetable-subtitle">Advanced Mathematics</p>
-                    </div>
-                    <div class="icon"><i class="fa-solid fa-ellipsis"></i></div>
-                </div>
-
-                <table class="schedule-table">
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Mon</th>
-                            <th>Tue</th>
-                            <th>Wed</th>
-                            <th>Thu</th>
-                            <th>Fri</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>08:00</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                        </tr>
-                        <tr>
-                            <td>09:00</td>
-                            <td><span class="subject-cell">ALG</span><span class="room-cell">Rm 201</span></td>
-                            <td><span class="subject-cell">GEO</span><span class="room-cell">Rm 202</span></td>
-                            <td><span class="subject-cell">STAT</span><span class="room-cell">Rm 201</span></td>
-                            <td><span class="subject-cell">ALG</span><span class="room-cell">Rm 201</span></td>
-                            <td>-</td>
-                        </tr>
-                        <tr>
-                            <td>10:00</td>
-                            <td colspan="5" class="break">Break</td>
-                        </tr>
-                        <tr>
-                            <td>10:30</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td><span class="subject-cell">STAT</span><span class="room-cell">Rm 201</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <div class="card-footer">
-                    <button class="btn-view">View Full Timetable</button>
-                    <button class="btn-icon"><i class="fa-solid fa-pen"></i></button>
-                </div>
+        <div class="timetables-grid" id="timetablesGrid">
+            <!-- Dynamic timetable cards will be loaded here -->
+            <div class="loading-message">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                Loading timetables...
             </div>
         </div>
     </div>
@@ -288,11 +177,13 @@
         </div>
     </div>
 
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../../scripts/config.js" type="module"></script>
     <script src="../../scripts/schoolAdminScripts/time_table_scripts/supabase-timetable.js"></script>
     <script src="../../scripts/schoolAdminScripts/time_table_scripts/timetable.js"></script>
+    <script src="../../scripts/schoolAdminScripts/time_table_scripts/timeTable-display.js" type="module"></script>
 
     <script>
         // Sidebar Toggle

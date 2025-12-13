@@ -559,16 +559,15 @@
                             <input type="time" id="startTime" name="start_time" value="08:00" required>
                         </div>
                         <div class="form-group">
-                            <label for="periodDuration">Period Duration (minutes) *</label>
-                            <input type="number" id="periodDuration" name="period_duration" value="40" min="15"
-                                max="120" required>
+                            <label for="endTime">School End Time *</label>
+                            <input type="time" id="endTime" name="end_time" value="16:00" required>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="periodsPerDay">Periods Per Day *</label>
-                            <input type="number" id="periodsPerDay" name="periods_per_day" value="8" min="1" max="12"
-                                required>
+                            <label for="periodDuration">Period Duration (minutes) *</label>
+                            <input type="number" id="periodDuration" name="period_duration" value="40" min="15"
+                                max="120" required>
                         </div>
                     </div>
                 </div>
@@ -642,10 +641,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../../scripts/config.js" type="module"></script>
-    <script src="../../scripts/schoolAdminScripts/time_table_scripts/supabase-timetable.js"></script>
-    <script src="../../scripts/schoolAdminScripts/time_table_scripts/timetable-wizard.js"></script>
+    <script src="../../scripts/schoolAdminScripts/time_table_scripts/timetable-wizard.js" type="module"></script>
 
     <script>
         // Sidebar Toggle

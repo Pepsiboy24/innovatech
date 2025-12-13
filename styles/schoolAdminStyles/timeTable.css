@@ -218,9 +218,164 @@ body {
     margin-bottom: 4px;
 }
 
+
 .timetable-subtitle {
     font-size: 13px;
     color: var(--text-gray);
+}
+
+/* Timetable Actions */
+.timetable-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Timetable Summary */
+.timetable-summary {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: var(--bg-light);
+    border-radius: 8px;
+    font-size: 12px;
+}
+
+.summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.summary-label {
+    color: var(--text-gray);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.summary-value {
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+/* Table Cell States */
+.empty-slot {
+    color: var(--border);
+    font-style: italic;
+}
+
+.has-entry {
+    background: rgba(98, 0, 234, 0.02);
+}
+
+.has-entry:hover {
+    background: rgba(98, 0, 234, 0.05);
+}
+
+/* Loading and Message States */
+.loading-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 40px;
+    color: var(--text-gray);
+    font-size: 16px;
+    font-weight: 500;
+    grid-column: 1 / -1;
+}
+
+.loading-message i {
+    font-size: 20px;
+}
+
+.no-timetables-message,
+.error-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 40px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    grid-column: 1 / -1;
+    margin: 0 auto;
+}
+
+.no-timetables-message i,
+.error-message i {
+    font-size: 48px;
+    color: var(--text-gray);
+    margin-bottom: 16px;
+}
+
+.error-message i {
+    color: var(--warning);
+}
+
+.no-timetables-message h3,
+.error-message h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+}
+
+.no-timetables-message p,
+.error-message p {
+    color: var(--text-gray);
+    font-size: 14px;
+    margin-bottom: 24px;
+    max-width: 400px;
+}
+
+/* Button States */
+.toolbar .btn.active {
+    background: var(--primary);
+    color: var(--white);
+    border-color: var(--primary);
+}
+
+.btn-edit {
+    background: var(--white);
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.btn-edit:hover {
+    background: var(--primary);
+    color: var(--white);
+}
+
+/* Responsive Updates */
+@media (max-width: 767px) {
+    .timetable-summary {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .timetable-actions {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .no-timetables-message,
+    .error-message {
+        padding: 40px 24px;
+    }
 }
 
 /* Clean Grid Schedule */
