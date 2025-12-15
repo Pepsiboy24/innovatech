@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,10 +7,9 @@
     <link rel="stylesheet" href="../../styles/schoolAdminStyles/timeTable.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-
 <body>
-    <!-- Sidebar -->
     <div class="sidebar" data-sideBar>
         <div class="logo">
             <div style="display: flex; align-items: center; gap: 10px;">
@@ -21,48 +19,9 @@
             <div class="icon" data-sideBarClose><i class="fa fa-times"></i></div>
         </div>
         <nav>
-            <a href="./school_dashboard.html" class="nav-item">
-                <i class="fa-solid fa-table-columns nav-icon"></i>
-                Dashboard
-            </a>
-            <a href="./classes.html" class="nav-item sidebar-item">
-                <i class="fa-solid fa-chalkboard-user nav-icon"></i>
-                <span>Classes</span>
-            </a>
-            <a href="./school_students.html" class="nav-item">
-                <i class="fa-solid fa-user-graduate nav-icon"></i>
-                Students
-            </a>
-            <a href="./school_teachers.html" class="nav-item">
-                <i class="fa-solid fa-chalkboard-teacher nav-icon"></i>
-                Teachers
-            </a>
-            <a href="./subjects.html" class="nav-item">
-                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                </svg>
-                <span>Subjects</span>
-            </a>
-            <a href="./schedule.html" class="nav-item">
-                <i class="fa-regular fa-calendar nav-icon"></i>
-                Schedule
-            </a>
-            <a href="#" class="nav-item active">
-                <i class="fa-solid fa-clock nav-icon"></i>
-                Time Table
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fa-solid fa-clipboard-user nav-icon"></i>
-                Attendance
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fa-solid fa-money-bill-wave nav-icon"></i>
-                Fees
-            </a>
-        </nav>
+            </nav>
     </div>
 
-    <!-- Main Content -->
     <div class="main">
         <div class="header">
             <div class="header-left">
@@ -72,120 +31,209 @@
                     <p class="page-subtitle">Manage class schedules and events</p>
                 </div>
             </div>
-            <div class="header-right">
-                <div class="profile"></div>
-            </div>
         </div>
 
         <div class="toolbar">
-            <button class="btn btn-primary" onclick="window.location.href='./create_timetable_setup.html'" data-create_time_table>
-                <i class="fa-solid fa-plus"></i>
-                Create New Timetable
+            <button class="btn btn-primary" onclick="window.location.href='./create_timetable_setup.html'">
+                <i class="fa-solid fa-plus"></i> Create New Timetable
             </button>
-            <button class="btn">All Timetables</button>
-            <button class="btn">Current Week</button>
-            <button class="btn">
-                <i class="fa-solid fa-filter"></i>
-                Filter by Subject
-            </button>
+            <button class="btn active" onclick="filterTimetables('all')">All Timetables</button>
+            <button class="btn" onclick="filterTimetables('week')">Current Week</button>
         </div>
 
-
-        <!-- Timetables Grid -->
         <div class="timetables-grid" id="timetablesGrid">
-            <!-- Dynamic timetable cards will be loaded here -->
-            <div class="loading-message">
-                <i class="fa-solid fa-spinner fa-spin"></i>
-                Loading timetables...
+            <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #666;">
+                <i class="fa-solid fa-spinner fa-spin"></i> Loading timetables...
             </div>
         </div>
     </div>
 
-    <!-- Modal for Assigning Class -->
-    <div id="assignClassModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Assign Class</h2>
-                <span id="selectedSlot"></span>
-            </div>
-            <div class="modal-body">
-                <label for="subjectSelect">Select Subject:</label>
-                <select id="subjectSelect">
-                    <option value="">-- Select Subject --</option>
-                </select>
-                <label for="teacherSelect">Select Teacher:</label>
-                <select id="teacherSelect">
-                    <option value="">-- Select Teacher --</option>
-                </select>
-                <label for="roomInput">Room Number:</label>
-                <input type="text" id="roomInput" placeholder="Enter room number">
-            </div>
-            <div class="modal-footer">
-                <button id="saveClassBtn">Save Class</button>
-                <button id="cancelBtn">Cancel</button>
-            </div>
-        </div>
-    </div>
+    <script type="module">
+        import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-    <!-- Modal for Creating New Timetable Entry -->
-    <div id="createTimetableModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Create New Timetable Entry</h2>
-            </div>
-            <form id="createTimetableForm">
-                <div class="modal-body">
-                    <label for="classSelect">Select Class:</label>
-                    <select id="classSelect" required>
-                        <option value="">-- Select Class --</option>
-                    </select>
+        // 1. CONFIGURATION
+        const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-                    <label for="subjectSelectCreate">Select Subject:</label>
-                    <select id="subjectSelectCreate" required>
-                        <option value="">-- Select Subject --</option>
-                    </select>
+        // Global State
+        let globalData = {
+            classes: [],
+            subjects: [],
+            configs: [],
+            entries: []
+        };
 
-                    <label for="teacherSelectCreate">Select Teacher:</label>
-                    <select id="teacherSelectCreate" required>
-                        <option value="">-- Select Teacher --</option>
-                    </select>
+        // 2. INITIALIZATION
+        document.addEventListener('DOMContentLoaded', loadAllTimetableData);
 
-                    <label for="daySelect">Day of Week:</label>
-                    <select id="daySelect" required>
-                        <option value="">-- Select Day --</option>
-                        <option value="Mon">Monday</option>
-                        <option value="Tue">Tuesday</option>
-                        <option value="Wed">Wednesday</option>
-                        <option value="Thu">Thursday</option>
-                        <option value="Fri">Friday</option>
-                    </select>
+        // 3. FETCH DATA
+        async function loadAllTimetableData() {
+            try {
+                // Fetch all necessary tables in parallel
+                const [configs, classes, subjects, entries] = await Promise.all([
+                    supabase.from('schedule_configs').select('*'),
+                    supabase.from('Classes').select('*'),
+                    supabase.from('Subjects').select('*'),
+                    supabase.from('timetable_entries').select('*')
+                ]);
 
-                    <label for="startTimeInput">Start Time:</label>
-                    <input type="time" id="startTimeInput" required>
+                if (configs.error) throw configs.error;
+                
+                // Store in global state
+                globalData.configs = configs.data || [];
+                globalData.classes = classes.data || [];
+                globalData.subjects = subjects.data || [];
+                globalData.entries = entries.data || [];
 
-                    <label for="durationInput">Duration (minutes):</label>
-                    <input type="number" id="durationInput" value="40" min="1" required>
+                renderTimetables();
 
-                    <label for="roomInputCreate">Room Number:</label>
-                    <input type="text" id="roomInputCreate" placeholder="e.g. Rm 101" required>
+            } catch (error) {
+                console.error("Error loading data:", error);
+                document.getElementById('timetablesGrid').innerHTML = 
+                    `<div style="color: red; text-align: center;">Error loading timetables: ${error.message}</div>`;
+            }
+        }
+
+        // 4. RENDER LOGIC
+        function renderTimetables() {
+            const container = document.getElementById('timetablesGrid');
+            container.innerHTML = ''; // Clear loading spinner
+
+            if (globalData.configs.length === 0) {
+                container.innerHTML = '<div style="text-align: center;">No timetables found. Create one to get started!</div>';
+                return;
+            }
+
+            // Loop through each "Config" (which represents one Class's schedule)
+            globalData.configs.forEach(config => {
+                const classInfo = globalData.classes.find(c => c.class_id === config.class_id);
+                const classEntries = globalData.entries.filter(e => e.class_id === config.class_id);
+                
+                // Generate the HTML for this specific card
+                const cardHTML = createTimetableCard(config, classInfo, classEntries);
+                container.insertAdjacentHTML('beforeend', cardHTML);
+            });
+        }
+
+        // 5. CARD GENERATOR
+        function createTimetableCard(config, classInfo, entries) {
+            const className = classInfo ? `${classInfo.class_name} ${classInfo.section || ''}` : `Class ${config.class_id}`;
+            const subtitle = classInfo ? `Grade ${classInfo.grade_level || ''} • Room ${classInfo.room_number || 'TBD'}` : 'Schedule';
+
+            // Generate time rows based on start_time and duration
+            const rowsHTML = generateTimeRows(config, entries);
+
+            return `
+                <div class="timetable-card">
+                    <div class="timetable-header">
+                        <h3 class="timetable-title">${className}</h3>
+                        <p class="timetable-subtitle">${subtitle}</p>
+                    </div>
+                    <div class="schedule-grid">
+                        <table class="timetable-table">
+                            <thead>
+                                <tr>
+                                    <th class="time-column">Time</th>
+                                    <th class="day-column">Mon</th>
+                                    <th class="day-column">Tue</th>
+                                    <th class="day-column">Wed</th>
+                                    <th class="day-column">Thu</th>
+                                    <th class="day-column">Fri</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rowsHTML}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn-view" onclick="viewFullTimetable('${config.class_id}')">View Full</button>
+                        <button class="btn-edit" onclick="editTimetable('${config.class_id}')">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" id="cancelCreateBtn">Cancel</button>
-                    <button type="submit" id="saveEntryBtn">Save Entry</button>
-                </div>
-            </form>
-        </div>
-    </div>
+            `;
+        }
 
+        // 6. DYNAMIC ROW GENERATOR
+        function generateTimeRows(config, entries) {
+            let html = '';
+            
+            // Default to 8 periods if not specified
+            const periodsCount = config.periods_per_day || 8;
+            const duration = config.period_duration || 40;
+            
+            // Parse Start Time (e.g., "08:00:00")
+            let [startHour, startMin] = (config.start_time || "08:00").split(':').map(Number);
+            let currentMinutes = startHour * 60 + startMin;
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../../scripts/config.js" type="module"></script>
-    <script src="../../scripts/schoolAdminScripts/time_table_scripts/supabase-timetable.js"></script>
-    <script src="../../scripts/schoolAdminScripts/time_table_scripts/timetable.js"></script>
-    <script src="../../scripts/schoolAdminScripts/time_table_scripts/timeTable-display.js" type="module"></script>
+            // Generate a row for each period
+            for (let i = 0; i < periodsCount; i++) {
+                // Calculate time string (e.g., "08:00")
+                const timeStr = minutesToTimeString(currentMinutes);
+                
+                // Generate cells for Mon-Fri
+                const daysHTML = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(day => {
+                    return generateCell(day, timeStr, entries);
+                }).join('');
 
-    <script>
+                html += `
+                    <tr class="time-row">
+                        <td class="time-cell">${timeStr}</td>
+                        ${daysHTML}
+                    </tr>
+                `;
+
+                // Increment time
+                currentMinutes += duration;
+                
+                // Optional: Add break logic here if you store breaks in DB
+                if (i === 3) currentMinutes += 20; // Example: 20 min break after 4th period
+            }
+            return html;
+        }
+
+        // 7. CELL GENERATOR
+        function generateCell(day, timeStr, entries) {
+            // Find entry for this Day and Time
+            // Note: We use startsWith because DB time might be "08:00:00" and calc time is "08:00"
+            const entry = entries.find(e => 
+                e.day_of_week === day && 
+                e.start_time.startsWith(timeStr)
+            );
+
+            if (entry) {
+                // Find Subject Code
+                const subject = globalData.subjects.find(s => s.subject_id === entry.subject_id);
+                const code = subject ? (subject.subject_code || subject.subject_name.substring(0,3).toUpperCase()) : '???';
+                
+                // Color coding based on subject (optional hash function)
+                return `<td class="subject-cell">
+                            <span class="subject-block" data-subject="${code}">${code}</span>
+                        </td>`;
+            } else {
+                return `<td class="empty-cell"></td>`;
+            }
+        }
+
+        // Helper: Convert minutes (480) to "08:00"
+        function minutesToTimeString(totalMinutes) {
+            const h = Math.floor(totalMinutes / 60);
+            const m = totalMinutes % 60;
+            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+        }
+
+        // --- EXPOSE FUNCTIONS TO WINDOW FOR BUTTONS ---
+        window.editTimetable = (classId) => {
+            window.location.href = `./create_timetable_setup.html?classId=${classId}`;
+        };
+
+        window.viewFullTimetable = (classId) => {
+            alert(`View full details for Class ID: ${classId} (Feature coming soon)`);
+        };
+        
         // Sidebar Toggle
         const sidebar = document.querySelector('[data-sideBar]');
         const sidebarOpenBtn = document.querySelector('[data-sideBarOpen]');
@@ -199,5 +247,4 @@
         }
     </script>
 </body>
-
 </html>

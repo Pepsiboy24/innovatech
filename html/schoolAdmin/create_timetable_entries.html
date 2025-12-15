@@ -559,16 +559,8 @@
                             <option value="">-- Select Subject --</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label for="modalTeacher">Teacher *</label>
-                        <select id="modalTeacher" required>
-                            <option value="">-- Select Teacher --</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="modalRoom">Room *</label>
-                        <input type="text" id="modalRoom" placeholder="e.g. Rm 101" required>
-                    </div>
+
+
                     <div class="form-group">
                         <label for="modalDuration">Duration (minutes) *</label>
                         <input type="number" id="modalDuration" value="40" min="1" required>
@@ -597,8 +589,11 @@
         </div>
     </div>
 
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="../../scripts/schoolAdminScripts/time_table_scripts/timetable_entries.js" type="module"></script>
+    <script src="../../scripts/schoolAdminScripts/time_table_scripts/excel_upload.js" type="module"></script>
 
     <script>
         // Sidebar Toggle
