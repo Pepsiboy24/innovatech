@@ -1,8 +1,10 @@
-// Import Supabase client (ensure this path matches your project)
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+// Supabase configuration
 const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
+
+// Create Supabase client
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 import * as XLSX from 'https://cdn.sheetjs.com/xlsx-latest/package/xlsx.mjs';
 
@@ -35,13 +37,15 @@ function addExcelUploadButton() {
 }
 
 function openExcelUploadModal() {
-    // ... (Keep your existing modal HTML generation code here) ...
     const modal = document.createElement('div');
     modal.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;`;
     modal.innerHTML = `
         <div style="background: white; padding: 32px; border-radius: 12px; width: 500px;">
             <h3>Upload Excel</h3>
-            <p style="margin-bottom:15px; font-size:13px; color:#666;">Row 1 = 8:00. Columns = Days.</p>
+            <p style="margin-bottom:15px; font-size:13px; color:#666;">
+                <b>Note:</b> Excel rows must match your Period Count.<br>
+                Breaks in Excel are ignored; the system uses your Config.
+            </p>
             <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="width:100%; margin-bottom:15px;">
             <div id="uploadProgress" style="display:none; margin-bottom:15px;">Processing...</div>
             <div style="text-align:right;">
@@ -62,24 +66,33 @@ async function processExcelUpload() {
     
     if (!fileInput.files.length) return alert('Select a file');
 
+    const progressDiv = document.getElementById('uploadProgress');
+    progressDiv.style.display = 'block';
+
     try {
         const file = fileInput.files[0];
         const data = await readFileAsArrayBuffer(file);
         const workbook = XLSX.read(data, { type: 'array' });
         const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: '' });
 
-        // Process data to match your requested JSON structure
+        // Process data
         const processed = await processExcelData(jsonData, classId);
 
         if (processed.errors.length > 0) {
-            if (!confirm(`Found ${processed.errors.length} errors. Continue?`)) return;
+            // Join errors with newlines for alert
+            const errorMsg = `Found ${processed.errors.length} issues:\n- ${processed.errors.slice(0, 5).join('\n- ')}\n${processed.errors.length > 5 ? '...and more.' : ''}\n\nDo you want to continue anyway?`;
+            
+            if (!confirm(errorMsg)) {
+                progressDiv.style.display = 'none';
+                return;
+            }
         }
 
-        // --- CRITICAL STEP: PASS DATA TO MAIN SCRIPT ---
+        // Pass to main script
         if (window.previewUploadedData) {
-            window.previewUploadedData(processed.entries); // <--- Sends the array you pasted
+            window.previewUploadedData(processed.entries);
             window.closeExcelModal();
-            alert("Data loaded into preview! Review the yellow items and click 'Save Changes'.");
+            alert(`Ready! ${processed.entries.length} classes loaded.`);
         } else {
             alert("Error: previewUploadedData function missing in main script.");
         }
@@ -87,58 +100,141 @@ async function processExcelUpload() {
     } catch (error) {
         console.error(error);
         alert(error.message);
+    } finally {
+        if(progressDiv) progressDiv.style.display = 'none';
     }
 }
 
 async function processExcelData(jsonData, classId) {
-    // ... (Keep your existing data processing logic that generates the array) ...
-    // This logic produces the array structure you pasted in the prompt.
-    // Ensure it returns { entries: [...] }
-    
-    // (Shortened for brevity - paste your existing logic here)
     if (!jsonData.length) throw new Error('Empty file');
-    const headers = jsonData[0];
-    const dayColumns = [];
-    headers.forEach((h, i) => { if (h && DAYS_OF_WEEK.includes(h.trim())) dayColumns.push({day: h.trim(), index: i}); });
-    
-    const { data: subjects } = await supabase.from('Subjects').select('*');
+
+    // 1. Fetch Config
+    const { data: config, error } = await supabase
+        .from('schedule_configs')
+        .select('*')
+        .eq('class_id', classId)
+        .single();
+        
+    if (error || !config) throw new Error("Please complete 'Setup' first. No schedule config found.");
+
+    // 2. Generate Expected Times (Skeleton)
+    const validPeriodTimes = generateValidPeriodTimes(config);
+    const expectedCount = validPeriodTimes.length;
+
     let entries = [];
     let errors = [];
-    let currentHour = 8; let currentMinute = 0; const duration = 40;
+
+    // --- NEW VALIDATION: Check Row Counts ---
+    // Count rows in Excel that are actual data (skipping headers/breaks)
+    const validExcelRows = jsonData.slice(1).filter(row => {
+        if (!row || !row.length) return false;
+        const firstCell = row[0] ? row[0].toString().toLowerCase() : "";
+        return !firstCell.includes("break") && !firstCell.includes("lunch");
+    });
+
+    if (validExcelRows.length !== expectedCount) {
+        errors.push(`Row Count Mismatch: Excel has ${validExcelRows.length} class rows, but your Setup expects ${expectedCount} periods.`);
+    }
+
+    // 3. Prepare Headers
+    const headers = jsonData[0];
+    const dayColumns = [];
+    headers.forEach((h, i) => { 
+        if (h && DAYS_OF_WEEK.includes(h.trim())) {
+            dayColumns.push({day: h.trim(), index: i});
+        }
+    });
+
+    const { data: subjects } = await supabase.from('Subjects').select('*');
+
+    // 4. Process Rows
+    let periodIndex = 0;
 
     for (let r = 1; r < jsonData.length; r++) {
         const row = jsonData[r];
         if (!row || !row.length) continue;
+
         const firstCell = row[0] ? row[0].toString().toLowerCase() : "";
+        
+        // Skip visual breaks in Excel
         if (firstCell.includes("break") || firstCell.includes("lunch")) {
-            currentMinute += firstCell.includes("lunch") ? 40 : 20;
-            while(currentMinute >= 60) { currentMinute -= 60; currentHour++; }
-            continue;
+            continue; 
         }
-        const timeStr = `${currentHour.toString().padStart(2,'0')}:${currentMinute.toString().padStart(2,'0')}:00`;
+
+        // Stop if we exceed configured periods (Validation already caught this, but safety check)
+        if (periodIndex >= validPeriodTimes.length) {
+            continue; 
+        }
+
+        const timeStr = validPeriodTimes[periodIndex]; 
+
         for (const col of dayColumns) {
             const subName = row[col.index];
             if (subName && subName.toString().trim()) {
                 const term = subName.toLowerCase().trim();
                 let match = subjects.find(s => s.subject_name.toLowerCase() === term || (s.subject_code && s.subject_code.toLowerCase() === term));
+                
                 if (match) {
                     entries.push({
                         class_id: parseInt(classId),
                         subject_id: match.subject_id,
                         day_of_week: col.day,
-                        start_time: timeStr,
-                        duration_minutes: duration,
-                        room_number: 'TBD'
+                        start_time: timeStr + ":00", 
+                        duration_minutes: parseInt(config.period_duration) || 40,
+                        // room_number: 'TBD'
                     });
                 } else {
-                    errors.push(`Row ${r+1}: Subject ${subName} not found`);
+                    errors.push(`Row ${r+1} (${col.day}): Subject "${subName}" not found.`);
                 }
             }
         }
-        currentMinute += duration;
-        while(currentMinute >= 60) { currentMinute -= 60; currentHour++; }
+        
+        periodIndex++;
     }
+
     return { entries, errors };
+}
+
+// Helper: Generates list of start times for CLASSES only
+function generateValidPeriodTimes(config) {
+    const times = [];
+    let currentMinutes = 0;
+    let periodsFound = 0;
+    const limit = config.periods_per_day || 8;
+    let safety = 0;
+
+    while (periodsFound < limit && safety < 50) {
+        safety++;
+        const timeStr = addMinutes(config.start_time, currentMinutes);
+        
+        // Check Break
+        const breakObj = config.break_times.find(b => {
+             const start = typeof b === 'object' ? b.start : b;
+             return start.startsWith(timeStr);
+        });
+
+        if (breakObj) {
+            // Add duration to clock, DO NOT save time
+            const dur = typeof breakObj === 'object' ? parseInt(breakObj.duration, 10)||20 : 20;
+            currentMinutes += dur;
+        } else {
+            // Save time, add duration
+            times.push(timeStr);
+            const pDur = parseInt(config.period_duration, 10)||40;
+            currentMinutes += pDur;
+            periodsFound++;
+        }
+    }
+    return times;
+}
+
+function addMinutes(time, minutesToAdd) {
+    if (!time) return "08:00";
+    const [hours, mins] = time.split(':').map(Number);
+    let totalMinutes = (hours * 60) + mins + minutesToAdd;
+    const newHours = Math.floor(totalMinutes / 60);
+    const newMins = totalMinutes % 60;
+    return `${newHours.toString().padStart(2, '0')}:${newMins.toString().padStart(2, '0')}`;
 }
 
 function readFileAsArrayBuffer(file) {
