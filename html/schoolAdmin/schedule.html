@@ -1,256 +1,363 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Academic Calendar Management</title>
-    <link rel="stylesheet" href="../../styles/schoolAdminStyles/schedule.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Calendar Management - EduHubAdmin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css' rel='stylesheet' />
+    <!-- Using local CSS file as requested -->
+    <link rel="stylesheet" href="../../styles/schoolAdminStyles/schedule.css">
+    <style>
+        /* Inline styles for layout specific to this page that rely on the shell structure */
+        :root {
+            --primary: #6200ea;
+            --primary-light: #ede7f6;
+            --primary-hover: #5000c2;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+            --bg-light: #f8fafc;
+            --white: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            background: var(--white);
+            border-right: 1px solid var(--border);
+            padding: 24px 16px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+
+        .logo {
+            padding: 0 12px 32px 12px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-icon {
+            color: var(--primary);
+            font-size: 24px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: var(--text-gray);
+            text-decoration: none;
+            transition: all 0.2s;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-light);
+            color: var(--text-dark);
+        }
+
+        .nav-item.active {
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            width: 20px;
+            margin-right: 12px;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+            padding: 32px 40px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-gray);
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
+        .page-subtitle {
+            color: var(--text-gray);
+            font-size: 14px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .profile {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+        }
+
+        /* Responsive */
+        @media (max-width: 991px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main {
+                margin-left: 0;
+                width: 100%;
+                padding: 24px;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-title">
-                <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg>
-                <h1 class="sidebar-h1">EduHubAdmin</h1>
+    <!-- Sidebar -->
+    <div class="sidebar" data-sideBar>
+        <div class="logo">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="logo-icon"><i class="fa-solid fa-calendar-days"></i></div>
+                <span>EduHubAdmin</span>
             </div>
+            <div class="icon" data-sideBarClose><i class="fa fa-times"></i></div>
         </div>
-
-        <nav class="sidebar-nav">
-            <a href="./schoolAdminDashboard.html" class="sidebar-item">
-                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
-                    </path>
-                </svg>
-                <span>Dashboard</span>
+        <nav>
+            <a href="./schoolAdminDashboard.html" class="nav-item">
+                <i class="fa-solid fa-table-columns nav-icon"></i>
+                Dashboard
             </a>
             <a href="./classes.html" class="nav-item sidebar-item">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="4" y="16" width="16" height="4" rx="1" fill="#4A4A4A" />
-                    <rect x="5" y="11" width="14" height="4" rx="1" fill="#6B6B6B" />
-                    <rect x="6" y="6" width="12" height="4" rx="1" fill="#8C8C8C" />
-                    <path d="M12 6V10" stroke="white" stroke-width="1.5" stroke-linecap="round" />
-                </svg>
+                <i class="fa-solid fa-chalkboard-user nav-icon"></i>
                 <span>Classes</span>
             </a>
-            <a href="./students.html" class="sidebar-item">
-                <svg class="nav-icon" viewBox="0 0 20 20">
-                    <path
-                        d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-                </svg>
-                <span>Students</span>
+            <a href="./students.html" class="nav-item">
+                <i class="fa-solid fa-user-graduate nav-icon"></i>
+                Students
             </a>
-            <a href="./teachers.html" class="sidebar-item">
-                <svg class="nav-icon" viewBox="0 0 20 20">
-                    <path
-                        d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
-                </svg>
-                <span>Teachers</span>
+            <a href="./teachers.html" class="nav-item">
+                <i class="fa-solid fa-chalkboard-teacher nav-icon"></i>
+                Teachers
             </a>
-            <a href="./subjects.html" class="sidebar-item">
-                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+            <a href="./subjects.html" class="nav-item">
+                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    style="width: 18px; height: 18px;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                    </path>
                 </svg>
                 <span>Subjects</span>
             </a>
-            <a href="#" class="sidebar-item active">
-                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
-                    </path>
-                </svg>
-                <span>Schedule</span>
+            <a href="./schedule.html" class="nav-item active">
+                <i class="fa-regular fa-calendar nav-icon"></i>
+                Schedule
             </a>
-            <a href="./timeTable.html" class="sidebar-item">
-                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg>
-                <span>Time Table</span>
+            <a href="./timeTable.html" class="nav-item">
+                <i class="fa-solid fa-clock nav-icon"></i>
+                Time Table
             </a>
-            <a href="#" class="sidebar-item">
-                <svg class="nav-icon" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd"
-                        d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z"
-                        clip-rule="evenodd" />
-                </svg>
-                <span>Attendance</span>
+            <a href="#" class="nav-item">
+                <i class="fa-solid fa-clipboard-user nav-icon"></i>
+                Attendance
             </a>
-            <a href="#" class="sidebar-item">
-                <svg class="nav-icon" viewBox="0 0 20 20">
-                    <path
-                        d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                    <path fill-rule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z"
-                        clip-rule="evenodd" />
-                </svg>
-                <span>Fees</span>
+            <a href="#" class="nav-item">
+                <i class="fa-solid fa-money-bill-wave nav-icon"></i>
+                Fees
             </a>
         </nav>
+    </div>
 
-        <div class="sidebar-footer">
-            <button class="sidebar-item">
-                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
-                    </path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z">
-                    </path>
-                </svg>
-                <span>Admin Settings</span>
-            </button>
-            <button class="sidebar-item">
-                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
-                    </path>
-                </svg>
-                <span>System Status</span>
-            </button>
-        </div>
-    </aside>
-
-    <div class="overlay" id="overlay"></div>
-
-    <main class="main-content">
-        <div class="main-container">
-            <div class="header-container">
-                <button class="menu-toggle" id="menuToggle">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-                <h1 class="header-h1">
-                    Academic Calendar Management
-                </h1>
-                <p class="header-p">
-                    Oversee and manage all academic schedules, event deadlines, and holiday periods. Create new
-                    calendars and
-                    upload external schedule files with ease.
-                </p>
-            </div>
-
-            <div class="calendar-management">
-
-                <div class="calendar-section">
-                    <div class="calendar-card">
-                        <div class="calendar-header">
-                            <h2 class="calendar-h2">Academic Calendar</h2>
-                            <div class="nav-buttons">
-                                <button class="nav-btn" id="prevButton">
-                                    <svg class="nav-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 19l-7-7 7-7"></path>
-                                    </svg>
-                                </button>
-                                <button class="nav-btn" id="todayButton">Today</button>
-                                <button class="nav-btn" id="nextButton">
-                                    <svg class="nav-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 5l7 7-7 7"></path>
-                                    </svg>
-                                </button>
-                                <span id="monthYear" class="month-year"></span>
-                            </div>
-                        </div>
-                        <table class="academic-calendar-table">
-                            <thead>
-                                <tr>
-                                    <th>Term/Period</th>
-                                    <th>Activity/Event</th>
-                                    <th>Date Range</th>
-                                    <th>Duration</th>
-                                    <th>Remarks</th>
-                                </tr>
-                            </thead>
-                            <tbody id="academicTableBody">
-                                <!-- Events will be populated here -->
-                            </tbody>
-                        </table>
-                    </div>
+    <!-- Main Content -->
+    <div class="main">
+        <div class="header">
+            <div class="header-left">
+                <div class="icon mobile-menu-btn" data-sideBarOpen><i class="fa fa-bars"></i></div>
+                <div>
+                    <h1 class="page-title">Academic Calendar Management</h1>
+                    <p class="page-subtitle">Oversee and manage all academic schedules, event deadlines, and holiday
+                        periods.</p>
                 </div>
+            </div>
+            <div class="header-right">
+                <div class="profile"></div>
+            </div>
+        </div>
 
-                <div class="management-section">
-                    <div class="management-card">
-                        <div class="management-header">
-                            <h3 class="management-h3">Calendar Management</h3>
-                            <button class="btn-primary add-event-btn">
-                                <svg class="add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="calendar-management">
+
+            <div class="calendar-section">
+                <div class="calendar-card">
+                    <div class="calendar-header">
+                        <h2 class="calendar-h2">Academic Calendar</h2>
+                        <div class="nav-buttons">
+                            <button class="nav-btn" id="prevButton">
+                                <svg class="nav-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 4v16m8-8H4"></path>
+                                        d="M15 19l-7-7 7-7"></path>
                                 </svg>
-                                Add New Event
                             </button>
+                            <button class="nav-btn" id="todayButton">Today</button>
+                            <button class="nav-btn" id="nextButton">
+                                <svg class="nav-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </button>
+                            <span id="monthYear" class="month-year"></span>
                         </div>
+                    </div>
+                    <table class="academic-calendar-table">
+                        <thead>
+                            <tr>
+                                <th>Term/Period</th>
+                                <th>Activity/Event</th>
+                                <th>Date Range</th>
+                                <th>Duration</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="academicTableBody">
+                            <!-- Events will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-                        <div class="create-calendar">
-                            <h4 class="create-h4">Create New Calendar</h4>
+            <div class="management-section">
+                <div class="management-card">
+                    <div class="management-header">
+                        <h3 class="management-h3">Calendar Management</h3>
+                        <button class="btn-primary add-event-btn">
+                            <svg class="add-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                style="width: 16px; height: 16px;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Add New Event
+                        </button>
+                    </div>
 
-                            <div class="form-group">
-                                <div>
-                                    <label class="form-label">
-                                        Calendar Name
-                                    </label>
-                                    <input type="text" class="input-field" placeholder="e.g., Spring 2025 Semester">
-                                </div>
+                    <div class="create-calendar">
+                        <h4 class="create-h4">Create New Calendar</h4>
 
-                                <div>
-                                    <label class="form-label">
-                                        Description
-                                    </label>
-                                    <input type="text" class="input-field" placeholder="Optional brief description">
-                                </div>
-
-                                <button class="btn-primary create-btn">Create Calendar</button>
+                        <div class="form-group">
+                            <div>
+                                <label class="form-label">
+                                    Calendar Name
+                                </label>
+                                <input type="text" class="input-field" placeholder="e.g., Spring 2025 Semester">
                             </div>
+
+                            <div>
+                                <label class="form-label">
+                                    Description
+                                </label>
+                                <input type="text" class="input-field" placeholder="Optional brief description">
+                            </div>
+
+                            <button class="btn-primary create-btn" style="width: 100%; margin-top: 1rem;">Create
+                                Calendar</button>
                         </div>
+                    </div>
 
-                        <div class="upload-section">
-                            <h4 class="upload-h4">Upload Calendar File</h4>
+                    <div class="upload-section">
+                        <h4 class="upload-h4">Upload Calendar File</h4>
 
-                            <div class="upload-zone">
-                                <div class="upload-content">
-                                    <svg class="upload-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
-                                        </path>
-                                    </svg>
-                                    <p class="upload-p1">
-                                        Drag and drop files here, or
-                                    </p>
+                        <div class="upload-zone">
+                            <div class="upload-content">
+                                <svg class="upload-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                                    </path>
+                                </svg>
+                                <p class="upload-p1">
+                                    Drag and drop files here, or
+                                </p>
 
-                                    <input type="file" id="fileInput" accept=".ics, .csv, .xlsx" style="display: none;">
+                                <input type="file" id="fileInput" accept=".ics, .csv, .xlsx" style="display: none;">
 
-                                    <button class="browse-btn" id="browseButton">
-                                        Browse Files
-                                    </button>
+                                <button class="browse-btn" id="browseButton">
+                                    Browse Files
+                                </button>
 
-                                    <p id="fileNameDisplay" class="upload-p2 file-name-display"></p>
+                                <p id="fileNameDisplay" class="upload-p2 file-name-display"></p>
 
-                                    <p class="upload-p2">
-                                        .ics, .csv, or .xlsx files
-                                    </p>
-                                </div>
+                                <p class="upload-p2">
+                                    .ics, .csv, or .xlsx files
+                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </main>
+    </div>
 
     <!-- Add Event Modal -->
     <div id="addEventModal" class="modal">
@@ -303,14 +410,58 @@
             </form>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="../../scripts/config.js" type="module"></script>
     <script src="../../scripts/schoolAdminScripts/shedule_scripts/calendar_display.js" type="module"></script>
     <script src="../../scripts/schoolAdminScripts/shedule_scripts/add_single_event.js" type="module"></script>
     <script src="../../scripts/schoolAdminScripts/shedule_scripts/upload_calendar.js"></script>
+    <script src="../../scripts/schoolAdminScripts/shedule_scripts/add_new_event.js"></script>
 
+    <script>
+        // Sidebar Toggle
+        const sidebar = document.querySelector('[data-sideBar]');
+        const sidebarOpenBtn = document.querySelector('[data-sideBarOpen]');
+        const sidebarCloseBtn = document.querySelector('[data-sideBarClose]');
 
+        if (sidebarOpenBtn && sidebar) {
+            sidebarOpenBtn.addEventListener('click', () => sidebar.classList.add('show'));
+        }
+        if (sidebarCloseBtn && sidebar) {
+            sidebarCloseBtn.addEventListener('click', () => sidebar.classList.remove('show'));
+        }
+
+        // Modal Logic
+        const modal = document.getElementById('addEventModal');
+        const addEventBtn = document.querySelector('.add-event-btn');
+        const closeModalBtn = document.getElementById('closeModal');
+        const cancelBtn = document.getElementById('cancelBtn');
+
+        if (addEventBtn) {
+            addEventBtn.addEventListener('click', () => {
+                modal.classList.add('show');
+            });
+        }
+
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', () => {
+                modal.classList.remove('show');
+            });
+        }
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                modal.classList.remove('show');
+            });
+        }
+
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('show');
+            }
+        });
+    </script>
 </body>
 
 </html>

@@ -192,6 +192,10 @@ body {
     align-items: center;
     margin-bottom: 24px;
 }
+.header-actions{
+    display: flex;
+    gap: 5px;
+}
 
 .btn-primary {
     display: flex;
@@ -500,6 +504,39 @@ form {
 
 .dropdown-option:hover {
     background: var(--bg-light);
+}
+/* Container styling (adjust as needed) */
+#teacherDropdownOptions {
+  position: absolute;
+  border: 1px solid #ddd;
+  border-top: none;
+  z-index: 99;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: white;
+  max-height: 200px;
+  overflow-y: auto;
+  display: none; /* Hidden by default */
+}
+
+/* Individual item styling */
+#teacherDropdownOptions div {
+  padding: 10px;
+  cursor: pointer;
+  background-color: #fff;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+/* Hover effect for mouse */
+#teacherDropdownOptions div:hover {
+  background-color: #e9e9e9;
+}
+
+/* Active effect for Keyboard Arrow Keys */
+.dropdown-active {
+  background-color: #1e90ff !important; /* Blue highlight */
+  color: white;
 }
 
 /* Responsive */

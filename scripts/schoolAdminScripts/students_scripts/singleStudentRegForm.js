@@ -139,7 +139,7 @@ function showError(errorId) {
 }
 
 function hideError(errorId) {
-  document.getElementById(errorId).style.display = "none";
+  // document.getElementById(errorId).style.display = "none";
 }
 
 function changeStep(direction) {

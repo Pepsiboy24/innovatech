@@ -1,4 +1,6 @@
-// Supabase setup
+// Supabase setup (Use your imports if using modules, otherwise window)
+// import { supabase } from "../../config.js"; 
+// OR keep your existing setup if not using modules:
 const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -46,6 +48,22 @@ document.addEventListener('DOMContentLoaded', function () {
         const fileType = file.name.split('.').pop().toLowerCase();
         let events = [];
 
+        // --- FIX STARTS HERE ---
+        // 1. Get the current Session Name from the UI (e.g. "2025/2026")
+        // We remove " Academic Session" text to get just the year part
+        const sessionTitle = document.getElementById('monthYear').textContent;
+        let currentSession = sessionTitle.replace(' Academic Session', '').trim();
+
+        // Safety check: if the title is empty or generic, ask the user
+        if (!currentSession || currentSession.includes('No Academic')) {
+            currentSession = prompt("Please enter the Academic Session for these events (e.g., 2025/2026):");
+            if (!currentSession) {
+                alert("Upload cancelled. Session name is required.");
+                return;
+            }
+        }
+        // --- FIX ENDS HERE ---
+
         try {
             if (fileType === 'csv') {
                 events = await parseCSV(file);
@@ -62,14 +80,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
+            // 2. Inject the session name into every event
+            const eventsWithSession = events.map(event => ({
+                ...event,
+                academic_session: currentSession // Force this session name
+            }));
+
             // Insert events into Supabase
             const { data, error } = await supabase
                 .from('academic_events')
-                .insert(events);
+                .insert(eventsWithSession); // Insert the modified array
 
             if (error) throw error;
 
-            alert(`Successfully uploaded ${events.length} events!`);
+            alert(`Successfully uploaded ${eventsWithSession.length} events to ${currentSession}!`);
             fileInput.value = '';
             fileNameDisplay.textContent = '';
 
@@ -95,14 +119,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 for (let i = 1; i < lines.length; i++) {
                     const values = lines[i].split(',');
-                    if (values.length === headers.length) {
+                    // Basic check to ensure row isn't empty
+                    if (values.length > 1) { 
                         const event = {};
                         headers.forEach((header, index) => {
-                            const value = values[index].trim();
+                            // Handle potential undefined values
+                            const value = values[index] ? values[index].trim() : null;
+                            const field = mapHeaderToField(header);
+                            
                             if (header.includes('date')) {
-                                event[mapHeaderToField(header)] = value ? new Date(value).toISOString().split('T')[0] : null;
+                                event[field] = value ? new Date(value).toISOString().split('T')[0] : null;
                             } else {
-                                event[mapHeaderToField(header)] = value || null;
+                                event[field] = value || null;
                             }
                         });
                         if (event.activity_event) events.push(event);
@@ -126,7 +154,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     const worksheet = workbook.Sheets[sheetName];
                     const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-                    const headers = jsonData[0].map(h => h.toLowerCase());
+                    if (jsonData.length === 0) resolve([]);
+
+                    const headers = jsonData[0].map(h => String(h).toLowerCase());
                     const events = [];
 
                     for (let i = 1; i < jsonData.length; i++) {
@@ -134,10 +164,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         const event = {};
                         headers.forEach((header, index) => {
                             const value = row[index];
+                            const field = mapHeaderToField(header);
+
                             if (header.includes('date')) {
-                                event[mapHeaderToField(header)] = value ? new Date(value).toISOString().split('T')[0] : null;
+                                // Excel date handling could go here, but basic string parsing:
+                                event[field] = value ? new Date(value).toISOString().split('T')[0] : null;
                             } else {
-                                event[mapHeaderToField(header)] = value || null;
+                                event[field] = value || null;
                             }
                         });
                         if (event.activity_event) events.push(event);
@@ -179,9 +212,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     });
 
+                    // Removed the hardcoded session here because we inject it in processFile now
                     if (event.activity_event && event.start_date) {
-                        event.term_period = 'Holiday'; // Default, can be adjusted
-                        event.academic_session = '2024/2025'; // Default
+                        event.term_period = 'Holiday'; 
                         events.push(event);
                     }
                 }
@@ -193,32 +226,41 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function parseICSDate(dateStr) {
-        // Simple parser for YYYYMMDD or YYYYMMDDTHHMMSS
         const match = dateStr.match(/^(\d{4})(\d{2})(\d{2})/);
         if (match) {
             return `${match[1]}-${match[2]}-${match[3]}`;
         }
         return null;
-        // 7061246168
-
     }
 
     function mapHeaderToField(header) {
         const mapping = {
             'academic session': 'academic_session',
-            'academic_session': 'academic_session',
+            'session': 'academic_session', // Added 'session'
             'term': 'term_period',
             'term_period': 'term_period',
+            'period': 'term_period', // Added 'period'
             'activity': 'activity_event',
             'activity_event': 'activity_event',
             'event': 'activity_event',
             'start date': 'start_date',
             'start_date': 'start_date',
+            'start': 'start_date', // Added 'start'
             'end date': 'end_date',
             'end_date': 'end_date',
+            'end': 'end_date', // Added 'end'
             'duration': 'duration',
-            'remarks': 'remarks'
+            'remarks': 'remarks',
+            'note': 'remarks' // Added 'note'
         };
-        return mapping[header] || header;
+        // Check exact match first, then partial match
+        if (mapping[header]) return mapping[header];
+        
+        // Fallback: Loop keys to find includes
+        for (const key in mapping) {
+            if (header.includes(key)) return mapping[key];
+        }
+        
+        return header;
     }
 });

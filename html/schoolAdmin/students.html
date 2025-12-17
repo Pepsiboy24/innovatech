@@ -249,347 +249,119 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="student-row">
-                            <td>
-                                <div class="student-info">
-                                    <div class="student-avatar">SC</div>
-                                    <div class="student-details">
-                                        <h4>Sean Cook</h4>
-                                        <p>ID: #ST001</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>13</td>
-                            <td>
-                                <div class="class-badge">PRY <span>5B</span></div>
-                            </td>
-                            <td>
-                                <div class="attendance-progress">
-                                    <div class="progress-bar-sm">
-                                        <div class="progress-fill-sm" style="width: 85%;"></div>
-                                    </div>
-                                    <span class="attendance-percent">85%</span>
-                                </div>
-                            </td>
-                            <td><a href="#" class="action-btn">View</a></td>
-                        </tr>
-                        <tr class="student-row">
-                            <td>
-                                <div class="student-info">
-                                    <div class="student-avatar">JS</div>
-                                    <div class="student-details">
-                                        <h4>John Smith</h4>
-                                        <p>ID: #ST002</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>14</td>
-                            <td>
-                                <div class="class-badge">PRY <span>5A</span></div>
-                            </td>
-                            <td>
-                                <div class="attendance-progress">
-                                    <div class="progress-bar-sm">
-                                        <div class="progress-fill-sm" style="width: 92%;"></div>
-                                    </div>
-                                    <span class="attendance-percent">92%</span>
-                                </div>
-                            </td>
-                            <td><a href="#" class="action-btn">View</a></td>
-                        </tr>
-                        <tr class="student-row">
-                            <td>
-                                <div class="student-info">
-                                    <div class="student-avatar">SJ</div>
-                                    <div class="student-details">
-                                        <h4>Sarah Johnson</h4>
-                                        <p>ID: #ST003</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>16</td>
-                            <td>
-                                <div class="class-badge">SEC <span>2A</span></div>
-                            </td>
-                            <td>
-                                <div class="attendance-progress">
-                                    <div class="progress-bar-sm">
-                                        <div class="progress-fill-sm" style="width: 78%;"></div>
-                                    </div>
-                                    <span class="attendance-percent">78%</span>
-                                </div>
-                            </td>
-                            <td><a href="#" class="action-btn">View</a></td>
-                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <script>
-        // Sidebar Toggle
-        const sidebar = document.querySelector('[data-sideBar]');
-        const sidebarOpenBtn = document.querySelector('[data-sideBarOpen]');
-        const sidebarCloseBtn = document.querySelector('[data-sideBarClose]');
+    <script type="module">
+    // Import the function from your JS file
+    import { createDragDropArea } from '../../scripts/schoolAdminScripts/students_scripts/multipleStudentReg.js';
 
-        if (sidebarOpenBtn && sidebar) {
-            sidebarOpenBtn.addEventListener('click', () => sidebar.classList.add('show'));
-        }
-        if (sidebarCloseBtn && sidebar) {
-            sidebarCloseBtn.addEventListener('click', () => sidebar.classList.remove('show'));
-        }
+    // --- Sidebar Logic (Kept from your original code) ---
+    const sidebar = document.querySelector('[data-sideBar]');
+    const sidebarOpenBtn = document.querySelector('[data-sideBarOpen]');
+    const sidebarCloseBtn = document.querySelector('[data-sideBarClose]');
 
-        // Popup Logic
-        const popup = document.getElementById('registrationPopup');
-        const openPopupBtn = document.getElementById('openPopupBtn');
-        const closePopupBtn = document.getElementById('closePopup');
+    if (sidebarOpenBtn && sidebar) {
+        sidebarOpenBtn.addEventListener('click', () => sidebar.classList.add('show'));
+    }
+    if (sidebarCloseBtn && sidebar) {
+        sidebarCloseBtn.addEventListener('click', () => sidebar.classList.remove('show'));
+    }
 
-        if (openPopupBtn && popup) {
-            openPopupBtn.addEventListener('click', () => {
-                popup.style.display = 'flex';
-            });
-        }
+    // --- Single Student Popup Logic ---
+    const popup = document.getElementById('registrationPopup');
+    const openPopupBtn = document.getElementById('openPopupBtn');
+    const closePopupBtn = document.getElementById('closePopup');
 
-        if (closePopupBtn && popup) {
-            closePopupBtn.addEventListener('click', () => {
-                popup.style.display = 'none';
-            });
-        }
+    if (openPopupBtn && popup) {
+        openPopupBtn.addEventListener('click', () => popup.style.display = 'flex');
+    }
+    if (closePopupBtn && popup) {
+        closePopupBtn.addEventListener('click', () => popup.style.display = 'none');
+    }
 
-        // Simple Form Steps Logic (Demo)
-        const nextBtn = document.getElementById('nextBtn');
-        const prevBtn = document.getElementById('prevBtn');
-        const submitBtn = document.getElementById('submitBtn');
-        const steps = ['step1', 'step2', 'step3'];
-        let currentStep = 0;
-
-        function updateSteps() {
-            // Hide all steps
-            steps.forEach((stepId, index) => {
-                document.getElementById(stepId).classList.remove('active');
-                document.getElementById(`indicator${index + 1}`).classList.remove('active');
-            });
-
-            // Show current step
-            document.getElementById(steps[currentStep]).classList.add('active');
-            document.getElementById(`indicator${currentStep + 1}`).classList.add('active');
-
-            // Update buttons
-            prevBtn.style.display = currentStep === 0 ? 'none' : 'block';
-            if (currentStep === steps.length - 1) {
-                nextBtn.style.display = 'none';
-                submitBtn.style.display = 'block';
-                // Populate review
-                document.getElementById('reviewName').textContent = document.getElementById('fullName').value;
-                document.getElementById('reviewEmail').textContent = document.getElementById('email').value;
-                document.getElementById('reviewClass').textContent = document.getElementById('class').options[document.getElementById('class').selectedIndex].text;
-            } else {
-                nextBtn.style.display = 'block';
-                submitBtn.style.display = 'none';
-            }
-
-            // Update progress
-            document.getElementById('progressFill').style.width = `${((currentStep + 1) / steps.length) * 100}%`;
-        }
-
-        if (nextBtn) {
-            nextBtn.addEventListener('click', () => {
-                if (currentStep < steps.length - 1) {
-                    currentStep++;
-                    updateSteps();
-                }
-            });
-        }
-
-        if (prevBtn) {
-            prevBtn.addEventListener('click', () => {
-                if (currentStep > 0) {
-                    currentStep--;
-                    updateSteps();
-                }
-            });
-        }
-
-        // Search and Filter Functionality
-        document.addEventListener('DOMContentLoaded', function () {
-            // Search functionality
-            const searchInput = document.querySelector('.search-input');
-            const studentRows = document.querySelectorAll('.student-row');
-
-            if (searchInput) {
-                searchInput.addEventListener('input', function () {
-                    const searchTerm = this.value.toLowerCase();
-
-                    studentRows.forEach(row => {
-                        const studentName = row.querySelector('.student-details h4').textContent.toLowerCase();
-                        const studentId = row.querySelector('.student-details p').textContent.toLowerCase();
-
-                        if (studentName.includes(searchTerm) || studentId.includes(searchTerm)) {
-                            row.style.display = '';
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    });
-                });
-            }
-
-            // Filter tabs functionality
-            const filterTabs = document.querySelectorAll('.filter-tab');
-
-            filterTabs.forEach(tab => {
-                tab.addEventListener('click', function () {
-                    // Remove active class from all tabs
-                    filterTabs.forEach(t => t.classList.remove('active'));
-                    // Add active class to clicked tab
-                    this.classList.add('active');
-
-                    const filterType = this.textContent.toLowerCase();
-
-                    studentRows.forEach(row => {
-                        const classText = row.querySelector('.class-badge').textContent.toLowerCase();
-
-                        if (filterType === 'all') {
-                            row.style.display = '';
-                        } else if (filterType === 'primary' && classText.includes('pry')) {
-                            row.style.display = '';
-                        } else if (filterType === 'secondary' && classText.includes('sec')) {
-                            row.style.display = '';
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    });
-                });
-            });
-        });
-
-        // Upload Excel Functionality
-        async function uploadExcelSheet() {
-            // Create a modal or overlay for the upload interface
-            const modal = document.createElement('div');
-            modal.className = 'upload-modal';
-            modal.innerHTML = `
-                <div class="upload-modal-content">
-                    <div class="upload-modal-header">
-                        <h2>Upload Student Excel Sheet</h2>
-                        <button class="close-modal" onclick="closeUploadModal()">&times;</button>
-                    </div>
-                    <div class="upload-modal-body">
-                        <p>Please upload an Excel file with the following columns:</p>
-                        <ul>
-                            <li>Full Name (required)</li>
-                            <li>Email (required)</li>
-                            <li>Date of Birth (optional)</li>
-                            <li>Gender (optional)</li>
-                            <li>Admission Date (optional)</li>
-                        </ul>
-                        <div id="dragDropContainer"></div>
-                    </div>
+    // --- Excel Upload Modal Logic ---
+    
+    // Make function available globally so onclick works (if you use onclick in HTML)
+    // Or attach event listener (preferred)
+    window.uploadExcelSheet = function() {
+        // 1. Create Modal DOM
+        const modal = document.createElement('div');
+        modal.className = 'upload-modal';
+        modal.innerHTML = `
+            <div class="upload-modal-content">
+                <div class="upload-modal-header">
+                    <h2>Upload Student Excel Sheet</h2>
+                    <button class="close-modal">&times;</button>
                 </div>
-            `;
-
-            document.body.appendChild(modal);
-
-            // Add styles dynamically if not present
-            if (!document.getElementById('upload-modal-styles')) {
-                const style = document.createElement('style');
-                style.id = 'upload-modal-styles';
-                style.textContent = `
-                    .upload-modal {
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        background: rgba(0, 0, 0, 0.5);
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        z-index: 10001;
-                        backdrop-filter: blur(4px);
-                    }
-                    .upload-modal-content {
-                        background: white;
-                        padding: 32px;
-                        border-radius: 16px;
-                        max-width: 500px;
-                        width: 90%;
-                        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-                    }
-                    .upload-modal-header {
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        margin-bottom: 24px;
-                    }
-                    .upload-modal-header h2 {
-                        font-size: 20px;
-                        font-weight: 700;
-                        color: #1e293b;
-                    }
-                    .close-modal {
-                        background: none;
-                        border: none;
-                        font-size: 24px;
-                        cursor: pointer;
-                        color: #64748b;
-                    }
-                    .upload-modal-body p {
-                        color: #64748b;
-                        margin-bottom: 12px;
-                    }
-                    .upload-modal-body ul {
-                        margin-bottom: 24px;
-                        padding-left: 20px;
-                        color: #64748b;
-                    }
-                    #dragDropArea {
-                        border: 2px dashed #e2e8f0;
-                        border-radius: 12px;
-                        padding: 40px;
-                        text-align: center;
-                        margin: 20px 0;
-                        transition: all 0.3s;
-                        background: #f8fafc;
-                        cursor: pointer;
-                    }
-                    #dragDropArea:hover, #dragDropArea.drag-over {
-                        border-color: #6200ea;
-                        background-color: #ede7f6;
-                    }
-                `;
-                document.head.appendChild(style);
-            }
-
-            // Placeholder for drag drop area since we don't have the module
-            const container = document.getElementById('dragDropContainer');
-            container.innerHTML = `
-                <div id="dragDropArea">
-                    <i class="fa-solid fa-cloud-arrow-up" style="font-size: 48px; color: #6200ea; margin-bottom: 16px;"></i>
-                    <h3>Drag & Drop or Click to Upload</h3>
-                    <p>Supported formats: .xlsx, .xls</p>
+                <div class="upload-modal-body">
+                    <p>Please upload an Excel file with columns: <strong>Full Name, Email</strong> (Required).</p>
+                    <div id="dragDropContainer"></div>
                 </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // 2. Inject CSS if not exists
+        if (!document.getElementById('upload-modal-styles')) {
+            const style = document.createElement('style');
+            style.id = 'upload-modal-styles';
+            style.textContent = `
+                .upload-modal {
+                    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                    background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center;
+                    align-items: center; z-index: 10001; backdrop-filter: blur(4px);
+                }
+                .upload-modal-content {
+                    background: white; padding: 32px; border-radius: 16px;
+                    max-width: 500px; width: 90%; box-shadow: 0 20px 25px rgba(0,0,0,0.1);
+                }
+                .upload-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+                .close-modal { background: none; border: none; font-size: 24px; cursor: pointer; }
+                
+                /* Drag Drop Box Styles */
+                .drag-drop-box {
+                    border: 2px dashed #e2e8f0; border-radius: 12px; padding: 40px;
+                    text-align: center; background: #f8fafc; transition: all 0.3s;
+                }
+                .drag-drop-box.drag-over { border-color: #6200ea; background-color: #ede7f6; }
+                .upload-icon { font-size: 48px; color: #6200ea; margin-bottom: 16px; }
+                .btn-browse {
+                    margin-top: 15px; padding: 8px 16px; background: #6200ea; 
+                    color: white; border: none; border-radius: 6px; cursor: pointer;
+                }
+                .btn-browse:hover { background: #5000c2; }
             `;
-
-            // Add click listener to placeholder
-            document.getElementById('dragDropArea').addEventListener('click', () => {
-                alert('File selection dialog would open here');
-            });
+            document.head.appendChild(style);
         }
 
-        function closeUploadModal() {
-            const modal = document.querySelector('.upload-modal');
-            if (modal) {
-                modal.remove();
-            }
-        }
+        // 3. Attach the Active Drag & Drop Area (Imported from JS)
+        const container = modal.querySelector('#dragDropContainer');
+        const uploadArea = createDragDropArea(); // Call function from multipleStudentReg.js
+        container.appendChild(uploadArea);
 
-        // Attach upload function to the button
-        const uploadBtn = document.querySelector('.action-icon.add-multiple').parentElement;
-        if (uploadBtn) {
-            uploadBtn.addEventListener('click', uploadExcelSheet);
-        }
-    </script>
+        // 4. Close Logic
+        const closeBtn = modal.querySelector('.close-modal');
+        closeBtn.onclick = () => modal.remove();
+        
+        // Close on click outside
+        modal.onclick = (e) => {
+            if (e.target === modal) modal.remove();
+        };
+    };
+
+    // Attach listener to the Upload Card
+    const uploadBtnCard = document.querySelector('.action-icon.add-multiple')?.parentElement;
+    if (uploadBtnCard) {
+        uploadBtnCard.addEventListener('click', window.uploadExcelSheet);
+    }
+
+</script>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- <script src="../../scripts/config.js"></script> -->
@@ -601,8 +373,9 @@
     <script src="../../scripts/schoolAdminScripts/students_scripts/singleStudentRegForm.js" type="module"></script>
 
     <script src="../../scripts/schoolAdminScripts/students_scripts/viewAllStudents.js" type="module"></script>
-
-    <script src="../../scripts/schoolAdminScripts/popup.js"></script>
+    <script src="../../scripts/schoolAdminScripts/students_scripts/multipleStudentReg.js" type="module"></script>
+    
+    <!-- <script src="../../scripts/schoolAdminScripts/popup.js"></script> -->
 </body>
 
 </html>

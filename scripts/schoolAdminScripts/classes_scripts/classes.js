@@ -15,7 +15,7 @@ let currentFilter = "all";
 async function loadClasses() {
   try {
     // Note: The select("*") must match the columns available in the table.
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from("Classes")
       .select("*");
 
@@ -103,7 +103,7 @@ async function renderClasses() {
  */
 async function loadTeachers() {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from("Teachers")
       .select("teacher_id, first_name, last_name")
       .order("first_name", { ascending: true });
@@ -170,7 +170,7 @@ async function handleCreateClass(e) {
   // --- 1. Fetch teacher_id ---
   let teacherId = null;
   try {
-    const { data: teachers, error } = await supabase
+    const { data: teachers, error } = await supabaseClient
       .from("Teachers")
       // Assuming 'first_name' is sufficient for a lookup, but this is brittle.
       // Ideally, the searchable dropdown would store the teacher_id directly.
@@ -203,7 +203,7 @@ async function handleCreateClass(e) {
   };
 
   try {
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from("Classes")
       .insert([formData]);
 
