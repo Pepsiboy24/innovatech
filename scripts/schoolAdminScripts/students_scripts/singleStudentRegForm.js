@@ -1,5 +1,17 @@
 import { registerNewStudent } from "./singleStudentRegScript.js";
 
+// --- 1. Supabase Configuration ---
+const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
+
+// Ensure Supabase is available
+const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+if (!supabaseClient) {
+  console.error("Supabase client not loaded. Make sure the CDN script is in your HTML.");
+}
+
+// --- 2. Existing Form Logic ---
 let currentStep = 1;
 const totalSteps = 3;
 const previousBtn = document.getElementById("prevBtn");
@@ -61,9 +73,13 @@ function showStep(step) {
   updateStepIndicators();
 }
 
-
+// --- UPDATED VALIDATION LOGIC ---
 function validateStep(step) {
   let isValid = true;
+  
+  // Get "Today" with time stripped out for accurate date comparison
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   if (step === 1) {
     const fullName = document.getElementById("fullName");
@@ -71,13 +87,15 @@ function validateStep(step) {
     const dateOfBirth = document.getElementById("dateOfBirth");
     const gender = document.querySelector('input[name="gender"]:checked');
 
+    // Name Validation
     if (!fullName.value.trim()) {
-      showError("fullNameError");
+      showError("fullNameError"); // Ensure you have <div id="fullNameError"> in HTML
       isValid = false;
     } else {
       hideError("fullNameError");
     }
 
+    // Email Validation
     if (!email.value.trim() || !email.validity.valid) {
       showError("emailError");
       isValid = false;
@@ -85,13 +103,24 @@ function validateStep(step) {
       hideError("emailError");
     }
 
+    // Date of Birth Validation (Check Future)
+    const dobError = document.getElementById("dobError");
     if (!dateOfBirth.value) {
+      if(dobError) dobError.textContent = "Date of Birth is required";
       showError("dobError");
       isValid = false;
     } else {
-      hideError("dobError");
+      const dobDate = new Date(dateOfBirth.value);
+      if (dobDate > today) {
+         if(dobError) dobError.textContent = "Date of birth cannot be in the future";
+         showError("dobError");
+         isValid = false;
+      } else {
+        hideError("dobError");
+      }
     }
 
+    // Gender Validation
     if (!gender) {
       showError("genderError");
       isValid = false;
@@ -104,6 +133,7 @@ function validateStep(step) {
     const classField = document.getElementById("class");
     const admissionDate = document.getElementById("admissionDate");
 
+    // Class Validation
     if (!classField.value) {
       showError("classError");
       isValid = false;
@@ -111,16 +141,28 @@ function validateStep(step) {
       hideError("classError");
     }
 
+    // Admission Date Validation (Check Past)
+    const admitError = document.getElementById("admissionDateError");
     if (!admissionDate.value) {
+      if(admitError) admitError.textContent = "Admission Date is required";
       showError("admissionDateError");
       isValid = false;
     } else {
-      hideError("admissionDateError");
+      const admitDate = new Date(admissionDate.value);
+      // Check if admission date is strictly before today
+      if (admitDate < today) {
+        if(admitError) admitError.textContent = "Admission date cannot be in the past";
+        showError("admissionDateError");
+        isValid = false;
+      } else {
+        hideError("admissionDateError");
+      }
     }
   }
 
   return isValid;
 }
+
 nextBtns.addEventListener("click", () => {
   changeStep(1);
 });
@@ -129,17 +171,15 @@ previousBtn.addEventListener("click", () => {
   changeStep(-1);
 });
 
-// submitBtns.addEventListener("click", () => {
-//   registerNewStudent("amramgadzama7@gmail.com", "Innovatech123!");
-// });
-
-
 function showError(errorId) {
-  document.getElementById(errorId).style.display = "block";
+  const el = document.getElementById(errorId);
+  if (el) el.style.display = "block";
 }
 
 function hideError(errorId) {
-  // document.getElementById(errorId).style.display = "none";
+  // UPDATED: Uncommented this line so errors actually disappear
+  const el = document.getElementById(errorId);
+  if (el) el.style.display = "none";
 }
 
 function changeStep(direction) {
@@ -166,12 +206,12 @@ function populateReview() {
   const email = formData.get("email");
   const dateOfBirth = formData.get("dateOfBirth");
   const gender = formData.get("gender");
-  const classValue = formData.get("class");
+  const classValue = formData.get("class"); // This is the ID (e.g., 45)
   const admissionDate = formData.get("admissionDate");
 
-  const classText = document.querySelector(
-    `option[value="${classValue}"]`
-  ).textContent;
+  // Get the text label of the selected option (e.g., "JSS 1 A")
+  const classTextOption = document.querySelector(`option[value="${classValue}"]`);
+  const classText = classTextOption ? classTextOption.textContent : "Not Selected";
 
   reviewContent.innerHTML = `
                 <h3 style="margin-bottom: 16px; color: #1e293b;">Personal Information</h3>
@@ -201,44 +241,96 @@ function populateReview() {
   };
 }
 
+const resetBtn = document.querySelector("[data-resetBtn]")
+if (resetBtn) {
+    resetBtn.addEventListener("click", resetForm)
+}
 
 function resetForm() {
   document.getElementById("registrationForm").reset();
   currentStep = 1;
   showStep(currentStep);
   document.getElementById("successStep").classList.remove("active");
+  // Reset date default
+  document.getElementById("admissionDate").valueAsDate = new Date();
 }
 
-// Form submission
-// ... (code trimmed for brevity) ...
 document
-  .getElementById("registrationForm")
-  .addEventListener("submit", async function (e) {
-    e.preventDefault();
+  .getElementById("registrationForm")
+  .addEventListener("submit", async function (e) {
+    e.preventDefault();
 
-    if (validateStep(currentStep)) {
-      const fullName = document.getElementById("fullName").value;
-      const email = document.getElementById("email").value;
-//       const password = document.getElementById("password").value; // Added password retrieval
-      const dateOfBirth = document.getElementById("dateOfBirth").value;
-      const admissionDate = document.getElementById("admissionDate").value;
-      const profilePicUrl = "https://placehold.co/150x150/e8e8e8/363636?text=Profile"; // Placeholder URL
-      
-      const registrationResult = await registerNewStudent(fullName, email, "123456", dateOfBirth, admissionDate, profilePicUrl);
+    if (validateStep(currentStep)) {
+      const fullName = document.getElementById("fullName").value;
+      const email = document.getElementById("email").value;
+      const dateOfBirth = document.getElementById("dateOfBirth").value;
+      const admissionDate = document.getElementById("admissionDate").value;
+      
+      // Get the Class ID (integer) from the dropdown
+      const classId = document.getElementById("class").value; 
+      
+      const profilePicUrl = "https://placehold.co/150x150/e8e8e8/363636?text=Profile";
 
-      if (registrationResult) {
-        document.getElementById("step3").classList.remove("active");
-        document.getElementById("successStep").classList.add("active");
-        document.querySelector(".buttons").style.display = "none";
-      } else {
-        console.error("Registration failed. Please try again.");
-      }
-    }
-  });
-// ... (code trimmed for brevity) ...
+      // Pass the classId to your registration function
+      const registrationResult = await registerNewStudent(
+          fullName, 
+          email, 
+          "123456", 
+          dateOfBirth, 
+          admissionDate, 
+          profilePicUrl, 
+          classId 
+      );
+
+      if (registrationResult) {
+        document.getElementById("step3").classList.remove("active");
+        document.getElementById("successStep").classList.add("active");
+        document.querySelector(".buttons").style.display = "none";
+      } else {
+        console.error("Registration failed. Please try again.");
+      }
+    }
+  });
+
+// --- 3. Populate Class Dropdown ---
+
+async function populateClassDropdown(elementId) {
+    const dropdown = document.getElementById(elementId);
+    if (!dropdown) return;
+
+    try {
+        const { data: classes, error } = await supabaseClient
+            .from('Classes')
+            .select('class_id, class_name, section')
+            .order('class_name', { ascending: true });
+
+        if (error) throw error;
+
+        dropdown.innerHTML = '<option value="">Select a Class</option>';
+
+        classes.forEach(cls => {
+            const option = document.createElement('option');
+            option.value = cls.class_id; 
+            option.textContent = `${cls.class_name} ${cls.section}`; 
+            dropdown.appendChild(option);
+        });
+        
+        console.log("✅ Classes loaded successfully.");
+
+    } catch (err) {
+        console.error("Error loading classes:", err.message);
+        dropdown.innerHTML = '<option value="">Error loading classes</option>';
+    }
+}
+
+
+// --- 4. Initialization ---
 
 // Set default admission date to today
 document.getElementById("admissionDate").valueAsDate = new Date();
 
-// Initialize
+// Initialize Steps
 showStep(currentStep);
+
+// Trigger population
+populateClassDropdown("class");

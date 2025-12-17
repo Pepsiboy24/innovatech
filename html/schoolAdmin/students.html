@@ -11,7 +11,6 @@
 </head>
 
 <body>
-    <!-- Popup -->
     <div class="popup" id="registrationPopup">
         <div class="containment">
             <div class="popup-header">
@@ -38,9 +37,19 @@
                 </div>
             </div>
 
+            <div class="step" id="successStep" style="padding: 20px">
+                <div class="success-message">
+                    <div class="success-icon">✓</div>
+                    <h2>Registration Successful!</h2>
+                    <p>Welcome to EdTech Portal! Your registration has been completed successfully. You will
+                        receive a confirmation email shortly.</p>
+                    <button type="button" class="btn btn-primary" data-resetBtn
+                        style="margin-top: 20px;">Register Another Student</button>
+                </div>
+            </div>
+
             <div class="form-content">
                 <form id="registrationForm">
-                    <!-- Step 1: Personal Info -->
                     <div class="step active" id="step1">
                         <h2>Personal Information</h2>
                         <p>Let's start with your basic details</p>
@@ -49,17 +58,20 @@
                             <label for="fullName">Full Name *</label>
                             <input type="text" id="fullName" name="fullName" required
                                 placeholder="Enter your full name">
+                            <div class="error-message" id="fullNameError" style="display:none; color:red; font-size:12px;">Full Name is required</div>
                         </div>
 
                         <div class="form-group">
                             <label for="email">Email Address *</label>
                             <input type="email" id="email" name="email" required placeholder="your.email@example.com">
+                            <div class="error-message" id="emailError" style="display:none; color:red; font-size:12px;">Please enter a valid email</div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="dateOfBirth">Date of Birth *</label>
                                 <input type="date" id="dateOfBirth" name="dateOfBirth" required>
+                                <div class="error-message" id="dobError" style="display:none; color:red; font-size:12px;"></div>
                             </div>
                             <div class="form-group">
                                 <label>Gender *</label>
@@ -72,12 +84,13 @@
                                         <input type="radio" id="female" name="gender" value="female" required>
                                         <label for="female">Female</label>
                                     </div>
+                                    <div class="error-message" id="genderError" style="display:none; color:red; font-size:12px;">Please select a gender</div>
                                 </div>
+
                             </div>
                         </div>
                     </div>
 
-                    <!-- Step 2: Academic Details -->
                     <div class="step" id="step2">
                         <h2>Academic Details</h2>
                         <p>Tell us about your academic information</p>
@@ -86,35 +99,23 @@
                             <div class="form-group">
                                 <label for="class">Class/Grade *</label>
                                 <select id="class" name="class" required>
-                                    <option value="">Select your class</option>
-                                    <option value="1">Primary 1</option>
-                                    <option value="2">Primary 2</option>
-                                    <option value="3">Primary 3</option>
-                                    <option value="4">Primary 4</option>
-                                    <option value="5">Primary 5</option>
-                                    <option value="6">Primary 6</option>
-                                    <option value="7">JSS 1</option>
-                                    <option value="8">JSS 2</option>
-                                    <option value="9">JSS 3</option>
-                                    <option value="10">SSS 1</option>
-                                    <option value="11">SSS 2</option>
-                                    <option value="12">SSS 3</option>
-                                </select>
+                                    </select>
+                                <div class="error-message" id="classError" style="display:none; color:red; font-size:12px;">Please select a class</div>
                             </div>
+
                             <div class="form-group">
                                 <label for="admissionDate">Admission Date *</label>
                                 <input type="date" id="admissionDate" name="admissionDate" required>
+                                <div class="error-message" id="admissionDateError" style="display:none; color:red; font-size:12px;"></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Step 3: Review -->
                     <div class="step" id="step3">
                         <h2>Review Your Information</h2>
                         <p>Please review your details before submitting</p>
                         <div id="reviewContent"
                             style="background: #f8fafc; padding: 24px; border-radius: 8px; margin: 20px 0;">
-                            <!-- Populated by JS -->
                             <p><strong>Name:</strong> <span id="reviewName"></span></p>
                             <p><strong>Email:</strong> <span id="reviewEmail"></span></p>
                             <p><strong>Class:</strong> <span id="reviewClass"></span></p>
@@ -133,7 +134,6 @@
         </div>
     </div>
 
-    <!-- Sidebar -->
     <div class="sidebar" data-sideBar>
         <div class="logo">
             <div style="display: flex; align-items: center; gap: 10px;">
@@ -161,7 +161,9 @@
             </a>
             <a href="./subjects.html" class="nav-item">
                 <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                    </path>
                 </svg>
                 <span>Subjects</span>
             </a>
@@ -184,7 +186,6 @@
         </nav>
     </div>
 
-    <!-- Main Content -->
     <div class="main">
         <div class="header">
             <div class="header-left">
@@ -203,7 +204,6 @@
             </div>
         </div>
 
-        <!-- Action Cards -->
         <div class="action-cards">
             <div class="action-card" id="openPopupBtn">
                 <div class="action-icon add-single">
@@ -226,7 +226,6 @@
             </div>
         </div>
 
-        <!-- Students Table Section -->
         <div class="students-section">
             <div class="section-header">
                 <h2 class="section-title">Students List</h2>
@@ -256,42 +255,42 @@
     </div>
 
     <script type="module">
-    // Import the function from your JS file
-    import { createDragDropArea } from '../../scripts/schoolAdminScripts/students_scripts/multipleStudentReg.js';
+        // Import the function from your JS file
+        import { createDragDropArea } from '../../scripts/schoolAdminScripts/students_scripts/multipleStudentReg.js';
 
-    // --- Sidebar Logic (Kept from your original code) ---
-    const sidebar = document.querySelector('[data-sideBar]');
-    const sidebarOpenBtn = document.querySelector('[data-sideBarOpen]');
-    const sidebarCloseBtn = document.querySelector('[data-sideBarClose]');
+        // --- Sidebar Logic (Kept from your original code) ---
+        const sidebar = document.querySelector('[data-sideBar]');
+        const sidebarOpenBtn = document.querySelector('[data-sideBarOpen]');
+        const sidebarCloseBtn = document.querySelector('[data-sideBarClose]');
 
-    if (sidebarOpenBtn && sidebar) {
-        sidebarOpenBtn.addEventListener('click', () => sidebar.classList.add('show'));
-    }
-    if (sidebarCloseBtn && sidebar) {
-        sidebarCloseBtn.addEventListener('click', () => sidebar.classList.remove('show'));
-    }
+        if (sidebarOpenBtn && sidebar) {
+            sidebarOpenBtn.addEventListener('click', () => sidebar.classList.add('show'));
+        }
+        if (sidebarCloseBtn && sidebar) {
+            sidebarCloseBtn.addEventListener('click', () => sidebar.classList.remove('show'));
+        }
 
-    // --- Single Student Popup Logic ---
-    const popup = document.getElementById('registrationPopup');
-    const openPopupBtn = document.getElementById('openPopupBtn');
-    const closePopupBtn = document.getElementById('closePopup');
+        // --- Single Student Popup Logic ---
+        const popup = document.getElementById('registrationPopup');
+        const openPopupBtn = document.getElementById('openPopupBtn');
+        const closePopupBtn = document.getElementById('closePopup');
 
-    if (openPopupBtn && popup) {
-        openPopupBtn.addEventListener('click', () => popup.style.display = 'flex');
-    }
-    if (closePopupBtn && popup) {
-        closePopupBtn.addEventListener('click', () => popup.style.display = 'none');
-    }
+        if (openPopupBtn && popup) {
+            openPopupBtn.addEventListener('click', () => popup.style.display = 'flex');
+        }
+        if (closePopupBtn && popup) {
+            closePopupBtn.addEventListener('click', () => popup.style.display = 'none');
+        }
 
-    // --- Excel Upload Modal Logic ---
-    
-    // Make function available globally so onclick works (if you use onclick in HTML)
-    // Or attach event listener (preferred)
-    window.uploadExcelSheet = function() {
-        // 1. Create Modal DOM
-        const modal = document.createElement('div');
-        modal.className = 'upload-modal';
-        modal.innerHTML = `
+        // --- Excel Upload Modal Logic ---
+
+        // Make function available globally so onclick works (if you use onclick in HTML)
+        // Or attach event listener (preferred)
+        window.uploadExcelSheet = function () {
+            // 1. Create Modal DOM
+            const modal = document.createElement('div');
+            modal.className = 'upload-modal';
+            modal.innerHTML = `
             <div class="upload-modal-content">
                 <div class="upload-modal-header">
                     <h2>Upload Student Excel Sheet</h2>
@@ -304,13 +303,13 @@
             </div>
         `;
 
-        document.body.appendChild(modal);
+            document.body.appendChild(modal);
 
-        // 2. Inject CSS if not exists
-        if (!document.getElementById('upload-modal-styles')) {
-            const style = document.createElement('style');
-            style.id = 'upload-modal-styles';
-            style.textContent = `
+            // 2. Inject CSS if not exists
+            if (!document.getElementById('upload-modal-styles')) {
+                const style = document.createElement('style');
+                style.id = 'upload-modal-styles';
+                style.textContent = `
                 .upload-modal {
                     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
                     background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center;
@@ -336,35 +335,34 @@
                 }
                 .btn-browse:hover { background: #5000c2; }
             `;
-            document.head.appendChild(style);
+                document.head.appendChild(style);
+            }
+
+            // 3. Attach the Active Drag & Drop Area (Imported from JS)
+            const container = modal.querySelector('#dragDropContainer');
+            const uploadArea = createDragDropArea(); // Call function from multipleStudentReg.js
+            container.appendChild(uploadArea);
+
+            // 4. Close Logic
+            const closeBtn = modal.querySelector('.close-modal');
+            closeBtn.onclick = () => modal.remove();
+
+            // Close on click outside
+            modal.onclick = (e) => {
+                if (e.target === modal) modal.remove();
+            };
+        };
+
+        // Attach listener to the Upload Card
+        const uploadBtnCard = document.querySelector('.action-icon.add-multiple')?.parentElement;
+        if (uploadBtnCard) {
+            uploadBtnCard.addEventListener('click', window.uploadExcelSheet);
         }
 
-        // 3. Attach the Active Drag & Drop Area (Imported from JS)
-        const container = modal.querySelector('#dragDropContainer');
-        const uploadArea = createDragDropArea(); // Call function from multipleStudentReg.js
-        container.appendChild(uploadArea);
+    </script>
 
-        // 4. Close Logic
-        const closeBtn = modal.querySelector('.close-modal');
-        closeBtn.onclick = () => modal.remove();
-        
-        // Close on click outside
-        modal.onclick = (e) => {
-            if (e.target === modal) modal.remove();
-        };
-    };
-
-    // Attach listener to the Upload Card
-    const uploadBtnCard = document.querySelector('.action-icon.add-multiple')?.parentElement;
-    if (uploadBtnCard) {
-        uploadBtnCard.addEventListener('click', window.uploadExcelSheet);
-    }
-
-</script>
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- <script src="../../scripts/config.js"></script> -->
     <script src="../../scripts/font-awesome.js"></script>
     <script src="../../scripts/side.js"></script>
 
@@ -374,8 +372,7 @@
 
     <script src="../../scripts/schoolAdminScripts/students_scripts/viewAllStudents.js" type="module"></script>
     <script src="../../scripts/schoolAdminScripts/students_scripts/multipleStudentReg.js" type="module"></script>
-    
-    <!-- <script src="../../scripts/schoolAdminScripts/popup.js"></script> -->
-</body>
+
+    </body>
 
 </html>
