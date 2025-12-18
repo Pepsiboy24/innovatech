@@ -160,6 +160,11 @@ function displayResults(results) {
   const failureCount = results.filter(r => !r.success).length;
   alert(`Process Complete!\n✅ Success: ${successCount}\n❌ Failed: ${failureCount}`);
   document.querySelector('.upload-modal')?.remove();
+
+  if (typeof window.refreshStudentList === 'function') {
+      console.log("🔄 Refreshing student table...");
+      window.refreshStudentList();
+  }
 }
 
 // --- 3. UI Generation ---

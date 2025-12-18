@@ -6,17 +6,40 @@ document.addEventListener('DOMContentLoaded', function() {
         subjectForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const subjectName = document.getElementById('subjectName').value.trim();
-            const subjectType = document.querySelector('input[name="subjectType"]:checked');
+            // 1. Get Values
+            const subjectNameInput = document.getElementById('subjectName');
+            const subjectTypeInput = document.querySelector('input[name="subjectType"]:checked');
 
-            if (!subjectName || !subjectType) {
+            const subjectName = subjectNameInput.value.trim();
+            
+            // Basic Validation
+            if (!subjectName || !subjectTypeInput) {
                 alert('Please fill in all required fields.');
                 return;
             }
 
-            const isCore = subjectType.value === 'core';
+            const isCore = subjectTypeInput.value === 'core';
 
             try {
+                // 2. CHECK FOR DUPLICATES (Case Insensitive)
+                // We ask DB: "Do you have any subject that looks like this name?"
+                const { data: existingSubjects, error: checkError } = await window.supabase
+                    .from('Subjects')
+                    .select('subject_name')
+                    .ilike('subject_name', subjectName);
+
+                if (checkError) {
+                    console.error('Error checking duplicates:', checkError);
+                    alert('Network error. Please try again.');
+                    return;
+                }
+
+                if (existingSubjects && existingSubjects.length > 0) {
+                    alert(`Subject "${subjectName}" already exists!`);
+                    return; // Stop here, do not insert
+                }
+
+                // 3. INSERT NEW SUBJECT
                 const { data, error } = await window.supabase
                     .from('Subjects')
                     .insert([
@@ -31,15 +54,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     alert('Failed to add subject. Please try again.');
                 } else {
                     console.log('Subject added successfully:', data);
-                    alert(`Subject "${subjectName}" (${subjectType.value}) added successfully!`);
+                    alert(`Subject "${subjectName}" (${subjectTypeInput.value}) added successfully!`);
 
-                    // Close the popup and reset the form
+                    // Close popup and reset form
                     popup.style.display = 'none';
                     subjectForm.reset();
-
-                    // Optionally, refresh the subjects table here if display_subects.js is implemented
-                    // For now, the table has sample data
                 }
+
             } catch (err) {
                 console.error('Unexpected error:', err);
                 alert('An unexpected error occurred. Please try again.');

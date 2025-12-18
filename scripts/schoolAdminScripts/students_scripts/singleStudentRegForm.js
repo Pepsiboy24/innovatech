@@ -286,6 +286,11 @@ document
         document.getElementById("step3").classList.remove("active");
         document.getElementById("successStep").classList.add("active");
         document.querySelector(".buttons").style.display = "none";
+
+        if (typeof window.refreshStudentList === 'function') {
+            console.log("🔄 Refreshing student table...");
+            window.refreshStudentList();
+        }
       } else {
         console.error("Registration failed. Please try again.");
       }

@@ -134,3 +134,5 @@ async function renderStudents() {
 document.addEventListener('DOMContentLoaded', () => {
     renderStudents();
 });
+
+window.refreshStudentList = renderStudents;
