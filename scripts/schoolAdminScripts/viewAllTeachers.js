@@ -195,25 +195,18 @@ function filterTeachers(teachers, searchTerm) {
     });
 }
 
-// Function to filter teachers by grade level
-function filterTeachersByGrade(teachers, gradeFilter) {
+// Function to filter teachers by grade level based on class names
+function filterTeachersByGrade(teachers, gradeFilter, classMap) {
     if (gradeFilter === 'all') return teachers;
 
     return teachers.filter(teacher => {
-        const gradeLevels = teacher.grade_levels;
-        if (!gradeLevels) return false;
-
-        let gradeArray = [];
-        if (Array.isArray(gradeLevels)) {
-            gradeArray = gradeLevels;
-        } else if (typeof gradeLevels === 'string') {
-            gradeArray = gradeLevels.split(',').map(g => g.trim().toLowerCase());
-        }
+        const className = classMap[teacher.teacher_id] || '';
+        const classNameLower = className.toLowerCase();
 
         if (gradeFilter === 'primary') {
-            return gradeArray.some(level => level.includes('elementary') || level.includes('primary'));
+            return classNameLower.includes('primary');
         } else if (gradeFilter === 'secondary') {
-            return gradeArray.some(level => level.includes('middle') || level.includes('high') || level.includes('secondary'));
+            return classNameLower.includes('jss') || classNameLower.includes('ss');
         }
 
         return false;
@@ -225,18 +218,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('Loading teachers...');
     let allTeachers = await fetchTeachers();
     let classMap = await fetchTeacherClasses();
-    let filteredTeachers = [...allTeachers];
+    let currentSearchTerm = '';
+    let currentGradeFilter = 'all';
 
-    renderTeachers(filteredTeachers, classMap);
+    function applyFilters() {
+        let filtered = [...allTeachers];
+        if (currentSearchTerm) {
+            filtered = filterTeachers(filtered, currentSearchTerm);
+        }
+        if (currentGradeFilter !== 'all') {
+            filtered = filterTeachersByGrade(filtered, currentGradeFilter, classMap);
+        }
+        renderTeachers(filtered, classMap);
+    }
+
+    applyFilters();
     console.log(`Loaded ${allTeachers.length} teachers`);
 
     // Set up search functionality
     const searchInput = document.querySelector('.search-input');
     if (searchInput) {
         searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.trim();
-            filteredTeachers = filterTeachers(allTeachers, searchTerm);
-            renderTeachers(filteredTeachers, classMap);
+            currentSearchTerm = this.value.trim();
+            applyFilters();
         });
     }
 
@@ -250,9 +254,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Add active class to clicked tab
                 this.classList.add('active');
 
-                const filterType = this.textContent.toLowerCase();
-                filteredTeachers = filterTeachersByGrade(allTeachers, filterType);
-                renderTeachers(filteredTeachers, classMap);
+                currentGradeFilter = this.textContent.toLowerCase();
+                applyFilters();
             });
         });
     }

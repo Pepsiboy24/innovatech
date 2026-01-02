@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("Timetable Wizard Loaded");
     fetchClasses();
     setupEventListeners();
+    checkForEditMode();
 });
 
 // 1. Populate Class Dropdown
@@ -44,6 +45,30 @@ function setupEventListeners() {
             resetForm();
         }
     });
+}
+
+// Check for edit mode from URL parameters
+async function checkForEditMode() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const classId = urlParams.get('classId');
+
+    if (classId) {
+        console.log(`Edit mode detected for class ID: ${classId}`);
+
+        // Set the class dropdown to the specified class
+        const classSelect = document.getElementById('classSelect');
+        classSelect.value = classId;
+
+        // Load the existing configuration for editing
+        await loadClassConfig(classId);
+
+        // Update page title and subtitle to indicate edit mode
+        const pageTitle = document.querySelector('.page-title');
+        const pageSubtitle = document.querySelector('.page-subtitle');
+
+        if (pageTitle) pageTitle.textContent = 'Edit Timetable Configuration';
+        if (pageSubtitle) pageSubtitle.textContent = 'Modify existing schedule settings';
+    }
 }
 
 // Load Config

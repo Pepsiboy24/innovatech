@@ -60,22 +60,43 @@ function getInitials(fullName) {
     return fullName.split(' ').map(n => n.charAt(0).toUpperCase()).slice(0, 2).join('');
 }
 
-// --- 3. Render Logic ---
+// --- 3. Filter Functions ---
 
-async function renderStudents() {
-    console.log('Loading data...');
-    
-    // 1. Get BOTH lists (Students and Classes)
-    const students = await fetchStudents();
-    const classes = await fetchClasses();
+function filterStudents(students, searchTerm) {
+    if (!searchTerm) return students;
 
-    // 2. Create a "Lookup Map" for classes
-    // This turns the list into an easy object: { 45: "JSS 1 A", 46: "SS 2 B" }
-    const classMap = {};
-    classes.forEach(cls => {
-        classMap[cls.class_id] = `${cls.class_name} ${cls.section}`;
+    const term = searchTerm.toLowerCase();
+    return students.filter(student => {
+        const fullName = (student.full_name || '').toLowerCase();
+        const studentId = (student.student_id || '').toLowerCase();
+        const email = (student.email || '').toLowerCase();
+
+        return fullName.includes(term) ||
+               studentId.includes(term) ||
+               email.includes(term);
     });
+}
 
+function filterStudentsByGrade(students, gradeFilter, classMap) {
+    if (gradeFilter === 'all') return students;
+
+    return students.filter(student => {
+        const className = classMap[student.class_id] || '';
+        const classNameLower = className.toLowerCase();
+
+        if (gradeFilter === 'primary') {
+            return classNameLower.includes('primary');
+        } else if (gradeFilter === 'secondary') {
+            return classNameLower.includes('jss') || classNameLower.includes('ss');
+        }
+
+        return false;
+    });
+}
+
+// --- 4. Render Logic ---
+
+function renderStudents(students, classMap = {}) {
     const tbody = document.querySelector('.students-table tbody');
     if (!tbody) return;
 
@@ -89,12 +110,12 @@ async function renderStudents() {
     students.forEach(student => {
         const age = calculateAge(student.date_of_birth);
         const initials = getInitials(student.full_name);
-        
+
         // >>> THE FIX: Look up the Class ID in our Map <<<
         // If student.class_id is 45, it finds "JSS 1 A" in the map.
         // If not found (or null), it shows "Not Assigned".
         const classDisplayText = classMap[student.class_id] || "Not Assigned";
-        
+
         const attendancePercent = 85; // Placeholder
 
         const row = `
@@ -131,8 +152,63 @@ async function renderStudents() {
 }
 
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    renderStudents();
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('Loading students...');
+    let allStudents = await fetchStudents();
+    let classes = await fetchClasses();
+    let classMap = {};
+    classes.forEach(cls => {
+        classMap[cls.class_id] = `${cls.class_name} ${cls.section}`;
+    });
+    let currentSearchTerm = '';
+    let currentGradeFilter = 'all';
+
+    function applyFilters() {
+        let filtered = [...allStudents];
+        if (currentSearchTerm) {
+            filtered = filterStudents(filtered, currentSearchTerm);
+        }
+        if (currentGradeFilter !== 'all') {
+            filtered = filterStudentsByGrade(filtered, currentGradeFilter, classMap);
+        }
+        renderStudents(filtered, classMap);
+    }
+
+    applyFilters();
+    console.log(`Loaded ${allStudents.length} students`);
+
+    // Set up search functionality
+    const searchInput = document.querySelector('.search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            currentSearchTerm = this.value.trim();
+            applyFilters();
+        });
+    }
+
+    // Set up filter tabs functionality
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    if (filterTabs.length > 0) {
+        filterTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs
+                filterTabs.forEach(t => t.classList.remove('active'));
+                // Add active class to clicked tab
+                this.classList.add('active');
+
+                currentGradeFilter = this.textContent.toLowerCase();
+                applyFilters();
+            });
+        });
+    }
 });
 
-window.refreshStudentList = renderStudents;
+window.refreshStudentList = async () => {
+    const allStudents = await fetchStudents();
+    const classes = await fetchClasses();
+    const classMap = {};
+    classes.forEach(cls => {
+        classMap[cls.class_id] = `${cls.class_name} ${cls.section}`;
+    });
+    renderStudents(allStudents, classMap);
+};

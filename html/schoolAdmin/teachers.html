@@ -670,7 +670,7 @@
             <div class="icon" data-sideBarClose><i class="fa fa-times"></i></div>
         </div>
         <nav>
-            <a href="./school_dashboard.html" class="nav-item">
+            <a href="./schoolAdminDashboard.html" class="nav-item">
                 <i class="fa-solid fa-table-columns nav-icon"></i>
                 Dashboard
             </a>
@@ -770,126 +770,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="student-row">
-                            <td>
-                                <div class="student-info">
-                                    <div class="student-avatar">SC</div>
-                                    <div class="student-details">
-                                        <h4>Sean Cook</h4>
-                                        <p>ID: #TC001</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>5 Years</td>
-                            <td>
-                                <div class="class-badge">PRY <span>5B</span></div>
-                            </td>
-                            <td>
-                                <div class="attendance-progress">
-                                    <div class="progress-bar-sm">
-                                        <div class="progress-fill-sm" style="width: 85%;"></div>
-                                    </div>
-                                    <span class="attendance-percent">85%</span>
-                                </div>
-                            </td>
-                            <td><a href="#" class="action-btn">View</a></td>
-                        </tr>
-                        <tr class="student-row">
-                            <td>
-                                <div class="student-info">
-                                    <div class="student-avatar">JS</div>
-                                    <div class="student-details">
-                                        <h4>John Smith</h4>
-                                        <p>ID: #TC002</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>8 Years</td>
-                            <td>
-                                <div class="class-badge">PRY <span>5A</span></div>
-                            </td>
-                            <td>
-                                <div class="attendance-progress">
-                                    <div class="progress-bar-sm">
-                                        <div class="progress-fill-sm" style="width: 92%;"></div>
-                                    </div>
-                                    <span class="attendance-percent">92%</span>
-                                </div>
-                            </td>
-                            <td><a href="#" class="action-btn">View</a></td>
-                        </tr>
-                        <tr class="student-row">
-                            <td>
-                                <div class="student-info">
-                                    <div class="student-avatar">SJ</div>
-                                    <div class="student-details">
-                                        <h4>Sarah Johnson</h4>
-                                        <p>ID: #TC003</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>3 Years</td>
-                            <td>
-                                <div class="class-badge">SEC <span>2A</span></div>
-                            </td>
-                            <td>
-                                <div class="attendance-progress">
-                                    <div class="progress-bar-sm">
-                                        <div class="progress-fill-sm" style="width: 78%;"></div>
-                                    </div>
-                                    <span class="attendance-percent">78%</span>
-                                </div>
-                            </td>
-                            <td><a href="#" class="action-btn">View</a></td>
-                        </tr>
-                        <tr class="student-row">
-                            <td>
-                                <div class="student-info">
-                                    <div class="student-avatar">MB</div>
-                                    <div class="student-details">
-                                        <h4>Mike Brown</h4>
-                                        <p>ID: #TC004</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>12 Years</td>
-                            <td>
-                                <div class="class-badge">SEC <span>1B</span></div>
-                            </td>
-                            <td>
-                                <div class="attendance-progress">
-                                    <div class="progress-bar-sm">
-                                        <div class="progress-fill-sm" style="width: 88%;"></div>
-                                    </div>
-                                    <span class="attendance-percent">88%</span>
-                                </div>
-                            </td>
-                            <td><a href="#" class="action-btn">View</a></td>
-                        </tr>
-                        <tr class="student-row">
-                            <td>
-                                <div class="student-info">
-                                    <div class="student-avatar">EM</div>
-                                    <div class="student-details">
-                                        <h4>Emma Wilson</h4>
-                                        <p>ID: #TC005</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>6 Years</td>
-                            <td>
-                                <div class="class-badge">PRY <span>4C</span></div>
-                            </td>
-                            <td>
-                                <div class="attendance-progress">
-                                    <div class="progress-bar-sm">
-                                        <div class="progress-fill-sm" style="width: 95%;"></div>
-                                    </div>
-                                    <span class="attendance-percent">95%</span>
-                                </div>
-                            </td>
-                            <td><a href="#" class="action-btn">View</a></td>
-                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -1023,57 +903,7 @@
             document.getElementById('successStep').classList.add('active');
         });
 
-        // Search and Filter Functionality
-        document.addEventListener('DOMContentLoaded', function () {
-            // Search functionality
-            const searchInput = document.querySelector('.search-input');
-            const studentRows = document.querySelectorAll('.student-row');
 
-            if (searchInput) {
-                searchInput.addEventListener('input', function () {
-                    const searchTerm = this.value.toLowerCase();
-
-                    studentRows.forEach(row => {
-                        const name = row.querySelector('.student-details h4').textContent.toLowerCase();
-                        const id = row.querySelector('.student-details p').textContent.toLowerCase();
-
-                        if (name.includes(searchTerm) || id.includes(searchTerm)) {
-                            row.style.display = '';
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    });
-                });
-            }
-
-            // Filter tabs functionality
-            const filterTabs = document.querySelectorAll('.filter-tab');
-
-            filterTabs.forEach(tab => {
-                tab.addEventListener('click', function () {
-                    // Remove active class from all tabs
-                    filterTabs.forEach(t => t.classList.remove('active'));
-                    // Add active class to clicked tab
-                    this.classList.add('active');
-
-                    const filterType = this.textContent.toLowerCase();
-
-                    studentRows.forEach(row => {
-                        const classText = row.querySelector('.class-badge').textContent.toLowerCase();
-
-                        if (filterType === 'all') {
-                            row.style.display = '';
-                        } else if (filterType === 'primary' && classText.includes('pry')) {
-                            row.style.display = '';
-                        } else if (filterType === 'secondary' && classText.includes('sec')) {
-                            row.style.display = '';
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    });
-                });
-            });
-        });
 
         // Upload Excel Functionality
         async function uploadExcelSheet() {

@@ -89,6 +89,94 @@
         </div>
     </div>
 
+    <!-- Edit Timetable Modal -->
+    <div id="editTimetableModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Timetable Configuration</h2>
+                <button class="modal-close" onclick="closeEditModal()">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editTimetableForm">
+                    <div class="form-section">
+                        <h3>Class Information</h3>
+                        <div class="form-group">
+                            <label>Class:</label>
+                            <input type="text" id="editClassName" readonly>
+                            <input type="hidden" id="editClassId">
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Time Settings</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editStartTime">Start Time *</label>
+                                <input type="time" id="editStartTime" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="editEndTime">School End Time *</label>
+                                <input type="time" id="editEndTime" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editPeriodDuration">Period Duration (minutes) *</label>
+                                <input type="number" id="editPeriodDuration" min="15" max="120" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Active Days</h3>
+                        <div class="days-selection">
+                            <label class="day-checkbox">
+                                <input type="checkbox" name="editActiveDays" value="Mon">
+                                <span>Monday</span>
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" name="editActiveDays" value="Tue">
+                                <span>Tuesday</span>
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" name="editActiveDays" value="Wed">
+                                <span>Wednesday</span>
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" name="editActiveDays" value="Thu">
+                                <span>Thursday</span>
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" name="editActiveDays" value="Fri">
+                                <span>Friday</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Break Times</h3>
+                        <div id="editBreaksContainer">
+                            <!-- Breaks will be populated here -->
+                        </div>
+                        <button type="button" class="btn btn-secondary" onclick="addEditBreakField()">
+                            <i class="fa-solid fa-plus"></i>
+                            Add Break
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveTimetableChanges()">
+                    <i class="fa-solid fa-save"></i>
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
