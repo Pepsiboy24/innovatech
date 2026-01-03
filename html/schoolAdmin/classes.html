@@ -196,13 +196,45 @@
     </div>
 
     <div class="overlay" id="overlay"></div>
+    <div id="viewClassModal" class="modal-overlay" style="display: none;">
+    <div class="full-view-modal">
+        <div class="modal-header">
+            <div>
+                <h2 id="viewClassNameDisplay">Class Details</h2>
+                <p id="viewClassSectionDisplay" class="page-subtitle"></p>
+            </div>
+            <button class="modal-close" onclick="closeViewModal()">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="info-section">
+                <h3>General Information</h3>
+                <div class="info-content">
+                    <div class="info-item">
+                        <span class="info-label">Teacher</span>
+                        <span class="info-value" id="viewTeacherName">N/A</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total Students</span>
+                        <span class="info-value" id="viewStudentCount">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeViewModal()">Close</button>
+        </div>
+    </div>
+</div>
 
+<input type="hidden" id="editClassId">
     <!-- Scripts from User Request -->
         <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- <script src="../../scripts/config.js" type="module"></script> -->
 
-    <script type="module" src="../../scripts/schoolAdminScripts/classes_scripts/classesModal.js"></script>
+    <!-- <script type="module" src="../../scripts/schoolAdminScripts/classes_scripts/classesModal.js"></script> -->
 
     <script type="module" src="../../scripts/schoolAdminScripts/classes_scripts/csvUpload.js"></script>
 

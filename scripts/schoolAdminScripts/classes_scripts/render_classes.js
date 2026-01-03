@@ -6,16 +6,15 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // --- State Management ---
-let allClassesData = []; // Store fetched data here so we can filter it later without refetching
+window.allClassesData = []; // Changed to window property for global access
 
 // --- DOM Elements ---
 const template = document.querySelector("[data-template]");
 const container = document.querySelector("[data-container]");
-const searchInput = document.querySelector(".search-input"); // Based on your HTML class
+const searchInput = document.querySelector(".search-input");
 
 // --- 1. Function to Render Cards ---
 function renderClasses(dataToRender) {
-    // Clear current grid
     container.innerHTML = "";
 
     if (dataToRender.length === 0) {
@@ -24,28 +23,29 @@ function renderClasses(dataToRender) {
     }
 
     dataToRender.forEach(elem => {
-        // Clone the card from template
         const card = template.content.cloneNode(true).children[0];
         
-        // Select elements within the card
         const classNameEl = card.querySelector("[data-class-name]");
         const classSectionEl = card.querySelector("[data-class-section]");
         const teacherNameEl = card.querySelector("[data-teacher-name]");
         const studentNoEl = card.querySelector("[data-student-no]");
 
-        // Populate Data
-        // Note: We handle cases where Teachers might be null (if left join finds no match)
         const teacherFirstName = elem.Teachers?.first_name || "Unassigned";
         const teacherLastName = elem.Teachers?.last_name || "";
         
         classNameEl.textContent = elem.class_name;
-        // Use a default empty string if section is null
         classSectionEl.textContent = elem.section ? ` - ${elem.section}` : ""; 
         teacherNameEl.textContent = `${teacherFirstName} ${teacherLastName}`;
-        // Assuming your DB has a count, otherwise hardcoding/placeholder
         studentNoEl.textContent = elem.no_of_students || "0"; 
 
-        // Append to grid
+        // --- NEW: Attach Click Events ---
+        const editBtn = card.querySelector(".editBtn");
+        const viewBtn = card.querySelector(".viewBtn");
+
+        // Pass the class_id to the window-scoped functions in classes.js
+        if (editBtn) editBtn.onclick = () => window.openEditClassModal(elem.class_id);
+        if (viewBtn) viewBtn.onclick = () => window.openViewClassModal(elem.class_id);
+
         container.append(card);
     });
 }
@@ -61,15 +61,12 @@ async function loadClasses() {
 
         if (error) throw error;
 
-        // Save data to global variable
-        allClassesData = data || [];
-        
-        // Initial Render
-        renderClasses(allClassesData);
+        window.allClassesData = data || []; // Save globally
+        renderClasses(window.allClassesData);
 
     } catch (error) {
-        console.error("Error loading classes from DB:", error);
-        container.innerHTML = '<p style="color: red; grid-column: 1/-1; text-align: center;">Failed to load classes.</p>';
+        console.error("Error loading classes:", error);
+        container.innerHTML = '<p style="color: red; text-align: center;">Failed to load classes.</p>';
     }
 }
 
@@ -77,24 +74,12 @@ async function loadClasses() {
 if (searchInput) {
     searchInput.addEventListener("input", (e) => {
         const searchTerm = e.target.value.toLowerCase().trim();
-
-        // Filter the existing data
-        const filteredClasses = allClassesData.filter(item => {
-            const className = (item.class_name || "").toLowerCase();
-            const section = (item.section || "").toLowerCase();
-            
-            // Create a combined string for searching "JSS 1 A"
-            // This allows searching by name, section, or both combined
-            const fullName = `${className} ${section}`;
-
+        const filteredClasses = window.allClassesData.filter(item => {
+            const fullName = `${item.class_name || ""} ${item.section || ""}`.toLowerCase();
             return fullName.includes(searchTerm);
         });
-
-        // Re-render with filtered data
         renderClasses(filteredClasses);
     });
 }
 
-// --- Initialization ---
-// Start the process
 loadClasses();

@@ -168,10 +168,48 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="saveTimetableChanges()">
-                    <i class="fa-solid fa-save"></i>
-                    Save Changes
+    <button type="button" class="btn-secondary" onclick="closeEditModal()">Cancel</button>
+    <button type="button" class="btn btn-primary" onclick="saveTimetableChanges()">
+        <i class="fa-solid fa-save"></i> Save Changes
+    </button>
+</div>
+        </div>
+    </div>
+
+    <!-- Edit Entry Modal -->
+    <div id="editEntryModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Timetable Entry</h2>
+                <button class="modal-close" onclick="closeEditEntryModal()">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editEntryForm">
+                    <div class="form-section">
+                        <h3>Entry Details</h3>
+                        <div class="form-group">
+                            <label for="editEntryDay">Day:</label>
+                            <input type="text" id="editEntryDay" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="editEntryTime">Time:</label>
+                            <input type="text" id="editEntryTime" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="editEntrySubject">Subject *</label>
+                            <select id="editEntrySubject" required>
+                                <option value="">-- Select Subject --</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeEditEntryModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveEntryChanges()">
+                    <i class="fa-solid fa-save"></i> Save Entry
                 </button>
             </div>
         </div>
@@ -278,9 +316,9 @@
                     </div>
                     <div class="card-footer">
                         <button class="btn-view" onclick="viewFullTimetable('${config.class_id}')">View Full</button>
-                        <button class="btn-edit" onclick="editTimetable('${config.class_id}')">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
+                        <button class="btn-edit" onclick="openEditModal('${config.class_id}')">
+    <i class="fa-solid fa-pen"></i>
+</button>
                     </div>
                 </div>
             `;
@@ -328,8 +366,8 @@
         function generateCell(day, timeStr, entries) {
             // Find entry for this Day and Time
             // Note: We use startsWith because DB time might be "08:00:00" and calc time is "08:00"
-            const entry = entries.find(e => 
-                e.day_of_week === day && 
+            const entry = entries.find(e =>
+                e.day_of_week === day &&
                 e.start_time.startsWith(timeStr)
             );
 
@@ -337,13 +375,13 @@
                 // Find Subject Code
                 const subject = globalData.subjects.find(s => s.subject_id === entry.subject_id);
                 const code = subject ? (subject.subject_code || subject.subject_name.substring(0,3).toUpperCase()) : '???';
-                
+
                 // Color coding based on subject (optional hash function)
-                return `<td class="subject-cell">
+                return `<td class="subject-cell" onclick="openEditEntryModal('${day}', '${timeStr}', '${entry.class_id}')" data-day="${day}" data-time="${timeStr}" data-class="${entry.class_id}">
                             <span class="subject-block" data-subject="${code}">${code}</span>
                         </td>`;
             } else {
-                return `<td class="empty-cell"></td>`;
+                return `<td class="empty-cell" onclick="openEditEntryModal('${day}', '${timeStr}', '${entries[0]?.class_id || ''}')" data-day="${day}" data-time="${timeStr}" data-class="${entries[0]?.class_id || ''}"></td>`;
             }
         }
 
@@ -374,6 +412,198 @@
         if (sidebarCloseBtn && sidebar) {
             sidebarCloseBtn.addEventListener('click', () => sidebar.classList.remove('show'));
         }
+        // --- MODAL LOGIC ---
+
+window.openEditModal = (classId) => {
+    const config = globalData.configs.find(c => c.class_id == classId);
+    const classInfo = globalData.classes.find(c => c.class_id == classId);
+
+    if (!config) return;
+
+    // Helper to format "08:00:00" to "08:00" for HTML inputs
+    const cleanTime = (timeStr) => timeStr ? timeStr.substring(0, 5) : "";
+
+    // 1. Fill basic info
+    document.getElementById('editClassId').value = classId;
+    document.getElementById('editClassName').value = classInfo ? classInfo.class_name : 'Unknown';
+    document.getElementById('editStartTime').value = cleanTime(config.start_time);
+    document.getElementById('editPeriodDuration').value = config.period_duration;
+
+    // 2. Fix: Get School End Time directly from config if it exists
+    if (config.end_time) {
+        document.getElementById('editEndTime').value = cleanTime(config.end_time);
+    } else {
+        // Fallback calculation if DB field is empty
+        const periods = config.periods_per_day || 8;
+        const dur = config.period_duration || 40;
+        let [h, m] = (config.start_time || "08:00").split(':').map(Number);
+        let totalMins = (h * 60) + m + (periods * dur) + 20; // +20 for break
+        document.getElementById('editEndTime').value = minutesToTimeString(totalMins);
+    }
+
+    // 3. Handle Checkboxes
+    const activeDays = config.active_days || [];
+    document.querySelectorAll('input[name="editActiveDays"]').forEach(cb => {
+        cb.checked = activeDays.includes(cb.value);
+    });
+
+    // 4. Populate breaks with corrected HTML structure
+    const container = document.getElementById('editBreaksContainer');
+    container.innerHTML = ''; 
+    
+    // Logic: If you have a breaks table, fetch from there. 
+    // Otherwise, generate the default break:
+    const dur = config.period_duration || 40;
+    let [h, m] = (config.start_time || "08:00").split(':').map(Number);
+    let breakStart = (h * 60) + m + (4 * dur); // After 4 periods
+    
+    addEditBreakField(minutesToTimeString(breakStart), 20);
+
+    document.getElementById('editTimetableModal').style.display = 'flex';
+};
+
+window.closeEditModal = () => {
+    document.getElementById('editTimetableModal').style.display = 'none';
+};
+
+window.saveTimetableChanges = async () => {
+    const classId = document.getElementById('editClassId').value;
+    const startTime = document.getElementById('editStartTime').value;
+    const endTime = document.getElementById('editEndTime').value;
+    const duration = document.getElementById('editPeriodDuration').value;
+    
+    // Collect selected days
+    const selectedDays = Array.from(document.querySelectorAll('input[name="editActiveDays"]:checked'))
+                             .map(cb => cb.value);
+
+    try {
+        const { error } = await supabase
+            .from('schedule_configs')
+            .update({
+                start_time: startTime,
+                end_time: endTime,
+                period_duration: parseInt(duration),
+                active_days: selectedDays // Ensure this column exists in your DB
+            })
+            .eq('class_id', classId);
+
+        if (error) throw error;
+
+        alert('Timetable updated successfully!');
+        closeEditModal();
+        loadAllTimetableData(); // Refresh the grid
+    } catch (err) {
+        console.error("Update error:", err);
+        alert("Failed to update: " + err.message);
+    }
+};
+
+// Break logic (Optional UI helper)
+window.addEditBreakField = (time = '', duration = '') => {
+    const container = document.getElementById('editBreaksContainer');
+    const div = document.createElement('div');
+    div.className = 'break-entry-row';
+    div.innerHTML = `
+        <div class="form-group">
+            <label style="font-size: 11px; color: #64748b;">Start Time</label>
+            <input type="time" class="break-start" value="${time}">
+        </div>
+        <div class="form-group">
+            <label style="font-size: 11px; color: #64748b;">Duration (Mins)</label>
+            <input type="number" class="break-duration" value="${duration}">
+        </div>
+        <button type="button" class="btn-remove-break" onclick="this.parentElement.remove()">
+            <i class="fa fa-trash"></i>
+        </button>
+    `;
+    container.appendChild(div);
+};
+
+// --- ENTRY EDITING LOGIC ---
+window.openEditEntryModal = (day, time, classId) => {
+    if (!classId) {
+        alert('No class selected for this timetable.');
+        return;
+    }
+
+    // Set day and time
+    document.getElementById('editEntryDay').value = day;
+    document.getElementById('editEntryTime').value = time;
+
+    // Populate subject dropdown
+    const subjectSelect = document.getElementById('editEntrySubject');
+    subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
+    globalData.subjects.forEach(subject => {
+        const option = document.createElement('option');
+        option.value = subject.subject_id;
+        option.textContent = `${subject.subject_code || subject.subject_name} - ${subject.subject_name}`;
+        subjectSelect.appendChild(option);
+    });
+
+    // Find existing entry
+    const existingEntry = globalData.entries.find(e =>
+        e.class_id == classId &&
+        e.day_of_week === day &&
+        e.start_time.startsWith(time)
+    );
+
+    if (existingEntry) {
+        subjectSelect.value = existingEntry.subject_id;
+    } else {
+        subjectSelect.value = '';
+    }
+
+    // Store classId for saving
+    document.getElementById('editEntryForm').dataset.classId = classId;
+
+    document.getElementById('editEntryModal').style.display = 'flex';
+};
+
+window.closeEditEntryModal = () => {
+    document.getElementById('editEntryModal').style.display = 'none';
+};
+
+window.saveEntryChanges = async () => {
+    const classId = document.getElementById('editEntryForm').dataset.classId;
+    const day = document.getElementById('editEntryDay').value;
+    const time = document.getElementById('editEntryTime').value;
+    const subjectId = document.getElementById('editEntrySubject').value;
+
+    try {
+        if (subjectId) {
+            // Upsert entry
+            const { error } = await supabase
+                .from('timetable_entries')
+                .upsert({
+                    class_id: classId,
+                    day_of_week: day,
+                    start_time: time + ':00', // Add seconds
+                    subject_id: subjectId
+                }, {
+                    onConflict: 'class_id,day_of_week,start_time'
+                });
+
+            if (error) throw error;
+        } else {
+            // Delete entry if no subject selected
+            const { error } = await supabase
+                .from('timetable_entries')
+                .delete()
+                .eq('class_id', classId)
+                .eq('day_of_week', day)
+                .like('start_time', time + '%');
+
+            if (error) throw error;
+        }
+
+        alert('Entry updated successfully!');
+        closeEditEntryModal();
+        loadAllTimetableData(); // Refresh the grid
+    } catch (err) {
+        console.error("Save error:", err);
+        alert("Failed to save: " + err.message);
+    }
+};
     </script>
 </body>
 </html>

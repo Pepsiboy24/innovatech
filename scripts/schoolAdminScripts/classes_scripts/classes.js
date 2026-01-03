@@ -1,283 +1,185 @@
 const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
-// const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Assuming supabaseClient is correctly initialized from the previous conversation.
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-let currentFilter = "all";
 
-// --- 📚 Class Data Functions ---
+// --- 🗄️ Unified Modal Control ---
 
-/**
- * Fetches all class data from the Supabase 'Classes' table.
- * @returns {Array} List of classes or an empty array on error.
- */
-async function loadClasses() {
-  try {
-    // Note: The select("*") must match the columns available in the table.
-    const { data, error } = await supabaseClient
-      .from("Classes")
-      .select("*");
-
-    if (error) throw error;
-
-    return data || [];
-  } catch (error) {
-    console.error("Error loading classes from DB:", error);
-    return [];
-  }
-}
-
-/**
- * Creates a single class card element from data.
- * @param {HTMLElement} template - The template card element.
- * @param {Object} classData - The class data object.
- * @returns {HTMLElement | null} The cloned and populated card element.
- */
-function createClassCard(template, classData) {
-  // Clone the template and remove the 'display: none' styling if applied
-  const card = template.cloneNode(true);
-  card.style.display = 'block'; // Make sure the cloned card is visible
-
-  // Populate the card with data
-  const titleElement = card.querySelector('header h2');
-  const subjectElement = card.querySelector('header p');
-  const teacherElement = card.querySelector('.body p:first-child span');
-  const studentsElement = card.querySelector('.body p:last-child span');
-
-  // Use optional chaining or simple checks to prevent errors
-  if (titleElement) titleElement.textContent = classData.title || classData.class_name;
-  if (subjectElement) subjectElement.textContent = classData.subject_level || classData.section; // Assuming subject_level might be section
-  if (teacherElement) teacherElement.textContent = classData.teacher_name || 'N/A';
-  if (studentsElement) studentsElement.textContent = classData.students_count || 0;
-
-  return card;
-}
-
-/**
- * Fetches data, filters it, and renders the class cards to the grid.
- */
-async function renderClasses() {
-  const classesGrid = document.getElementById("classesGrid");
-  classesGrid.innerHTML = '<p class="loading-message">Loading classes...</p>';
-
-  const classes = await loadClasses();
-
-  const filteredClasses = currentFilter === "all" ? classes : classes.filter(c => c.status && c.status.toLowerCase() === currentFilter);
-
-  // Get the template element
-  const templateElement = document.querySelector('template[data-template]');
-  if (!templateElement) {
-    console.error('Template not found in HTML.');
-    classesGrid.innerHTML = '<p class="error-message">Error: Template not found.</p>';
-    return;
-  }
-
-  // Get the card template from inside the template element
-  const template = templateElement.content.querySelector('.card');
-  if (!template) {
-    console.error('Template card not found in HTML.');
-    classesGrid.innerHTML = '<p class="error-message">Error: Template card not found.</p>';
-    return;
-  }
-
-  classesGrid.innerHTML = "";
-
-  if (filteredClasses.length === 0) {
-    classesGrid.innerHTML = '<p class="no-data-message">No classes found.</p>';
-    return;
-  }
-
-  // Append the new cards
-  filteredClasses.forEach((classData) => {
-    const card = createClassCard(template, classData);
-    if (card) classesGrid.appendChild(card);
-  });
-}
-
-// --- 🧑‍🏫 Teacher Data Function (Needed by searchableDropdown.js) ---
-
-/**
- * Loads teacher data for the modal form.
- * @returns {Array} List of teachers.
- */
-async function loadTeachers() {
-  try {
-    const { data, error } = await supabaseClient
-      .from("Teachers")
-      .select("teacher_id, first_name, last_name")
-      .order("first_name", { ascending: true });
-
-    if (error) throw error;
-
-    return data || [];
-  } catch (error) {
-    console.error("Error loading teachers:", error);
-    return [];
-  }
-}
-
-// --- 🗄️ Modal and Form Functions ---
-
-function openModal() {
-  const modal = document.getElementById("createClassModal");
-  const overlay = document.getElementById("overlay");
-  modal.classList.add("active");
-  overlay.classList.add("active");
-}
-
+// Handles the Create/Edit Modal
 function closeModal() {
-  const modal = document.getElementById("createClassModal");
-  const overlay = document.getElementById("overlay");
-  modal.classList.remove("active");
-  overlay.classList.remove("active");
-  document.getElementById("createClassForm").reset();
+    const modal = document.getElementById("createClassModal");
+    const overlay = document.getElementById("overlay");
+    
+    // Use consistent display logic
+    modal.style.display = 'none';
+    overlay.style.display = 'none';
+    document.body.style.overflow = 'auto'; // Restore scrolling
+    
+    // Reset Form UI
+    document.getElementById("createClassForm").reset();
+    document.getElementById('editClassId').value = ""; 
+    document.querySelector('#createClassModal h2').textContent = "Create New Class";
+    document.querySelector('[data-create-class]').textContent = "Create Class";
 }
 
-/**
- * Initializes data when the modal is about to open.
- * NOTE: Since teacher population is handled by a separate script,
- * this function currently only ensures data is loaded (if needed).
- */
-async function initializeModalData() {
-  // Await the teachers data if needed by the searchable dropdown script,
-  // otherwise this function just ensures the modal state is reset/ready.
-  const teachers = await loadTeachers();
-  // We can pass the teachers array to the searchableDropdown.js script here
-  // if it exposes a function to populate its options.
-  console.log('Teachers data loaded for modal:', teachers.length);
-}
+// Handles the View Modal
+window.closeViewModal = () => {
+    const viewModal = document.getElementById('viewClassModal');
+    const overlay = document.getElementById("overlay"); // Use same overlay if needed, or none if View has its own
+    
+    viewModal.style.display = 'none';
+    overlay.style.display = 'none';
+    document.body.style.overflow = 'auto';
+};
+
+// --- ✏️ Edit Class Function ---
+window.openEditClassModal = async (classId) => {
+    const classData = window.allClassesData.find(c => c.class_id == classId);
+    if (!classData) return;
+
+    // UI Updates
+    document.querySelector('#createClassModal h2').textContent = "Edit Class Information";
+    document.querySelector('[data-create-class]').textContent = "Update Class";
+
+    // Populate Fields
+    document.getElementById('editClassId').value = classId;
+    document.getElementById('className').value = classData.class_name;
+    document.getElementById('section').value = classData.section || "";
+    document.getElementById('studentsCount').value = classData.no_of_students || 0;
+    
+    const teacherName = classData.Teachers ? 
+        `${classData.Teachers.first_name} ${classData.Teachers.last_name}` : "";
+    document.getElementById('teacherSearchInput').value = teacherName;
+
+    // Show Modal consistently
+    const modal = document.getElementById("createClassModal");
+    const overlay = document.getElementById("overlay");
+    modal.style.display = 'block';
+    overlay.style.display = 'block';
+    document.body.style.overflow = 'hidden'; 
+};
+
+// --- 👁️ View Class Function ---
+window.openViewClassModal = (classId) => {
+    const classData = window.allClassesData.find(c => c.class_id == classId);
+    if (!classData) return;
+
+    document.getElementById('viewClassNameDisplay').textContent = classData.class_name;
+    document.getElementById('viewTeacherName').textContent = classData.Teachers ? 
+        `${classData.Teachers.first_name} ${classData.Teachers.last_name}` : "Unassigned";
+    document.getElementById('viewStudentCount').textContent = classData.no_of_students || "0";
+
+    const viewModal = document.getElementById('viewClassModal');
+    const overlay = document.getElementById("overlay");
+    
+    viewModal.style.display = 'flex';
+    overlay.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+};
 
 /**
- * Handles the form submission to create a new class entry.
+ * Handles both CREATE and UPDATE
  */
 async function handleCreateClass(e) {
   e.preventDefault();
 
+  const editId = document.getElementById('editClassId').value;
   const className = document.getElementById("className").value;
   const section = document.getElementById("section").value;
-  // Assuming the searchableDropdown.js or your logic stores the teacher ID
-  // or full name in the input. We'll use the existing logic for now.
   const teacherName = document.getElementById("teacherSearchInput").value.trim();
-  const studentsCount = document.getElementById("studentsCount").value; // Added missing student count input
-  // const classIcon = document.getElementById("classIcon").value; // Added missing icon input
+  const studentsCount = document.getElementById("studentsCount").value;
 
   if (!teacherName) {
     alert("Please select a teacher.");
     return;
   }
 
-  // --- 1. Fetch teacher_id ---
   let teacherId = null;
   try {
     const { data: teachers, error } = await supabaseClient
       .from("Teachers")
-      // Assuming 'first_name' is sufficient for a lookup, but this is brittle.
-      // Ideally, the searchable dropdown would store the teacher_id directly.
       .select("teacher_id")
-      .ilike("first_name", teacherName)
+      .ilike("first_name", teacherName.split(' ')[0])
       .limit(1);
 
     if (error) throw error;
-
     if (teachers && teachers.length > 0) {
       teacherId = teachers[0].teacher_id;
     } else {
-      alert(`Teacher '${teacherName}' not found. Please check the name.`);
+      alert(`Teacher '${teacherName}' not found.`);
       return;
     }
   } catch (error) {
-    console.error("Error fetching teacher ID:", error);
-    alert("Error fetching teacher information. Cannot create class.");
+    console.error("Error fetching teacher:", error);
     return;
   }
 
-  // --- 2. Insert new class ---
   const formData = {
     class_name: className,
-    section: section, // Renamed from 'Section' to lowercase 'section' for consistency
+    section: section,
     teacher_id: teacherId,
-    // students_count: studentsCount, // Added student count
-    // icon: classIcon // Added class icon
-    // Add other fields like 'title' if your 'Classes' table requires them.
+    no_of_students: parseInt(studentsCount)
   };
 
   try {
-    const { error } = await supabaseClient
-      .from("Classes")
-      .insert([formData]);
+    if (editId) {
+      const { error } = await supabaseClient.from("Classes").update(formData).eq('class_id', editId);
+      if (error) throw error;
+      alert("Class updated!");
+    } else {
+      const { error } = await supabaseClient.from("Classes").insert([formData]);
+      if (error) throw error;
+      alert("Class created!");
+    }
 
-    if (error) throw error;
-
-    alert("Class created successfully!");
     closeModal();
-    await renderClasses();
+    location.reload(); 
   } catch (error) {
-    console.error("Error creating class:", error);
-    alert("Error creating class. Check console for details.");
-    closeModal();
-    await renderClasses();
+    console.error("Save error:", error);
+    alert("Error saving class: " + error.message);
   }
 }
 
-// --- ⚙️ Initialization and Event Listeners ---
-
+// --- Initialization ---
 function initializeEventListeners() {
-  // Elements
   const createClassBtn = document.getElementById("createClassBtn");
   const closeModalBtn = document.getElementById("closeModal");
   const cancelBtn = document.getElementById("cancelBtn");
   const overlay = document.getElementById("overlay");
-  const createClassForm = document.getElementById("createClassForm");
-  const createNewClass = document.querySelector("[data-create-class]")
-  const filterSelect = document.getElementById("filterSelect");
-  // const mobileMenuBtn = document.getElementById("mobileMenuBtn");
-  const menuToggle = document.getElementById("menuToggle");
-  const sidebar = document.getElementById("sidebar");
+  const createNewClassBtn = document.querySelector("[data-create-class]");
 
-  // Modal Control
-  createClassBtn.addEventListener("click", async () => {
-    // Load necessary data and open the modal
-    await initializeModalData();
-    openModal();
-  });
-  closeModalBtn.addEventListener("click", closeModal);
-  cancelBtn.addEventListener("click", closeModal);
-  overlay.addEventListener("click", closeModal);
-  createNewClass.addEventListener("click", handleCreateClass);
+  if (createClassBtn) {
+    createClassBtn.addEventListener("click", () => {
+        // Ensure reset to 'Create' mode
+        document.getElementById('editClassId').value = ""; 
+        document.querySelector('#createClassModal h2').textContent = "Create New Class";
+        document.querySelector('[data-create-class]').textContent = "Create Class";
+        
+        document.getElementById("createClassModal").style.display = 'block';
+        document.getElementById("overlay").style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    });
+  }
+  
+  if (closeModalBtn) closeModalBtn.addEventListener("click", closeModal);
+  if (cancelBtn) cancelBtn.addEventListener("click", closeModal);
+  
+  if (overlay) {
+      overlay.addEventListener("click", () => {
+          closeModal();
+          closeViewModal();
+      });
+  }
 
-  // Filter
-  filterSelect.addEventListener("change", (e) => {
-    currentFilter = e.target.value;
-    renderClasses();
-  });
+  if (createNewClassBtn) createNewClassBtn.addEventListener("click", handleCreateClass);
 
-  // Mobile Menu
-  // mobileMenuBtn.addEventListener("click", () => {
-  //   sidebar.classList.add("active");
-  //   overlay.classList.add("active");
-  // });
-
-  // menuToggle.addEventListener("click", () => {
-  //   sidebar.classList.remove("active");
-  //   overlay.classList.remove("active");
-  // });
-
-  // Close sidebar/modal on overlay click
-  overlay.addEventListener("click", () => {
-    // Only close sidebar if modal is not active
-    if (!document.getElementById("createClassModal").classList.contains("active")) {
-      sidebar.classList.remove("active");
-    }
+  // Escape key support
+  document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+          closeModal();
+          closeViewModal();
+      }
   });
 }
 
-/**
- * Application entry point.
- */
-async function init() {
-  // await renderClasses(); // Start by displaying existing classes
-  initializeEventListeners(); // Set up all interactions
-}
-
-init();
+initializeEventListeners();
