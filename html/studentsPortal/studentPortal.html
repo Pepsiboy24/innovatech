@@ -22,7 +22,6 @@
                     <i class="fas fa-home"></i>
                     Dashboard
                 </a>
-                <a href="#" class="nav-item">
                 <a href="./studentClasses.html" class="nav-item">
                     <i class="fas fa-calendar-alt"></i>
                     Classes
@@ -53,9 +52,8 @@
                     <button class="profile-btn">
                         A
                     </button>
-                    <button class="nav-btn" data-nav-dispaly>
                     <button class="nav-btn" data-nav-display>
-                      <i class="fa fa-bars" data-ie></i>
+                        <i class="fa fa-bars" data-ie></i>
                     </button>
                 </div>
             </header>
@@ -95,6 +93,7 @@
                     <div class="stat-description">Unlocked</div>
                 </div>
             </div>
+
             <!-- Upcoming Classes -->
             <section class="section">
                 <div class="section-header">
@@ -139,10 +138,14 @@
                         </div>
                         <div class="class-time">Tomorrow, 10:00 AM</div>
                         <button class="class-btn upcoming-btn">Upcoming</button>
-            <!-- Upcoming Classes (Timetable) -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Timetable Preview -->
             <section class="section">
                 <div class="section-header">
-                    <h2 class="section-title">Upcoming Classes</h2>
+                    <h2 class="section-title">Timetable</h2>
                     <a href="./schedule.html" class="view-all-btn">View Full Timetable</a>
                 </div>
                 <div class="timetable-preview">
@@ -185,9 +188,6 @@
                     <h3 class="ai-title">AI Study Buddy</h3>
                     <i class="fas fa-robot"></i>
                 </div>
-                <div class="ai-input-container">
-                    <input type="text" class="ai-input" placeholder="Ask me anything about your studies...">
-                    <button class="ask-ai-btn">Ask AI</button>
                 <div class="ai-chat-container">
                     <div class="ai-messages" id="aiMessages">
                         <div class="ai-message ai-response">
@@ -299,110 +299,105 @@
         </main>
     </div>
     <script>
-      const navOpen = document.querySelector("[data-nav-display]");
-      const nav = document.querySelector("[data-nav]");
-      const i = document.querySelector("[data-ie]")
-      navOpen.addEventListener("click", () => {
-        i.classList.toggle("fa-bars");
-        i.classList.toggle("fa-times");
-        nav.classList.toggle("show")
-      })
-
-      // AI Study Buddy functionality
-      const aiInput = document.getElementById('aiInput');
-      const askAiBtn = document.getElementById('askAiBtn');
-      const aiMessages = document.getElementById('aiMessages');
-
-      // Predefined AI responses
-      const aiResponses = {
-        "math": "Mathematics is the study of numbers, quantities, and shapes. For algebra, remember that variables represent unknown values. Need help with a specific problem?",
-        "english": "English literature involves analyzing texts, understanding themes, and improving writing skills. Reading regularly helps build vocabulary and comprehension.",
-        "physics": "Physics studies matter, energy, and their interactions. Key concepts include Newton's laws, gravity, and thermodynamics.",
-        "chemistry": "Chemistry is about substances and their transformations. Remember the periodic table and chemical reactions!",
-        "biology": "Biology studies living organisms. Key topics include cells, genetics, evolution, and ecosystems.",
-        "default": "I'm here to help with your studies! Ask me about math, science, English, or any subject you're struggling with."
-      };
-
-      function addMessage(content, isUser = false) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `ai-message ${isUser ? 'user-message' : 'ai-response'}`;
-
-        if (!isUser) {
-          messageDiv.innerHTML = `
-            <div class="message-avatar">
-              <i class="fas fa-robot"></i>
-            </div>
-            <div class="message-content">
-              <p>${content}</p>
-            </div>
-          `;
-        } else {
-          messageDiv.innerHTML = `
-            <div class="message-content user-content">
-              <p>${content}</p>
-            </div>
-            <div class="message-avatar user-avatar">
-              <i class="fas fa-user"></i>
-            </div>
-          `;
-        }
-
-        aiMessages.appendChild(messageDiv);
-        aiMessages.scrollTop = aiMessages.scrollHeight;
-      }
-
-      function getAiResponse(question) {
-        const lowerQuestion = question.toLowerCase();
-        for (const [key, response] of Object.entries(aiResponses)) {
-          if (lowerQuestion.includes(key) && key !== 'default') {
-            return response;
-          }
-        }
-        return aiResponses.default;
-      }
-
-      askAiBtn.addEventListener('click', () => {
-        const question = aiInput.value.trim();
-        if (question) {
-          addMessage(question, true);
-          setTimeout(() => {
-            const response = getAiResponse(question);
-            addMessage(response);
-          }, 500);
-          aiInput.value = '';
-        }
-      });
-
-      aiInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          askAiBtn.click();
-        }
-      });
-
-      // Class Leadership Ranking Algorithm
-      function updateLeaderboard() {
-        const leaderboardItems = document.querySelectorAll('.leaderboard-item');
-        const itemsArray = Array.from(leaderboardItems);
-
-        itemsArray.sort((a, b) => {
-          const pointsA = parseInt(a.querySelector('.points span').textContent.replace(',', ''));
-          const pointsB = parseInt(b.querySelector('.points span').textContent.replace(',', ''));
-          return pointsB - pointsA;
+        const navOpen = document.querySelector("[data-nav-display]");
+        const nav = document.querySelector("[data-nav]");
+        const icon = document.querySelector("[data-ie]");
+        
+        navOpen.addEventListener("click", () => {
+            icon.classList.toggle("fa-bars");
+            icon.classList.toggle("fa-times");
+            nav.classList.toggle("show");
         });
 
-        const leaderboardContainer = document.querySelector('.section:has(.leaderboard-item)');
-        const leaderboardList = leaderboardContainer.querySelectorAll('.leaderboard-item');
+        // AI Study Buddy functionality
+        const aiInput = document.getElementById('aiInput');
+        const askAiBtn = document.getElementById('askAiBtn');
+        const aiMessages = document.getElementById('aiMessages');
 
-        leaderboardList.forEach((item, index) => {
-          const rankSpan = item.querySelector('.rank-number');
-          rankSpan.textContent = `${index + 1}.`;
+        // Predefined AI responses
+        const aiResponses = {
+            "math": "Mathematics is the study of numbers, quantities, and shapes. For algebra, remember that variables represent unknown values. Need help with a specific problem?",
+            "english": "English literature involves analyzing texts, understanding themes, and improving writing skills. Reading regularly helps build vocabulary and comprehension.",
+            "physics": "Physics studies matter, energy, and their interactions. Key concepts include Newton's laws, gravity, and thermodynamics.",
+            "chemistry": "Chemistry is about substances and their transformations. Remember the periodic table and chemical reactions!",
+            "biology": "Biology studies living organisms. Key topics include cells, genetics, evolution, and ecosystems.",
+            "default": "I'm here to help with your studies! Ask me about math, science, English, or any subject you're struggling with."
+        };
+
+        function addMessage(content, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `ai-message ${isUser ? 'user-message' : 'ai-response'}`;
+
+            if (!isUser) {
+                messageDiv.innerHTML = `
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>${content}</p>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="message-content user-content">
+                        <p>${content}</p>
+                    </div>
+                    <div class="message-avatar user-avatar-msg">
+                        <i class="fas fa-user"></i>
+                    </div>
+                `;
+            }
+
+            aiMessages.appendChild(messageDiv);
+            aiMessages.scrollTop = aiMessages.scrollHeight;
+        }
+
+        function getAiResponse(question) {
+            const lowerQuestion = question.toLowerCase();
+            for (const [key, response] of Object.entries(aiResponses)) {
+                if (lowerQuestion.includes(key) && key !== 'default') {
+                    return response;
+                }
+            }
+            return aiResponses.default;
+        }
+
+        askAiBtn.addEventListener('click', () => {
+            const question = aiInput.value.trim();
+            if (question) {
+                addMessage(question, true);
+                setTimeout(() => {
+                    const response = getAiResponse(question);
+                    addMessage(response);
+                }, 500);
+                aiInput.value = '';
+            }
         });
-      }
 
-      // Initialize ranking
-      updateLeaderboard();
+        aiInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                askAiBtn.click();
+            }
+        });
 
+        // Class Leaderboard Ranking
+        function updateLeaderboard() {
+            const leaderboardItems = document.querySelectorAll('.leaderboard-item');
+            const itemsArray = Array.from(leaderboardItems);
 
+            itemsArray.sort((a, b) => {
+                const pointsA = parseInt(a.querySelector('.points span').textContent.replace(',', ''));
+                const pointsB = parseInt(b.querySelector('.points span').textContent.replace(',', ''));
+                return pointsB - pointsA;
+            });
+
+            leaderboardItems.forEach((item, index) => {
+                const rankSpan = item.querySelector('.rank-number');
+                rankSpan.textContent = `${index + 1}.`;
+            });
+        }
+
+        updateLeaderboard();
     </script>
 </body>
 </html>
