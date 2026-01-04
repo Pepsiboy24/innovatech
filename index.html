@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -211,60 +212,49 @@
             .login-container {
                 padding: 30px 20px;
             }
-            
+
             .role-tab {
                 padding: 10px 12px;
                 font-size: 13px;
             }
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="scripts/config.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@supabaseClient/supabase-js@2"></script>
+    <script src="scripts/config.js"></script> -->
 </head>
+
 <body>
     <div class="login-container">
         <div class="school-icon">
             🎓
         </div>
-        
+
         <h1 class="title">School Management System</h1>
         <p class="subtitle">Sign in to your account</p>
-        
+
         <div class="role-tabs">
             <button class="role-tab" data-role="student"> Student</button>
             <button class="role-tab active" data-role="teacher"> Teacher</button>
             <button class="role-tab" data-role="admin"> Admin</button>
             <!-- <button class="role-tab" data-role="admin">  Admin</button> -->
         </div>
-        
+
         <form id="loginForm">
             <div class="form-group">
                 <label class="form-label" for="email">Email Address</label>
-                <input 
-                    type="email" 
-                    id="email" 
-                    class="form-input" 
-                    placeholder="Enter your email"
-                    required
-                >
+                <input type="email" id="email" class="form-input" placeholder="Enter your email" required>
             </div>
-            
+
             <div class="form-group">
                 <label class="form-label" for="password">Password</label>
                 <div class="password-input-container">
-                    <input 
-                        type="password" 
-                        id="password" 
-                        class="form-input" 
-                        placeholder="Enter your password"
-                        required
-                    >
+                    <input type="password" id="password" class="form-input" placeholder="Enter your password" required>
                     <button type="button" class="toggle-password" onclick="togglePassword()">
                         👁️
                     </button>
                 </div>
             </div>
-            
+
             <div class="form-footer">
                 <label class="remember-me">
                     <input type="checkbox" class="checkbox" id="remember">
@@ -272,15 +262,25 @@
                 </label>
                 <a href="#" class="forgot-password">Forgot password?</a>
             </div>
-            
+
             <button type="submit" class="signin-btn">Sign In</button>
         </form>
-        
+
         <!-- <p class="signup-link">
             Don't have an account? <a href="#" onclick="showSignup()">Sign up</a>
         </p> -->
     </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <script>
+        const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);;
+
         // Role tab functionality
         const roleTabs = document.querySelectorAll('.role-tab');
         let selectedRole = 'teacher';
@@ -293,7 +293,7 @@
                 tab.classList.add('active');
                 // Update selected role
                 selectedRole = tab.dataset.role;
-                
+
                 // Update placeholder text based on role
                 updatePlaceholders(selectedRole);
             });
@@ -302,8 +302,8 @@
         function updatePlaceholders(role) {
             const emailInput = document.getElementById('email');
             const passwordInput = document.getElementById('password');
-            
-            switch(role) {
+
+            switch (role) {
                 case 'student':
                     emailInput.placeholder = 'Enter your student email';
                     break;
@@ -320,7 +320,7 @@
         function togglePassword() {
             const passwordInput = document.getElementById('password');
             const toggleBtn = document.querySelector('.toggle-password');
-            
+
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 toggleBtn.textContent = '🙈';
@@ -331,35 +331,87 @@
         }
 
         // Form submission
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        document.getElementById('loginForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const remember = document.getElementById('remember').checked;
-            
-            // Simulate login process
-            if (email && password) {
-                // alert(`Logging in as ${selectedRole}...\nEmail: ${email}\nRemember me: ${remember}`);
-                
-                // Here you would typically send the data to your backend
-                // console.log('Login attempt:', {
-                //     role: selectedRole,
-                //     email: email,
-                //     password: password,
-                //     remember: remember
-                // });
+
+            if (!email || !password) {
+                alert('Please enter both email and password');
+                return;
             }
 
-            if(email === "admin@gmail.com" || password === "admin") {
-                console.log(selectedRole)
-                if(selectedRole === "admin"){
-                    window.location.href = "./html/schoolAdmin/schoolAdminDashboard.html";
-                }else if(selectedRole === "student"){
-                    window.location.href = "./html/studentsPortal/studentPortal.html";
-                }else if(selectedRole === "teacher"){
-                    window.location.href = "./html/teachersPortal/teachersPortal.html";
+            try {
+                console.log("Attempting login for:", email);
+                // Attempt to sign in with Supabase
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    alert('Login failed: ' + error.message);
+                    return;
                 }
+
+                // Check if user exists in the appropriate table based on selected role
+                const userId = data.user.id;
+                let tableName;
+                let redirectUrl;
+
+                // ... inside your sign-in event listener ...
+
+                let idColumnName; // Add this variable
+
+                switch (selectedRole) {
+                    case 'admin':
+                        tableName = 'School_Admin';
+                        idColumnName = 'admin_id'; // Verify this in your table editor
+                        redirectUrl = './html/schoolAdmin/schoolAdminDashboard.html';
+                        break;
+                    case 'teacher':
+                        tableName = 'Teachers'; // Ensure this matches your DB capitalization
+                        idColumnName = 'teacher_id'; // Verify this in your table editor
+                        redirectUrl = './html/teachersPortal/teachersPortal.html';
+                        break;
+                    case 'student':
+                        tableName = 'Students'; // Use capital 'S' to match your screenshot
+                        idColumnName = 'student_id'; // Matches your screenshot!
+                        redirectUrl = './html/studentsPortal/studentPortal.html';
+                        break;
+                    // ...
+                }
+
+                // Now use the dynamic column name in the query
+                const { data: roleData, error: roleError } = await supabaseClient
+                    .from(tableName)
+                    .select('*')
+                    .eq(idColumnName, userId) // Use the variable here instead of 'id'
+                    .single();
+
+                // Check if user exists in the selected role table
+                // const { data: roleData, error: roleError } = await supabaseClient
+                //     .from(tableName)
+                //     .select('*')
+                //     .eq('id', userId)
+                //     .single();
+
+                if (roleError || !roleData) {
+                    alert(`You are not authorized as a ${selectedRole}. Please select the correct role or contact your administrator.`);
+                    // Sign out the user since they don't have the required role
+                    await supabaseClient.auth.signOut();
+                    return;
+                }
+
+                // Successful login and role verification
+                console.log(`Logged in as ${selectedRole}:`, data.user.email);
+                window.location.href = redirectUrl;
+
+            } catch (err) {
+                console.error('Login error:', err);
+                alert('An unexpected error occurred during login. Please try again.');
             }
         });
 
@@ -369,7 +421,7 @@
         }
 
         // Forgot password functionality
-        document.querySelector('.forgot-password').addEventListener('click', function(e) {
+        document.querySelector('.forgot-password').addEventListener('click', function (e) {
             e.preventDefault();
             alert('Forgot password functionality would open password reset form');
         });
@@ -377,11 +429,11 @@
         // Add some interactive feedback
         const inputs = document.querySelectorAll('.form-input');
         inputs.forEach(input => {
-            input.addEventListener('focus', function() {
+            input.addEventListener('focus', function () {
                 this.parentElement.style.transform = 'translateY(-2px)';
             });
-            
-            input.addEventListener('blur', function() {
+
+            input.addEventListener('blur', function () {
                 this.parentElement.style.transform = 'translateY(0)';
             });
         });
@@ -390,4 +442,5 @@
         updatePlaceholders('teacher');
     </script>
 </body>
+
 </html>
