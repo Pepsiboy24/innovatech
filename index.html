@@ -345,6 +345,7 @@
 
             try {
                 console.log("Attempting login for:", email);
+                console.log(typeof password);
                 // Attempt to sign in with Supabase
                 const { data, error } = await supabaseClient.auth.signInWithPassword({
                     email: email,

@@ -434,7 +434,17 @@
                                 style="margin-top: 20px;">Register Another Teacher</button>
                         </div>
                     </div>
-
+                    <div id="errorStep" class="step">
+    <div class="error-message" style="text-align: center; padding: 40px;">
+        <i class="fa fa-exclamation-circle" style="font-size: 48px; color: #ef4444; margin-bottom: 20px;"></i>
+        <h2>Registration Failed</h2>
+        <p id="errorMessage">The server rejected the registration. The email might already be in use.</p>
+        
+        <button type="button" class="btn btn-secondary" id="backToEditBtn" style="margin-top: 20px;">
+            <i class="fa fa-arrow-left"></i> Back to Edit
+        </button>
+    </div>
+</div>
                     <div class="buttons">
                         <button type="button" class="btn btn-secondary" id="prevBtn"
                             style="display: none;">Previous</button>
@@ -887,21 +897,6 @@
                 }
             });
         }
-
-        // Handle Form Submission
-        document.getElementById('teacherForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            // Hide form steps
-            steps.forEach(stepId => {
-                document.getElementById(stepId).classList.remove('active');
-            });
-            document.querySelector('.buttons').style.display = 'none';
-            document.querySelector('.step-indicators').style.display = 'none';
-            document.querySelector('.popup-header p').textContent = 'Registration Complete';
-
-            // Show success message
-            document.getElementById('successStep').classList.add('active');
-        });
 
 
 

@@ -12,13 +12,10 @@ export async function registerNewTeacher(formData) {
     // Assuming teachers might need auth, but for now, just insert into tables
     // If auth is needed, uncomment and adapt the auth part
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabaseClient.auth.signUp({
-      email: formData.personalEmail,
-      password: "defaultPassword", // Generate or prompt for password
-    });
+    const { data: { user }, error: authError } = await supabaseClient.auth.signUp({
+    email: formData.personalEmail,
+    password: "123456",
+});
     if (authError) {
       console.error("Error signing up teacher:", authError.message);
       return false;
@@ -26,6 +23,7 @@ export async function registerNewTeacher(formData) {
 
     // Insert into main Teachers table
     const teacherData = {
+      teacher_id: user.id,
       first_name: formData.firstName,
       email: formData.personalEmail,
       phone_number: formData.mobilePhone, //this is suppose to be phone_number
