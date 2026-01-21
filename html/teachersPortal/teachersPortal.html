@@ -138,49 +138,15 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>
-                            <div class="student-name">
-                                <div class="student-avatar">JS</div>
-                                <span>John Smith</span>
-                            </div>
-                        </td>
-                        <td>15</td>
-                        <td>10-A</td>
-                        <td>
-                            <div style="display: flex; align-items: center;">
-                                <div class="performance-bar">
-                                    <div class="performance-fill excellent" style="width: 85%;"></div>
-                                </div>
-                                <span class="performance-text">85%</span>
-                            </div>
-                        </td>
-                        <td><a href="#" class="view-details">View Details</a></td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="student-name">
-                                <div class="student-avatar">JS</div>
-                                <span>John Smith</span>
-                            </div>
-                        </td>
-                        <td>15</td>
-                        <td>10-A</td>
-                        <td>
-                            <div style="display: flex; align-items: center;">
-                                <div class="performance-bar">
-                                    <div class="performance-fill excellent" style="width: 85%;"></div>
-                                </div>
-                                <span class="performance-text">85%</span>
-                            </div>
-                        </td>
-                        <td><a href="#" class="view-details">View Details</a></td>
-                    </tr>
+                    <!-- Students will be loaded dynamically -->
                 </tbody>
             </table>
         </section>
     </main>
     <script src="../../scripts/fontawesome.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="../../scripts/teachersPortalScripts/teachersDashboard.js"></script>
     <script>
       const navOpen = document.querySelector("[data-nav-dispaly]");
       const nav = document.querySelector("[data-nav]");
@@ -188,10 +154,10 @@
       navOpen.addEventListener("click", () => {
         if(i.className == "fa fa-bars"){
           i.className = "";
-          i.classList.add("fa", "fa-times"); 
+          i.classList.add("fa", "fa-times");
         }else if(i.className == "fa fa-times"){
           i.className = "";
-          i.classList.add("fa", "fa-bars"); 
+          i.classList.add("fa", "fa-bars");
         }
         nav.classList.toggle("show")
       })

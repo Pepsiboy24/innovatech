@@ -408,6 +408,8 @@
 
                 // Successful login and role verification
                 console.log(`Logged in as ${selectedRole}:`, data.user.email);
+
+                // Supabase handles authentication automatically - no need to manually store tokens
                 window.location.href = redirectUrl;
 
             } catch (err) {

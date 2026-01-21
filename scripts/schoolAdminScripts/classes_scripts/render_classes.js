@@ -36,7 +36,7 @@ function renderClasses(dataToRender) {
         classNameEl.textContent = elem.class_name;
         classSectionEl.textContent = elem.section ? ` - ${elem.section}` : ""; 
         teacherNameEl.textContent = `${teacherFirstName} ${teacherLastName}`;
-        studentNoEl.textContent = elem.no_of_students || "0"; 
+        studentNoEl.textContent = "0"; // Student count not stored in Classes table
 
         // --- NEW: Attach Click Events ---
         const editBtn = card.querySelector(".editBtn");

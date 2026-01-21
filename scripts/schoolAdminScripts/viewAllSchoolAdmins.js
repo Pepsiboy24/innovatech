@@ -10,13 +10,13 @@ async function fetchSchoolAdmins() {
         const { data, error } = await supabaseClient
             .from('School_Admin')
             .select('*')
-            .order('created_at', { ascending: false }); // Order by creation date, newest first
+            // .order('created_at', { ascending: false }); // Order by creation date, newest first
 
         if (error) {
             console.error('Error fetching school admins:', error);
             return [];
         }
-
+        console.log('Fetched school admins:', data);
         return data || [];
     } catch (err) {
         console.error('Unexpected error fetching school admins:', err);

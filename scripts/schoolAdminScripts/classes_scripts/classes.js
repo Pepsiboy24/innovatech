@@ -117,8 +117,7 @@ async function handleCreateClass(e) {
   const formData = {
     class_name: className,
     section: section,
-    teacher_id: teacherId,
-    no_of_students: parseInt(studentsCount)
+    teacher_id: teacherId
   };
 
   try {
