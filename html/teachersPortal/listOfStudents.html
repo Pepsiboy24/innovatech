@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -57,6 +56,120 @@
         </div>
     </div>
 
+    <!-- Student Registration Popup -->
+    <div class="popup" id="registrationPopup">
+        <div class="containment">
+            <div class="popup-header">
+                <div class="icon" id="closePopup"><i class="fa fa-times"></i></div>
+                <h1>Student Registration</h1>
+                <p>Complete your enrollment in just 3 easy steps</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 33%;"></div>
+                </div>
+            </div>
+
+            <div class="step-indicators">
+                <div class="step-indicator active" id="indicator1">
+                    <div class="step-circle">1</div>
+                    <span>Personal Info</span>
+                </div>
+                <div class="step-indicator" id="indicator2">
+                    <div class="step-circle">2</div>
+                    <span>Academic Details</span>
+                </div>
+                <div class="step-indicator" id="indicator3">
+                    <div class="step-circle">3</div>
+                    <span>Review & Submit</span>
+                </div>
+            </div>
+
+            <div class="step" id="successStep" style="padding: 20px">
+                <div class="success-message">
+                    <div class="success-icon">✓</div>
+                    <h2>Registration Successful!</h2>
+                    <p>Welcome to EdTech Portal! Your registration has been completed successfully. You will
+                        receive a confirmation email shortly.</p>
+                    <button type="button" class="btn btn-primary" data-resetBtn
+                        style="margin-top: 20px;">Register Another Student</button>
+                </div>
+            </div>
+
+            <div class="form-content">
+                <form id="registrationForm">
+                    <div class="step active" id="step1">
+                        <h2>Personal Information</h2>
+                        <p>Let's start with your basic details</p>
+
+                        <div class="form-group">
+                            <label for="fullName">Full Name *</label>
+                            <input type="text" id="fullName" name="fullName" required
+                                placeholder="Enter your full name">
+                            <div class="error-message" id="fullNameError" style="display:none; color:red; font-size:12px;">Full Name is required</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email Address *</label>
+                            <input type="email" id="email" name="email" required placeholder="your.email@example.com">
+                            <div class="error-message" id="emailError" style="display:none; color:red; font-size:12px;">Please enter a valid email</div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="dateOfBirth">Date of Birth *</label>
+                                <input type="date" id="dateOfBirth" name="dateOfBirth" required>
+                                <div class="error-message" id="dobError" style="display:none; color:red; font-size:12px;"></div>
+                            </div>
+                            <div class="form-group">
+                                <label>Gender *</label>
+                                <div class="radio-group">
+                                    <div class="radio-option">
+                                        <input type="radio" id="male" name="gender" value="male" required>
+                                        <label for="male">Male</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="female" name="gender" value="female" required>
+                                        <label for="female">Female</label>
+                                    </div>
+                                    <div class="error-message" id="genderError" style="display:none; color:red; font-size:12px;">Please select a gender</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step" id="step2">
+                        <h2>Academic Details</h2>
+                        <p>Tell us about your academic information</p>
+
+                        <div class="form-group">
+                            <label for="admissionDate">Admission Date *</label>
+                            <input type="date" id="admissionDate" name="admissionDate" required>
+                            <div class="error-message" id="admissionDateError" style="display:none; color:red; font-size:12px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="step" id="step3">
+                        <h2>Review Your Information</h2>
+                        <p>Please review your details before submitting</p>
+                        <div id="reviewContent"
+                            style="background: #f8fafc; padding: 24px; border-radius: 8px; margin: 20px 0;">
+                            <p><strong>Name:</strong> <span id="reviewName"></span></p>
+                            <p><strong>Email:</strong> <span id="reviewEmail"></span></p>
+                            <p><strong>Class:</strong> <span id="reviewClass"></span></p>
+                        </div>
+                    </div>
+
+                    <div class="buttons">
+                        <button type="button" class="btn btn-secondary" id="prevBtn"
+                            style="display: none;">Previous</button>
+                        <button type="button" class="btn btn-primary" id="nextBtn">Next</button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn" style="display: none;">Submit
+                            Registration</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main class="main-content" id="mainContent">
         <!-- Header -->
@@ -89,161 +202,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>
-                            <div class="student-name">
-                                <div class="student-avatar">JS</div>
-                                <div class="student-info">
-                                    <p>John Smith</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td>13</td>
-                        <td>
-                            <span class="class-badge">PRY <span class="highlight">5B</span></span>
-                        </td>
-                        <td>
-                            <div class="performance-container">
-                                <div class="performance-bar">
-                                    <div class="performance-fill" style="width: 80%;"></div>
-                                </div>
-                                <span class="performance-text">80%</span>
-                            </div>
-                        </td>
-                        <td>
-                            <a href="#" class="view-all-btn">View All</a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="student-name">
-                                <div class="student-avatar">EM</div>
-                                <div class="student-info">
-                                    <p>Emma Martinez</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td>14</td>
-                        <td>
-                            <span class="class-badge">PRY <span class="highlight">6A</span></span>
-                        </td>
-                        <td>
-                            <div class="performance-container">
-                                <div class="performance-bar">
-                                    <div class="performance-fill" style="width: 92%;"></div>
-                                </div>
-                                <span class="performance-text">92%</span>
-                            </div>
-                        </td>
-                        <td>
-                            <a href="#" class="view-all-btn">View All</a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="student-name">
-                                <div class="student-avatar">MB</div>
-                                <div class="student-info">
-                                    <p>Michael Brown</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td>13</td>
-                        <td>
-                            <span class="class-badge">PRY <span class="highlight">5A</span></span>
-                        </td>
-                        <td>
-                            <div class="performance-container">
-                                <div class="performance-bar">
-                                    <div class="performance-fill" style="width: 75%;"></div>
-                                </div>
-                                <span class="performance-text">75%</span>
-                            </div>
-                        </td>
-                        <td>
-                            <a href="#" class="view-all-btn">View All</a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="student-name">
-                                <div class="student-avatar">SJ</div>
-                                <div class="student-info">
-                                    <p>Sarah Johnson</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td>16</td>
-                        <td>
-                            <span class="class-badge">SEC <span class="highlight">2B</span></span>
-                        </td>
-                        <td>
-                            <div class="performance-container">
-                                <div class="performance-bar">
-                                    <div class="performance-fill" style="width: 88%;"></div>
-                                </div>
-                                <span class="performance-text">88%</span>
-                            </div>
-                        </td>
-                        <td>
-                            <a href="#" class="view-all-btn">View All</a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="student-name">
-                                <div class="student-avatar">DW</div>
-                                <div class="student-info">
-                                    <p>David Wilson</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td>15</td>
-                        <td>
-                            <span class="class-badge">SEC <span class="highlight">1A</span></span>
-                        </td>
-                        <td>
-                            <div class="performance-container">
-                                <div class="performance-bar">
-                                    <div class="performance-fill" style="width: 95%;"></div>
-                                </div>
-                                <span class="performance-text">95%</span>
-                            </div>
-                        </td>
-                        <td>
-                            <a href="#" class="view-all-btn">View All</a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="student-name">
-                                <div class="student-avatar">LT</div>
-                                <div class="student-info">
-                                    <p>Lisa Thompson</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td>14</td>
-                        <td>
-                            <span class="class-badge">PRY <span class="highlight">6B</span></span>
-                        </td>
-                        <td>
-                            <div class="performance-container">
-                                <div class="performance-bar">
-                                    <div class="performance-fill" style="width: 82%;"></div>
-                                </div>
-                                <span class="performance-text">82%</span>
-                            </div>
-                        </td>
-                        <td>
-                            <a href="#" class="view-all-btn">View All</a>
-                        </td>
-                    </tr>
+                    <!-- Students will be loaded dynamically -->
                 </tbody>
             </table>
         </section>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../../scripts/teachersPortalScripts/listOfStudents.js"></script>
     <script>
         // Sidebar functionality
         const sidebar = document.getElementById('sidebar');
@@ -281,11 +247,19 @@
                 closeSidebar();
             }
         });
-    </script>
-</body>
-</html>
-        
-    </script>
 
+        // --- Student Registration Popup Logic ---
+        const popup = document.getElementById('registrationPopup');
+        const openPopupBtn = document.querySelector('.add-student-btn');
+        const closePopupBtn = document.getElementById('closePopup');
+
+        if (openPopupBtn && popup) {
+            openPopupBtn.addEventListener('click', () => popup.style.display = 'flex');
+        }
+        if (closePopupBtn && popup) {
+            closePopupBtn.addEventListener('click', () => popup.style.display = 'none');
+        }
+    </script>
+    <script src="../../scripts/teachersPortalScripts/teacherStudentRegForm.js" type="module"></script>
 </body>
 </html>

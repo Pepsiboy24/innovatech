@@ -12,7 +12,9 @@ export async function registerNewStudent(
   password,
   dateOfBirth,
   admissionDate,
-  profilePicUrl
+  profilePicUrl,
+  classId,
+  gender
 ) {
   try {
     const {
@@ -38,9 +40,10 @@ export async function registerNewStudent(
           student_id: user.id,
           full_name: fullName,
           date_of_birth: dateOfBirth,
-          gender: "Male",
+          gender: gender,
           admission_date: admissionDate,
           profile_picture: profilePicUrl,
+          class_id: classId,
         },
       ]);
 

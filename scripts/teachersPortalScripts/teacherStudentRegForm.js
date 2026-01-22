@@ -1,4 +1,4 @@
-import { registerNewStudent } from "./singleStudentRegScript.js";
+import { registerNewStudent } from "../../scripts/schoolAdminScripts/students_scripts/singleStudentRegScript.js";
 
 // --- 1. Supabase Configuration ---
 const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
@@ -11,7 +11,63 @@ if (!supabaseClient) {
   console.error("Supabase client not loaded. Make sure the CDN script is in your HTML.");
 }
 
-// --- 2. Existing Form Logic ---
+// --- 2. Teacher Authentication ---
+async function checkTeacherLogin() {
+    try {
+        const { data: { user }, error } = await supabaseClient.auth.getUser();
+
+        if (error || !user) {
+            console.error('No user logged in:', error);
+            alert('Please log in as a teacher to view this page.');
+            window.location.href = '../../index.html';
+            return null;
+        }
+
+        // Verify this user is actually a teacher in the Teachers table
+        const { data: teacherData, error: teacherError } = await supabaseClient
+            .from('Teachers')
+            .select('*')
+            .eq('teacher_id', user.id)
+            .single();
+
+        if (teacherError || !teacherData) {
+            console.error('User is not authorized as a teacher:', teacherError);
+            alert('You are not authorized as a teacher. Please log in with teacher credentials.');
+            await supabaseClient.auth.signOut();
+            window.location.href = '../../index.html';
+            return null;
+        }
+
+        return user.id;
+    } catch (err) {
+        console.error('Error checking teacher login:', err);
+        alert('An error occurred while verifying your login. Please try logging in again.');
+        window.location.href = '../../index.html';
+        return null;
+    }
+}
+
+// --- 3. Get Teacher's Class ---
+async function getTeacherClass(teacherId) {
+    try {
+        const { data, error } = await supabaseClient
+            .from('Classes')
+            .select('class_id, class_name, section')
+            .eq('teacher_id', teacherId)
+            .single();
+
+        if (error) {
+            console.error('Error fetching teacher class:', error);
+            return null;
+        }
+        return data;
+    } catch (err) {
+        console.error('Unexpected error fetching teacher class:', err);
+        return null;
+    }
+}
+
+// --- 4. Existing Form Logic ---
 let currentStep = 1;
 const totalSteps = 3;
 const previousBtn = document.getElementById("prevBtn");
@@ -76,7 +132,7 @@ function showStep(step) {
 // --- UPDATED VALIDATION LOGIC ---
 function validateStep(step) {
   let isValid = true;
-  
+
   // Get "Today" with time stripped out for accurate date comparison
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -130,16 +186,7 @@ function validateStep(step) {
   }
 
   if (step === 2) {
-    const classField = document.getElementById("class");
     const admissionDate = document.getElementById("admissionDate");
-
-    // Class Validation
-    if (!classField.value) {
-      showError("classError");
-      isValid = false;
-    } else {
-      hideError("classError");
-    }
 
     // Admission Date Validation (Check Past)
     const admitError = document.getElementById("admissionDateError");
@@ -198,7 +245,7 @@ function changeStep(direction) {
   }
 }
 
-function populateReview() {
+async function populateReview() {
   const formData = new FormData(document.getElementById("registrationForm"));
   const reviewContent = document.getElementById("reviewContent");
 
@@ -206,12 +253,17 @@ function populateReview() {
   const email = formData.get("email");
   const dateOfBirth = formData.get("dateOfBirth");
   const gender = formData.get("gender");
-  const classValue = formData.get("class"); // This is the ID (e.g., 45)
   const admissionDate = formData.get("admissionDate");
 
-  // Get the text label of the selected option (e.g., "JSS 1 A")
-  const classTextOption = document.querySelector(`option[value="${classValue}"]`);
-  const classText = classTextOption ? classTextOption.textContent : "Not Selected";
+  // Get teacher's class for display
+  const teacherId = await checkTeacherLogin();
+  let classDisplay = "N/A";
+  if (teacherId) {
+    const teacherClass = await getTeacherClass(teacherId);
+    if (teacherClass) {
+      classDisplay = `${teacherClass.class_name} ${teacherClass.section}`;
+    }
+  }
 
   reviewContent.innerHTML = `
                 <h3 style="margin-bottom: 16px; color: #1e293b;">Personal Information</h3>
@@ -223,9 +275,9 @@ function populateReview() {
                 <p><strong>Gender:</strong> ${
                   gender.charAt(0).toUpperCase() + gender.slice(1)
                 }</p>
-                
+
                 <h3 style="margin: 24px 0 16px; color: #1e293b;">Academic Details</h3>
-                <p><strong>Class:</strong> ${classText}</p>
+                <p><strong>Class:</strong> ${classDisplay}</p>
                 <p><strong>Admission Date:</strong> ${new Date(
                   admissionDate
                 ).toLocaleDateString()}</p>
@@ -236,7 +288,6 @@ function populateReview() {
     email,
     dateOfBirth,
     gender,
-    classValue,
     admissionDate,
   };
 }
@@ -257,26 +308,43 @@ function resetForm() {
   document.getElementById("admissionDate").valueAsDate = new Date();
 }
 
+// --- 5. Initialize Form ---
+document.addEventListener('DOMContentLoaded', async () => {
+  // Set default admission date to today
+  document.getElementById("admissionDate").valueAsDate = new Date();
+
+  // Initialize Steps
+  showStep(currentStep);
+});
+
+// --- 6. Form Submission ---
 document
   .getElementById("registrationForm")
   .addEventListener("submit", async function (e) {
     e.preventDefault();
 
     if (validateStep(currentStep)) {
+      // Check teacher login and get class
+      const teacherId = await checkTeacherLogin();
+      if (!teacherId) return;
+
+      const teacherClass = await getTeacherClass(teacherId);
+      if (!teacherClass) {
+        alert('No class is assigned to your account. Please contact an administrator.');
+        return;
+      }
+
       const fullName = document.getElementById("fullName").value;
       const email = document.getElementById("email").value;
       const dateOfBirth = document.getElementById("dateOfBirth").value;
       const admissionDate = document.getElementById("admissionDate").value;
-
-      // Get the Class ID (integer) from the dropdown
-      const classId = document.getElementById("class").value;
 
       // Get the selected gender
       const gender = document.querySelector('input[name="gender"]:checked').value;
 
       const profilePicUrl = "https://placehold.co/150x150/e8e8e8/363636?text=Profile";
 
-      // Pass the classId and gender to your registration function
+      // Pass the teacher's class_id to your registration function
       const registrationResult = await registerNewStudent(
           fullName,
           email,
@@ -284,7 +352,7 @@ document
           dateOfBirth,
           admissionDate,
           profilePicUrl,
-          classId,
+          teacherClass.class_id,
           gender
       );
 
@@ -293,55 +361,13 @@ document
         document.getElementById("successStep").classList.add("active");
         document.querySelector(".buttons").style.display = "none";
 
-        if (typeof window.refreshStudentList === 'function') {
+        // Refresh the student list
+        if (typeof loadAllTeacherStudents === 'function') {
             console.log("🔄 Refreshing student table...");
-            window.refreshStudentList();
+            loadAllTeacherStudents();
         }
       } else {
         console.error("Registration failed. Please try again.");
       }
     }
   });
-
-// --- 3. Populate Class Dropdown ---
-
-async function populateClassDropdown(elementId) {
-    const dropdown = document.getElementById(elementId);
-    if (!dropdown) return;
-
-    try {
-        const { data: classes, error } = await supabaseClient
-            .from('Classes')
-            .select('class_id, class_name, section')
-            .order('class_name', { ascending: true });
-
-        if (error) throw error;
-
-        dropdown.innerHTML = '<option value="">Select a Class</option>';
-
-        classes.forEach(cls => {
-            const option = document.createElement('option');
-            option.value = cls.class_id; 
-            option.textContent = `${cls.class_name} ${cls.section}`; 
-            dropdown.appendChild(option);
-        });
-        
-        console.log("✅ Classes loaded successfully.");
-
-    } catch (err) {
-        console.error("Error loading classes:", err.message);
-        dropdown.innerHTML = '<option value="">Error loading classes</option>';
-    }
-}
-
-
-// --- 4. Initialization ---
-
-// Set default admission date to today
-document.getElementById("admissionDate").valueAsDate = new Date();
-
-// Initialize Steps
-showStep(currentStep);
-
-// Trigger population
-populateClassDropdown("class");

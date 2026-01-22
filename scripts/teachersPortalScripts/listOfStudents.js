@@ -1,4 +1,4 @@
-// teachersDashboard.js - Handles teacher dashboard functionality including student fetching
+// listOfStudents.js - Handles fetching and displaying all students for the logged-in teacher
 
 const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
@@ -13,7 +13,7 @@ async function checkTeacherLogin() {
         if (error || !user) {
             console.error('No user logged in:', error);
             alert('Please log in as a teacher to view this page.');
-            window.location.href = '../../index.html'; // Assuming login page is at root
+            window.location.href = '../../index.html';
             return null;
         }
 
@@ -60,39 +60,43 @@ async function fetchTeacherClasses(teacherId) {
     }
 }
 
-// Fetch total students count for teacher's classes
-// Fetch total students count for teacher's classes
-async function fetchTotalStudentsCount(teacherClasses) {
+// Fetch all students from teacher's classes
+async function fetchAllStudentsFromTeacherClasses(teacherId) {
     try {
-        // Extract just the class_id values into a simple array: [1, 2, 3]
-        const classIds = teacherClasses.map(c => c.class_id);
+        // First, get all class_ids for this teacher
+        const { data: classes, error: classesError } = await supabaseClient
+            .from('Classes')
+            .select('class_id')
+            .eq('teacher_id', teacherId);
 
-        if (classIds.length === 0) return 0;
-
-        const { count, error } = await supabaseClient
-            .from('Students')
-            .select('*', { count: 'exact', head: true })
-            .in('class_id', classIds); // Pass the array here
-
-        if (error) {
-            console.error('Error fetching total students count:', error);
-            return 0;
+        if (classesError) {
+            console.error('Error fetching teacher classes:', classesError);
+            return [];
         }
-        return count || 0;
-    } catch (err) {
-        console.error('Unexpected error fetching total students count:', err);
-        return 0;
-    }
-}
 
-// Fetch students from a specific class (limited to 5)
-async function fetchStudentsFromClass(classId, limit = 5) {
-    try {
+        if (!classes || classes.length === 0) {
+            console.log('No classes found for this teacher');
+            return [];
+        }
+
+        // Extract class_ids into an array
+        const classIds = classes.map(cls => cls.class_id);
+
+        // Now fetch students from these classes
         const { data, error } = await supabaseClient
             .from('Students')
-            .select('*')
-            .eq('class_id', classId)
-            .limit(limit);
+            .select(`
+                student_id,
+                full_name,
+                date_of_birth,
+                gender,
+                admission_date,
+                profile_picture,
+                class_id,
+                Classes!inner(class_name, section)
+            `)
+            .in('class_id', classIds)
+            .order('full_name', { ascending: true });
 
         if (error) {
             console.error('Error fetching students:', error);
@@ -124,8 +128,15 @@ function getInitials(fullName) {
     return fullName.split(' ').map(n => n.charAt(0).toUpperCase()).slice(0, 2).join('');
 }
 
+// Calculate attendance percentage (placeholder - you might want to fetch actual attendance data)
+async function getAttendancePercentage(studentId) {
+    // Placeholder implementation - replace with actual attendance calculation
+    // For now, return a random percentage between 70-100
+    return Math.floor(Math.random() * 31) + 70;
+}
+
 // Render students in the table
-function renderStudents(students, className) {
+async function renderStudents(students) {
     const tbody = document.querySelector('.students-table tbody');
     if (!tbody) {
         console.error('Students table tbody not found');
@@ -138,7 +149,7 @@ function renderStudents(students, className) {
         const noDataRow = `
             <tr>
                 <td colspan="5" style="text-align: center; padding: 2rem; color: #6b7280;">
-                    No students found in your class.
+                    No students found in your classes.
                 </td>
             </tr>
         `;
@@ -146,81 +157,61 @@ function renderStudents(students, className) {
         return;
     }
 
-    students.forEach(student => {
+    for (const student of students) {
         const age = calculateAge(student.date_of_birth);
         const initials = getInitials(student.full_name);
-
-        // Placeholder performance percentage (you might want to fetch actual performance data)
-        const performancePercent = 85; // Default value
+        const attendancePercent = await getAttendancePercentage(student.student_id);
+        const classDisplay = `${student.Classes.class_name} ${student.Classes.section}`;
 
         const row = `
             <tr>
                 <td>
                     <div class="student-name">
                         <div class="student-avatar">${initials}</div>
-                        <span>${student.full_name || 'Unknown'}</span>
+                        <div class="student-info">
+                            <p>${student.full_name || 'Unknown'}</p>
+                        </div>
                     </div>
                 </td>
                 <td>${age}</td>
-                <td>${className || 'N/A'}</td>
                 <td>
-                    <div style="display: flex; align-items: center;">
+                    <span class="class-badge">${student.Classes.class_name} <span class="highlight">${student.Classes.section}</span></span>
+                </td>
+                <td>
+                    <div class="performance-container">
                         <div class="performance-bar">
-                            <div class="performance-fill excellent" style="width: ${performancePercent}%;"></div>
+                            <div class="performance-fill" style="width: ${attendancePercent}%;"></div>
                         </div>
-                        <span class="performance-text">${performancePercent}%</span>
+                        <span class="performance-text">${attendancePercent}%</span>
                     </div>
                 </td>
-                <td><a href="#" class="view-details">View Details</a></td>
+                <td>
+                    <a href="#" class="view-all-btn">View All</a>
+                </td>
             </tr>
         `;
 
         tbody.insertAdjacentHTML('beforeend', row);
-    });
+    }
 }
 
-// Main function to load students for the teacher
-async function loadTeacherStudents() {
-    console.log('Loading teacher students...');
+// Main function to load all students for the teacher
+async function loadAllTeacherStudents() {
+    console.log('Loading all students for teacher...');
 
     // Check if teacher is logged in
     const teacherId = await checkTeacherLogin();
     if (!teacherId) return;
 
-    // Fetch teacher's assigned classes
-    const teacherClasses = await fetchTeacherClasses(teacherId);
-    if (!teacherClasses || teacherClasses.length === 0) {
-        console.error('No classes assigned to this teacher');
-        alert('No classes are assigned to your account. Please contact an administrator.');
-        return;
-    }
-
-    console.log('Teacher classes:', teacherClasses);
-
-    // Fetch total students count
-    const totalStudentsCount = await fetchTotalStudentsCount(teacherClasses);
-    // const totalStudentsCount = await fetchTotalStudentsCount(teacherId);
-    console.log(`Total students count: ${totalStudentsCount}`);
-
-    // Update the total students display
-    const totalStudentsElement = document.getElementById('total_students');
-    if (totalStudentsElement) {
-        totalStudentsElement.textContent = totalStudentsCount;
-    }
-
-    // For displaying students, use the first class (or you could modify to show from all classes)
-    const firstClass = teacherClasses[0];
-
-    // Fetch students from the first class (limited to 5)
-    const students = await fetchStudentsFromClass(firstClass.class_id, 5);
-    console.log(`Fetched ${students.length} students from class ${firstClass.class_name} ${firstClass.section}`);
+    // Fetch all students from teacher's classes
+    const students = await fetchAllStudentsFromTeacherClasses(teacherId);
+    console.log(`Fetched ${students.length} students from teacher's classes`);
 
     // Render students in the table
-    const classDisplayName = `${firstClass.class_name} ${firstClass.section}`;
-    renderStudents(students, classDisplayName);
+    await renderStudents(students);
 }
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    loadTeacherStudents();
+    loadAllTeacherStudents();
 });
