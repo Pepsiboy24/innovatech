@@ -253,6 +253,11 @@
         const openPopupBtn = document.querySelector('.add-student-btn');
         const closePopupBtn = document.getElementById('closePopup');
 
+        // Ensure popup is hidden on page load
+        if (popup) {
+            popup.style.display = 'none';
+        }
+
         if (openPopupBtn && popup) {
             openPopupBtn.addEventListener('click', () => popup.style.display = 'flex');
         }
