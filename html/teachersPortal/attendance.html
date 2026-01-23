@@ -65,12 +65,7 @@
                 <div class="date-class-selector">
                     <input type="date" class="date-input" value="2025-09-15">
                     <select class="class-select">
-                        <option>PRY 5B</option>
-                        <option>PRY 5A</option>
-                        <option>PRY 6A</option>
-                        <option>PRY 6B</option>
-                        <option>SEC 1A</option>
-                        <option>SEC 2B</option>
+                        <!-- Options will be populated dynamically -->
                     </select>
                 </div>
             </div>
@@ -110,181 +105,8 @@
                         <th>Remarks (Optional)</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td>
-                            <div class="student-name">
-                                <div class="student-avatar">JS</div>
-                                <div class="student-info">
-                                    <p>John Smith</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="attendance-options">
-                                <div class="radio-group present">
-                                    <input type="radio" name="attendance1" value="present" id="present1" onchange="updateSummary()">
-                                    <label for="present1">Present</label>
-                                </div>
-                                <div class="radio-group absent">
-                                    <input type="radio" name="attendance1" value="absent" id="absent1" onchange="updateSummary()">
-                                    <label for="absent1">Absent</label>
-                                </div>
-                                <div class="radio-group late">
-                                    <input type="radio" name="attendance1" value="late" id="late1" onchange="updateSummary()">
-                                    <label for="late1">Late</label>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <input type="text" class="remarks-input" placeholder="Add remarks...">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="student-name">
-                                <div class="student-avatar">SJ</div>
-                                <div class="student-info">
-                                    <p>Sarah Johnson</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="attendance-options">
-                                <div class="radio-group present">
-                                    <input type="radio" name="attendance2" value="present" id="present2" onchange="updateSummary()">
-                                    <label for="present2">Present</label>
-                                </div>
-                                <div class="radio-group absent">
-                                    <input type="radio" name="attendance2" value="absent" id="absent2" onchange="updateSummary()">
-                                    <label for="absent2">Absent</label>
-                                </div>
-                                <div class="radio-group late">
-                                    <input type="radio" name="attendance2" value="late" id="late2" onchange="updateSummary()">
-                                    <label for="late2">Late</label>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <input type="text" class="remarks-input" placeholder="Add remarks...">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="student-name">
-                                <div class="student-avatar">JD</div>
-                                <div class="student-info">
-                                    <p>John Doe</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="attendance-options">
-                                <div class="radio-group present">
-                                    <input type="radio" name="attendance3" value="present" id="present3" onchange="updateSummary()">
-                                    <label for="present3">Present</label>
-                                </div>
-                                <div class="radio-group absent">
-                                    <input type="radio" name="attendance3" value="absent" id="absent3" onchange="updateSummary()">
-                                    <label for="absent3">Absent</label>
-                                </div>
-                                <div class="radio-group late">
-                                    <input type="radio" name="attendance3" value="late" id="late3" onchange="updateSummary()">
-                                    <label for="late3">Late</label>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <input type="text" class="remarks-input" placeholder="Add remarks...">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="student-name">
-                                <div class="student-avatar">EM</div>
-                                <div class="student-info">
-                                    <p>Emma Martinez</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="attendance-options">
-                                <div class="radio-group present">
-                                    <input type="radio" name="attendance4" value="present" id="present4" onchange="updateSummary()">
-                                    <label for="present4">Present</label>
-                                </div>
-                                <div class="radio-group absent">
-                                    <input type="radio" name="attendance4" value="absent" id="absent4" onchange="updateSummary()">
-                                    <label for="absent4">Absent</label>
-                                </div>
-                                <div class="radio-group late">
-                                    <input type="radio" name="attendance4" value="late" id="late4" onchange="updateSummary()">
-                                    <label for="late4">Late</label>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <input type="text" class="remarks-input" placeholder="Add remarks...">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="student-name">
-                                <div class="student-avatar">MB</div>
-                                <div class="student-info">
-                                    <p>Michael Brown</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="attendance-options">
-                                <div class="radio-group present">
-                                    <input type="radio" name="attendance5" value="present" id="present5" onchange="updateSummary()">
-                                    <label for="present5">Present</label>
-                                </div>
-                                <div class="radio-group absent">
-                                    <input type="radio" name="attendance5" value="absent" id="absent5" onchange="updateSummary()">
-                                    <label for="absent5">Absent</label>
-                                </div>
-                                <div class="radio-group late">
-                                    <input type="radio" name="attendance5" value="late" id="late5" onchange="updateSummary()">
-                                    <label for="late5">Late</label>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <input type="text" class="remarks-input" placeholder="Add remarks...">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="student-name">
-                                <div class="student-avatar">LT</div>
-                                <div class="student-info">
-                                    <p>Lisa Thompson</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="attendance-options">
-                                <div class="radio-group present">
-                                    <input type="radio" name="attendance6" value="present" id="present6" onchange="updateSummary()">
-                                    <label for="present6">Present</label>
-                                </div>
-                                <div class="radio-group absent">
-                                    <input type="radio" name="attendance6" value="absent" id="absent6" onchange="updateSummary()">
-                                    <label for="absent6">Absent</label>
-                                </div>
-                                <div class="radio-group late">
-                                    <input type="radio" name="attendance6" value="late" id="late6" onchange="updateSummary()">
-                                    <label for="late6">Late</label>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <input type="text" class="remarks-input" placeholder="Add remarks...">
-                        </td>
-                    </tr>
+                <tbody id="attendanceTableBody">
+                    <!-- Students will be loaded dynamically here -->
                 </tbody>
             </table>
 
@@ -318,47 +140,6 @@
         closeSidebarBtn.addEventListener('click', closeSidebar);
         sidebarOverlay.addEventListener('click', closeSidebar);
 
-        // Attendance functionality
-        function updateSummary() {
-            const presentInputs = document.querySelectorAll('input[value="present"]:checked');
-            const absentInputs = document.querySelectorAll('input[value="absent"]:checked');
-            const lateInputs = document.querySelectorAll('input[value="late"]:checked');
-
-            document.getElementById('presentCount').textContent = presentInputs.length;
-            document.getElementById('absentCount').textContent = absentInputs.length;
-            document.getElementById('lateCount').textContent = lateInputs.length;
-        }
-
-        function markAllPresent() {
-            const presentInputs = document.querySelectorAll('input[value="present"]');
-            presentInputs.forEach(input => {
-                input.checked = true;
-            });
-            updateSummary();
-        }
-
-        function markAllAbsent() {
-            const absentInputs = document.querySelectorAll('input[value="absent"]');
-            absentInputs.forEach(input => {
-                input.checked = true;
-            });
-            updateSummary();
-        }
-
-        function clearAll() {
-            const allInputs = document.querySelectorAll('input[type="radio"]');
-            const remarkInputs = document.querySelectorAll('.remarks-input');
-            
-            allInputs.forEach(input => {
-                input.checked = false;
-            });
-            
-            remarkInputs.forEach(input => {
-                input.value = '';
-            });
-            
-            updateSummary();
-        }
 
         // Close sidebar on escape key
         document.addEventListener('keydown', function(e) {
@@ -373,10 +154,9 @@
                 closeSidebar();
             }
         });
-
-        // Initialize summary on page load
-        updateSummary();
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script> 
     <script type="module" src="../../scripts/teachersPortalScripts/attendace.js"></script>
 </body>
 </html>

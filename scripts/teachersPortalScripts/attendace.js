@@ -1,6 +1,161 @@
-import { fetchStudents } from '../../scripts/schoolAdminScripts/students_scripts/viewAllStudents.js';
+import { supabase } from '../../scripts/config.js';
 
-const HARDCODED_TEACHER_ID = 1; // Hardcoded teacher ID for now
+let currentTeacherId = null; // Store the current teacher ID
+
+// Check if teacher is logged in
+async function checkTeacherLogin() {
+    try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+
+        if (error || !user) {
+            console.error('No user logged in:', error);
+            alert('Please log in as a teacher to view this page.');
+            window.location.href = '../../index.html';
+            return null;
+        }
+
+        // Verify this user is actually a teacher in the Teachers table
+        const { data: teacherData, error: teacherError } = await supabase
+            .from('Teachers')
+            .select('*')
+            .eq('teacher_id', user.id)
+            .single();
+
+        if (teacherError || !teacherData) {
+            console.error('User is not authorized as a teacher:', teacherError);
+            alert('You are not authorized as a teacher. Please log in with teacher credentials.');
+            await supabase.auth.signOut();
+            window.location.href = '../../index.html';
+            return null;
+        }
+
+        currentTeacherId = user.id; // Store the teacher ID
+        return user.id;
+    } catch (err) {
+        console.error('Error checking teacher login:', err);
+        alert('An error occurred while verifying your login. Please try logging in again.');
+        window.location.href = '../../index.html';
+        return null;
+    }
+}
+
+// Fetch teacher's assigned classes
+async function fetchTeacherClasses(teacherId) {
+    try {
+        console.log('Fetching classes for teacher:', teacherId);
+        const { data, error } = await supabase
+            .from('Classes')
+            .select('class_id, class_name, section')
+            .eq('teacher_id', teacherId);
+
+        if (error) {
+            console.error('Error fetching teacher classes:', error);
+            return [];
+        }
+        console.log('Fetched classes:', data);
+        return data || [];
+    } catch (err) {
+        console.error('Unexpected error fetching teacher classes:', err);
+        return [];
+    }
+}
+
+// Fetch students from a specific class
+async function fetchStudentsFromClass(classId) {
+    try {
+        const { data, error } = await supabase
+            .from('Students')
+            .select('*')
+            .eq('class_id', classId)
+            .order('full_name', { ascending: true });
+
+        if (error) {
+            console.error('Error fetching students:', error);
+            return [];
+        }
+        return data || [];
+    } catch (err) {
+        console.error('Unexpected error fetching students:', err);
+        return [];
+    }
+}
+
+// Populate class selector with teacher's classes
+function populateClassSelector(classes) {
+    const classSelect = document.querySelector('.class-select');
+    if (!classSelect) return;
+
+    classSelect.innerHTML = '<option value="">Select a class</option>';
+
+    classes.forEach(cls => {
+        const option = document.createElement('option');
+        option.value = cls.class_id;
+        option.textContent = `${cls.class_name} ${cls.section}`;
+        classSelect.appendChild(option);
+    });
+}
+
+// Get initials for avatar
+function getInitials(fullName) {
+    if (!fullName) return '??';
+    return fullName.split(' ').map(n => n.charAt(0).toUpperCase()).slice(0, 2).join('');
+}
+
+// Render students in the attendance table
+function renderStudents(students) {
+    const tbody = document.getElementById('attendanceTableBody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    if (students.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:2rem;">No students found in this class.</td></tr>`;
+        return;
+    }
+
+    students.forEach((student, index) => {
+        const initials = getInitials(student.full_name);
+        const rowId = `student-${student.student_id}`;
+
+        const row = `
+            <tr data-student-id="${student.student_id}">
+                <td>
+                    <div class="student-name">
+                        <div class="student-avatar">${initials}</div>
+                        <div class="student-info">
+                            <p>${student.full_name || 'Unknown'}</p>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="attendance-options">
+                        <div class="radio-group present">
+                            <input type="radio" name="attendance-${student.student_id}" value="present" id="present-${student.student_id}" onchange="updateSummary()">
+                            <label for="present-${student.student_id}">Present</label>
+                        </div>
+                        <div class="radio-group absent">
+                            <input type="radio" name="attendance-${student.student_id}" value="absent" id="absent-${student.student_id}" onchange="updateSummary()">
+                            <label for="absent-${student.student_id}">Absent</label>
+                        </div>
+                        <div class="radio-group late">
+                            <input type="radio" name="attendance-${student.student_id}" value="late" id="late-${student.student_id}" onchange="updateSummary()">
+                            <label for="late-${student.student_id}">Late</label>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <input type="text" class="remarks-input" placeholder="Add remarks...">
+                </td>
+            </tr>
+        `;
+
+        tbody.insertAdjacentHTML('beforeend', row);
+    });
+
+    // Update total count
+    document.getElementById('totalCount').textContent = students.length;
+    updateSummary();
+}
 
 // Utility function to get attendance status value for a student row
 function getAttendanceStatus(row) {
@@ -21,14 +176,6 @@ function getRemarks(row) {
 
 // Function to gather attendance data from the page
 async function gatherAttendanceData() {
-    const students = await fetchStudents();
-
-    // Build a map from student full name to student id
-    const studentMap = new Map();
-    for (const student of students) {
-        studentMap.set(student.full_name, student.id);
-    }
-
     const attendanceTableBody = document.querySelector('.attendance-table tbody');
     if (!attendanceTableBody) {
         console.error('Attendance table body not found');
@@ -38,29 +185,24 @@ async function gatherAttendanceData() {
     const dateInput = document.querySelector('.date-input');
     const attendanceDate = dateInput ? dateInput.value : '';
 
+    if (!attendanceDate) {
+        alert('Please select a date for the attendance.');
+        return [];
+    }
+
     const attendanceData = [];
 
     const rows = attendanceTableBody.querySelectorAll('tr');
     for (const row of rows) {
-        const nameDiv = row.querySelector('.student-info > p') || row.querySelector('.student-info h4');
-        let studentName = '';
-        if (nameDiv) {
-            studentName = nameDiv.textContent.trim();
-        } else {
-            // Alternative approach: get from student-avatar initials and guess
-            console.warn('Student name element not found in row');
-            continue;
-        }
-
-        const studentId = studentMap.get(studentName);
+        const studentId = row.getAttribute('data-student-id');
         if (!studentId) {
-            console.warn(`Student ID not found for name: ${studentName}`);
+            console.warn('Student ID not found in row');
             continue;
         }
 
         const status = getAttendanceStatus(row);
         if (!status) {
-            console.warn(`Attendance status not set for student: ${studentName}`);
+            console.warn(`Attendance status not set for student: ${studentId}`);
             continue;
         }
 
@@ -69,10 +211,10 @@ async function gatherAttendanceData() {
         attendanceData.push({
             student_id: studentId,
             date: attendanceDate,
-            status: status,
+            attendance_status: status,
             notes: notes,
-            recorded_by_user_id: HARDCODED_TEACHER_ID,
-            recorded_at: new Date().toISOString(),
+            recorded_by_user_id: currentTeacherId,
+            // record_at: new Date().toISOString(),
         });
     }
 
@@ -93,19 +235,16 @@ async function handleSaveAttendance() {
     console.log('Submitting attendance data:', attendanceData);
 
     try {
-        const response = await fetch('/api/attendance', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ attendance: attendanceData }),
-        });
+        const { data, error } = await supabase
+            .from('Attendance')
+            .insert(attendanceData);
 
-        if (response.ok) {
-            alert('Attendance saved successfully!');
+        if (error) {
+            console.error('Error saving attendance:', error);
+            alert('Failed to save attendance: ' + error.message);
         } else {
-            const errorData = await response.json();
-            alert('Failed to save attendance: ' + errorData.message);
+            console.log('Attendance saved successfully:', data);
+            alert('Attendance saved successfully!');
         }
     } catch (error) {
         console.error('Error submitting attendance:', error);
@@ -127,10 +266,93 @@ function setupSaveButton() {
     });
 }
 
-// Initialize module
-function initializeAttendanceModule() {
-    setupSaveButton();
+// Handle class selection change
+async function handleClassChange() {
+    const classSelect = document.querySelector('.class-select');
+    const selectedClassId = parseInt(classSelect.value);
+
+    if (!selectedClassId || isNaN(selectedClassId)) {
+        document.getElementById('attendanceTableBody').innerHTML = '';
+        document.getElementById('totalCount').textContent = '0';
+        updateSummary();
+        return;
+    }
+
+    const students = await fetchStudentsFromClass(selectedClassId);
+    renderStudents(students);
 }
+
+// Initialize module
+async function initializeAttendanceModule() {
+    // Check teacher login
+    const teacherId = await checkTeacherLogin();
+    if (!teacherId) return;
+
+    // Fetch and populate classes
+    const classes = await fetchTeacherClasses(teacherId);
+    if (classes.length === 0) {
+        alert('No classes are assigned to your account. Please contact an administrator.');
+        return;
+    }
+
+    populateClassSelector(classes);
+
+    // Set up event listeners
+    setupSaveButton();
+
+    const classSelect = document.querySelector('.class-select');
+    if (classSelect) {
+        classSelect.addEventListener('change', handleClassChange);
+    }
+}
+
+// Attendance functionality functions
+function updateSummary() {
+    const presentInputs = document.querySelectorAll('input[value="present"]:checked');
+    const absentInputs = document.querySelectorAll('input[value="absent"]:checked');
+    const lateInputs = document.querySelectorAll('input[value="late"]:checked');
+
+    document.getElementById('presentCount').textContent = presentInputs.length;
+    document.getElementById('absentCount').textContent = absentInputs.length;
+    document.getElementById('lateCount').textContent = lateInputs.length;
+}
+
+function markAllPresent() {
+    const presentInputs = document.querySelectorAll('input[value="present"]');
+    presentInputs.forEach(input => {
+        input.checked = true;
+    });
+    updateSummary();
+}
+
+function markAllAbsent() {
+    const absentInputs = document.querySelectorAll('input[value="absent"]');
+    absentInputs.forEach(input => {
+        input.checked = true;
+    });
+    updateSummary();
+}
+
+function clearAll() {
+    const allInputs = document.querySelectorAll('input[type="radio"]');
+    const remarkInputs = document.querySelectorAll('.remarks-input');
+
+    allInputs.forEach(input => {
+        input.checked = false;
+    });
+
+    remarkInputs.forEach(input => {
+        input.value = '';
+    });
+
+    updateSummary();
+}
+
+// Make functions global
+window.updateSummary = updateSummary;
+window.markAllPresent = markAllPresent;
+window.markAllAbsent = markAllAbsent;
+window.clearAll = clearAll;
 
 document.addEventListener('DOMContentLoaded', () => {
     initializeAttendanceModule();
