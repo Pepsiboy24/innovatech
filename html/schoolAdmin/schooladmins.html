@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="../../styles/schoolAdminStyles/schooladmins.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="../../scripts/schoolAdminScripts/school_admin_sidebar.js"></script>
 </head>
 
 <body>
@@ -156,23 +157,27 @@
                         <div class="success-message">
                             <div class="success-icon"><i class="fa fa-check"></i></div>
                             <h2>Registration Successful!</h2>
-                            <p>Welcome to our school administration team! Your registration has been submitted for HR review. You
+                            <p>Welcome to our school administration team! Your registration has been submitted for HR
+                                review. You
                                 will receive confirmation within 2-3 business days.</p>
                             <button type="button" class="btn btn-primary" onclick="location.reload()"
                                 style="margin-top: 20px;">Register Another Admin</button>
                         </div>
                     </div>
                     <div id="errorStep" class="step">
-    <div class="error-message" style="text-align: center; padding: 40px;">
-        <i class="fa fa-exclamation-circle" style="font-size: 48px; color: #ef4444; margin-bottom: 20px;"></i>
-        <h2>Registration Failed</h2>
-        <p id="errorMessage">The server rejected the registration. The email might already be in use.</p>
+                        <div class="error-message" style="text-align: center; padding: 40px;">
+                            <i class="fa fa-exclamation-circle"
+                                style="font-size: 48px; color: #ef4444; margin-bottom: 20px;"></i>
+                            <h2>Registration Failed</h2>
+                            <p id="errorMessage">The server rejected the registration. The email might already be in
+                                use.</p>
 
-        <button type="button" class="btn btn-secondary" id="backToEditBtn" style="margin-top: 20px;">
-            <i class="fa fa-arrow-left"></i> Back to Edit
-        </button>
-    </div>
-</div>
+                            <button type="button" class="btn btn-secondary" id="backToEditBtn"
+                                style="margin-top: 20px;">
+                                <i class="fa fa-arrow-left"></i> Back to Edit
+                            </button>
+                        </div>
+                    </div>
                     <div class="buttons">
                         <button type="button" class="btn btn-secondary" id="prevBtn"
                             style="display: none;">Previous</button>
@@ -274,53 +279,7 @@
     </div>
 
     <!-- Sidebar -->
-    <div class="sidebar" data-sideBar>
-        <div class="logo">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <div class="logo-icon"><i class="fa-solid fa-calendar-days"></i></div>
-                <span>EduHubAdmin</span>
-            </div>
-            <div class="icon" data-sideBarClose><i class="fa fa-times"></i></div>
-        </div>
-        <nav>
-            <a href="./schoolAdminDashboard.html" class="nav-item">
-                <i class="fa-solid fa-table-columns nav-icon"></i>
-                Dashboard
-            </a>
-            <a href="./classes.html" class="nav-item sidebar-item">
-                <i class="fa-solid fa-chalkboard-user nav-icon"></i>
-                <span>Classes</span>
-            </a>
-            <a href="./students.html" class="nav-item">
-                <i class="fa-solid fa-user-graduate nav-icon"></i>
-                Students
-            </a>
-            <a href="./teachers.html" class="nav-item">
-                <i class="fa-solid fa-chalkboard-teacher nav-icon"></i>
-                Teachers
-            </a>
-            <a href="./schooladmins.html" class="nav-item active">
-                <i class="fa-solid fa-user-tie nav-icon"></i>
-                School Admins
-            </a>
-            <a href="./schedule.html" class="nav-item">
-                <i class="fa-regular fa-calendar nav-icon"></i>
-                Schedule
-            </a>
-            <a href="./timeTable.html" class="nav-item">
-                <i class="fa-solid fa-clock nav-icon"></i>
-                Time Table
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fa-solid fa-clipboard-user nav-icon"></i>
-                Attendance
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fa-solid fa-money-bill-wave nav-icon"></i>
-                Fees
-            </a>
-        </nav>
-    </div>
+    <div class="sidebar" data-sideBar></div>
 
     <!-- Main Content -->
     <div class="main">
