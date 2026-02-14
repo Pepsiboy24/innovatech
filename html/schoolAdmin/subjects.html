@@ -328,8 +328,8 @@
                         <tr>
                             <th>Subject Name</th>
                             <th>Type</th>
-                            <!-- <th>Classes Offered</th>
-                            <th>Teachers Assigned</th> -->
+                            <!-- <th>Classes Offered</th> -->
+                            <!-- <th>Teachers Assigned</th> -->
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -343,6 +343,7 @@
     <script src="../../scripts/font-awesome.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../../scripts/sideBar.js"></script>
     <script src="../../scripts/config.js" type="module"></script>
     <script src="../../scripts/schoolAdminScripts/subjects_scripts/single_subject_upload.js"></script>
     <script src="../../scripts/schoolAdminScripts/subjects_scripts/excel_subject_upload.js"></script>
@@ -354,17 +355,17 @@
     <!-- <script src="../../scripts/schoolAdminScripts/viewAllTeachers.js" type="module"></script> -->
 
     <script>
-        // Sidebar Toggle
-        const sidebar = document.querySelector('[data-sideBar]');
-        const sidebarOpenBtn = document.querySelector('[data-sideBarOpen]');
-        const sidebarCloseBtn = document.querySelector('[data-sideBarClose]');
+        // // Sidebar Toggle
+        // const sidebar = document.querySelector('[data-sideBar]');
+        // const sidebarOpenBtn = document.querySelector('[data-sideBarOpen]');
+        // const sidebarCloseBtn = document.querySelector('[data-sideBarClose]');
 
-        if (sidebarOpenBtn && sidebar) {
-            sidebarOpenBtn.addEventListener('click', () => sidebar.classList.add('show'));
-        }
-        if (sidebarCloseBtn && sidebar) {
-            sidebarCloseBtn.addEventListener('click', () => sidebar.classList.remove('show'));
-        }
+        // if (sidebarOpenBtn && sidebar) {
+        //     sidebarOpenBtn.addEventListener('click', () => sidebar.classList.add('show'));
+        // }
+        // if (sidebarCloseBtn && sidebar) {
+        //     sidebarCloseBtn.addEventListener('click', () => sidebar.classList.remove('show'));
+        // }
 
         // Popup Logic
         const popup = document.getElementById('registrationPopup');

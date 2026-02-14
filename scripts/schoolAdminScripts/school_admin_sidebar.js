@@ -5,7 +5,7 @@ const sidebarContent = `
                 <div class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></div>
                 <span>EduHubAdmin</span>
             </div>
-            <div class="icon" data-sideBarClose><i class="fa fa-times"></i></div>
+            <div class="icon mobile-menu-btn" data-sideBarClose><i class="fa fa-times"></i></div>
         </div>
         <nav>
             <a href="./schoolAdminDashboard.html" class="nav-item">
@@ -85,3 +85,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+
+
