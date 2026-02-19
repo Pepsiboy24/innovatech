@@ -130,8 +130,8 @@ function renderCurriculumTable(curriculumData) {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td data-label="Topic">
-                <div class="topic-name">${item.topic_name}</div>
-                <div class="topic-desc">${item.topic_desc || ''}</div>
+                <div class="topic-name">${item.topic}</div>
+                <div class="topic-desc">${item.sub_topic || ''}</div>
             </td>
             <td data-label="Week">${item.week}</td>
             <td data-label="Status">
