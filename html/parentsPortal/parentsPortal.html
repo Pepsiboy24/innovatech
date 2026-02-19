@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <link rel="stylesheet" href="../../styles/parentsPortalStyles/parentsPortal.css">
 </head>
+
 <body>
     <div class="container">
         <!-- Sidebar -->
@@ -22,7 +24,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <ul class="nav-menu">
                 <li class="nav-item">
                     <a href="#" class="nav-link active">
@@ -78,26 +80,8 @@
                     <div class="performance-grid">
                         <div class="recent-grades">
                             <h4>Recent Grades</h4>
-                            <div class="grade-item">
-                                <div>
-                                    <div class="grade-subject">Mathematics</div>
-                                    <div class="grade-type">Mid-term Test</div>
-                                </div>
-                                <div class="grade-score">92%</div>
-                            </div>
-                            <div class="grade-item">
-                                <div>
-                                    <div class="grade-subject">English Language</div>
-                                    <div class="grade-type">Quiz 3</div>
-                                </div>
-                                <div class="grade-score">88%</div>
-                            </div>
-                            <div class="grade-item">
-                                <div>
-                                    <div class="grade-subject">History</div>
-                                    <div class="grade-type">Assignment</div>
-                                </div>
-                                <div class="grade-score">85%</div>
+                            <div id="recentGradesContainer">
+                                <p style="text-align:center; color:#666;">Loading grades...</p>
                             </div>
                         </div>
                         <div class="overall-progress">
@@ -115,85 +99,16 @@
                 <div class="section-header">
                     <h2>Report Cards</h2>
                 </div>
-                <div class="section-content">
-                    <div class="report-item">
-                        <div class="report-info">
-                            <div class="report-icon">
-                                <i class="fas fa-file-pdf"></i>
-                            </div>
-                            <div class="report-details">
-                                <h4>First Term Report 2023</h4>
-                                <p>Generated on May 15, 2023</p>
-                            </div>
-                        </div>
-                        <a href="#" class="download-btn">
-                            <i class="fas fa-download"></i>
-                            Download
-                        </a>
-                    </div>
-                    <div class="report-item">
-                        <div class="report-info">
-                            <div class="report-icon">
-                                <i class="fas fa-file-pdf"></i>
-                            </div>
-                            <div class="report-details">
-                                <h4>Final Term Report 2022</h4>
-                                <p>Generated on Dec 20, 2022</p>
-                            </div>
-                        </div>
-                        <a href="#" class="download-btn">
-                            <i class="fas fa-download"></i>
-                            Download
-                        </a>
-                    </div>
-                </div>
+                <!-- ... content ... -->
             </section>
 
             <!-- Messages Section -->
-            <section class="section">
-                <div class="messages-header">
-                    <h2>Messages</h2>
-                    <div class="message-actions">
-                        <button class="new-message-btn">
-                            <i class="fas fa-plus"></i>
-                            New Message
-                        </button>
-                        <button class="filter-btn">
-                            <i class="fas fa-filter"></i>
-                            Filter
-                        </button>
-                    </div>
-                </div>
-                <div class="messages-content">
-                    <div class="message-item">
-                        <div class="message-avatar">SJ</div>
-                        <div class="message-content">
-                            <div class="message-sender">Ms. Sarah Johnson</div>
-                            <div class="message-text">Regarding Alex's performance in Mathematics and upcoming parent-teacher conference...</div>
-                        </div>
-                        <div class="message-time">2 hours ago</div>
-                    </div>
-                    <div class="message-item">
-                        <div class="message-avatar">MR</div>
-                        <div class="message-content">
-                            <div class="message-sender">Mr. Michael Roberts</div>
-                            <div class="message-text">Alex has shown excellent improvement in English literature class this semester...</div>
-                        </div>
-                        <div class="message-time">1 day ago</div>
-                    </div>
-                    <div class="message-item">
-                        <div class="message-avatar">AD</div>
-                        <div class="message-content">
-                            <div class="message-sender">Admin Department</div>
-                            <div class="message-text">Reminder: School fees for next term are due by the end of this month...</div>
-                        </div>
-                        <div class="message-time">3 days ago</div>
-                    </div>
-                </div>
-            </section>
+            <!-- ... content ... -->
+
         </main>
     </div>
 
-    <script src="../../scripts/parnetsPortalScripts/parentsDashboard.js"></script>
+    <script type="module" src="../../scripts/parnetsPortalScripts/parentsDashboard.js"></script>
 </body>
+
 </html>

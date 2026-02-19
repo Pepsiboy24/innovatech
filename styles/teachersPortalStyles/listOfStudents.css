@@ -11,114 +11,7 @@ body {
     min-height: 100vh;
 }
 
-/* Sidebar */
-.sidebar {
-    width: 250px;
-    background-color: #ffffff;
-    border-right: 1px solid #e9ecef;
-    padding: 24px 0;
-    position: fixed;
-    height: 100vh;
-    overflow-y: auto;
-    transition: transform 0.3s ease;
-    z-index: 1000;
-}
-
-.sidebar.mobile-hidden {
-    transform: translateX(-100%);
-}
-
-.sidebar header {
-    padding: 0 24px 40px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.sidebar header h4 {
-    font-size: 20px;
-    font-weight: 700;
-    color: #1a202c;
-}
-
-.close-btn {
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    color: #718096;
-    display: none;
-}
-
-.sidebar ul {
-    list-style: none;
-    margin-bottom: 40px;
-}
-
-.sidebar .item {
-    margin-bottom: 4px;
-}
-
-.sidebar .item a {
-    display: flex;
-    align-items: center;
-    padding: 12px 24px;
-    text-decoration: none;
-    color: #718096;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.2s;
-}
-
-.sidebar .item a:hover,
-.sidebar .item a.active {
-    background-color: #ebf8ff;
-    color: #3182ce;
-}
-
-.sidebar .item a .icon {
-    width: 24px;
-    height: 24px;
-    margin-right: 16px;
-}
-
-.profile-settings {
-    position: absolute;
-    bottom: 24px;
-    left: 0;
-    right: 0;
-    padding: 0 24px;
-}
-
-.user-settings a {
-    display: flex;
-    align-items: center;
-    padding: 12px 0;
-    text-decoration: none;
-    color: #718096;
-    font-size: 14px;
-    margin-bottom: 12px;
-}
-
-.user-settings a i {
-    margin-right: 12px;
-}
-
-.logout button {
-    width: 100%;
-    background: #e53e3e;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.logout button:hover {
-    background: #c53030;
-}
+/* Sidebar Styles Removed - Moved to sidebar.css */
 
 /* Main Content */
 .main-content {
@@ -158,7 +51,8 @@ body {
     gap: 16px;
 }
 
-.notification-btn, .menu-btn {
+.notification-btn,
+.menu-btn {
     width: 40px;
     height: 40px;
     background: #f7fafc;
@@ -173,7 +67,8 @@ body {
     transition: background 0.2s;
 }
 
-.notification-btn:hover, .menu-btn:hover {
+.notification-btn:hover,
+.menu-btn:hover {
     background: #edf2f7;
 }
 
@@ -186,7 +81,7 @@ body {
     background: white;
     border-radius: 12px;
     padding: 24px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .section-header {
@@ -532,6 +427,7 @@ body {
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);

@@ -11,106 +11,13 @@ body {
     min-height: 100vh;
 }
 
-/* Sidebar */
-.sidebar {
-    width: 250px;
-    background-color: #ffffff;
-    border-right: 1px solid #e9ecef;
-    padding: 24px 0;
-    position: fixed;
-    min-height: 100vh;
-    height: 100%;
-    overflow-y: auto;
-}
-
-.logo {
-    padding: 0 24px 40px;
-    font-size: 20px;
-    font-weight: 700;
-    color: #1a202c;
-}
-
-.sidebar-menu {
-    list-style: none;
-}
-
-.sidebar-menu li {
-    margin-bottom: 4px;
-}
-
-.sidebar-menu a {
-    display: flex;
-    align-items: center;
-    padding: 12px 24px;
-    text-decoration: none;
-    color: #718096;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.2s;
-}
-
-.sidebar-menu a:hover {
-    background-color: #f7fafc;
-    color: #2d3748;
-}
-
-.sidebar-menu a.active {
-    background-color: #ebf8ff;
-    color: #3182ce;
-}
-
-.sidebar-menu .icon {
-    width: 20px;
-    height: 20px;
-    margin-right: 12px;
-    font-size: 16px;
-}
+/* Sidebar Styles Removed - Moved to sidebar.css */
 
 /* Main Content */
 .main-content {
     margin-left: 250px;
     flex: 1;
     padding: 24px 32px;
-}
-
-/* Header */
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 32px;
-}
-
-.header-left h1 {
-    font-size: 24px;
-    font-weight: 600;
-    color: #1a202c;
-    margin-bottom: 4px;
-}
-
-.header-left p {
-    font-size: 14px;
-    color: #718096;
-}
-
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.notification-btn {
-    width: 40px;
-    height: 40px;
-    background: #f7fafc;
-    border: none;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: #4a5568;
-    position: relative;
 }
 
 .notification-btn::after {
@@ -124,10 +31,12 @@ body {
     border-radius: 50%;
 }
 
-.user-avatar{
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+.user-avatar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
-.user-avatar, .navOpenIcon{
+
+.user-avatar,
+.navOpenIcon {
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -138,13 +47,14 @@ body {
     font-weight: 600;
     font-size: 14px;
 }
-.navOpenIcon{
-  /* background-color: #fff; */
-  color: #000;
-  cursor: pointer;
-  border-radius: 6px;
-  background-color: #fff;
-  border: 1px solid #e2e8f0;
+
+.navOpenIcon {
+    /* background-color: #fff; */
+    color: #000;
+    cursor: pointer;
+    border-radius: 6px;
+    background-color: #fff;
+    border: 1px solid #e2e8f0;
 }
 
 /* Stats Cards */
@@ -159,7 +69,7 @@ body {
     background: white;
     border-radius: 12px;
     padding: 24px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
     gap: 16px;
@@ -175,10 +85,21 @@ body {
     font-size: 20px;
 }
 
-.stat-icon.blue { background: #ebf8ff; }
-.stat-icon.green { background: #f0fff4; }
-.stat-icon.purple { background: #faf5ff; }
-.stat-icon.red { background: #fef5e7; }
+.stat-icon.blue {
+    background: #ebf8ff;
+}
+
+.stat-icon.green {
+    background: #f0fff4;
+}
+
+.stat-icon.purple {
+    background: #faf5ff;
+}
+
+.stat-icon.red {
+    background: #fef5e7;
+}
 
 .stat-content h3 {
     font-size: 28px;
@@ -205,7 +126,7 @@ body {
     background: white;
     border-radius: 12px;
     padding: 24px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .card-title {
@@ -291,7 +212,7 @@ body {
     background: white;
     border-radius: 12px;
     padding: 24px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .students-table {
@@ -350,8 +271,13 @@ body {
     border-radius: 3px;
 }
 
-.performance-fill.excellent { background: #48bb78; }
-.performance-fill.good { background: #ed8936; }
+.performance-fill.excellent {
+    background: #48bb78;
+}
+
+.performance-fill.good {
+    background: #ed8936;
+}
 
 .performance-text {
     font-size: 14px;
@@ -393,8 +319,9 @@ body {
     background: #f7fafc;
     border-color: #cbd5e0;
 }
-.sidebar.show{
-  transform: translateX(0);
+
+.sidebar.show {
+    transform: translateX(0);
 }
 
 /* Responsive */
@@ -403,7 +330,8 @@ body {
         transform: translateX(-100%);
         transition: transform 0.3s ease;
     }
+
     .main-content {
         margin-left: 0;
     }
-  }
+}

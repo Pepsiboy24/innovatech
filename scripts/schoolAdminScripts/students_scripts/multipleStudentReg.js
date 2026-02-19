@@ -56,19 +56,37 @@ export async function uploadAndProcessExcel(file) {
         }
 
         // 1. Create Auth User
-        const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+        const {
+          data: { user },
+          error: authError,
+        } = await supabaseClient.auth.signUp({
           email: studentData.email,
           password: password,
         });
 
-        if (authError) throw new Error("Auth: " + authError.message);
+        if (authError) {
+          // Check if email already exists and skip with logging
+          if (authError.message.includes('already registered') || 
+              authError.message.includes('User already registered') ||
+              authError.message.includes('duplicate')) {
+            console.log(`Skip: Email already exists - ${studentData.email}`);
+            results.push({ 
+              success: false, 
+              error: 'Skip: Email already exists', 
+              data: studentData,
+              skipped: true 
+            });
+            continue;
+          }
+          throw new Error("Auth: " + authError.message);
+        }
 
         // 2. Insert Profile into 'Students' Table
         const { error: insertError } = await supabaseClient
           .from("Students")
           .insert([
             {
-              student_id: authData.user.id,
+              student_id: user.id,
               full_name: studentData.full_name,
               date_of_birth: formatExcelDate(studentData.date_of_birth),
               gender: studentData.gender,
@@ -79,7 +97,9 @@ export async function uploadAndProcessExcel(file) {
           ]);
 
         if (insertError) throw new Error("DB: " + insertError.message);
-        results.push({ success: true, data: studentData });
+        
+        console.log(`✅ Successfully registered: ${studentData.email} (ID: ${user.id})`);
+        results.push({ success: true, data: studentData, userId: user.id });
 
       } catch (err) {
         console.error("Row Error:", err.message);
@@ -157,8 +177,27 @@ function formatExcelDate(dateVal) {
 
 function displayResults(results) {
   const successCount = results.filter(r => r.success).length;
-  const failureCount = results.filter(r => !r.success).length;
-  alert(`Process Complete!\n✅ Success: ${successCount}\n❌ Failed: ${failureCount}`);
+  const failureCount = results.filter(r => !r.success && !r.skipped).length;
+  const skippedCount = results.filter(r => r.skipped).length;
+  
+  let message = `Process Complete!\n✅ Successfully Registered: ${successCount}\n`;
+  if (skippedCount > 0) {
+    message += `⏭️ Skipped (Email Exists): ${skippedCount}\n`;
+  }
+  if (failureCount > 0) {
+    message += `❌ Failed: ${failureCount}`;
+  }
+  
+  // Log skipped emails for admin reference
+  const skippedStudents = results.filter(r => r.skipped);
+  if (skippedStudents.length > 0) {
+    console.log('=== SKIPPED STUDENTS (Email Already Exists) ===');
+    skippedStudents.forEach(student => {
+      console.log(`- ${student.data.email} (${student.data.full_name})`);
+    });
+  }
+  
+  alert(message);
   document.querySelector('.upload-modal')?.remove();
 
   if (typeof window.refreshStudentList === 'function') {

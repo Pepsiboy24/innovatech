@@ -1,4 +1,4 @@
-import { supabase } from '../../scripts/config.js';
+import { supabase } from '../config.js';
 
 let currentTeacherId = null; // Store the current teacher ID
 
@@ -303,6 +303,13 @@ async function initializeAttendanceModule() {
     const classSelect = document.querySelector('.class-select');
     if (classSelect) {
         classSelect.addEventListener('change', handleClassChange);
+
+        // Auto-select first class and trigger load if classes exist
+        if (classes.length > 0) {
+            classSelect.value = classes[0].class_id;
+            // Trigger change event manually or call the handler
+            handleClassChange();
+        }
     }
 }
 

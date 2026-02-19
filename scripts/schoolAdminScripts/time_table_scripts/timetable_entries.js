@@ -8,7 +8,8 @@ const container = document.getElementById('kanbanContainer');
 
 let config = null;
 let entries = [];
-let subjects = [];
+let classSubjects = [];
+let teachers = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     init();
@@ -20,10 +21,18 @@ async function init() {
     const classId = urlParams.get('classId');
     if (!classId) return window.location.href = 'create_timetable_setup.html';
 
-    const [configRes, entriesRes, subjectsRes] = await Promise.all([
+    const [configRes, entriesRes, classSubjectsRes, teachersRes] = await Promise.all([
         supabase.from('schedule_configs').select('*').eq('class_id', classId).single(),
         supabase.from('timetable_entries').select('*').eq('class_id', classId),
-        supabase.from('Subjects').select('*')
+        supabase.from('Class_Subjects')
+            .select(`
+                subject_id,
+                teacher_id,
+                Subjects(subject_name, subject_code),
+                Teachers(first_name, last_name)
+            `)
+            .eq('class_id', classId),
+        supabase.from('Teachers').select('teacher_id, first_name, last_name, email')
     ]);
 
     config = configRes.data;
@@ -33,13 +42,15 @@ async function init() {
         entries = entriesRes.data || [];
     }
     
-    subjects = subjectsRes.data || [];
+    classSubjects = classSubjectsRes.data || [];
+    teachers = teachersRes.data || [];
 
     // Defaults
     config.active_days = config.active_days || [];
     config.break_times = config.break_times || [];
 
     populateDropdowns();
+    updateScheduleInfo();
     renderKanban();
 }
 
@@ -55,6 +66,20 @@ window.previewUploadedData = function (newEntries) {
     updateSaveButtonState();
 };
 
+function updateScheduleInfo() {
+    const scheduleInfo = document.getElementById('scheduleInfo');
+    if (!scheduleInfo || !config) return;
+    
+    const activeDays = config.active_days ? config.active_days.join(', ') : 'None';
+    const breakCount = config.break_times ? config.break_times.length : 0;
+    
+    scheduleInfo.innerHTML = `
+        <strong>Schedule Configuration:</strong> ${config.start_time} - ${config.period_duration}min periods | 
+        ${config.periods_per_day} periods/day | 
+        Active days: ${activeDays} | 
+        ${breakCount} break${breakCount !== 1 ? 's' : ''}
+    `;
+}
 
 
 function updateSaveButtonState() {
@@ -166,13 +191,17 @@ function renderKanban() {
             if (entry) {
                 const isUnsaved = !entry.id;
                 const bgColor = isUnsaved ? '#f59e0b' : 'var(--primary)'; 
-                const subject = subjects.find(s => s.subject_id === entry.subject_id);
+                const classSubject = classSubjects.find(cs => cs.subject_id === entry.subject_id);
+                const subject = classSubject ? classSubject.Subjects : null;
+                const teacher = classSubject ? classSubject.Teachers : null;
                 const subName = subject ? (subject.subject_code || subject.subject_name) : 'Unknown';
+                const teacherName = teacher ? `${teacher.first_name} ${teacher.last_name}` : '';
 
                 pill.innerHTML = `
                     <div style="font-weight: 600; font-size: 15px;">
                         ${subName} ${isUnsaved ? '<i class="fa-solid fa-asterisk" style="font-size:10px;"></i>' : ''}
                     </div>
+                    ${teacherName ? `<div style="font-size: 12px; opacity: 0.9;">${teacherName}</div>` : ''}
                     <div style="font-size: 12px; opacity: 0.8;">${timeSlot}</div>
                 `;
                 pill.style.cssText = `padding: 12px; margin-bottom: 12px; border-radius: 8px; background: ${bgColor}; color: white; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);`;
@@ -228,14 +257,21 @@ function setupSaveButton() {
 
 function populateDropdowns() {
     const subjectSelect = document.getElementById('modalSubject');
-    if (!subjectSelect) return;
-    subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
-    subjects.forEach(subject => {
-        const option = document.createElement('option');
-        option.value = subject.subject_id;
-        option.textContent = subject.subject_name || subject.name;
-        subjectSelect.appendChild(option);
-    });
+    
+    if (subjectSelect) {
+        subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
+        classSubjects.forEach(classSubject => {
+            const subject = classSubject.Subjects;
+            if (subject) {
+                const option = document.createElement('option');
+                option.value = classSubject.subject_id;
+                option.textContent = subject.subject_name || subject.subject_code || 'Unknown Subject';
+                // Store teacher_id as data attribute for auto-assignment
+                option.dataset.teacherId = classSubject.teacher_id;
+                subjectSelect.appendChild(option);
+            }
+        });
+    }
 }
 
 // Globals
@@ -277,11 +313,16 @@ if (form) {
         const classId = urlParams.get('classId');
         const entryId = document.getElementById('modalEntryId').value;
         
+        const subjectSelect = document.getElementById('modalSubject');
+        const selectedOption = subjectSelect.options[subjectSelect.selectedIndex];
+        const teacherId = selectedOption.dataset.teacherId;
+        
         const newData = {
             class_id: parseInt(classId), // ensure number
             day_of_week: document.getElementById('modalDay').value,
             start_time: document.getElementById('modalTime').value, // Assuming input is HH:MM, need to ensure DB match
             subject_id: document.getElementById('modalSubject').value,
+            teacher_id: teacherId || null,
             duration_minutes: parseInt(document.getElementById('modalDuration').value)
         };
 
@@ -304,6 +345,7 @@ if (form) {
         else if (currentEditingEntry) {
             // Just update the object in memory!
             currentEditingEntry.subject_id = newData.subject_id;
+            currentEditingEntry.teacher_id = newData.teacher_id;
             currentEditingEntry.duration_minutes = newData.duration_minutes;
             
             // Close modal and re-render board

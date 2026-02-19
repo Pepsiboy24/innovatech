@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../../styles/studentsPortalStyles/studentPortal.css">
 </head>
+
 <body>
     <div class="container">
         <!-- Sidebar -->
@@ -65,7 +67,7 @@
                         <i class="fas fa-certificate"></i>
                     </div>
                     <div class="stat-label">Rank</div>
-                    <div class="stat-value">5th</div>
+                    <div class="stat-value" id="rankValue">-</div>
                     <div class="stat-description">In Class</div>
                 </div>
                 <div class="stat-card">
@@ -73,7 +75,7 @@
                         <i class="fas fa-trophy"></i>
                     </div>
                     <div class="stat-label">Points</div>
-                    <div class="stat-value">2,450</div>
+                    <div class="stat-value" id="pointsValue">-</div>
                     <div class="stat-description">Total Points</div>
                 </div>
                 <div class="stat-card">
@@ -81,7 +83,7 @@
                         <i class="fas fa-medal"></i>
                     </div>
                     <div class="stat-label">Badges</div>
-                    <div class="stat-value">12</div>
+                    <div class="stat-value" id="badgesValue">-</div>
                     <div class="stat-description">Earned</div>
                 </div>
                 <div class="stat-card">
@@ -89,7 +91,7 @@
                         <i class="fas fa-star"></i>
                     </div>
                     <div class="stat-label">Achievements</div>
-                    <div class="stat-value">8</div>
+                    <div class="stat-value" id="achievementsValue">-</div>
                     <div class="stat-description">Unlocked</div>
                 </div>
             </div>
@@ -97,48 +99,10 @@
             <!-- Upcoming Classes -->
             <section class="section">
                 <div class="section-header">
-                    <h2 class="section-title">Upcoming Classes</h2>
+                    <h2 class="section-title">Upcoming Classes (Today)</h2>
                 </div>
-                <div class="classes-grid">
-                    <div class="class-card">
-                        <div class="class-header">
-                            <div class="class-icon math">
-                                <i class="fas fa-calculator"></i>
-                            </div>
-                            <div class="class-info">
-                                <h4>Mathematics</h4>
-                                <p>Advanced Algebra</p>
-                            </div>
-                        </div>
-                        <div class="class-time">Today, 2:30 PM</div>
-                        <button class="class-btn join-btn">Join Class</button>
-                    </div>
-                    <div class="class-card">
-                        <div class="class-header">
-                            <div class="class-icon chemistry">
-                                <i class="fas fa-flask"></i>
-                            </div>
-                            <div class="class-info">
-                                <h4>Chemistry</h4>
-                                <p>Organic Chemistry</p>
-                            </div>
-                        </div>
-                        <div class="class-time">Today, 4:00 PM</div>
-                        <button class="class-btn join-btn">Join Class</button>
-                    </div>
-                    <div class="class-card">
-                        <div class="class-header">
-                            <div class="class-icon english">
-                                <i class="fas fa-book-open"></i>
-                            </div>
-                            <div class="class-info">
-                                <h4>English</h4>
-                                <p>Literature</p>
-                            </div>
-                        </div>
-                        <div class="class-time">Tomorrow, 10:00 AM</div>
-                        <button class="class-btn upcoming-btn">Upcoming</button>
-                    </div>
+                <div class="classes-grid" id="upcomingClassesGrid">
+                    <p style="text-align:center; width:100%; color:#666;">Loading schedule...</p>
                 </div>
             </section>
 
@@ -149,6 +113,7 @@
                     <a href="./schedule.html" class="view-all-btn">View Full Timetable</a>
                 </div>
                 <div class="timetable-preview">
+                    <!-- Preview content can remain static or be dynamic later -->
                     <div class="day-preview">
                         <h4>Today</h4>
                         <div class="time-slot">
@@ -157,25 +122,6 @@
                         </div>
                         <div class="time-slot">
                             <span class="time">9:00 AM</span>
-                            <span class="subject">English</span>
-                        </div>
-                        <div class="time-slot">
-                            <span class="time">10:00 AM</span>
-                            <span class="subject">Physics</span>
-                        </div>
-                    </div>
-                    <div class="day-preview">
-                        <h4>Tomorrow</h4>
-                        <div class="time-slot">
-                            <span class="time">8:00 AM</span>
-                            <span class="subject">Chemistry</span>
-                        </div>
-                        <div class="time-slot">
-                            <span class="time">9:00 AM</span>
-                            <span class="subject">Math</span>
-                        </div>
-                        <div class="time-slot">
-                            <span class="time">10:00 AM</span>
                             <span class="subject">English</span>
                         </div>
                     </div>
@@ -200,7 +146,8 @@
                         </div>
                     </div>
                     <div class="ai-input-container">
-                        <input type="text" class="ai-input" id="aiInput" placeholder="Ask me anything about your studies...">
+                        <input type="text" class="ai-input" id="aiInput"
+                            placeholder="Ask me anything about your studies...">
                         <button class="ask-ai-btn" id="askAiBtn">Ask AI</button>
                     </div>
                 </div>
@@ -213,35 +160,8 @@
                     <div class="section-header">
                         <h2 class="section-title">Class Leaderboard</h2>
                     </div>
-                    <div class="leaderboard-item">
-                        <div class="leaderboard-left">
-                            <span class="rank-number">1.</span>
-                            <div class="user-avatar">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <span class="user-name">John Doe</span>
-                        </div>
-                        <span class="points"><span>3,240</span> pts</span>
-                    </div>
-                    <div class="leaderboard-item">
-                        <div class="leaderboard-left">
-                            <span class="rank-number">2.</span>
-                            <div class="user-avatar">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <span class="user-name">Sarah Smith</span>
-                        </div>
-                        <span class="points"><span>2,890</span> pts</span>
-                    </div>
-                    <div class="leaderboard-item">
-                        <div class="leaderboard-left">
-                            <span class="rank-number">3.</span>
-                            <div class="user-avatar">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <span class="user-name">Mike Johnson</span>
-                        </div>
-                        <span class="points"><span>2,650</span> pts</span>
+                    <div id="classLeaderboard">
+                        <p style="text-align:center; color:#666;">Loading leaderboard...</p>
                     </div>
                 </section>
 
@@ -274,26 +194,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="feed-item">
-                        <div class="feed-header">
-                            <div class="user-avatar">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <div>
-                                <span class="feed-user">David Chen</span>
-                                <div class="feed-time">1 hour ago</div>
-                            </div>
-                        </div>
-                        <div class="feed-content">
-                            Just finished the chemistry project! Check it out 🧪
-                        </div>
-                        <div class="feed-reactions">
-                            <div class="reaction">
-                                <i class="fas fa-heart"></i>
-                                <span>24</span>
-                            </div>
-                        </div>
-                    </div>
                 </section>
             </div>
         </main>
@@ -302,12 +202,14 @@
         const navOpen = document.querySelector("[data-nav-display]");
         const nav = document.querySelector("[data-nav]");
         const icon = document.querySelector("[data-ie]");
-        
-        navOpen.addEventListener("click", () => {
-            icon.classList.toggle("fa-bars");
-            icon.classList.toggle("fa-times");
-            nav.classList.toggle("show");
-        });
+
+        if (navOpen) {
+            navOpen.addEventListener("click", () => {
+                icon.classList.toggle("fa-bars");
+                icon.classList.toggle("fa-times");
+                nav.classList.toggle("show");
+            });
+        }
 
         // AI Study Buddy functionality
         const aiInput = document.getElementById('aiInput');
@@ -362,42 +264,29 @@
             return aiResponses.default;
         }
 
-        askAiBtn.addEventListener('click', () => {
-            const question = aiInput.value.trim();
-            if (question) {
-                addMessage(question, true);
-                setTimeout(() => {
-                    const response = getAiResponse(question);
-                    addMessage(response);
-                }, 500);
-                aiInput.value = '';
-            }
-        });
-
-        aiInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                askAiBtn.click();
-            }
-        });
-
-        // Class Leaderboard Ranking
-        function updateLeaderboard() {
-            const leaderboardItems = document.querySelectorAll('.leaderboard-item');
-            const itemsArray = Array.from(leaderboardItems);
-
-            itemsArray.sort((a, b) => {
-                const pointsA = parseInt(a.querySelector('.points span').textContent.replace(',', ''));
-                const pointsB = parseInt(b.querySelector('.points span').textContent.replace(',', ''));
-                return pointsB - pointsA;
-            });
-
-            leaderboardItems.forEach((item, index) => {
-                const rankSpan = item.querySelector('.rank-number');
-                rankSpan.textContent = `${index + 1}.`;
+        if (askAiBtn) {
+            askAiBtn.addEventListener('click', () => {
+                const question = aiInput.value.trim();
+                if (question) {
+                    addMessage(question, true);
+                    setTimeout(() => {
+                        const response = getAiResponse(question);
+                        addMessage(response);
+                    }, 500);
+                    aiInput.value = '';
+                }
             });
         }
 
-        updateLeaderboard();
+        if (aiInput) {
+            aiInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    askAiBtn.click();
+                }
+            });
+        }
     </script>
+    <script type="module" src="../../scripts/studentProfileAchivement.js"></script>
 </body>
+
 </html>

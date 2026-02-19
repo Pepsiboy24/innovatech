@@ -1,45 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TeachSmart Dashboard</title>
     <link rel="stylesheet" href="../../styles/teachersPortalStyles/teachersPortal.css">
+    <link rel="stylesheet" href="../../styles/teachersPortalStyles/sidebar.css">
 </head>
+
 <body>
     <!-- Sidebar -->
-    <nav class="sidebar" data-nav>
-        <div class="logo">TeachSmart</div>
-        <ul class="sidebar-menu">
-            <li><a href="#" class="active">
-                <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9,22 9,12 15,12 15,22"></polyline></svg>
-                Dashboard
-            </a></li>
-            <li><a href="./listOfStudents.html">
-                <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                Students
-            </a></li>
-            <li><a href="./curriculum.html">
-                <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/></svg>
-                Scheme of Work
-            </a></li>
-            <li><a href="./attendance.html">
-                <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                Attendance
-            </a></li>
-            <!-- <li><a href="#">
-                <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-                Online Classes
-            </a></li> -->
-            <li><a href="#">
-                <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2" ry="2"></rect><circle cx="12" cy="16" r="1"></circle><circle cx="12" cy="21" r="1"></circle><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                AI Assistant
-            </a></li>
-            <!-- <li><a href="#">
-                <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                Messages
-            </a></li> -->
-        </ul>
+    <!-- Sidebar -->
+    <nav class="sidebar" data-sideBar>
+        <!-- Dynamic Content -->
     </nav>
 
     <!-- Main Content -->
@@ -151,20 +125,22 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="../../scripts/teachersPortalScripts/teachersDashboard.js"></script>
+    <script src="../../scripts/teachersPortalScripts/teachers_portal_sidebar.js"></script>
     <script>
-      const navOpen = document.querySelector("[data-nav-dispaly]");
-      const nav = document.querySelector("[data-nav]");
-      const i = document.querySelector("[data-ie]")
-      navOpen.addEventListener("click", () => {
-        if(i.className == "fa fa-bars"){
-          i.className = "";
-          i.classList.add("fa", "fa-times");
-        }else if(i.className == "fa fa-times"){
-          i.className = "";
-          i.classList.add("fa", "fa-bars");
-        }
-        nav.classList.toggle("show")
-      })
+        const navOpen = document.querySelector("[data-nav-dispaly]");
+        const nav = document.querySelector("[data-nav]");
+        const i = document.querySelector("[data-ie]")
+        navOpen.addEventListener("click", () => {
+            if (i.className == "fa fa-bars") {
+                i.className = "";
+                i.classList.add("fa", "fa-times");
+            } else if (i.className == "fa fa-times") {
+                i.className = "";
+                i.classList.add("fa", "fa-bars");
+            }
+            nav.classList.toggle("show")
+        })
     </script>
 </body>
+
 </html>

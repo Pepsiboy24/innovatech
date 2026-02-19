@@ -12,40 +12,40 @@ if (!supabaseClient) {
 }
 
 // --- 2. Teacher Authentication ---
-async function checkTeacherLogin() {
-    try {
-        const { data: { user }, error } = await supabaseClient.auth.getUser();
+// async function checkTeacherLogin() {
+//     try {
+//         const { data: { user }, error } = await supabaseClient.auth.getUser();
 
-        if (error || !user) {
-            console.error('No user logged in:', error);
-            alert('Please log in as a teacher to view this page.');
-            window.location.href = '../../index.html';
-            return null;
-        }
+//         if (error || !user) {
+//             console.error('No user logged in:', error);
+//             alert('Please log in as a teacher to view this page.');
+//             window.location.href = '../../index.html';
+//             return null;
+//         }
 
-        // Verify this user is actually a teacher in the Teachers table
-        const { data: teacherData, error: teacherError } = await supabaseClient
-            .from('Teachers')
-            .select('*')
-            .eq('teacher_id', user.id)
-            .single();
+//         // Verify this user is actually a teacher in the Teachers table
+//         const { data: teacherData, error: teacherError } = await supabaseClient
+//             .from('Teachers')
+//             .select('*')
+//             .eq('teacher_id', user.id)
+//             .single();
 
-        if (teacherError || !teacherData) {
-            console.error('User is not authorized as a teacher:', teacherError);
-            alert('You are not authorized as a teacher. Please log in with teacher credentials.');
-            await supabaseClient.auth.signOut();
-            window.location.href = '../../index.html';
-            return null;
-        }
+//         if (teacherError || !teacherData) {
+//             console.error('User is not authorized as a teacher:', teacherError);
+//             alert('You are not authorized as a teacher. Please log in with teacher credentials.');
+//             await supabaseClient.auth.signOut();
+//             window.location.href = '../../index.html';
+//             return null;
+//         }
 
-        return user.id;
-    } catch (err) {
-        console.error('Error checking teacher login:', err);
-        alert('An error occurred while verifying your login. Please try logging in again.');
-        window.location.href = '../../index.html';
-        return null;
-    }
-}
+//         return user.id;
+//     } catch (err) {
+//         console.error('Error checking teacher login:', err);
+//         alert('An error occurred while verifying your login. Please try logging in again.');
+//         window.location.href = '../../index.html';
+//         return null;
+//     }
+// }
 
 // --- 3. Get Teacher's Class ---
 async function getTeacherClass(teacherId) {

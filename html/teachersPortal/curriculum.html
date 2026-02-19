@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EdTech - Teachers Portal</title>
+    <link rel="stylesheet" href="../../styles/teachersPortalStyles/sidebar.css">
     <style>
         * {
             margin: 0;
@@ -23,7 +25,7 @@
             display: none;
             background: white;
             padding: 16px 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
             align-items: center;
             justify-content: space-between;
             position: fixed;
@@ -57,7 +59,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 999;
         }
 
@@ -69,7 +71,7 @@
             width: 260px;
             background: white;
             padding: 30px 20px;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
             display: flex;
             flex-direction: column;
             transition: transform 0.3s ease;
@@ -179,7 +181,7 @@
             background: white;
             border-radius: 12px;
             padding: 30px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
         .section-header {
@@ -313,7 +315,8 @@
                 font-size: 14px;
             }
 
-            th, td {
+            th,
+            td {
                 padding: 12px 10px;
             }
         }
@@ -418,7 +421,7 @@
             }
 
             /* Progress bar full width on mobile */
-            td[data-label="Progress"] > div {
+            td[data-label="Progress"]>div {
                 display: flex;
                 flex-direction: column;
                 gap: 8px;
@@ -462,6 +465,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="mobile-header">
         <div class="hamburger" onclick="toggleSidebar()">
@@ -475,52 +479,9 @@
 
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
-    <div class="sidebar" id="sidebar">
-        <div class="logo">EdTech</div>
-        
-        <a href="./teachersPortal.html" class="nav-item">
-            <svg fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
-            </svg>
-            Home
-        </a>
-
-        <a href="./listOfStudents.html" class="nav-item">
-            <svg fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
-            </svg>
-            Students
-        </a>
-
-        <a href="./curriculum.html" class="nav-item active">
-            <svg fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/>
-            </svg>
-            Scheme of Work
-        </a>
-
-        <a href="./attendance.html" class="nav-item">
-            <svg fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
-            </svg>
-            Attendance
-        </a>
-
-        <a href="#" class="nav-item">
-            <svg fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
-            </svg>
-            AI Assistant
-        </a>
-
-        <div class="user-section">
-            <div class="user-info">
-                <div class="user-avatar">MJ</div>
-                <span>Mrs. Johnson</span>
-            </div>
-            <button class="logout-btn">Logout</button>
-        </div>
+    <!-- Sidebar -->
+    <div class="sidebar" data-sideBar>
+        <!-- Dynamic Content -->
     </div>
 
     <div class="main-content">
@@ -533,14 +494,20 @@
             <div class="section-header">
                 <div>
                     <span class="section-title">Scheme of Work</span>
-                    <span class="completion-text">2 of 6 topics completed</span>
+                    <span class="completion-text">0 of 0 topics completed</span>
                 </div>
-                <select class="subject-dropdown">
-                    <option>Mathematics</option>
-                    <option>Physics</option>
-                    <option>Chemistry</option>
-                    <option>Biology</option>
-                </select>
+                <div style="display: flex; gap: 10px;">
+                    <select id="classSelect" class="subject-dropdown">
+                        <option value="">Select Class</option>
+                    </select>
+                    <select id="subjectSelect" class="subject-dropdown">
+                        <option value="">Select Subject</option>
+                    </select>
+                    <input type="file" id="curriculumUpload" accept=".xlsx" style="display: none;">
+                    <button id="uploadBtn" class="action-btn" style="background: #4a90e2; color: white;">
+                        Upload Scheme
+                    </button>
+                </div>
             </div>
 
             <table>
@@ -553,169 +520,19 @@
                         <th>ACTION</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="curriculumTableBody">
                     <tr>
-                        <td data-label="Topic">
-                            <div class="topic-name">Introduction to Algebra</div>
-                            <div class="topic-desc">Basic algebraic expressions, variables, and simple equations</div>
-                        </td>
-                        <td data-label="Week">Week 1</td>
-                        <td data-label="Status">
-                            <span class="status completed">
-                                <svg fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                </svg>
-                                Completed
-                            </span>
-                        </td>
-                        <td data-label="Progress">
-                            <div style="display: flex; align-items: center;">
-                                <div class="progress-bar" style="width: 200px;">
-                                    <div class="progress-fill" style="width: 100%;"></div>
-                                </div>
-                                <span class="progress-text">100%</span>
-                            </div>
-                        </td>
-                        <td data-label="Action">
-                            <button class="action-btn">Mark Incomplete</button>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Topic">
-                            <div class="topic-name">Linear Equations</div>
-                            <div class="topic-desc">Solving linear equations with one and two variables</div>
-                        </td>
-                        <td data-label="Week">Week 2</td>
-                        <td data-label="Status">
-                            <span class="status completed">
-                                <svg fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                </svg>
-                                Completed
-                            </span>
-                        </td>
-                        <td data-label="Progress">
-                            <div style="display: flex; align-items: center;">
-                                <div class="progress-bar" style="width: 200px;">
-                                    <div class="progress-fill" style="width: 100%;"></div>
-                                </div>
-                                <span class="progress-text">100%</span>
-                            </div>
-                        </td>
-                        <td data-label="Action">
-                            <button class="action-btn">Mark Incomplete</button>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Topic">
-                            <div class="topic-name">Quadratic Equations</div>
-                            <div class="topic-desc">Understanding and solving quadratic equations using different methods</div>
-                        </td>
-                        <td data-label="Week">Week 3</td>
-                        <td data-label="Status">
-                            <span class="status pending">
-                                <svg fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
-                                </svg>
-                                Pending
-                            </span>
-                        </td>
-                        <td data-label="Progress">
-                            <div style="display: flex; align-items: center;">
-                                <div class="progress-bar" style="width: 200px;">
-                                    <div class="progress-fill" style="width: 0%;"></div>
-                                </div>
-                                <span class="progress-text">0%</span>
-                            </div>
-                        </td>
-                        <td data-label="Action">
-                            <button class="action-btn">Mark Complete</button>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td data-label="Topic">
-                            <div class="topic-name">Functions and Graphs</div>
-                            <div class="topic-desc">Introduction to functions, domain, range, and graphing techniques</div>
-                        </td>
-                        <td data-label="Week">Week 4</td>
-                        <td data-label="Status">
-                            <span class="status pending">
-                                <svg fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
-                                </svg>
-                                Pending
-                            </span>
-                        </td>
-                        <td data-label="Progress">
-                            <div style="display: flex; align-items: center;">
-                                <div class="progress-bar" style="width: 200px;">
-                                    <div class="progress-fill" style="width: 0%;"></div>
-                                </div>
-                                <span class="progress-text">0%</span>
-                            </div>
-                        </td>
-                        <td data-label="Action">
-                            <button class="action-btn">Mark Complete</button>
-                        </td>
+                        <td colspan="5" style="text-align: center; padding: 20px;">Please select a Class and Subject to
+                            view the Scheme of Work.</td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <script>
-        // Toggle sidebar on mobile
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.querySelector('.sidebar-overlay');
-            sidebar.classList.toggle('active');
-            overlay.classList.toggle('active');
-        }
-
-        // Add interactivity for marking topics
-        document.querySelectorAll('.action-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const row = this.closest('tr');
-                const statusCell = row.querySelector('.status');
-                const progressBar = row.querySelector('.progress-fill');
-                const progressText = row.querySelector('.progress-text');
-                
-                if (this.textContent === 'Mark Complete') {
-                    statusCell.innerHTML = `
-                        <svg fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                        Completed
-                    `;
-                    statusCell.className = 'status completed';
-                    progressBar.style.width = '100%';
-                    progressText.textContent = '100%';
-                    this.textContent = 'Mark Incomplete';
-                } else {
-                    statusCell.innerHTML = `
-                        <svg fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
-                        </svg>
-                        Pending
-                    `;
-                    statusCell.className = 'status pending';
-                    progressBar.style.width = '0%';
-                    progressText.textContent = '0%';
-                    this.textContent = 'Mark Complete';
-                }
-                
-                updateCompletionCount();
-            });
-        });
-
-        function updateCompletionCount() {
-            const completed = document.querySelectorAll('.status.completed').length;
-            const total = document.querySelectorAll('.status').length;
-            document.querySelector('.completion-text').textContent = `${completed} of ${total} topics completed`;
-        }
-    </script>
+    <script src="https://unpkg.com/read-excel-file@5.x/bundle/read-excel-file.min.js"></script>
+    <script type="module" src="../../scripts/teachersPortalScripts/curriculum.js"></script>
+    <script src="../../scripts/teachersPortalScripts/teachers_portal_sidebar.js"></script>
 </body>
+
 </html>

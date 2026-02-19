@@ -1,75 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Class Attendance - EdTech</title>
+    <link rel="stylesheet" href="../../styles/teachersPortalStyles/teachersPortal.css">
     <link rel="stylesheet" href="../../styles/teachersPortalStyles/attendance.css">
+    <link rel="stylesheet" href="../../styles/teachersPortalStyles/sidebar.css">
 </head>
-<body>
-    <!-- Sidebar Overlay -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
+<body>
     <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <header>
-            <h4>EdTech</h4>
-            <button class="close-btn" id="closeSidebar">✕</button>
-        </header>
-        
-        <div class="content">
-            <ul>
-                <div class="item">
-                    <li><a href="./teachersPortal.html">🏠 Home</a></li>
-                </div>
-                <div class="item">
-                    <li><a href="./listOfStudents.html">👥 Students</a></li>
-                </div>
-                <div class="item">
-                    <li><a href="./curriculum.html">
-                        <svg fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/>
-                        </svg>
-                        Scheme of Work
-                    </a></li>
-                </div>
-                <div class="item">
-                    <li><a href="#" class="active">📋 Attendance</a></li>
-                </div>
-                <div class="item">
-                    <li><a href="#">🤖 AI Assistant</a></li>
-                </div>
-            </ul>
-            
-            <div class="profile-settings">
-                <div class="user-settings">
-                    <a href="#"><i>👤</i> <span>UserName</span></a>
-                </div>
-                <div class="logout">
-                    <button>Logout</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Sidebar -->
+    <nav class="sidebar" data-sideBar>
+        <!-- Dynamic Content -->
+    </nav>
 
     <!-- Main Content -->
-    <main class="main-content" id="mainContent">
+    <main class="main-content">
         <!-- Header -->
         <header class="header">
-            <div class="welcome-msg">
-                <h2>Welcome back, <span>Mrs</span>.<span>Johnson</span></h2>
-                <p>Tuesday, 15 September 2025</p>
+            <div class="header-left">
+                <h1>Class Attendance</h1>
+                <p>Manage daily attendance</p>
             </div>
             <div class="header-right">
-                <button class="notification-btn">🔔</button>
-                <button class="menu-btn" id="openSidebar">☰</button>
+                <button class="notification-btn"><i class="fa fa-bell"></i></button>
+                <div class="user-avatar">MA</div>
+                <div class="navOpenIcon" data-nav-dispaly><i class="fa fa-bars" data-ie></i></div>
             </div>
         </header>
 
         <!-- Attendance Section -->
         <section class="attendance-section">
             <div class="section-header">
-                <h3 class="section-title">Class Attendance</h3>
+                <!-- <h3 class="section-title">Class Attendance</h3> -->
                 <div class="date-class-selector">
                     <input type="date" class="date-input" value="2025-09-15">
                     <select class="class-select">
@@ -100,7 +66,7 @@
                     <div class="summary-label">Late</div>
                 </div>
                 <div class="summary-item">
-                    <div class="summary-number" id="totalCount">6</div>
+                    <div class="summary-number" id="totalCount">0</div>
                     <div class="summary-label">Total</div>
                 </div>
             </div>
@@ -119,52 +85,31 @@
             </table>
 
             <div class="action-buttons">
-                <button class="cancel-btn">Cancel</button>
+                <!-- <button class="cancel-btn">Cancel</button> -->
                 <button class="save-btn">Save Attendance</button>
             </div>
         </section>
     </main>
-
+    <script src="../../scripts/fontawesome.js"></script>
     <script>
-        // Sidebar functionality
-        const sidebar = document.getElementById('sidebar');
-        const sidebarOverlay = document.getElementById('sidebarOverlay');
-        const openSidebarBtn = document.getElementById('openSidebar');
-        const closeSidebarBtn = document.getElementById('closeSidebar');
-
-        function openSidebar() {
-            sidebar.classList.add('mobile-visible');
-            sidebarOverlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeSidebar() {
-            sidebar.classList.remove('mobile-visible');
-            sidebarOverlay.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        openSidebarBtn.addEventListener('click', openSidebar);
-        closeSidebarBtn.addEventListener('click', closeSidebar);
-        sidebarOverlay.addEventListener('click', closeSidebar);
-
-
-        // Close sidebar on escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeSidebar();
+        const navOpen = document.querySelector("[data-nav-dispaly]");
+        const nav = document.querySelector("[data-nav]");
+        const i = document.querySelector("[data-ie]")
+        navOpen.addEventListener("click", () => {
+            if (i.className == "fa fa-bars") {
+                i.className = "";
+                i.classList.add("fa", "fa-times");
+            } else if (i.className == "fa fa-times") {
+                i.className = "";
+                i.classList.add("fa", "fa-bars");
             }
-        });
-
-        // Handle window resize
-        window.addEventListener('resize', function() {
-            if (window.innerWidth > 768) {
-                closeSidebar();
-            }
-        });
+            nav.classList.toggle("show")
+        })
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script type="module" src="../../scripts/teachersPortalScripts/attendace.js"></script>
+    <script src="../../scripts/teachersPortalScripts/teachers_portal_sidebar.js"></script>
 </body>
+
 </html>

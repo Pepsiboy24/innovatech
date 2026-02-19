@@ -1,14 +1,9 @@
-// teachersDashboard.js - Handles teacher dashboard functionality including student fetching
-
-const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
-
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+import { supabase } from '../config.js';
 
 // Check if teacher is logged in
 async function checkTeacherLogin() {
     try {
-        const { data: { user }, error } = await supabaseClient.auth.getUser();
+        const { data: { user }, error } = await supabase.auth.getUser();
 
         if (error || !user) {
             console.error('No user logged in:', error);
@@ -18,7 +13,7 @@ async function checkTeacherLogin() {
         }
 
         // Verify this user is actually a teacher in the Teachers table
-        const { data: teacherData, error: teacherError } = await supabaseClient
+        const { data: teacherData, error: teacherError } = await supabase
             .from('Teachers')
             .select('*')
             .eq('teacher_id', user.id)
@@ -27,7 +22,7 @@ async function checkTeacherLogin() {
         if (teacherError || !teacherData) {
             console.error('User is not authorized as a teacher:', teacherError);
             alert('You are not authorized as a teacher. Please log in with teacher credentials.');
-            await supabaseClient.auth.signOut();
+            await supabase.auth.signOut();
             window.location.href = '../../index.html';
             return null;
         }
@@ -44,7 +39,7 @@ async function checkTeacherLogin() {
 // Fetch teacher's assigned classes
 async function fetchTeacherClasses(teacherId) {
     try {
-        const { data, error } = await supabaseClient
+        const { data, error } = await supabase
             .from('Classes')
             .select('class_id, class_name, section')
             .eq('teacher_id', teacherId);
@@ -61,7 +56,6 @@ async function fetchTeacherClasses(teacherId) {
 }
 
 // Fetch total students count for teacher's classes
-// Fetch total students count for teacher's classes
 async function fetchTotalStudentsCount(teacherClasses) {
     try {
         // Extract just the class_id values into a simple array: [1, 2, 3]
@@ -69,10 +63,10 @@ async function fetchTotalStudentsCount(teacherClasses) {
 
         if (classIds.length === 0) return 0;
 
-        const { count, error } = await supabaseClient
+        const { count, error } = await supabase
             .from('Students')
             .select('*', { count: 'exact', head: true })
-            .in('class_id', classIds); // Pass the array here
+            .in('class_id', classIds);
 
         if (error) {
             console.error('Error fetching total students count:', error);
@@ -88,7 +82,7 @@ async function fetchTotalStudentsCount(teacherClasses) {
 // Fetch students from a specific class (limited to 5)
 async function fetchStudentsFromClass(classId, limit = 5) {
     try {
-        const { data, error } = await supabaseClient
+        const { data, error } = await supabase
             .from('Students')
             .select('*')
             .eq('class_id', classId)
@@ -180,8 +174,8 @@ function renderStudents(students, className) {
 }
 
 // Main function to load students for the teacher
-async function loadTeacherStudents() {
-    console.log('Loading teacher students...');
+async function loadTeacherDashboard() {
+    console.log('Loading teacher dashboard...');
 
     // Check if teacher is logged in
     const teacherId = await checkTeacherLogin();
@@ -189,9 +183,17 @@ async function loadTeacherStudents() {
 
     // Fetch teacher's assigned classes
     const teacherClasses = await fetchTeacherClasses(teacherId);
+
+    // Update Active Courses Count
+    const activeCoursesElement = document.getElementById('active_courses');
+    if (activeCoursesElement) {
+        activeCoursesElement.textContent = teacherClasses.length;
+    }
+
     if (!teacherClasses || teacherClasses.length === 0) {
         console.error('No classes assigned to this teacher');
-        alert('No classes are assigned to your account. Please contact an administrator.');
+        // alert('No classes are assigned to your account. Please contact an administrator.'); 
+        // Alert might be annoying if they just want to see the dashboard, even if empty.
         return;
     }
 
@@ -199,7 +201,6 @@ async function loadTeacherStudents() {
 
     // Fetch total students count
     const totalStudentsCount = await fetchTotalStudentsCount(teacherClasses);
-    // const totalStudentsCount = await fetchTotalStudentsCount(teacherId);
     console.log(`Total students count: ${totalStudentsCount}`);
 
     // Update the total students display
@@ -222,5 +223,5 @@ async function loadTeacherStudents() {
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    loadTeacherStudents();
+    loadTeacherDashboard();
 });

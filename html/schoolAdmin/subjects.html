@@ -44,6 +44,20 @@
                         </div>
                     </div>
 
+                    <div class="form-group">
+                        <label for="classSelect">Class <span class="required">*</span></label>
+                        <select id="classSelect" name="classSelect" required>
+                            <option value="">-- Select Class --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="teacherSelect">Teacher <span class="required">*</span></label>
+                        <select id="teacherSelect" name="teacherSelect" required>
+                            <option value="">-- Select Teacher --</option>
+                        </select>
+                    </div>
+
                     <div class="buttons">
                         <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
                         <button type="submit" class="btn btn-primary">Add Subject</button>
@@ -328,8 +342,8 @@
                         <tr>
                             <th>Subject Name</th>
                             <th>Type</th>
-                            <!-- <th>Classes Offered</th> -->
-                            <!-- <th>Teachers Assigned</th> -->
+                            <th>Assigned Teacher</th>
+                            <th>Class</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
