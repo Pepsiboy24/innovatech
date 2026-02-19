@@ -172,6 +172,7 @@ function setupEventListeners() {
             const classId = classSelect.value;
 
             if (classId && subjectId) {
+                console.log(classId)
                 await fetchStudentsInClass(classId);
             } else {
                 updateStudentTable([]);
@@ -194,28 +195,26 @@ function setupEventListeners() {
 
 async function fetchStudentsInClass(classId) {
     try {
+        console.log("Fetching students for class ID:", classId); // Debugging line
+
         const { data: students, error } = await supabase
             .from('Students')
-            .select(`
-                student_id,
-                full_name,
-                email
-            `)
-            .eq('class_id', parseInt(classId))
-            .order('full_name');
+            .select('student_id, full_name') // Only select what you need
+            .eq('class_id', classId) // Remove parseInt() if your class_id is a UUID
+            .order('full_name', { ascending: true });
 
         if (error) {
-            console.error('Error fetching students:', error);
+            console.error('Supabase Error:', error.message);
             throw error;
         }
 
+        console.log("Students found:", students);
         currentClassStudents = students || [];
         updateStudentTable(currentClassStudents);
 
     } catch (error) {
-        console.error('Error fetching students in class:', error);
-        currentClassStudents = [];
         updateStudentTable([]);
+        alert("Error loading students: " + error.message);
     }
 }
 

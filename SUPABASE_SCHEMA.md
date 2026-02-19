@@ -352,3 +352,17 @@ Foreign keys:
 public.Curriculum.class_id → public.Classes.class_id
 public.Curriculum.teacher_id → public.Teachers.teacher_id
 public.Curriculum.subject_id → public.Subjects.subject_id
+
+
+Grading_Structure
+Schema: public
+RLS: disabled (matches other public tables; enable if required)
+Rows: 0 (new)
+Primary key: id
+Columns:
+id (uuid) — default: gen_random_uuid(), PRIMARY KEY
+assessment_name (text) — NOT NULL — e.g., '1st CA'
+max_score (smallint / int2) — NOT NULL — e.g., 20
+term (text) — NOT NULL — e.g., 'First Term'
+academic_session (text) — NOT NULL
+created_at (timestamptz) — default: now()

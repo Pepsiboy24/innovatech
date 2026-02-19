@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    <!-- <script type="module" src="../../scripts/authGuard.js"></script> -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>School Admin Management - EduHubAdmin</title>
@@ -18,159 +19,54 @@
             <div class="popup-header">
                 <div class="icon" id="closePopup"><i class="fa fa-times"></i></div>
                 <h1>School Admin Registration</h1>
-                <p>Complete your professional profile</p>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill" style="width: 50%;"></div>
-                </div>
-            </div>
-
-            <div class="step-indicators">
-                <div class="step-indicator active" id="indicator1">
-                    <div class="step-circle">1</div>
-                    <span>Personal</span>
-                </div>
-                <div class="step-indicator" id="indicator2">
-                    <div class="step-circle">2</div>
-                    <span>Contact</span>
-                </div>
-                <div class="step-indicator" id="indicator3">
-                    <div class="step-circle">3</div>
-                    <span>Review</span>
-                </div>
+                <p>Add a new administrator to the system</p>
             </div>
 
             <div class="form-content">
                 <form id="adminForm">
-                    <!-- Step 1: Personal Information -->
                     <div class="step active" id="step1">
-                        <h2>Personal Information</h2>
-                        <p>Basic identifying information for official records</p>
-
                         <div class="form-group">
-                            <label for="firstName">First Name <span class="required">*</span></label>
-                            <input type="text" id="firstName" name="firstName" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="middleName">Middle Name</label>
-                            <input type="text" id="middleName" name="middleName">
-                        </div>
-                        <div class="form-group">
-                            <label for="lastName">Last Name <span class="required">*</span></label>
-                            <input type="text" id="lastName" name="lastName" required>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="dateOfBirth">Date of Birth <span class="required">*</span></label>
-                                <input type="date" id="dateOfBirth" name="dateOfBirth" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Gender <span class="required">*</span></label>
-                                <div class="radio-group">
-                                    <div class="radio-option">
-                                        <input type="radio" id="male" name="gender" value="male" required>
-                                        <label for="male">Male</label>
-                                    </div>
-                                    <div class="radio-option">
-                                        <input type="radio" id="female" name="gender" value="female" required>
-                                        <label for="female">Female</label>
-                                    </div>
-                                    <div class="radio-option">
-                                        <input type="radio" id="other" name="gender" value="other" required>
-                                        <label for="other">Other</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Step 2: Contact Details -->
-                    <div class="step" id="step2">
-                        <h2>Contact Information</h2>
-                        <p>Address and contact details for communication</p>
-
-                        <div class="form-group">
-                            <label for="address">Residential Address <span class="required">*</span></label>
-                            <textarea id="address" name="address" required></textarea>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="mobilePhone">Mobile Phone <span class="required">*</span></label>
-                                <input type="tel" id="mobilePhone" name="mobilePhone" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="homePhone">Home Phone</label>
-                                <input type="tel" id="homePhone" name="homePhone">
-                            </div>
+                            <label for="fullName">Full Name <span class="required">*</span></label>
+                            <input type="text" id="fullName" name="fullName" required placeholder="e.g. John Doe">
                         </div>
 
                         <div class="form-group">
-                            <label for="personalEmail">Personal Email <span class="required">*</span></label>
-                            <input type="email" id="personalEmail" name="personalEmail" required>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="emergencyContactName">Emergency Contact Name <span
-                                        class="required">*</span></label>
-                                <input type="text" id="emergencyContactName" name="emergencyContactName" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="emergencyContactRelation">Relationship <span
-                                        class="required">*</span></label>
-                                <select id="emergencyContactRelation" name="emergencyContactRelation" required>
-                                    <option value="">Select relationship</option>
-                                    <option value="spouse">Spouse</option>
-                                    <option value="parent">Parent</option>
-                                    <option value="sibling">Sibling</option>
-                                    <option value="child">Child</option>
-                                    <option value="friend">Friend</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
+                            <label for="email">Email Address <span class="required">*</span></label>
+                            <input type="email" id="email" name="email" required placeholder="e.g. admin@school.com">
                         </div>
 
                         <div class="form-group">
-                            <label for="emergencyContactPhone">Emergency Contact Phone <span
-                                    class="required">*</span></label>
-                            <input type="tel" id="emergencyContactPhone" name="emergencyContactPhone" required>
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" placeholder="e.g. +1 234 567 8900">
                         </div>
-                    </div>
 
-                    <!-- Step 3: Review & Submit -->
-                    <div class="step" id="step3">
-                        <h2>Review Your Information</h2>
-                        <p>Please review all details before submitting</p>
-
-                        <div id="reviewContent"
-                            style="background: #f8fafc; padding: 24px; border-radius: 8px; margin: 20px 0;">
-                            <!-- Review content populated by JavaScript -->
-                            <p><strong>Name:</strong> <span id="reviewName"></span></p>
-                            <p><strong>Email:</strong> <span id="reviewEmail"></span></p>
-                            <p><strong>Phone:</strong> <span id="reviewPhone"></span></p>
+                        <div class="form-group">
+                            <label for="role">Role <span class="required">*</span></label>
+                            <select id="role" name="role" required>
+                                <option value="School Admin">School Admin</option>
+                                <option value="Super Admin">Super Admin</option>
+                                <option value="Editor">Editor</option>
+                            </select>
                         </div>
                     </div>
 
                     <!-- Success Message -->
-                    <div class="step" id="successStep">
+                    <div class="step" id="successStep" style="display: none;">
                         <div class="success-message">
                             <div class="success-icon"><i class="fa fa-check"></i></div>
                             <h2>Registration Successful!</h2>
-                            <p>Welcome to our school administration team! Your registration has been submitted for HR
-                                review. You
-                                will receive confirmation within 2-3 business days.</p>
+                            <p>The new school admin has been successfully added to the system.</p>
                             <button type="button" class="btn btn-primary" onclick="location.reload()"
-                                style="margin-top: 20px;">Register Another Admin</button>
+                                style="margin-top: 20px;">Add Another Admin</button>
                         </div>
                     </div>
-                    <div id="errorStep" class="step">
+
+                    <div id="errorStep" class="step" style="display: none;">
                         <div class="error-message" style="text-align: center; padding: 40px;">
                             <i class="fa fa-exclamation-circle"
                                 style="font-size: 48px; color: #ef4444; margin-bottom: 20px;"></i>
                             <h2>Registration Failed</h2>
-                            <p id="errorMessage">The server rejected the registration. The email might already be in
-                                use.</p>
+                            <p id="errorMessage">The server rejected the registration.</p>
 
                             <button type="button" class="btn btn-secondary" id="backToEditBtn"
                                 style="margin-top: 20px;">
@@ -178,12 +74,9 @@
                             </button>
                         </div>
                     </div>
+
                     <div class="buttons">
-                        <button type="button" class="btn btn-secondary" id="prevBtn"
-                            style="display: none;">Previous</button>
-                        <button type="button" class="btn btn-primary" id="nextBtn">Next</button>
-                        <button type="submit" class="btn btn-primary" id="submitBtn" style="display: none;">Submit
-                            Registration</button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">Register Admin</button>
                     </div>
                 </form>
             </div>
@@ -389,74 +282,24 @@
             });
         }
 
-        // Multi-Step Form Logic
-        const nextBtn = document.getElementById('nextBtn');
-        const prevBtn = document.getElementById('prevBtn');
+        // Form Handling Logic
+        const adminForm = document.getElementById('adminForm');
         const submitBtn = document.getElementById('submitBtn');
-        const steps = ['step1', 'step2', 'step3'];
-        let currentStep = 0;
+        const backToEditBtn = document.getElementById('backToEditBtn');
 
-        function updateSteps() {
-            // Hide all steps
-            steps.forEach((stepId, index) => {
-                const stepEl = document.getElementById(stepId);
-                if (stepEl) stepEl.classList.remove('active');
-
-                const indicator = document.getElementById(`indicator${index + 1}`);
-                if (indicator) indicator.classList.remove('active');
-            });
-
-            // Show current step
-            document.getElementById(steps[currentStep]).classList.add('active');
-            const currentIndicator = document.getElementById(`indicator${currentStep + 1}`);
-            if (currentIndicator) currentIndicator.classList.add('active');
-
-            // Update buttons
-            prevBtn.style.display = currentStep === 0 ? 'none' : 'block';
-
-            if (currentStep === steps.length - 1) {
-                // Review Step
-                nextBtn.style.display = 'none';
-                submitBtn.style.display = 'block';
-                populateReview();
-            } else {
-                nextBtn.style.display = 'block';
-                submitBtn.style.display = 'none';
-            }
-
-            // Update progress
-            document.getElementById('progressFill').style.width = `${((currentStep + 1) / steps.length) * 100}%`;
-        }
-
-        function populateReview() {
-            const firstName = document.getElementById('firstName').value;
-            const lastName = document.getElementById('lastName').value;
-            const email = document.getElementById('personalEmail').value;
-            const phone = document.getElementById('mobilePhone').value;
-
-            document.getElementById('reviewName').textContent = `${firstName} ${lastName}`;
-            document.getElementById('reviewEmail').textContent = email;
-            document.getElementById('reviewPhone').textContent = phone;
-        }
-
-        if (nextBtn) {
-            nextBtn.addEventListener('click', () => {
-                // Basic validation could go here
-                if (currentStep < steps.length - 1) {
-                    currentStep++;
-                    updateSteps();
-                }
+        // Form Submission
+        if (adminForm) {
+            adminForm.addEventListener('submit', async function (e) {
+                // The actual submission logic is handled in schooladminsForm.js
+                // This block is just to prevent default if listeners aren't attached yet/properly
+                // But since we import schooladminsForm.js type=module, it handles the listener.
+                // We keep this minimal or remove if conflict. 
+                // Actually, let's remove the inline script logic for steps that was here 
+                // and rely on schooladminsForm.js to attach the submit listener.
+                // However, we need to ensure the module is working.
             });
         }
 
-        if (prevBtn) {
-            prevBtn.addEventListener('click', () => {
-                if (currentStep > 0) {
-                    currentStep--;
-                    updateSteps();
-                }
-            });
-        }
     </script>
 </body>
 
