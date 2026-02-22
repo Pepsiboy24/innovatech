@@ -49,12 +49,13 @@ body {
 }
 
 .navOpenIcon {
-    /* background-color: #fff; */
-    color: #000;
+    color: #2d3748;
     cursor: pointer;
-    border-radius: 6px;
+    border-radius: 8px;
     background-color: #fff;
     border: 1px solid #e2e8f0;
+    /* Hide on desktop — sidebar is always visible */
+    display: none;
 }
 
 /* Stats Cards */
@@ -324,6 +325,48 @@ body {
     transform: translateX(0);
 }
 
+/* Header layout */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    gap: 16px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.notification-btn {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    color: #4a5568;
+    transition: background 0.2s;
+}
+
+.notification-btn:hover {
+    background: #f7fafc;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .sidebar {
@@ -333,5 +376,11 @@ body {
 
     .main-content {
         margin-left: 0;
+        padding: 80px 16px 24px;
+    }
+
+    /* Show hamburger on mobile */
+    .navOpenIcon {
+        display: flex !important;
     }
 }

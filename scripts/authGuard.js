@@ -59,5 +59,5 @@ import { supabase } from './config.js';
 
 function redirectToLogin() {
     console.log('Redirecting to login...');
-    window.location.href = '../../html/login.html';
+    window.location.href = '../../index.html';
 }

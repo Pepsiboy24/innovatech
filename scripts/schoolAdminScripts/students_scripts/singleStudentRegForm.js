@@ -1,15 +1,6 @@
 import { registerNewStudent } from "./singleStudentRegScript.js";
+import { supabaseClient } from './supabase_client.js';
 
-// --- 1. Supabase Configuration ---
-const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
-
-// Ensure Supabase is available
-const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-
-if (!supabaseClient) {
-  console.error("Supabase client not loaded. Make sure the CDN script is in your HTML.");
-}
 
 // --- 2. Existing Form Logic ---
 let currentStep = 1;
@@ -76,7 +67,7 @@ function showStep(step) {
 // --- UPDATED VALIDATION LOGIC ---
 function validateStep(step) {
   let isValid = true;
-  
+
   // Get "Today" with time stripped out for accurate date comparison
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -106,15 +97,15 @@ function validateStep(step) {
     // Date of Birth Validation (Check Future)
     const dobError = document.getElementById("dobError");
     if (!dateOfBirth.value) {
-      if(dobError) dobError.textContent = "Date of Birth is required";
+      if (dobError) dobError.textContent = "Date of Birth is required";
       showError("dobError");
       isValid = false;
     } else {
       const dobDate = new Date(dateOfBirth.value);
       if (dobDate > today) {
-         if(dobError) dobError.textContent = "Date of birth cannot be in the future";
-         showError("dobError");
-         isValid = false;
+        if (dobError) dobError.textContent = "Date of birth cannot be in the future";
+        showError("dobError");
+        isValid = false;
       } else {
         hideError("dobError");
       }
@@ -144,14 +135,14 @@ function validateStep(step) {
     // Admission Date Validation (Check Past)
     const admitError = document.getElementById("admissionDateError");
     if (!admissionDate.value) {
-      if(admitError) admitError.textContent = "Admission Date is required";
+      if (admitError) admitError.textContent = "Admission Date is required";
       showError("admissionDateError");
       isValid = false;
     } else {
       const admitDate = new Date(admissionDate.value);
       // Check if admission date is strictly before today
       if (admitDate < today) {
-        if(admitError) admitError.textContent = "Admission date cannot be in the past";
+        if (admitError) admitError.textContent = "Admission date cannot be in the past";
         showError("admissionDateError");
         isValid = false;
       } else {
@@ -218,17 +209,16 @@ function populateReview() {
                 <p><strong>Full Name:</strong> ${fullName}</p>
                 <p><strong>Email:</strong> ${email}</p>
                 <p><strong>Date of Birth:</strong> ${new Date(
-                  dateOfBirth
-                ).toLocaleDateString()}</p>
-                <p><strong>Gender:</strong> ${
-                  gender.charAt(0).toUpperCase() + gender.slice(1)
-                }</p>
+    dateOfBirth
+  ).toLocaleDateString()}</p>
+                <p><strong>Gender:</strong> ${gender.charAt(0).toUpperCase() + gender.slice(1)
+    }</p>
                 
                 <h3 style="margin: 24px 0 16px; color: #1e293b;">Academic Details</h3>
                 <p><strong>Class:</strong> ${classText}</p>
                 <p><strong>Admission Date:</strong> ${new Date(
-                  admissionDate
-                ).toLocaleDateString()}</p>
+      admissionDate
+    ).toLocaleDateString()}</p>
             `;
 
   return {
@@ -243,7 +233,7 @@ function populateReview() {
 
 const resetBtn = document.querySelector("[data-resetBtn]")
 if (resetBtn) {
-    resetBtn.addEventListener("click", resetForm)
+  resetBtn.addEventListener("click", resetForm)
 }
 
 function resetForm() {
@@ -278,14 +268,14 @@ document
 
       // Pass the classId and gender to your registration function
       const registrationResult = await registerNewStudent(
-          fullName,
-          email,
-          "123456",
-          dateOfBirth,
-          admissionDate,
-          profilePicUrl,
-          classId,
-          gender
+        fullName,
+        email,
+        "123456",
+        dateOfBirth,
+        admissionDate,
+        profilePicUrl,
+        classId,
+        gender
       );
 
       if (registrationResult) {
@@ -294,8 +284,8 @@ document
         document.querySelector(".buttons").style.display = "none";
 
         if (typeof window.refreshStudentList === 'function') {
-            console.log("🔄 Refreshing student table...");
-            window.refreshStudentList();
+          console.log("🔄 Refreshing student table...");
+          window.refreshStudentList();
         }
       } else {
         console.error("Registration failed. Please try again.");
@@ -306,32 +296,32 @@ document
 // --- 3. Populate Class Dropdown ---
 
 async function populateClassDropdown(elementId) {
-    const dropdown = document.getElementById(elementId);
-    if (!dropdown) return;
+  const dropdown = document.getElementById(elementId);
+  if (!dropdown) return;
 
-    try {
-        const { data: classes, error } = await supabaseClient
-            .from('Classes')
-            .select('class_id, class_name, section')
-            .order('class_name', { ascending: true });
+  try {
+    const { data: classes, error } = await supabaseClient
+      .from('Classes')
+      .select('class_id, class_name, section')
+      .order('class_name', { ascending: true });
 
-        if (error) throw error;
+    if (error) throw error;
 
-        dropdown.innerHTML = '<option value="">Select a Class</option>';
+    dropdown.innerHTML = '<option value="">Select a Class</option>';
 
-        classes.forEach(cls => {
-            const option = document.createElement('option');
-            option.value = cls.class_id; 
-            option.textContent = `${cls.class_name} ${cls.section}`; 
-            dropdown.appendChild(option);
-        });
-        
-        console.log("✅ Classes loaded successfully.");
+    classes.forEach(cls => {
+      const option = document.createElement('option');
+      option.value = cls.class_id;
+      option.textContent = `${cls.class_name} ${cls.section}`;
+      dropdown.appendChild(option);
+    });
 
-    } catch (err) {
-        console.error("Error loading classes:", err.message);
-        dropdown.innerHTML = '<option value="">Error loading classes</option>';
-    }
+    console.log("✅ Classes loaded successfully.");
+
+  } catch (err) {
+    console.error("Error loading classes:", err.message);
+    dropdown.innerHTML = '<option value="">Error loading classes</option>';
+  }
 }
 
 

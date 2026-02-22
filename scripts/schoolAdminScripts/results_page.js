@@ -403,14 +403,85 @@ async function handleSaveResults(e) {
     }
 }
 
-// --- Grading Settings Logic (Read-Only) ---
+// --- Grading Settings Logic ---
+
+function loadGradingSettings() {
+    const defaultMaxScore = localStorage.getItem('grade_settings_max_score');
+    const gradeScale = localStorage.getItem('grade_settings_scale') || 'waec';
+    const passMark = localStorage.getItem('grade_settings_pass_mark');
+
+    // Populate Modal Fields
+    const maxScoreInput = document.getElementById('settingsMaxScore');
+    const gradeScaleSelect = document.getElementById('settingsGradeScale');
+    const passMarkInput = document.getElementById('settingsPassMark');
+
+    if (maxScoreInput) maxScoreInput.value = defaultMaxScore || '';
+    if (gradeScaleSelect) gradeScaleSelect.value = gradeScale;
+    if (passMarkInput) passMarkInput.value = passMark || '';
+
+    // Apply to Main Form
+    applyGradingSettings();
+}
 
 function applyGradingSettings() {
     const defaultMaxScore = localStorage.getItem('grade_settings_max_score');
 
     // Auto-fill Max Score on main form if not already set (or if we want to enforce default)
+    // For now, let's only set it if the input is empty or if we want to act as a "preset"
     const mainMaxScoreInput = document.getElementById('maxScoreInput');
     if (mainMaxScoreInput && defaultMaxScore) {
         mainMaxScoreInput.value = defaultMaxScore;
     }
+}
+
+function saveGradingSettings() {
+    const maxScore = document.getElementById('settingsMaxScore').value;
+    const gradeScale = document.getElementById('settingsGradeScale').value;
+    const passMark = document.getElementById('settingsPassMark').value;
+
+    localStorage.setItem('grade_settings_max_score', maxScore);
+    localStorage.setItem('grade_settings_scale', gradeScale);
+    localStorage.setItem('grade_settings_pass_mark', passMark);
+
+    alert('Grading configuration saved!');
+    window.toggleSettingsModal(); // Close modal
+    applyGradingSettings(); // Refresh UI
+}
+
+
+// Hook into initialization
+const originalInitialize = window.initializeUploadResults || initializeUploadResults;
+
+// We need to override or hook into the event listeners.
+// Since initializeUploadResults is defined in this module and exported/used, 
+// strictly speaking, we are inside the module.
+// We can just call setupSettingsEventListeners from setupEventListeners or init.
+
+// Let's modify setupEventListeners to include settings listeners
+// But since I am appending code, I can't easily modify the middle of the file without replacing it.
+// Instead, I will append a new setup block and call it.
+
+function setupSettingsEventListeners() {
+    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+    const settingsBtn = document.getElementById('settingsBtn');
+
+    if (saveSettingsBtn) {
+        saveSettingsBtn.addEventListener('click', saveGradingSettings);
+    }
+
+    // settingsBtn listener is technically handled by onclick="toggleSettingsModal()" in HTML 
+    // but better to have it here if we removed onclick. 
+    // The HTML has onclick="toggleSettingsModal()", which is global. 
+    // Since this is a module, window.toggleSettingsModal was defined in the HTML script tag.
+    // So that part is fine.
+
+    // Load settings on startup
+    loadGradingSettings();
+}
+
+// Initialize settings listeners when DOM is ready (or immediately if already ready)
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupSettingsEventListeners);
+} else {
+    setupSettingsEventListeners();
 }

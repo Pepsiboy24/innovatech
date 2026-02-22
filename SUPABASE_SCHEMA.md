@@ -366,3 +366,36 @@ max_score (smallint / int2) — NOT NULL — e.g., 20
 term (text) — NOT NULL — e.g., 'First Term'
 academic_session (text) — NOT NULL
 created_at (timestamptz) — default: now()
+
+Lesson_Notes
+Schema: public
+
+RLS: enabled
+
+Rows: (existing)
+
+Primary key: (existing primary key)
+
+Columns: (list columns here — copy from your current schema if you want exact names/types)
+
+e.g., id (uuid)
+e.g., lesson_id (uuid)
+e.g., content (text)
+created_at (timestamptz)
+uploaded_by (uuid)
+(adjust to match your actual columns)
+Row-Level Security (policies)
+
+"Enable read access for all users"
+Operation: SELECT
+Applies to: public (no role restriction)
+USING clause: true
+Effect: Any user (including unauthenticated/anon) can read Lesson_Notes rows.
+"Teachers can insert notes"
+Operation: INSERT
+Applies to: authenticated
+WITH CHECK clause: true
+Effect: Only logged-in users (any authenticated user) can insert new Lesson_Notes rows.
+(Note: this policy allows all authenticated users — if you want to restrict inserts to teachers/admins only, change the TO clause or WITH CHECK to validate a role claim, e.g.:
+TO authenticated USING (...) AND (auth.jwt() ->> 'role') = 'teacher'
+or WITH CHECK ((auth.jwt() ->> 'role') IN ('teacher','admin')))

@@ -5,16 +5,27 @@
     border-right: 1px solid #e9ecef;
     padding: 24px 0;
     position: fixed;
+    top: 0;
+    left: 0;
     height: 100vh;
     overflow-y: auto;
     transition: transform 0.3s ease;
-    z-index: 1000;
+    z-index: 1001;
     display: flex;
     flex-direction: column;
 }
 
-.sidebar.mobile-hidden {
-    transform: translateX(-100%);
+/* Sidebar Overlay (dark backdrop on mobile) */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+}
+
+.sidebar-overlay.active {
+    display: block;
 }
 
 .sidebar .logo {
@@ -27,7 +38,8 @@
 
 .sidebar-menu {
     list-style: none;
-    margin-bottom: auto; /* Push user section to bottom */
+    margin-bottom: auto;
+    /* Push user section to bottom */
 }
 
 .sidebar-menu li {
@@ -119,10 +131,64 @@
         top: 0;
         left: 0;
         bottom: 0;
-        box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
     }
 
-    .sidebar.active {
+    /* Both .active and .show work to open the sidebar */
+    .sidebar.active,
+    .sidebar.show {
         transform: translateX(0);
+    }
+}
+
+/* ===== Mobile top bar (used when page doesn't use sidebar header) ===== */
+.mobile-top-bar {
+    display: none;
+    background: #ffffff;
+    padding: 12px 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.mobile-top-bar .brand {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a202c;
+}
+
+.hamburger-btn {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    cursor: pointer;
+    padding: 6px;
+}
+
+.hamburger-btn span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: #2d3748;
+    border-radius: 2px;
+    transition: all 0.3s;
+}
+
+@media (max-width: 768px) {
+    .mobile-top-bar {
+        display: flex;
     }
 }

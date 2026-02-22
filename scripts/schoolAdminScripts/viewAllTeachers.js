@@ -1,8 +1,5 @@
-const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
-const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
+import { supabaseClient } from '../supabase_client.js';
 
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Function to fetch all teachers from Supabase
 async function fetchTeachers() {
@@ -190,8 +187,8 @@ function filterTeachers(teachers, searchTerm) {
         const email = (teacher.personal_email || '').toLowerCase();
 
         return fullName.includes(term) ||
-               teacherId.includes(term) ||
-               email.includes(term);
+            teacherId.includes(term) ||
+            email.includes(term);
     });
 }
 
@@ -238,7 +235,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Set up search functionality
     const searchInput = document.querySelector('.search-input');
     if (searchInput) {
-        searchInput.addEventListener('input', function() {
+        searchInput.addEventListener('input', function () {
             currentSearchTerm = this.value.trim();
             applyFilters();
         });
@@ -248,7 +245,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const filterTabs = document.querySelectorAll('.filter-tab');
     if (filterTabs.length > 0) {
         filterTabs.forEach(tab => {
-            tab.addEventListener('click', function() {
+            tab.addEventListener('click', function () {
                 // Remove active class from all tabs
                 filterTabs.forEach(t => t.classList.remove('active'));
                 // Add active class to clicked tab
