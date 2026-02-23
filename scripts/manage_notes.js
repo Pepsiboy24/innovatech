@@ -285,7 +285,7 @@ async function bootstrap() {
 
     // 5. Teacher filter
     if (currentRole === 'TEACHER') {
-        query = query.eq('uploaded_by', user.id);
+        query = query.eq('teacher_id', user.id);
     }
 
     const { data, error } = await query;

@@ -2,14 +2,17 @@
 <html lang="en">
 
 <head>
-    <!-- <script type="module" src="../../scripts/authGuard.js"></script> -->
+    <script type="module" src="../../scripts/auth_guard_shared.js" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Notes – EduHub</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Admin portal styles (sidebar + layout) -->
     <link rel="stylesheet" href="../../styles/schoolAdminStyles/schoolAdminDashboard.css">
-    <script type="module" src="../../scripts/manage_notes_sidebar.js"></script>
+    <!-- Teacher portal styles (sidebar + layout) -->
+    <link rel="stylesheet" href="../../styles/teachersPortalStyles/teachersPortal.css">
+    <link rel="stylesheet" href="../../styles/teachersPortalStyles/sidebar.css">
     <style>
         /* ── Local overrides ───────────────────────────────────── */
         .meta-bar {
@@ -301,6 +304,7 @@
 
     <!-- Data script (ES module) -->
     <script type="module" src="../../scripts/manage_notes.js"></script>
+    <script type="module" src="../../scripts/manage_notes_sidebar.js"></script>
 </body>
 
 </html>
