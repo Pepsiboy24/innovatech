@@ -4,57 +4,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduHub - Student Portal</title>
+    <title>EduHub - Student Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../../styles/studentsPortalStyles/studentPortal.css">
+    <!-- Auth Guard: must load before page content renders -->
+    <script type="module" src="../../scripts/auth_guard_student.js" defer></script>
 </head>
 
 <body>
     <div class="container">
-        <!-- Sidebar -->
-        <aside class="sidebar" data-nav>
-            <div class="sidebar-header">
-                <h2>EduHub</h2>
-            </div>
-            <nav class="sidebar-nav">
-                <a href="#" class="nav-item active">
-                    <i class="fas fa-home"></i>
-                    Dashboard
-                </a>
-                <a href="./studentClasses.html" class="nav-item">
-                    <i class="fas fa-calendar-alt"></i>
-                    Classes
-                </a>
-                <a href="./studyMaterials.html" class="nav-item">
-                    <i class="fas fa-book"></i>
-                    Study Materials
-                </a>
-                <a href="#" class="nav-item">
-                    <i class="fas fa-users"></i>
-                    Social
-                </a>
-            </nav>
-        </aside>
+        <!-- Dynamic Sidebar Anchor -->
+        <div id="sidebarAnchor"></div>
 
         <!-- Main Content -->
         <main class="main-content">
             <!-- Header -->
             <header class="header">
                 <div class="welcome-section">
-                    <h1>Welcome back, <span>Alex!</span></h1>
-                    <p>Keep up the great work!</p>
+                    <h1>Welcome back, <span id="studentName">Student</span>!</h1>
+                    <p id="newNotesMsg">Loading your dashboard…</p>
                 </div>
                 <div class="header-actions">
-                    <button class="notification-btn">
+                    <button class="notification-btn" aria-label="Notifications">
                         <i class="fas fa-bell"></i>
                     </button>
-                    <button class="profile-btn">
-                        A
-                    </button>
-                    <button class="nav-btn" data-nav-display>
+                    <button class="profile-btn" id="profileInitial">S</button>
+                    <button class="nav-btn" data-nav-display aria-label="Toggle menu">
                         <i class="fa fa-bars" data-ie></i>
                     </button>
                 </div>
@@ -67,7 +45,7 @@
                         <i class="fas fa-certificate"></i>
                     </div>
                     <div class="stat-label">Rank</div>
-                    <div class="stat-value" id="rankValue">-</div>
+                    <div class="stat-value" id="rankValue">—</div>
                     <div class="stat-description">In Class</div>
                 </div>
                 <div class="stat-card">
@@ -75,218 +53,91 @@
                         <i class="fas fa-trophy"></i>
                     </div>
                     <div class="stat-label">Points</div>
-                    <div class="stat-value" id="pointsValue">-</div>
+                    <div class="stat-value" id="pointsValue">—</div>
                     <div class="stat-description">Total Points</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon badges">
-                        <i class="fas fa-medal"></i>
+                    <div class="stat-icon subjects">
+                        <i class="fas fa-layer-group"></i>
                     </div>
-                    <div class="stat-label">Badges</div>
-                    <div class="stat-value" id="badgesValue">-</div>
-                    <div class="stat-description">Earned</div>
+                    <div class="stat-label">Subjects</div>
+                    <div class="stat-value" id="subjectsCount">—</div>
+                    <div class="stat-description">Enrolled</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon achievements">
-                        <i class="fas fa-star"></i>
+                    <div class="stat-icon today">
+                        <i class="fas fa-calendar-day"></i>
                     </div>
-                    <div class="stat-label">Achievements</div>
-                    <div class="stat-value" id="achievementsValue">-</div>
-                    <div class="stat-description">Unlocked</div>
+                    <div class="stat-label">Today</div>
+                    <div class="stat-value" id="todayClasses">—</div>
+                    <div class="stat-description">Classes</div>
                 </div>
             </div>
 
-            <!-- Upcoming Classes -->
-            <section class="section">
-                <div class="section-header">
-                    <h2 class="section-title">Upcoming Classes (Today)</h2>
-                </div>
-                <div class="classes-grid" id="upcomingClassesGrid">
-                    <p style="text-align:center; width:100%; color:#666;">Loading schedule...</p>
-                </div>
-            </section>
+            <!-- Two-column layout -->
+            <div class="dashboard-grid">
 
-            <!-- Timetable Preview -->
-            <section class="section">
-                <div class="section-header">
-                    <h2 class="section-title">Timetable</h2>
-                    <a href="./schedule.html" class="view-all-btn">View Full Timetable</a>
-                </div>
-                <div class="timetable-preview">
-                    <!-- Preview content can remain static or be dynamic later -->
-                    <div class="day-preview">
-                        <h4>Today</h4>
-                        <div class="time-slot">
-                            <span class="time">8:00 AM</span>
-                            <span class="subject">Math</span>
-                        </div>
-                        <div class="time-slot">
-                            <span class="time">9:00 AM</span>
-                            <span class="subject">English</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
+                <!-- LEFT COLUMN -->
+                <div class="dashboard-col-main">
 
-            <!-- AI Study Buddy -->
-            <section class="ai-buddy">
-                <div class="ai-header">
-                    <h3 class="ai-title">AI Study Buddy</h3>
-                    <i class="fas fa-robot"></i>
-                </div>
-                <div class="ai-chat-container">
-                    <div class="ai-messages" id="aiMessages">
-                        <div class="ai-message ai-response">
-                            <div class="message-avatar">
-                                <i class="fas fa-robot"></i>
-                            </div>
-                            <div class="message-content">
-                                <p>Hello! I'm your AI Study Buddy. Ask me anything about your studies!</p>
-                            </div>
+                    <!-- Upcoming Classes Today -->
+                    <section class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">Today's Classes</h2>
+                            <a href="./schedule.html" class="view-all-btn">Full Schedule</a>
                         </div>
-                    </div>
-                    <div class="ai-input-container">
-                        <input type="text" class="ai-input" id="aiInput"
-                            placeholder="Ask me anything about your studies...">
-                        <button class="ask-ai-btn" id="askAiBtn">Ask AI</button>
-                    </div>
-                </div>
-            </section>
+                        <!-- Skeleton -->
+                        <div id="upcomingClassesSkeleton" class="classes-grid">
+                            <div class="skeleton skeleton-card"></div>
+                            <div class="skeleton skeleton-card"></div>
+                            <div class="skeleton skeleton-card"></div>
+                        </div>
+                        <div id="upcomingClassesGrid" class="classes-grid" style="display:none;"></div>
+                    </section>
 
-            <!-- Bottom Section -->
-            <div class="bottom-section">
-                <!-- Class Leaderboard -->
-                <section class="section">
-                    <div class="section-header">
-                        <h2 class="section-title">Class Leaderboard</h2>
-                    </div>
-                    <div id="classLeaderboard">
-                        <p style="text-align:center; color:#666;">Loading leaderboard...</p>
-                    </div>
-                </section>
+                    <!-- My Subjects -->
+                    <section class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">My Subjects</h2>
+                            <a href="./studentClasses.html" class="view-all-btn">View All</a>
+                        </div>
+                        <!-- Skeleton -->
+                        <div id="subjectsSkeleton" class="subjects-grid">
+                            <div class="skeleton skeleton-subject"></div>
+                            <div class="skeleton skeleton-subject"></div>
+                            <div class="skeleton skeleton-subject"></div>
+                            <div class="skeleton skeleton-subject"></div>
+                        </div>
+                        <div id="subjectsGrid" class="subjects-grid" style="display:none;"></div>
+                    </section>
 
-                <!-- Social Feed -->
-                <section class="section">
-                    <div class="section-header">
-                        <h2 class="section-title">Social Feed</h2>
-                    </div>
-                    <div class="feed-item">
-                        <div class="feed-header">
-                            <div class="user-avatar">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <div>
-                                <span class="feed-user">Emma Wilson</span>
-                                <div class="feed-time">10 mins ago</div>
-                            </div>
+                </div>
+
+                <!-- RIGHT COLUMN — Live Activity Feed -->
+                <div class="dashboard-col-side">
+                    <section class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">Latest Updates</h2>
                         </div>
-                        <div class="feed-content">
-                            Anyone want to join our study group for tomorrow's math test?
+                        <!-- Skeleton -->
+                        <div id="activitySkeleton">
+                            <div class="skeleton skeleton-activity"></div>
+                            <div class="skeleton skeleton-activity"></div>
+                            <div class="skeleton skeleton-activity"></div>
+                            <div class="skeleton skeleton-activity"></div>
+                            <div class="skeleton skeleton-activity"></div>
                         </div>
-                        <div class="feed-reactions">
-                            <div class="reaction">
-                                <i class="fas fa-heart"></i>
-                                <span>12</span>
-                            </div>
-                            <div class="reaction">
-                                <i class="fas fa-comment"></i>
-                                <span>5</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </div>
+                        <div id="activityFeed" style="display:none;"></div>
+                    </section>
+                </div>
+
+            </div><!-- /.dashboard-grid -->
         </main>
     </div>
-    <script>
-        const navOpen = document.querySelector("[data-nav-display]");
-        const nav = document.querySelector("[data-nav]");
-        const icon = document.querySelector("[data-ie]");
 
-        if (navOpen) {
-            navOpen.addEventListener("click", () => {
-                icon.classList.toggle("fa-bars");
-                icon.classList.toggle("fa-times");
-                nav.classList.toggle("show");
-            });
-        }
-
-        // AI Study Buddy functionality
-        const aiInput = document.getElementById('aiInput');
-        const askAiBtn = document.getElementById('askAiBtn');
-        const aiMessages = document.getElementById('aiMessages');
-
-        // Predefined AI responses
-        const aiResponses = {
-            "math": "Mathematics is the study of numbers, quantities, and shapes. For algebra, remember that variables represent unknown values. Need help with a specific problem?",
-            "english": "English literature involves analyzing texts, understanding themes, and improving writing skills. Reading regularly helps build vocabulary and comprehension.",
-            "physics": "Physics studies matter, energy, and their interactions. Key concepts include Newton's laws, gravity, and thermodynamics.",
-            "chemistry": "Chemistry is about substances and their transformations. Remember the periodic table and chemical reactions!",
-            "biology": "Biology studies living organisms. Key topics include cells, genetics, evolution, and ecosystems.",
-            "default": "I'm here to help with your studies! Ask me about math, science, English, or any subject you're struggling with."
-        };
-
-        function addMessage(content, isUser = false) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `ai-message ${isUser ? 'user-message' : 'ai-response'}`;
-
-            if (!isUser) {
-                messageDiv.innerHTML = `
-                    <div class="message-avatar">
-                        <i class="fas fa-robot"></i>
-                    </div>
-                    <div class="message-content">
-                        <p>${content}</p>
-                    </div>
-                `;
-            } else {
-                messageDiv.innerHTML = `
-                    <div class="message-content user-content">
-                        <p>${content}</p>
-                    </div>
-                    <div class="message-avatar user-avatar-msg">
-                        <i class="fas fa-user"></i>
-                    </div>
-                `;
-            }
-
-            aiMessages.appendChild(messageDiv);
-            aiMessages.scrollTop = aiMessages.scrollHeight;
-        }
-
-        function getAiResponse(question) {
-            const lowerQuestion = question.toLowerCase();
-            for (const [key, response] of Object.entries(aiResponses)) {
-                if (lowerQuestion.includes(key) && key !== 'default') {
-                    return response;
-                }
-            }
-            return aiResponses.default;
-        }
-
-        if (askAiBtn) {
-            askAiBtn.addEventListener('click', () => {
-                const question = aiInput.value.trim();
-                if (question) {
-                    addMessage(question, true);
-                    setTimeout(() => {
-                        const response = getAiResponse(question);
-                        addMessage(response);
-                    }, 500);
-                    aiInput.value = '';
-                }
-            });
-        }
-
-        if (aiInput) {
-            aiInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    askAiBtn.click();
-                }
-            });
-        }
-    </script>
+    <script type="module" src="../../scripts/student_sidebar.js"></script>
     <script type="module" src="../../scripts/studentProfileAchivement.js"></script>
+    <!-- <script type="module" src="../../scripts/config.js"></script> -->
 </body>
 
 </html>

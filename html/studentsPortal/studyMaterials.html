@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,29 +10,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../../styles/studentsPortalStyles/studyMaterials.css">
+    <!-- Auth Guard: must load before page content renders -->
+    <script type="module" src="../../scripts/auth_guard_student.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
+
 <body>
     <div class="container">
-        <aside class="sidebar" data-nav>
-            <div class="sidebar-header">
-                <h2>EduHub</h2>
-            </div>
-            <nav class="sidebar-nav">
-                <a href="./studentPortal.html" class="nav-item">
-                    <i class="fas fa-home"></i>
-                    Dashboard
-                </a>
-                <a href="./studentClasses.html" class="nav-item">
-                    <i class="fas fa-calendar-alt"></i>
-                    Classes
-                </a>
-                <a href="#" class="nav-item active">
-                    <i class="fas fa-book"></i>
-                    Study Materials
-                </a>
-            </nav>
-        </aside>
+        <!-- Dynamic Sidebar Anchor -->
+        <div id="sidebarAnchor"></div>
+        <script type="module" src="../../scripts/student_sidebar.js"></script>
 
         <main class="main-content">
             <header class="header">
@@ -47,7 +35,7 @@
                         A
                     </button>
                     <button class="nav-btn" data-nav-display>
-                      <i class="fa fa-bars" data-ie></i>
+                        <i class="fa fa-bars" data-ie></i>
                     </button>
                 </div>
             </header>
@@ -106,16 +94,22 @@
                             <p class="category-count"><span class="number" id="notes-number">0</span> books</p>
                         </div>
                         <div class="materials-list" id="notes-list">
-                            </div>
+                        </div>
                     </div>
 
-                    <div class="material-category past-papers">
+                    <div class="material-category past-papers coming-soon-card">
                         <div class="category-header">
                             <h3 class="category-title">Past Q & A</h3>
-                            <p class="category-count"><span class="number" id="papers-number">0</span> Papers</p>
+                            <div class="premium-badge">Premium</div>
                         </div>
-                        <div class="materials-list" id="papers-list">
-                            </div>
+                        <div class="materials-list" style="padding: 40px 24px; text-align: center;">
+                            <i class="fas fa-lock" style="font-size: 2.5rem; color: #cbd5e1; margin-bottom: 16px;"></i>
+                            <h4 style="color: #475569; margin-bottom: 8px; font-size: 1.1rem;">Coming Soon!</h4>
+                            <p
+                                style="color: #94a3b8; font-size: 0.95rem; line-height: 1.5; max-width: 300px; margin: 0 auto;">
+                                We are compiling an extensive database of past examination papers to help you prep. Stay
+                                tuned.</p>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -164,12 +158,14 @@
                     </div>
                     <div class="form-group">
                         <label for="materialFile">File</label>
-                        <input type="file" id="materialFile" name="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.jpg,.png,.jpeg" required>
+                        <input type="file" id="materialFile" name="file"
+                            accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.jpg,.png,.jpeg" required>
                         <small>Supported formats: PDF, DOC, DOCX, PPT, PPTX, TXT, JPG, PNG</small>
                     </div>
                     <div class="form-group">
                         <label for="materialDescription">Description (Optional)</label>
-                        <textarea id="materialDescription" name="description" rows="3" placeholder="Brief description of the material..."></textarea>
+                        <textarea id="materialDescription" name="description" rows="3"
+                            placeholder="Brief description of the material..."></textarea>
                     </div>
                     <div class="form-actions">
                         <button type="button" class="cancel-btn">Cancel</button>
@@ -180,11 +176,37 @@
         </div>
     </div>
 
-    <script>
+    <!-- Document Viewer Modal -->
+    <div id="viewerModal" class="modal">
+        <div class="modal-content"
+            style="width: 95%; max-width: 1000px; height: 90vh; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <h3 id="viewerTitle">Document Viewer</h3>
+                <span class="close-viewer"
+                    style="font-size: 24px; cursor: pointer; color: var(--text-secondary);">&times;</span>
+            </div>
+            <div class="modal-body" style="flex: 1; padding: 0; position: relative;">
+                <iframe id="viewerFrame" style="width: 100%; height: 100%; border: none;" allowfullscreen></iframe>
+                <!-- Loading State -->
+                <div id="viewerLoading"
+                    style="position: absolute; top:0; left:0; width:100%; height:100%; background:var(--card-background); display:flex; align-items:center; justify-content:center; z-index:5;">
+                    <div style="text-align:center; color: var(--text-secondary);">
+                        <i class="fas fa-circle-notch fa-spin fa-2x"
+                            style="margin-bottom:12px; color: var(--primary-color);"></i>
+                        <p>Loading document...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
         // Supabase configuration
-        const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+        const SUPABASE_URL = 'https://dzotwozhcxzkxtunmqth.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Modal functionality
         const uploadModal = document.getElementById('uploadModal');
@@ -209,6 +231,35 @@
             if (e.target === uploadModal) {
                 uploadModal.style.display = 'none';
             }
+            if (e.target === viewerModal) {
+                viewerModal.style.display = 'none';
+                viewerFrame.src = '';
+            }
+        });
+
+        // Viewer logic
+        const viewerModal = document.getElementById('viewerModal');
+        const closeViewerBtn = document.querySelector('.close-viewer');
+        const viewerFrame = document.getElementById('viewerFrame');
+        const viewerTitle = document.getElementById('viewerTitle');
+        const viewerLoading = document.getElementById('viewerLoading');
+
+        window.openViewer = function (url, title) {
+            viewerTitle.textContent = title;
+            viewerModal.style.display = 'block';
+            viewerLoading.style.display = 'flex';
+
+            viewerFrame.src = url;
+            viewerFrame.onload = () => {
+                viewerLoading.style.display = 'none';
+            };
+
+            setTimeout(() => { viewerLoading.style.display = 'none'; }, 3000);
+        };
+
+        closeViewerBtn.addEventListener('click', () => {
+            viewerModal.style.display = 'none';
+            viewerFrame.src = '';
         });
 
         // Form submission with Supabase integration
@@ -300,36 +351,61 @@
         // Load study materials from database
         async function loadStudyMaterials() {
             try {
+                // Fetch student study materials
                 const { data: materials, error } = await supabase
                     .from('study_materials')
                     .select('*')
                     .order('uploaded_at', { ascending: false });
 
+                // The Fetch Guard: Implement try-catch block logging error.hint and error.details
                 if (error) {
                     console.error('Error loading materials:', error);
-                    return;
+                    if (error.hint) console.error('Hint:', error.hint);
+                    if (error.details) console.error('Details:', error.details);
                 }
 
-                // Group materials by type
-                const groupedMaterials = {
-                    textbook: [],
-                    notes: [],
-                    'past-paper': []
-                };
+                // Fetch teacher uploaded lesson notes
+                const { data: lessonNotes, error: lessonError } = await supabase
+                    .from('Lesson_Notes')
+                    .select('*, Subjects(subject_name)')
+                    .order('created_at', { ascending: false });
 
-                materials.forEach(material => {
-                    if (groupedMaterials[material.type]) {
-                        groupedMaterials[material.type].push(material);
-                    }
-                });
+                if (lessonError) {
+                    console.error('Error loading lesson notes:', lessonError);
+                    if (lessonError.hint) console.error('Hint:', lessonError.hint);
+                }
+
+                let allMaterials = materials || [];
+
+                // Map teacher lesson notes into the same format
+                if (lessonNotes && lessonNotes.length > 0) {
+                    const mappedNotes = lessonNotes.map(ln => ({
+                        id: ln.id,
+                        title: ln.title,
+                        subject: ln.Subjects && ln.Subjects.subject_name ? ln.Subjects.subject_name : 'Unknown Subject',
+                        type: 'notes',
+                        description: 'Teacher Lesson Note',
+                        file_url: ln.file_url,
+                        file_path: '',
+                        file_size: null,
+                        file_type: 'application/pdf',
+                        uploaded_by: 'teacher',
+                        uploaded_at: ln.created_at
+                    }));
+                    allMaterials = [...allMaterials, ...mappedNotes];
+                    allMaterials.sort((a, b) => new Date(b.uploaded_at) - new Date(a.uploaded_at));
+                }
+
+                // 1. The "Catch-All" Filter: Treat anything that isn't a Past Paper as a Note/Textbook.
+                const papers = allMaterials.filter(m => m.type && m.type.toLowerCase().includes('paper'));
+                const notes = allMaterials.filter(m => !papers.includes(m));
 
                 // Update each category
-                updateMaterialsList('textbooks-list', groupedMaterials.textbook, 'textbook');
-                updateMaterialsList('notes-list', groupedMaterials.notes, 'notes');
-                updateMaterialsList('papers-list', groupedMaterials['past-paper'], 'past-paper');
+                updateMaterialsList('notes-list', notes, 'notes');
+                // Past Papers is mapped but acts as a placeholder (Coming Soon)
 
                 // Update stats
-                updateStats(materials);
+                updateStats(notes.length, papers.length);
 
             } catch (error) {
                 console.error('Error loading study materials:', error);
@@ -342,34 +418,63 @@
             if (!container) return;
 
             const iconClass = type === 'textbook' ? 'fa-book' :
-                             type === 'notes' ? 'fa-sticky-note' : 'fa-file-alt';
+                type === 'notes' ? 'fa-sticky-note' : 'fa-file-alt';
 
             if (materials.length === 0) {
                 container.innerHTML = '<p class="no-materials">No materials available yet.</p>';
             } else {
-                container.innerHTML = materials.map(material => `
+                container.innerHTML = materials.map(material => {
+                    /*
+                     * BUCKET POLICY CHECK:
+                     * Ensure that the "study-materials" bucket in your Supabase Storage has "Public" access enabled.
+                     * Also, verify that a SELECT policy is active for 'anon' or 'authenticated' users so they can read objects.
+                     */
+                    const isValidUrl = material.file_url && typeof material.file_url === 'string' && material.file_url.startsWith('http');
+
+                    let titleHtml = '';
+                    let actionHtml = '';
+
+                    if (isValidUrl) {
+                        titleHtml = `<h4 style="cursor: pointer; color: var(--primary-color); text-decoration: underline;" onclick="window.openViewer('${material.file_url}', '${material.title.replace(/'/g, "\\'")}')">${material.title}</h4>`;
+                        actionHtml = `
+                            <button class="download-btn" onclick="downloadMaterial('${material.file_url}', '${material.title.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-download"></i>
+                                Download
+                            </button>
+                        `;
+                    } else {
+                        // The "Ghost File" Fallback
+                        titleHtml = `<h4 style="color: var(--text-secondary);">${material.title}</h4>`;
+                        actionHtml = `
+                            <span style="background: #f1f5f9; color: #64748b; padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center;">
+                                <i class="fas fa-cog fa-spin" style="margin-right:6px;"></i> Processing
+                            </span>
+                        `;
+                    }
+
+                    const formatStr = material.file_type && material.file_type.includes('/') ? material.file_type.split('/')[1].toUpperCase() : 'DOC';
+                    const sizeStr = material.file_size ? (material.file_size / 1024 / 1024).toFixed(1) : '0.0';
+
+                    return `
                     <div class="material-item" data-id="${material.id}">
                         <div class="material-info">
                             <div class="material-icon">
                                 <i class="fas ${iconClass}"></i>
                             </div>
                             <div class="material-details">
-                                <h4>${material.title}</h4>
+                                ${titleHtml}
                                 <div class="material-meta">
-                                    <span class="format-tag">${material.file_type.split('/')[1].toUpperCase()}</span>
-                                    <span>${(material.file_size / 1024 / 1024).toFixed(1)}MB</span>
+                                    <span class="format-tag">${formatStr}</span>
+                                    <span>${sizeStr}MB</span>
                                 </div>
                             </div>
                         </div>
-                        <button class="download-btn" onclick="downloadMaterial('${material.file_url}', '${material.title}')">
-                            <i class="fas fa-download"></i>
-                            Download
-                        </button>
+                        ${actionHtml}
                     </div>
-                `).join('');
+                `}).join('');
             }
 
-            // Update count
+            // Update count in header
             const countElement = document.getElementById(`${type === 'past-paper' ? 'papers' : type}-number`);
             if (countElement) {
                 countElement.textContent = materials.length;
@@ -377,17 +482,13 @@
         }
 
         // Update stats
-        function updateStats(materials) {
-            const stats = {
-                textbook: materials.filter(m => m.type === 'textbook').length,
-                notes: materials.filter(m => m.type === 'notes').length,
-                'past-paper': materials.filter(m => m.type === 'past-paper').length
-            };
+        function updateStats(notesCount, papersCount) {
+            // ID Harmonization: Update central stats and ensure matching IDs
+            const notesEl = document.getElementById('notes-count');
+            if (notesEl) notesEl.textContent = notesCount;
 
-            // Update stat cards
-            document.getElementById('textbook-count').textContent = stats.textbook;
-            document.getElementById('notes-count').textContent = stats.notes;
-            document.getElementById('papers-count').textContent = stats['past-paper'];
+            const papersEl = document.getElementById('papers-count');
+            if (papersEl) papersEl.textContent = papersCount;
         }
 
         // Download material function
@@ -403,7 +504,7 @@
 
         // Search functionality
         const searchInput = document.querySelector('.search-section input');
-        searchInput.addEventListener('input', function() {
+        searchInput.addEventListener('input', function () {
             const searchTerm = this.value.toLowerCase();
             const materialItems = document.querySelectorAll('.material-item');
 
@@ -431,4 +532,5 @@
         })
     </script>
 </body>
+
 </html>

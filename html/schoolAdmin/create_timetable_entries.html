@@ -395,21 +395,147 @@
             height: 50px;
         }
 
-        /* Entries List */
-        .entries-list {
-            background: var(--bg-light);
-            border: 1px solid var(--border);
+        /* ── Weekly Grid ─────────────────────────────────────────── */
+        .grid-wrapper {
+            overflow-x: auto;
+            margin-top: 8px;
+        }
+
+        .week-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 4px;
+            min-width: 560px;
+        }
+
+        .week-table th {
+            padding: 10px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary);
+            background: var(--primary-light);
             border-radius: 8px;
-            padding: 24px;
-            min-height: 100px;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            text-align: center;
+        }
+
+        .week-table .time-col {
+            width: 72px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-gray);
+            text-align: center;
+            padding: 6px 4px;
+            white-space: nowrap;
+        }
+
+        .week-table td {
+            vertical-align: top;
+            padding: 3px;
+            min-width: 130px;
+        }
+
+        .break-cell {
+            background: #f1f5f9;
+            border-radius: 8px;
+            text-align: center;
+            color: var(--text-gray);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .1em;
+            padding: 6px;
+        }
+
+        .entry-cell {
+            background: var(--primary);
+            color: white;
+            border-radius: 10px;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: transform .15s, box-shadow .15s;
+        }
+
+        .entry-cell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .entry-cell.unsaved {
+            background: var(--warning);
+        }
+
+        .entry-subject {
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 3px;
+        }
+
+        .entry-teacher {
+            font-size: 11px;
+            opacity: .85;
+        }
+
+        .cell-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+            justify-content: flex-end;
+        }
+
+        .cell-btn {
+            background: rgba(255, 255, 255, .2);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            width: 26px;
+            height: 26px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            transition: background .15s;
+        }
+
+        .cell-btn:hover {
+            background: rgba(255, 255, 255, .35);
+        }
+
+        .cell-btn.del:hover {
+            background: rgba(239, 68, 68, .75);
+        }
+
+        .empty-cell {
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            height: 64px;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: var(--text-gray);
+            font-size: 12px;
+            gap: 4px;
+            cursor: pointer;
+            transition: all .2s;
         }
 
-        .no-entries {
-            color: var(--text-gray);
-            font-style: italic;
+        .empty-cell:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .class-badge {
+            display: inline-block;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-top: 6px;
         }
 
         /* Responsive */
@@ -465,8 +591,8 @@
             <div class="header-left">
                 <div class="icon mobile-menu-btn" data-sideBarOpen><i class="fa fa-bars"></i></div>
                 <div>
-                    <h1 class="page-title">Create Timetable Wizard</h1>
-                    <p class="page-subtitle">Step 2: Add Timetable Entries</p>
+                    <h1 class="page-title" id="pageTitle">Weekly Timetable</h1>
+                    <p class="page-subtitle" id="pageSubtitle">Loading class info&hellip;</p>
                 </div>
             </div>
             <div class="header-right">
@@ -487,22 +613,26 @@
             </div>
         </div>
 
-        <!-- Kanban Board -->
+        <!-- Weekly Grid -->
         <div class="wizard-card">
             <div class="wizard-header">
-                <h2>Timetable Kanban</h2>
-                <p id="scheduleInfo">Loading schedule configuration...</p>
+                <h2>Weekly Schedule</h2>
+                <p id="scheduleInfo">Loading schedule configuration&hellip;</p>
             </div>
 
-            <div id="kanbanContainer" style="display: flex; overflow-x: auto; gap: 16px; padding-bottom: 20px;">
-                <!-- Columns will be generated here -->
+            <div class="grid-wrapper">
+                <div id="gridContainer">
+                    <!-- Weekly table rendered here by JS -->
+                </div>
             </div>
         </div>
 
         <!-- Modal for Adding/Editing Entries -->
-        <div id="entryModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
-            <div style="background: var(--white); padding: 24px; border-radius: 8px; width: 400px; max-width: 90%;">
-                <h3 id="modalTitle">Add Entry</h3>
+        <div id="entryModal"
+            style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;align-items:center;justify-content:center;">
+            <div
+                style="background:var(--white);padding:28px;border-radius:12px;width:420px;max-width:94%;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+                <h3 id="modalTitle" style="margin-bottom:20px;font-size:18px;">Add Entry</h3>
                 <form id="entryForm">
                     <div class="form-group">
                         <label for="modalSubject">Subject *</label>
@@ -510,7 +640,6 @@
                             <option value="">-- Select Subject --</option>
                         </select>
                     </div>
-
                     <div class="form-group">
                         <label for="modalDuration">Duration (minutes) *</label>
                         <input type="number" id="modalDuration" value="40" min="1" required>
@@ -518,9 +647,18 @@
                     <input type="hidden" id="modalDay">
                     <input type="hidden" id="modalTime">
                     <input type="hidden" id="modalEntryId">
-                    <div style="display: flex; gap: 12px; margin-top: 20px;">
+
+                    <div style="display:flex;gap:10px;margin-top:24px;align-items:center;">
+                        <!-- Delete only visible for saved entries -->
+                        <button type="button" id="modalDeleteBtn" class="btn btn-secondary"
+                            style="display:none;color:var(--danger);border-color:var(--danger);"
+                            onclick="deleteCurrentEntry()">
+                            <i class="fa-solid fa-trash-can"></i> Delete
+                        </button>
+                        <div style="flex:1;"></div>
                         <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i>
+                            Save</button>
                     </div>
                 </form>
             </div>
@@ -528,7 +666,8 @@
 
         <!-- Wizard Actions -->
         <div class="wizard-actions">
-            <button type="button" class="btn btn-secondary" onclick="window.location.href='./create_timetable_setup.html'">
+            <button type="button" class="btn btn-secondary"
+                onclick="window.location.href='./create_timetable_setup.html'">
                 <i class="fa-solid fa-arrow-left"></i>
                 Back to Setup
             </button>

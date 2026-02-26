@@ -494,6 +494,7 @@ body {
         opacity: 0;
         transform: translateY(-20px) scale(0.95);
     }
+
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
@@ -621,22 +622,55 @@ body {
     cursor: not-allowed;
 }
 
+/* Premium Features */
+.premium-badge {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+.coming-soon-card {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(to bottom, #ffffff, #f8fafc);
+}
+
+.coming-soon-card::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.1) 100%);
+    opacity: 0.5;
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
     .sidebar {
         /* This is the mobile-hidden state default, visibility will be toggled by JS */
-        transform: translateX(-100%); 
+        transform: translateX(-100%);
         position: fixed;
         height: 100%;
     }
 
-    .sidebar.show { /* Using the 'show' class from the JS in the HTML */
+    .sidebar.show {
+        /* Using the 'show' class from the JS in the HTML */
         transform: translateX(0);
     }
 
     .main-content {
         margin-left: 0;
-        padding: 16px; /* Adjust padding for smaller screens */
+        padding: 16px;
+        /* Adjust padding for smaller screens */
     }
 
     .nav-btn {
@@ -657,9 +691,9 @@ body {
 
     .search-section i {
         /* Reposition search icon after changing flex direction */
-        left: 12px; 
+        left: 12px;
     }
-    
+
     .search-section input {
         /* Make search input full width */
         width: 100%;

@@ -505,7 +505,7 @@ body {
         transform: translateX(-100%);
     }
 
-    .sidebar.mobile-visible {
+    .sidebar.show {
         transform: translateX(0);
     }
 
