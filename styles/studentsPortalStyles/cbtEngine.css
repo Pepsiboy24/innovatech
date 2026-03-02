@@ -978,6 +978,17 @@ body {
         padding: 16px;
     }
 
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .header-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
     .nav-btn {
         display: flex;
     }
@@ -998,6 +1009,19 @@ body {
     margin-bottom: 24px;
     padding-bottom: 12px;
     border-bottom: 1px solid var(--border-color);
+}
+
+/* #examView { */
+/* display: none;  */
+/* } */
+
+#examView.active {
+    display: block !important;
+    /* Force display when active */
+}
+
+#resultsView.active {
+    display: block !important;
 }
 
 .correction-item {

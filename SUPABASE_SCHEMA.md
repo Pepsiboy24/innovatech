@@ -399,3 +399,116 @@ Effect: Only logged-in users (any authenticated user) can insert new Lesson_Note
 (Note: this policy allows all authenticated users — if you want to restrict inserts to teachers/admins only, change the TO clause or WITH CHECK to validate a role claim, e.g.:
 TO authenticated USING (...) AND (auth.jwt() ->> 'role') = 'teacher'
 or WITH CHECK ((auth.jwt() ->> 'role') IN ('teacher','admin')))
+
+Parents
+Description: Stores parent/guardian records for students.
+
+DDL: CREATE TABLE public."Parents" with columns:
+
+parent_id: uuid, primary key, default gen_random_uuid()
+full_name: varchar, NOT NULL
+email: varchar, UNIQUE
+phone_number: text, UNIQUE, NOT NULL
+address: text
+occupation: text
+created_at: timestamptz, default now()
+Columns:
+
+parent_id (uuid, PK, default gen_random_uuid()) — Primary key.
+full_name (varchar, NOT NULL) — Parent full name.
+email (varchar, UNIQUE) — Optional email address, unique when present.
+phone_number (text, UNIQUE, NOT NULL) — Required phone number, unique.
+address (text) — Postal address.
+occupation (text) — Parent occupation.
+created_at (timestamptz, default now()) — Record creation timestamp.
+Notes:
+
+RLS: ENABLED.
+Ensure pgcrypto (or an extension providing gen_random_uuid) is available: CREATE EXTENSION IF NOT EXISTS pgcrypto;
+Consider normalizing phone/email formats and adding CHECK constraints if needed (e.g., phone format).
+Consider specifying varchar lengths (e.g., varchar(255)) if you want stricter limits.
+Parent_Student_Links
+Description: Junction table linking parents to students (many-to-many). Prevents duplicate links via a unique constraint on (parent_id, student_id).
+
+DDL: CREATE TABLE public."Parent_Student_Links" with columns:
+
+link_id: uuid, primary key, default gen_random_uuid()
+parent_id: uuid, foreign key references public."Parents"(parent_id), ON DELETE CASCADE
+student_id: uuid, foreign key references public."Students"(student_id), ON DELETE CASCADE
+relationship: text
+created_at: timestamptz, default now()
+UNIQUE(parent_id, student_id)
+Columns:
+
+link_id (uuid, PK, default gen_random_uuid()) — Primary key.
+parent_id (uuid, FK → public."Parents"(parent_id), ON DELETE CASCADE) — Parent reference.
+student_id (uuid, FK → public."Students"(student_id), ON DELETE CASCADE) — Student reference.
+relationship (text) — Relationship type (e.g., 'Mother', 'Father', 'Guardian').
+created_at (timestamptz, default now()) — Link creation timestamp.
+Notes:
+
+RLS: ENABLED.
+This table references public."Students". Ensure the Students table exists before applying this DDL, or add the FK constraints later with ALTER TABLE if creating in a different order.
+Recommended indexes for performance if you query by these columns frequently:
+index on student_id
+index on parent_id
+Row-Level Security
+Both tables have RLS enabled.
+
+RLS state: ALTER TABLE public."Parents" ENABLE ROW LEVEL SECURITY; ALTER TABLE public."Parent_Student_Links" ENABLE ROW LEVEL SECURITY;
+
+Example policy ideas (replace with your app logic):
+
+Parents: allow authenticated users to SELECT only their own parent records using auth.uid().
+Parent_Student_Links: allow authenticated users to see links where parent_id = auth.uid() OR where student_id is associated with the auth user (replace with your student ownership mapping).
+Add INSERT/UPDATE/DELETE policies as needed for authorized operations.
+Extensions
+Required extension for gen_random_uuid: CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+Parents (updated)
+Description: Stores parent/guardian records for students. Now includes an optional link to an auth user (user account for the parent).
+
+DDL: ALTER TABLE public."Parents" to ensure user_id column exists:
+
+user_id: uuid, nullable, references auth.users(id) ON DELETE SET NULL
+Existing columns (for completeness):
+
+parent_id (uuid, PK, default gen_random_uuid()) — Primary key.
+full_name (varchar, NOT NULL) — Parent full name.
+email (varchar, UNIQUE) — Optional email address, unique when present.
+phone_number (text, UNIQUE, NOT NULL) — Required phone number, unique.
+address (text) — Postal address.
+occupation (text) — Parent occupation.
+created_at (timestamptz, default now()) — Record creation timestamp.
+user_id (uuid, FK → auth.users(id), ON DELETE SET NULL) — Optional link to an auth user account for this parent.
+Notes:
+
+The user_id column allows mapping a parent record to a Supabase Auth user. When the referenced auth.user is deleted, user_id will be set to NULL.
+If you expect many parent lookups by user account, consider an index on user_id:
+CREATE INDEX ON public."Parents"(user_id);
+RLS: when writing policies that allow parents to manage their data, check profiles.role or auth.uid() = user_id as appropriate.
+Parent_Student_Links
+Description: Junction table linking parents to students (many-to-many).
+
+Columns (summary):
+
+link_id (uuid, PK, default gen_random_uuid())
+parent_id (uuid, FK → public."Parents"(parent_id), ON DELETE CASCADE)
+student_id (uuid, FK → public."Students"(student_id), ON DELETE CASCADE)
+relationship (text)
+created_at (timestamptz, default now())
+UNIQUE(parent_id, student_id)
+Notes:
+
+Ensure the Students table exists before applying the FK or add FK constraints later if needed.
+Consider indexes on student_id and parent_id for query performance.
+Row-Level Security (RLS)
+Current RLS state (if already applied):
+
+public."Parents" — RLS ENABLED
+public."Parent_Student_Links" — RLS ENABLED
+Additions to document:
+
+When creating policies, use profiles.role and auth.uid() to implement role-based behavior. Example checks:
+To allow a parent user to SELECT their parent record: profiles.id = auth.uid() OR public."Parents".user_id = auth.uid()
+To allow teachers/admins broader access: check profiles.role IN ('teacher','admin')

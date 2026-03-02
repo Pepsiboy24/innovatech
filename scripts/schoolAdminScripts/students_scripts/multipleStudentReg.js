@@ -33,6 +33,10 @@ export async function uploadAndProcessExcel(file) {
         admission_date: row['Admission Date'] || row['admission_date'] || new Date().toISOString().split('T')[0],
         profile_picture: "https://placehold.co/150x150/e8e8e8/363636?text=Profile",
         class_input: row['Classes'] || row['classes'] || row['Class'],
+        parent_name: row['Parent Name'] || row['parent_name'] || row['Parent Full Name'] || row['Parent'],
+        parent_email: row['Parent Email'] || row['parent_email'],
+        parent_phone: row['Parent Phone'] || row['parent_phone'] || row['Parent Phone Number'],
+        relationship: row['Relationship'] || row['relationship'] || 'Guardian'
       };
 
       if (!studentData.full_name || !studentData.email) {
@@ -91,6 +95,73 @@ export async function uploadAndProcessExcel(file) {
           ]);
 
         if (insertError) throw new Error("DB: " + insertError.message);
+
+        // --- STEP B & C: Parent Auth & Link ---
+        if (studentData.parent_name && studentData.parent_phone) {
+          let finalParentId = null;
+
+          // Look up existing parent by phone
+          const { data: existingParent, error: lookupError } = await supabaseClient
+            .from("Parents")
+            .select("parent_id")
+            .eq("phone_number", studentData.parent_phone)
+            .maybeSingle();
+
+          if (existingParent && !lookupError) {
+            finalParentId = existingParent.parent_id;
+          } else {
+            // Need to create new parent
+            // If they didn't provide an email, auto-generate one to satisfy auth requirement
+            const pEmail = studentData.parent_email || `parent_${studentData.parent_phone}@eduhub.com`;
+
+            const { data: { user: parentUser }, error: parentAuthError } = await supabaseClient.auth.signUp({
+              email: pEmail,
+              password: '123456',
+            });
+
+            if (parentAuthError) {
+              // If email exists, we might need a fallback or log it. Proceeding with caution.
+              if (!parentAuthError.message.includes('already registered')) {
+                throw new Error("Parent Auth: " + parentAuthError.message);
+              }
+              console.warn(`Parent email ${pEmail} already registered, could not create parent auth.`);
+            }
+
+            const authUserId = parentUser ? parentUser.id : null;
+
+            const { data: newParentData, error: parentInsertError } = await supabaseClient
+              .from("Parents")
+              .insert([
+                {
+                  user_id: authUserId,
+                  full_name: studentData.parent_name,
+                  email: pEmail,
+                  phone_number: studentData.parent_phone,
+                  address: studentData.parent_address || null,
+                  occupation: studentData.parent_occupation || null
+                }
+              ])
+              .select("parent_id")
+              .single();
+
+            if (parentInsertError) throw new Error("Parent DB: " + parentInsertError.message);
+            finalParentId = newParentData.parent_id;
+          }
+
+          // Establish Link
+          if (finalParentId) {
+            const { error: linkError } = await supabaseClient
+              .from("Parent_Student_Links")
+              .insert([
+                {
+                  parent_id: finalParentId,
+                  student_id: user.id,
+                  relationship: studentData.relationship
+                }
+              ]);
+            if (linkError) throw new Error("Link DB: " + linkError.message);
+          }
+        }
 
         console.log(`✅ Successfully registered: ${studentData.email} (ID: ${user.id})`);
         results.push({ success: true, data: studentData, userId: user.id });

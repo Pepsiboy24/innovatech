@@ -236,6 +236,7 @@
             <button class="role-tab" data-role="student"> Student</button>
             <button class="role-tab active" data-role="teacher"> Teacher</button>
             <button class="role-tab" data-role="admin"> Admin</button>
+            <button class="role-tab" data-role="parent"> Parent</button>
             <!-- <button class="role-tab" data-role="admin">  Admin</button> -->
         </div>
 
@@ -271,6 +272,7 @@
         </p> -->
     </div>
 
+    <!-- <a href="./html/parentsPortal/parentsPortal.html"></a> -->
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -312,6 +314,9 @@
                     break;
                 case 'admin':
                     emailInput.placeholder = 'Enter your admin email';
+                    break;
+                case 'parent':
+                    emailInput.placeholder = 'Enter your parent email';
                     break;
             }
         }
@@ -381,6 +386,12 @@
                         tableName = 'Students'; // Use capital 'S' to match your screenshot
                         idColumnName = 'student_id'; // Matches your screenshot!
                         redirectUrl = './html/studentsPortal/studentPortal.html';
+                        break;
+                    case 'parent':
+                        tableName = 'Parents';
+                        // CHANGE THIS: Use 'user_id' because that's where the Auth ID is stored
+                        idColumnName = 'user_id';
+                        redirectUrl = './html/parentsPortal/parentsPortal.html';
                         break;
                     // ...
                 }

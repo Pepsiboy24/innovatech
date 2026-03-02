@@ -118,6 +118,43 @@ function validateStep(step) {
     } else {
       hideError("genderError");
     }
+
+    // Parent Validation
+    const parentFullName = document.getElementById("parentFullName");
+    if (!parentFullName.value.trim()) {
+      showError("parentFullNameError");
+      isValid = false;
+    } else {
+      hideError("parentFullNameError");
+    }
+
+    const parentEmail = document.getElementById("parentEmail");
+    let emailPatternValid = parentEmail.value.trim() !== "" && parentEmail.validity && parentEmail.validity.valid;
+    // Special check if we set it to "No Email in DB"
+    if (parentEmail.value === "No Email in DB") emailPatternValid = true;
+
+    if (!emailPatternValid) {
+      showError("parentEmailError");
+      isValid = false;
+    } else {
+      hideError("parentEmailError");
+    }
+
+    const parentPhone = document.getElementById("parentPhone");
+    if (!parentPhone.value.trim()) {
+      showError("parentPhoneError");
+      isValid = false;
+    } else {
+      hideError("parentPhoneError");
+    }
+
+    const relationship = document.getElementById("relationship");
+    if (!relationship.value) {
+      showError("relationshipError");
+      isValid = false;
+    } else {
+      hideError("relationshipError");
+    }
   }
 
   if (step === 2) {
@@ -199,6 +236,11 @@ function populateReview() {
   const gender = formData.get("gender");
   const classValue = formData.get("class"); // This is the ID (e.g., 45)
   const admissionDate = formData.get("admissionDate");
+  const parentFullName = formData.get("parentFullName");
+  const parentPhone = formData.get("parentPhone");
+  const relationship = formData.get("relationship");
+  const parentOccupation = formData.get("parentOccupation") || "";
+  const parentAddress = formData.get("parentAddress") || "";
 
   // Get the text label of the selected option (e.g., "JSS 1 A")
   const classTextOption = document.querySelector(`option[value="${classValue}"]`);
@@ -214,6 +256,11 @@ function populateReview() {
                 <p><strong>Gender:</strong> ${gender.charAt(0).toUpperCase() + gender.slice(1)
     }</p>
                 
+                <h3 style="margin: 24px 0 16px; color: #1e293b;">Parent/Guardian Details</h3>
+                <p><strong>Name:</strong> ${parentFullName}</p>
+                <p><strong>Phone:</strong> ${parentPhone}</p>
+                <p><strong>Relationship:</strong> ${relationship}</p>
+
                 <h3 style="margin: 24px 0 16px; color: #1e293b;">Academic Details</h3>
                 <p><strong>Class:</strong> ${classText}</p>
                 <p><strong>Admission Date:</strong> ${new Date(
@@ -266,6 +313,14 @@ document
 
       const profilePicUrl = "https://placehold.co/150x150/e8e8e8/363636?text=Profile";
 
+      const linkedParentId = document.getElementById("linkedParentId").value;
+      const parentFullName = document.getElementById("parentFullName").value;
+      const parentEmail = document.getElementById("parentEmail").value;
+      const parentPhone = document.getElementById("parentPhone").value;
+      const relationship = document.getElementById("relationship").value;
+      const parentOccupation = document.getElementById("parentOccupation").value;
+      const parentAddress = document.getElementById("parentAddress").value;
+
       // Pass the classId and gender to your registration function
       const registrationResult = await registerNewStudent(
         fullName,
@@ -275,7 +330,16 @@ document
         admissionDate,
         profilePicUrl,
         classId,
-        gender
+        gender,
+        {
+          linkedParentId,
+          parentFullName,
+          parentEmail,
+          parentPhone,
+          relationship,
+          parentOccupation,
+          parentAddress
+        }
       );
 
       if (registrationResult) {
@@ -335,3 +399,67 @@ showStep(currentStep);
 
 // Trigger population
 populateClassDropdown("class");
+
+const searchParentBtn = document.getElementById("searchParentBtn");
+if (searchParentBtn) {
+  // singleStudentRegForm.js - Updated Search Logic
+  searchParentBtn.addEventListener("click", async () => {
+    const phoneInput = document.getElementById("parentSearchPhone").value.trim();
+    const msgDiv = document.getElementById("parentSearchMessage");
+
+    // 1. Reset Form State immediately on click
+    const fields = ["parentFullName", "parentEmail", "parentPhone", "parentOccupation", "parentAddress", "linkedParentId"];
+    fields.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        if (id !== "parentPhone") el.value = ""; // Don't clear the phone being searched
+        el.readOnly = false; // Ensure fields are typeable for new entries
+      }
+    });
+
+    if (!phoneInput) {
+      msgDiv.textContent = "Please enter a phone number.";
+      msgDiv.style.color = "red";
+      return;
+    }
+
+    try {
+      // 2. Use maybeSingle() to prevent the 406 error we discussed
+      const { data, error } = await supabaseClient
+        .from("Parents")
+        .select("*")
+        .eq("phone_number", phoneInput)
+        .maybeSingle();
+
+      if (data) {
+        // PARENT FOUND: Lock fields
+        document.getElementById("linkedParentId").value = data.parent_id;
+        document.getElementById("parentFullName").value = data.full_name;
+        document.getElementById("parentEmail").value = data.email || "No Email in DB";
+        document.getElementById("parentPhone").value = data.phone_number;
+        document.getElementById("parentOccupation").value = data.occupation || "";
+        document.getElementById("parentAddress").value = data.address || "";
+
+        // Disable editing for existing records
+        document.getElementById("parentFullName").readOnly = true;
+        document.getElementById("parentEmail").readOnly = true;
+        document.getElementById("parentPhone").readOnly = true;
+        document.getElementById("parentOccupation").readOnly = true;
+        document.getElementById("parentAddress").readOnly = true;
+
+        msgDiv.innerHTML = `<i class="fa-solid fa-check-circle"></i> Parent found.`;
+        msgDiv.style.color = "green";
+      } else {
+        // PARENT NOT FOUND: Ensure fields are fresh and editable
+        document.getElementById("linkedParentId").value = "";
+        document.getElementById("parentPhone").value = phoneInput;
+
+        msgDiv.innerHTML = `<i class="fa-solid fa-info-circle"></i> New Parent. Please enter details.`;
+        msgDiv.style.color = "#64748b";
+      }
+    } catch (err) {
+      console.error("Search Error:", err);
+      msgDiv.textContent = "Error searching database.";
+    }
+  });
+}

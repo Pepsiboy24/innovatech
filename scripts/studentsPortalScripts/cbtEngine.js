@@ -1,5 +1,11 @@
 // Supabase client removed for Aloc.ng mock integration
 
+// --- API Configuration ---
+const CONFIG = {
+    xRapidapiKey: 'af493caabamshd4642b598aa9dedp1a6e53jsn0a63c5bf41dd', // Use your verified key
+    xRapidapiHost: 'nigeria-past-questions2.p.rapidapi.com' // Ensure the '2' is there
+};
+
 // --- State Management ---
 const testState = {
     examConfig: null, // Stores selected exam
@@ -68,16 +74,8 @@ const OPTION_PREFIXES = ['A', 'B', 'C', 'D'];
 
 // --- Event Listeners Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Nav handling
-    const navOpen = document.querySelector("[data-nav-display]");
-    const nav = document.querySelector("[data-nav]");
-    const i = document.querySelector("[data-ie]");
-    if (navOpen && nav) {
-        navOpen.addEventListener("click", () => {
-            if (i) { i.classList.toggle("fa-bars"); i.classList.toggle("fa-times"); }
-            nav.classList.toggle("show");
-        });
-    }
+    // Nav handling logic from here is removed to prevent double toggling
+    // as it is already handled by student_sidebar.js
 
     // Initialize Lobby
     initLobbyTabs();
@@ -192,7 +190,7 @@ function initLobbyTabs() {
 function openInstructionModal(title, timeSecs, examType, subjectKey) {
     testState.examConfig = { title, timeSecs, examType, subjectKey };
     document.getElementById('modalExamTitle').textContent = `${title} Simulation`;
-    document.getElementById('modalTotalQs').textContent = "10"; // Hardcoded for API limits
+    document.getElementById('modalTotalQs').textContent = "20"; // Hardcoded for API limits
     document.getElementById('modalTimeLimit').textContent = `${timeSecs / 60} minutes`;
     instructionModal.style.display = 'block';
 }
@@ -202,42 +200,47 @@ function closeInstruction() {
 }
 
 async function fetchQuestions(examType, subject) {
-    const ALOC_URL = `https://questions.aloc.ng/api/v2/q?subject=${subject}&type=${examType}`;
-    const ACCESS_TOKEN = 'ALOC-c7c91cf7e58a68d882ad';
+    const questionCount = 20;
+    const url = `https://questions.aloc.com.ng/api/v2/q/${questionCount}?subject=${subject}`;
 
     try {
-        const fetchPromises = Array.from({ length: 10 }, () =>
-            fetch(ALOC_URL, {
-                headers: {
-                    'Accept': 'application/json',
-                    'AccessToken': ACCESS_TOKEN
-                }
-            }).then(res => res.json())
-        );
+        console.log("Fetching questions from Aloc...");
 
-        const responses = await Promise.all(fetchPromises);
-
-        const normalizedQs = responses.map(res => {
-            if (!res.data) throw new Error("Invalid API response");
-            const d = res.data;
-            return {
-                id: d.id,
-                question: d.question,
-                section: d.section || null, // Passage text
-                options: [d.option.a, d.option.b, d.option.c, d.option.d],
-                answer: d.answer.toUpperCase(), // a -> A
-                solution: d.solution || "No explanation provided."
-            };
+        // 1. Await the fetch itself
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'AccessToken': 'ALOC-c7c91cf7e58a68d882ad',
+                'Accept': 'application/json'
+            }
         });
 
-        return normalizedQs;
-    } catch (err) {
-        console.error("Error fetching questions from Aloc:", err);
-        // Fallback Mock Data
-        return [
-            { id: 1, question: "Which protocol is used for secure web traffic?", options: ["HTTP", "FTP", "HTTPS", "SMTP"], answer: "C", solution: "HTTPS encrypts the session with TLS." },
-            { id: 2, question: "What does HTML stand for?", options: ["Hyper Text Markup Language", "Hyperlinks Text Mark Language", "Home Tool Markup Language", "Hyper Tool Markup Language"], answer: "A", solution: "HTML stands for Hyper Text Markup Language." }
-        ];
+        // 2. Check the status on the Response object
+        if (!response.ok) {
+            throw new Error(`HTTP Error! Status: ${response.status}`);
+        }
+
+        // 3. Await the JSON conversion
+        const json = await response.json();
+        console.log("API Data received:", json);
+
+        // 4. Validate and Map
+        if (!json.data || !Array.isArray(json.data)) {
+            throw new Error("Data format from API is not an array");
+        }
+
+        return json.data.map(q => ({
+            question: q.question,
+            options: [q.option.a, q.option.b, q.option.c, q.option.d],
+            answer: q.answer ? q.answer.toUpperCase() : 'A',
+            section: q.section || '',
+            solution: q.solution || ''
+        }));
+
+    } catch (error) {
+        console.error("Critical Fetch Error:", error);
+        // Return your fallbackData array here so the exam still starts
+        return typeof fallbackData !== 'undefined' ? fallbackData : [];
     }
 }
 
@@ -254,9 +257,18 @@ function shuffleArray(array) {
 
 // --- Phase B: Start Examination ---
 async function startExamination() {
+    // Show a small console log to track progress
+    console.log("Starting Exam Process...");
+
     let qs = await fetchQuestions(testState.examConfig.examType, testState.examConfig.subjectKey);
 
-    // Optional: Only select random subset if needed, currently shuffle all.
+    // CRITICAL FIX: If no questions are found, don't leave the screen blank
+    if (!qs || qs.length === 0) {
+        alert("Failed to load questions. Please check your internet or try another subject.");
+        resetToLobby();
+        return;
+    }
+
     testState.questions = shuffleArray([...qs]);
     testState.userAnswers = {};
     testState.flaggedQuestions = new Set();
@@ -264,15 +276,15 @@ async function startExamination() {
     testState.timeRemaining = testState.examConfig.timeSecs;
     testState.isReviewMode = false;
 
-    // UI Updates
+    // View Transitions
     lobbyView.classList.remove('active');
     resultsView.classList.remove('active');
-    examView.classList.add('active');
+    examView.classList.add('active'); // Ensure your CSS actually makes .active visible
 
     hudExamTitle.textContent = testState.examConfig.title;
     totalQNum.textContent = testState.questions.length;
-    submitExamBtn.style.display = 'block';
 
+    // Reset the UI containers before loading
     renderNavigatorGrid();
     loadQuestionUI(0);
     startTimer();
