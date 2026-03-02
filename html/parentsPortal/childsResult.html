@@ -16,10 +16,10 @@
             <div class="sidebar-header">
                 <div class="logo">EdTech</div>
                 <div class="user-info">
-                    <div class="user-avatar">JS</div>
+                    <div class="user-avatar">-</div>
                     <div class="user-details">
-                        <h4>John Smith</h4>
-                        <p>Parent of Alex Smith</p>
+                        <h4>-</h4>
+                        <p>-</p>
                     </div>
                 </div>
             </div>
@@ -61,12 +61,18 @@
                     <p>Track your child's progress and achievements</p>
                 </div>
                 <div class="header-actions">
+
                     <button class="mobile-menu-btn" onclick="toggleSidebar()">
                         <i class="fas fa-bars"></i>
                     </button>
                     <button class="notification-btn">
                         <i class="fas fa-bell"></i>
                     </button>
+                    <div class="child-selector-container">
+                        <select id="childSelector" class="child-select-dropdown">
+                            <option value="" disabled selected>Loading children...</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -91,7 +97,7 @@
                         <div class="stat-title">Class Position</div>
                     </div>
                     <div class="stat-value" id="classPosition">-</div>
-                    <div class="stat-subtitle">of 45 students</div>
+                    <div class="stat-subtitle" id="classSizeSubtitle">-</div>
                 </div>
 
                 <div class="stat-card attendance">
@@ -101,7 +107,7 @@
                         </div>
                         <div class="stat-title">Days Present</div>
                     </div>
-                    <div class="stat-value">115</div>
+                    <div class="stat-value" id="daysPresent">-</div>
                     <div class="stat-subtitle">This session</div>
                 </div>
 
@@ -112,7 +118,7 @@
                         </div>
                         <div class="stat-title">Days Absent</div>
                     </div>
-                    <div class="stat-value">7</div>
+                    <div class="stat-value" id="daysAbsent">-</div>
                     <div class="stat-subtitle">This semester</div>
                 </div>
             </div>

@@ -15,29 +15,54 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
 async function getLinkedChildId() {
-  // Ideally, we fetch the parent's linked student.
-  // Since we don't have that link, we'll fetch the first student in the DB.
-  // Or check if a student is logged in (reusing student logic for demo).
+  // 1. Get the currently logged-in parent's Auth ID
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-  // Strategy: Fetch the first student from 'Students' table to simulate "Alex Smith"
-  const { data, error } = await supabase
-    .from('Students')
-    .select('student_id, full_name')
-    .limit(1)
-    .single();
-
-  if (error || !data) {
-    console.error("Could not find a child record to link.", error);
+  if (authError || !user) {
+    console.error("No authenticated parent found.");
+    window.location.href = "../../index.html"; // Redirect to login
     return null;
   }
 
-  console.log(`Linked to child: ${data.full_name} (${data.student_id})`);
+  // 2. Find the Parent record linked to this Auth ID
+  const { data: parentRecord, error: parentError } = await supabase
+    .from('Parents')
+    .select('parent_id, full_name')
+    .eq('user_id', user.id)
+    .single();
 
-  // Update Header
-  const userDetails = document.querySelector('.user-details p');
-  if (userDetails) userDetails.textContent = `Parent of ${data.full_name}`;
+  if (parentError || !parentRecord) {
+    console.error("Could not find parent profile for this user.", parentError);
+    return null;
+  }
 
-  return data.student_id;
+  // 3. Find the first child linked to this parent in the Link table
+  const { data: linkData, error: linkError } = await supabase
+    .from('Parent_Student_Links')
+    .select(`
+      relationship,
+      Students (student_id, full_name)
+    `)
+    .eq('parent_id', parentRecord.parent_id)
+    .limit(1)
+    .single();
+
+  if (linkError || !linkData) {
+    console.error("No children linked to this parent account.", linkError);
+    return null;
+  }
+
+  const child = linkData.Students;
+  console.log(`Successfully linked to: ${child.full_name}`);
+
+  // Update UI Header
+  const parentNameEl = document.querySelector('.user-details h4');
+  const childNameEl = document.querySelector('.user-details p');
+
+  if (parentNameEl) parentNameEl.textContent = parentRecord.full_name;
+  if (childNameEl) childNameEl.textContent = `${linkData.relationship} of ${child.full_name}`;
+
+  return child.student_id;
 }
 
 
@@ -46,12 +71,12 @@ async function fetchRecentGrades(childId) {
     .from('Grades')
     .select(`
             score,
-            date_recorded,
+            created_at,
             term,
             Subjects (subject_name)
         `)
     .eq('student_id', childId)
-    .order('date_recorded', { ascending: false })
+    .order('created_at', { ascending: false })
     .limit(5);
 
   if (error) {
@@ -89,9 +114,9 @@ async function fetchOverallProgress(childId) {
   // Fetch all grades to calculate average per month or term
   const { data: grades, error } = await supabase
     .from('Grades')
-    .select('score, date_recorded')
+    .select('score, created_at')
     .eq('student_id', childId)
-    .order('date_recorded', { ascending: true });
+    .order('created_at', { ascending: true });
 
   if (error) {
     console.error('Error fetching progress:', error);
@@ -103,7 +128,7 @@ async function fetchOverallProgress(childId) {
   const monthlyData = {}; // "Jan": [85, 90], "Feb": [88]...
 
   grades.forEach(g => {
-    const date = new Date(g.date_recorded);
+    const date = new Date(g.created_at);
     const month = date.toLocaleString('default', { month: 'short' });
     if (!monthlyData[month]) monthlyData[month] = [];
     monthlyData[month].push(g.score);

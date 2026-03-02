@@ -20,7 +20,7 @@
         .sidebar {
             width: 280px;
             background: white;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
             padding: 2rem 0;
             position: fixed;
             height: 100vh;
@@ -88,7 +88,8 @@
             border-right: 3px solid transparent;
         }
 
-        .nav-link:hover, .nav-link.active {
+        .nav-link:hover,
+        .nav-link.active {
             background-color: #f1f5f9;
             color: #3b82f6;
             border-right-color: #3b82f6;
@@ -114,7 +115,7 @@
             background: white;
             padding: 1.5rem 2rem;
             border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
         .welcome-section h1 {
@@ -133,6 +134,27 @@
             display: flex;
             align-items: center;
             gap: 1rem;
+        }
+
+        .child-selector-container {
+            margin-right: 15px;
+        }
+
+        .child-select-dropdown {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background-color: #ffffff;
+            font-size: 14px;
+            font-weight: 500;
+            color: #334155;
+            cursor: pointer;
+            outline: none;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .child-select-dropdown:hover {
+            border-color: #3b82f6;
         }
 
         .notification-btn {
@@ -164,7 +186,7 @@
             background: white;
             padding: 1.5rem;
             border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             border-left: 4px solid transparent;
         }
 
@@ -243,7 +265,7 @@
         .grades-section {
             background: white;
             border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             overflow: hidden;
         }
 
