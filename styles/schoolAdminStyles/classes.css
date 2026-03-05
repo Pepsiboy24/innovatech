@@ -30,50 +30,82 @@ body {
     background: var(--bg-light);
     color: var(--text-dark);
 }
-/* Add to classes.css */
+
+/* ── View Class Modal ── */
 .modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(4px);
-    display: none; 
+    display: none;
     justify-content: center;
     align-items: center;
     z-index: 10002;
+    padding: 16px;
 }
 
 .full-view-modal {
     background: var(--white);
     border-radius: 16px;
-    width: 90%;
-    max-width: 600px;
+    width: 100%;
+    max-width: 460px;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border);
+    overflow: hidden;
 }
 
-.info-section {
-    padding: 20px;
-}
+/* Reuses the same .modal-header style as create modal — no extra CSS needed */
 
-.info-item {
+.view-modal-body {
+    padding: 24px;
     display: flex;
     flex-direction: column;
-    margin-bottom: 15px;
+    gap: 0;
 }
 
-.info-label {
-    font-size: 12px;
+.view-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.view-info-row:last-child {
+    border-bottom: none;
+}
+
+.view-info-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
     color: var(--text-gray);
     font-weight: 500;
 }
 
-.info-value {
-    font-size: 16px;
+.view-info-label i {
+    color: var(--primary);
+    width: 16px;
+    text-align: center;
+}
+
+.view-info-value {
+    font-size: 14px;
     font-weight: 600;
     color: var(--text-dark);
-}   
+    text-align: right;
+    max-width: 60%;
+}
+
+.view-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    background: var(--bg-light);
+}
+
 
 .container {
     display: flex;
@@ -227,7 +259,7 @@ body {
 
 /* Classes Section Styles */
 /* .classes-section { */
-    /* Padding handled by .main */
+/* Padding handled by .main */
 /* } */
 
 .section-header {
@@ -236,7 +268,8 @@ body {
     align-items: center;
     margin-bottom: 24px;
 }
-.header-actions{
+
+.header-actions {
     display: flex;
     gap: 5px;
 }
@@ -398,6 +431,35 @@ body {
     color: var(--primary);
 }
 
+.deleteBtn {
+    background-color: #fff5f5;
+    color: var(--danger);
+    border: 1px solid #fecaca;
+}
+
+.deleteBtn:hover {
+    background-color: var(--danger);
+    color: var(--white);
+}
+
+.deleteBtn:hover svg path {
+    fill: var(--white);
+}
+
+.deleteBtn--locked {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.deleteBtn--locked:hover {
+    background-color: #fff5f5;
+    color: var(--danger);
+}
+
+.deleteBtn--locked:hover svg path {
+    fill: #ef4444;
+}
+
 /* Modal Styles */
 .modal {
     display: none;
@@ -551,38 +613,41 @@ form {
 .dropdown-option:hover {
     background: var(--bg-light);
 }
+
 /* Container styling (adjust as needed) */
 #teacherDropdownOptions {
-  position: absolute;
-  border: 1px solid #ddd;
-  border-top: none;
-  z-index: 99;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background-color: white;
-  max-height: 200px;
-  overflow-y: auto;
-  display: none; /* Hidden by default */
+    position: absolute;
+    border: 1px solid #ddd;
+    border-top: none;
+    z-index: 99;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: white;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    /* Hidden by default */
 }
 
 /* Individual item styling */
 #teacherDropdownOptions div {
-  padding: 10px;
-  cursor: pointer;
-  background-color: #fff;
-  border-bottom: 1px solid #f1f1f1;
+    padding: 10px;
+    cursor: pointer;
+    background-color: #fff;
+    border-bottom: 1px solid #f1f1f1;
 }
 
 /* Hover effect for mouse */
 #teacherDropdownOptions div:hover {
-  background-color: #e9e9e9;
+    background-color: #e9e9e9;
 }
 
 /* Active effect for Keyboard Arrow Keys */
 .dropdown-active {
-  background-color: #1e90ff !important; /* Blue highlight */
-  color: white;
+    background-color: #1e90ff !important;
+    /* Blue highlight */
+    color: white;
 }
 
 /* Responsive */

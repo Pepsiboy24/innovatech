@@ -1,6 +1,6 @@
 const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
 const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -10,14 +10,30 @@ async function fetchSchoolAdmins() {
         const { data, error } = await supabaseClient
             .from('School_Admin')
             .select('*')
-            // .order('created_at', { ascending: false }); // Order by creation date, newest first
+        // .order('created_at', { ascending: false }); // Order by creation date, newest first
 
         if (error) {
             console.error('Error fetching school admins:', error);
             return [];
         }
         console.log('Fetched school admins:', data);
-        return data || [];
+        return (data || []).map(admin => {
+            const nameParts = (admin.full_name || '').split(' ');
+            return {
+                ...admin,
+                first_name: nameParts[0] || '',
+                last_name: nameParts.slice(1).join(' ') || '',
+                middle_name: '',
+                personal_email: admin.email,
+                mobile_phone: admin.phone_number,
+                date_of_birth: null,
+                gender: null,
+                address: null,
+                home_phone: null,
+                emergency_contact_name: null,
+                emergency_contact_phone: null
+            };
+        });
     } catch (err) {
         console.error('Unexpected error fetching school admins:', err);
         return [];
@@ -124,8 +140,8 @@ function filterSchoolAdmins(admins, searchTerm) {
         const email = (admin.personal_email || '').toLowerCase();
 
         return fullName.includes(term) ||
-               adminId.includes(term) ||
-               email.includes(term);
+            adminId.includes(term) ||
+            email.includes(term);
     });
 }
 
@@ -164,7 +180,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Set up search functionality
     const searchInput = document.querySelector('.search-input');
     if (searchInput) {
-        searchInput.addEventListener('input', function() {
+        searchInput.addEventListener('input', function () {
             currentSearchTerm = this.value.trim();
             applyFilters();
         });
@@ -174,7 +190,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const filterTabs = document.querySelectorAll('.filter-tab');
     if (filterTabs.length > 0) {
         filterTabs.forEach(tab => {
-            tab.addEventListener('click', function() {
+            tab.addEventListener('click', function () {
                 // Remove active class from all tabs
                 filterTabs.forEach(t => t.classList.remove('active'));
                 // Add active class to clicked tab

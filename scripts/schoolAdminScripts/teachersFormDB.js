@@ -1,4 +1,4 @@
-import { supabaseClient } from '../supabase_client.js';
+import { supabaseClient } from './supabase_client.js';
 // const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 
@@ -45,7 +45,7 @@ export async function registerNewTeacher(formData) {
       return false;
     }
 
-    const teacherId = teacherInsert[0].id; // Assuming 'id' is the primary key
+    const teacherId = teacherInsert[0].teacher_id; // Primary key is teacher_id
 
     // Insert into Teacher_Qualifications
     const qualData = {

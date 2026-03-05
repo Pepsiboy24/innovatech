@@ -11,8 +11,8 @@ export async function protectSharedPage() {
 
     // 2. Identify who they are across your tables
     const [adminCheck, teacherCheck] = await Promise.all([
-        supabaseClient.from('School_Admin').select('id').eq('user_id', user.id).maybeSingle(),
-        supabaseClient.from('Teachers').select('id').eq('teacher_id', user.id).maybeSingle()
+        supabaseClient.from('School_Admin').select('admin_id').eq('email', user.email).maybeSingle(),
+        supabaseClient.from('Teachers').select('teacher_id').eq('teacher_id', user.id).maybeSingle()
     ]);
 
     const isAdmin = !!adminCheck.data;

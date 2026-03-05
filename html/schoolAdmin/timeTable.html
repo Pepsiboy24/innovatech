@@ -290,8 +290,11 @@
                     <div class="card-footer">
                         <button class="btn-view" onclick="viewFullTimetable('${config.class_id}')">View Full</button>
                         <button class="btn-edit" onclick="openEditModal('${config.class_id}')">
-    <i class="fa-solid fa-pen"></i>
-</button>
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button class="btn-delete" onclick="deleteTimetable('${config.class_id}', '${className}')" style="width: 38px; height: 38px; border: 1px solid #fca5a5; background: #fee2e2; border-radius: 8px; color: #ef4444; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
                     </div>
                 </div>
             `;
@@ -370,6 +373,36 @@
 
         window.viewFullTimetable = (classId) => {
             alert(`View full details for Class ID: ${classId} (Feature coming soon)`);
+        };
+
+        window.deleteTimetable = async (classId, className) => {
+            if (!confirm(`Are you sure you want to completely delete the timetable for ${className}? This will remove the settings and all entries. This cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                // Delete entries first (foreign key might restrict config deletion otherwise depending on schema)
+                const { error: entriesError } = await supabase
+                    .from('timetable_entries')
+                    .delete()
+                    .eq('class_id', classId);
+
+                if (entriesError) throw entriesError;
+
+                // Delete config
+                const { error: configError } = await supabase
+                    .from('schedule_configs')
+                    .delete()
+                    .eq('class_id', classId);
+
+                if (configError) throw configError;
+
+                alert('Timetable deleted successfully!');
+                loadAllTimetableData(); // Refresh the grid
+            } catch (err) {
+                console.error("Delete error:", err);
+                alert("Failed to delete timetable: " + err.message);
+            }
         };
 
         // Sidebar Toggle

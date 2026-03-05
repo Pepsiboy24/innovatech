@@ -1,4 +1,4 @@
-import { supabaseClient } from '../supabase_client.js';
+import { supabaseClient } from './supabase_client.js';
 
 
 // Function to fetch all teachers from Supabase
@@ -6,7 +6,13 @@ async function fetchTeachers() {
     try {
         const { data, error } = await supabaseClient
             .from('Teachers')
-            .select('*')
+            .select(`
+                *,
+                school_employment ( job_title, contract_type, salary, start_date ),
+                qualifications ( school_name, certificate_name, feild_of_study, graduation_year ),
+                work_experience ( professional_development, position_held, duration, total_experience, school_name ),
+                emergency_contact ( name, relationship, phone_number, address )
+            `)
             .order('created_at', { ascending: false }); // Order by creation date, newest first
 
         if (error) {
@@ -14,7 +20,42 @@ async function fetchTeachers() {
             return [];
         }
 
-        return data || [];
+        return (data || []).map(t => {
+            const emp = t.school_employment?.[0] || {};
+            const qual = t.qualifications?.[0] || {};
+            const exp = t.work_experience?.[0] || {};
+            const ec = t.emergency_contact?.[0] || {};
+
+            return {
+                ...t,
+                id: t.teacher_id,
+                personal_email: t.email,
+                mobile_phone: t.phone_number,
+
+                job_title: emp.job_title,
+                contract_type: emp.contract_type,
+                salary: emp.salary,
+                start_date: emp.start_date,
+
+                total_experience: exp.total_experience,
+                previous_school: exp.school_name,
+                previous_position: exp.position_held,
+                previous_duration: exp.duration,
+                professional_development: exp.professional_development,
+
+                highest_degree: qual.certificate_name,
+                degree_major: qual.feild_of_study,
+                institution: qual.school_name,
+                graduation_year: qual.graduation_year,
+
+                emergency_contact_name: ec.name,
+                emergency_contact_phone: ec.phone_number,
+                emergency_contact_relation: ec.relationship,
+
+                subjects: [],
+                grade_levels: []
+            };
+        });
     } catch (err) {
         console.error('Unexpected error fetching teachers:', err);
         return [];

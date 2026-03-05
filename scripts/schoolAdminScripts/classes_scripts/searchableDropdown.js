@@ -1,25 +1,22 @@
-// --- Configuration ---
-const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+import { supabase as supabaseClient } from '../../config.js';
 
 // --- Utility: Debounce Function ---
 // Prevents the API from being called 100 times if you type fast
 function debounce(func, wait) {
   let timeout;
-  return function(...args) {
+  return function (...args) {
     clearTimeout(timeout);
     timeout = setTimeout(() => func.apply(this, args), wait);
   };
 }
 
 // --- Main Initialization ---
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   const searchInput = document.getElementById('teacherSearchInput');
   const dropdownOptions = document.getElementById('teacherDropdownOptions');
-  
+
   // Track the currently highlighted item index (-1 means nothing selected)
-  let currentFocus = -1; 
+  let currentFocus = -1;
 
   if (!searchInput || !dropdownOptions) return;
 
@@ -27,9 +24,9 @@ document.addEventListener('DOMContentLoaded', function() {
   // ---------------------------------------------------------
   const handleSearch = async (e) => {
     const searchTerm = e.target.value.trim();
-    
+
     // Reset focus when typing
-    currentFocus = -1; 
+    currentFocus = -1;
 
     if (searchTerm === '') {
       closeDropdown();
@@ -47,18 +44,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // Clear current list
       dropdownOptions.innerHTML = '';
-      
+
       if (teachers && teachers.length > 0) {
         // Show the dropdown
-        dropdownOptions.style.display = 'block'; 
+        dropdownOptions.style.display = 'block';
 
         teachers.forEach((teacher) => {
           const optionEl = document.createElement('div');
           optionEl.textContent = teacher.first_name;
           optionEl.classList.add('dropdown-item'); // Add class for styling
-          
+
           // Handle Mouse Click Selection
-          optionEl.addEventListener('click', function() {
+          optionEl.addEventListener('click', function () {
             selectItem(teacher.first_name);
           });
 
@@ -78,25 +75,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 2. KEYBOARD NAVIGATION
   // ---------------------------------------------------------
-  searchInput.addEventListener('keydown', function(e) {
+  searchInput.addEventListener('keydown', function (e) {
     let items = dropdownOptions.getElementsByTagName('div');
     if (e.key === 'ArrowDown') {
       currentFocus++;
       addActive(items);
       // Scroll into view if needed
       if (items[currentFocus]) items[currentFocus].scrollIntoView({ block: 'nearest' });
-    } 
+    }
     else if (e.key === 'ArrowUp') {
       currentFocus--;
       addActive(items);
       if (items[currentFocus]) items[currentFocus].scrollIntoView({ block: 'nearest' });
-    } 
+    }
     else if (e.key === 'Enter') {
       e.preventDefault(); // Stop form submission if inside a form
       if (currentFocus > -1 && items) {
         items[currentFocus].click(); // Simulate a click on the active item
       }
-    } 
+    }
     else if (e.key === 'Escape') {
       closeDropdown();
     }
@@ -108,10 +105,10 @@ document.addEventListener('DOMContentLoaded', function() {
   function addActive(items) {
     if (!items) return false;
     removeActive(items);
-    
+
     if (currentFocus >= items.length) currentFocus = 0;
     if (currentFocus < 0) currentFocus = (items.length - 1);
-    
+
     // Add "active" class to the current item
     items[currentFocus].classList.add('dropdown-active');
   }
@@ -142,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 4. CLICK OUTSIDE TO CLOSE
   // ---------------------------------------------------------
-  document.addEventListener('click', function(e) {
+  document.addEventListener('click', function (e) {
     if (e.target !== searchInput && e.target !== dropdownOptions) {
       closeDropdown();
     }

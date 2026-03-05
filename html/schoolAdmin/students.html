@@ -384,6 +384,47 @@
 
     </script>
 
+    <!-- Migration Modal -->
+    <div id="migrationOverlay"
+        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); z-index:10000;">
+    </div>
+    <div id="migrationModal"
+        style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:10001; width:90%; max-width:440px;">
+        <div
+            style="background:#fff; border-radius:16px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); border:1px solid #e2e8f0; overflow:hidden;">
+            <div
+                style="background:#6200ea; padding:20px 24px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h2 style="color:#fff; font-size:18px; font-weight:700; margin:0;">Change Class</h2>
+                    <p id="migrationStudentName" style="color:rgba(255,255,255,0.8); font-size:13px; margin:2px 0 0;">
+                    </p>
+                </div>
+                <button onclick="window.closeMigrationModal()"
+                    style="background:rgba(255,255,255,0.2); border:none; width:32px; height:32px; border-radius:50%; cursor:pointer; color:#fff; font-size:16px; display:flex; align-items:center; justify-content:center;">&times;</button>
+            </div>
+            <div style="padding:24px;">
+                <label style="display:block; font-size:13px; font-weight:500; color:#64748b; margin-bottom:8px;">Move to
+                    Class</label>
+                <select id="migrationClassSelect"
+                    style="width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; outline:none; color:#1e293b; background:#fff;">
+                    <option value="">Select a class...</option>
+                </select>
+                <p id="migrationCapacityWarning"
+                    style="display:none; margin-top:8px; font-size:12px; color:#f59e0b; font-weight:500;">
+                    ⚠️ This class already has 40+ students.
+                </p>
+            </div>
+            <div
+                style="display:flex; justify-content:flex-end; gap:10px; padding:16px 24px; border-top:1px solid #e2e8f0; background:#f8fafc;">
+                <button onclick="window.closeMigrationModal()"
+                    style="padding:10px 20px; border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc; font-size:14px; font-weight:600; cursor:pointer; color:#1e293b;">Cancel</button>
+                <button id="migrationConfirmBtn"
+                    style="padding:10px 20px; border:none; border-radius:8px; background:#6200ea; color:#fff; font-size:14px; font-weight:600; cursor:pointer;">Move
+                    Student</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="../../scripts/font-awesome.js"></script>

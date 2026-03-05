@@ -1,80 +1,77 @@
-const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
-
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+import { supabase as supabaseClient } from '../../config.js';
 
 // --- 🗄️ Unified Modal Control ---
 
 // Handles the Create/Edit Modal
 function closeModal() {
-    const modal = document.getElementById("createClassModal");
-    const overlay = document.getElementById("overlay");
-    
-    // Use consistent display logic
-    modal.style.display = 'none';
-    overlay.style.display = 'none';
-    document.body.style.overflow = 'auto'; // Restore scrolling
-    
-    // Reset Form UI
-    document.getElementById("createClassForm").reset();
-    document.getElementById('editClassId').value = ""; 
-    document.querySelector('#createClassModal h2').textContent = "Create New Class";
-    document.querySelector('[data-create-class]').textContent = "Create Class";
+  const modal = document.getElementById("createClassModal");
+  const overlay = document.getElementById("overlay");
+
+  // Use consistent display logic
+  modal.style.display = 'none';
+  overlay.style.display = 'none';
+  document.body.style.overflow = 'auto'; // Restore scrolling
+
+  // Reset Form UI
+  document.getElementById("createClassForm").reset();
+  document.getElementById('editClassId').value = "";
+  document.querySelector('#createClassModal h2').textContent = "Create New Class";
+  document.querySelector('[data-create-class]').textContent = "Create Class";
 }
 
 // Handles the View Modal
 window.closeViewModal = () => {
-    const viewModal = document.getElementById('viewClassModal');
-    const overlay = document.getElementById("overlay"); // Use same overlay if needed, or none if View has its own
-    
-    viewModal.style.display = 'none';
-    overlay.style.display = 'none';
-    document.body.style.overflow = 'auto';
+  const viewModal = document.getElementById('viewClassModal');
+  const overlay = document.getElementById("overlay"); // Use same overlay if needed, or none if View has its own
+
+  viewModal.style.display = 'none';
+  overlay.style.display = 'none';
+  document.body.style.overflow = 'auto';
 };
 
 // --- ✏️ Edit Class Function ---
 window.openEditClassModal = async (classId) => {
-    const classData = window.allClassesData.find(c => c.class_id == classId);
-    if (!classData) return;
+  const classData = window.allClassesData.find(c => c.class_id == classId);
+  if (!classData) return;
 
-    // UI Updates
-    document.querySelector('#createClassModal h2').textContent = "Edit Class Information";
-    document.querySelector('[data-create-class]').textContent = "Update Class";
+  // UI Updates
+  document.querySelector('#createClassModal h2').textContent = "Edit Class Information";
+  document.querySelector('[data-create-class]').textContent = "Update Class";
 
-    // Populate Fields
-    document.getElementById('editClassId').value = classId;
-    document.getElementById('className').value = classData.class_name;
-    document.getElementById('section').value = classData.section || "";
-    document.getElementById('studentsCount').value = classData.no_of_students || 0;
-    
-    const teacherName = classData.Teachers ? 
-        `${classData.Teachers.first_name} ${classData.Teachers.last_name}` : "";
-    document.getElementById('teacherSearchInput').value = teacherName;
+  // Populate Fields
+  document.getElementById('editClassId').value = classId;
+  document.getElementById('className').value = classData.class_name;
+  document.getElementById('section').value = classData.section || "";
+  document.getElementById('studentsCount').value = classData.no_of_students || 0;
 
-    // Show Modal consistently
-    const modal = document.getElementById("createClassModal");
-    const overlay = document.getElementById("overlay");
-    modal.style.display = 'block';
-    overlay.style.display = 'block';
-    document.body.style.overflow = 'hidden'; 
+  const teacherName = classData.Teachers ?
+    `${classData.Teachers.first_name} ${classData.Teachers.last_name}` : "";
+  document.getElementById('teacherSearchInput').value = teacherName;
+
+  // Show Modal consistently
+  const modal = document.getElementById("createClassModal");
+  const overlay = document.getElementById("overlay");
+  modal.style.display = 'block';
+  overlay.style.display = 'block';
+  document.body.style.overflow = 'hidden';
 };
 
 // --- 👁️ View Class Function ---
 window.openViewClassModal = (classId) => {
-    const classData = window.allClassesData.find(c => c.class_id == classId);
-    if (!classData) return;
+  const classData = window.allClassesData.find(c => c.class_id == classId);
+  if (!classData) return;
 
-    document.getElementById('viewClassNameDisplay').textContent = classData.class_name;
-    document.getElementById('viewTeacherName').textContent = classData.Teachers ? 
-        `${classData.Teachers.first_name} ${classData.Teachers.last_name}` : "Unassigned";
-    document.getElementById('viewStudentCount').textContent = classData.no_of_students || "0";
+  document.getElementById('viewClassNameDisplay').textContent = classData.class_name;
+  document.getElementById('viewTeacherName').textContent = classData.Teachers ?
+    `${classData.Teachers.first_name} ${classData.Teachers.last_name}` : "Unassigned";
+  document.getElementById('viewStudentCount').textContent = classData._studentCount ?? 0;
 
-    const viewModal = document.getElementById('viewClassModal');
-    const overlay = document.getElementById("overlay");
-    
-    viewModal.style.display = 'flex';
-    overlay.style.display = 'block';
-    document.body.style.overflow = 'hidden';
+  const viewModal = document.getElementById('viewClassModal');
+  const overlay = document.getElementById("overlay");
+
+  viewModal.style.display = 'flex';
+  overlay.style.display = 'block';
+  document.body.style.overflow = 'hidden';
 };
 
 /**
@@ -132,7 +129,7 @@ async function handleCreateClass(e) {
     }
 
     closeModal();
-    location.reload(); 
+    location.reload();
   } catch (error) {
     console.error("Save error:", error);
     alert("Error saving class: " + error.message);
@@ -149,35 +146,35 @@ function initializeEventListeners() {
 
   if (createClassBtn) {
     createClassBtn.addEventListener("click", () => {
-        // Ensure reset to 'Create' mode
-        document.getElementById('editClassId').value = ""; 
-        document.querySelector('#createClassModal h2').textContent = "Create New Class";
-        document.querySelector('[data-create-class]').textContent = "Create Class";
-        
-        document.getElementById("createClassModal").style.display = 'block';
-        document.getElementById("overlay").style.display = 'block';
-        document.body.style.overflow = 'hidden';
+      // Ensure reset to 'Create' mode
+      document.getElementById('editClassId').value = "";
+      document.querySelector('#createClassModal h2').textContent = "Create New Class";
+      document.querySelector('[data-create-class]').textContent = "Create Class";
+
+      document.getElementById("createClassModal").style.display = 'block';
+      document.getElementById("overlay").style.display = 'block';
+      document.body.style.overflow = 'hidden';
     });
   }
-  
+
   if (closeModalBtn) closeModalBtn.addEventListener("click", closeModal);
   if (cancelBtn) cancelBtn.addEventListener("click", closeModal);
-  
+
   if (overlay) {
-      overlay.addEventListener("click", () => {
-          closeModal();
-          closeViewModal();
-      });
+    overlay.addEventListener("click", () => {
+      closeModal();
+      closeViewModal();
+    });
   }
 
   if (createNewClassBtn) createNewClassBtn.addEventListener("click", handleCreateClass);
 
   // Escape key support
   document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-          closeModal();
-          closeViewModal();
-      }
+    if (e.key === 'Escape') {
+      closeModal();
+      closeViewModal();
+    }
   });
 }
 
