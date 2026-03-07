@@ -4,26 +4,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>List Of Students - EdTech</title>
-    <link rel="stylesheet" href="../../styles/teachersPortalStyles/listOfStudents.css">
+    <title>My Students — TeachSmart</title>
     <link rel="stylesheet" href="../../styles/teachersPortalStyles/sidebar.css">
+    <link rel="stylesheet" href="../../styles/teachersPortalStyles/tp-shared.css">
+    <link rel="stylesheet" href="../../styles/teachersPortalStyles/listOfStudents.css">
 </head>
 
 <body>
+    <!-- Mobile Top Bar -->
+    <div class="mobile-top-bar" id="mobileTopBar">
+        <span class="brand">TeachSmart</span>
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle sidebar">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+
     <!-- Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <!-- Sidebar -->
-    <!-- Sidebar -->
     <div class="sidebar" data-sideBar></div>
 
     <!-- Student Registration Popup -->
-    <div class="popup" id="registrationPopup">
+    <div class="popup" id="registrationPopup" style="display:none;">
         <div class="containment">
             <div class="popup-header">
                 <div class="icon" id="closePopup"><i class="fa fa-times"></i></div>
                 <h1>Student Registration</h1>
-                <p>Complete your enrollment in just 3 easy steps</p>
+                <p>Complete your enrolment in just 3 easy steps</p>
                 <div class="progress-bar">
                     <div class="progress-fill" id="progressFill" style="width: 33%;"></div>
                 </div>
@@ -40,7 +48,7 @@
                 </div>
                 <div class="step-indicator" id="indicator3">
                     <div class="step-circle">3</div>
-                    <span>Review & Submit</span>
+                    <span>Review &amp; Submit</span>
                 </div>
             </div>
 
@@ -48,8 +56,7 @@
                 <div class="success-message">
                     <div class="success-icon">✓</div>
                     <h2>Registration Successful!</h2>
-                    <p>Welcome to EdTech Portal! Your registration has been completed successfully. You will
-                        receive a confirmation email shortly.</p>
+                    <p>The student has been registered successfully.</p>
                     <button type="button" class="btn btn-primary" data-resetBtn style="margin-top: 20px;">Register
                         Another Student</button>
                 </div>
@@ -59,19 +66,18 @@
                 <form id="registrationForm">
                     <div class="step active" id="step1">
                         <h2>Personal Information</h2>
-                        <p>Let's start with your basic details</p>
+                        <p>Let's start with the basic details</p>
 
                         <div class="form-group">
                             <label for="fullName">Full Name *</label>
-                            <input type="text" id="fullName" name="fullName" required
-                                placeholder="Enter your full name">
+                            <input type="text" id="fullName" name="fullName" required placeholder="Enter full name">
                             <div class="error-message" id="fullNameError"
                                 style="display:none; color:red; font-size:12px;">Full Name is required</div>
                         </div>
 
                         <div class="form-group">
                             <label for="email">Email Address *</label>
-                            <input type="email" id="email" name="email" required placeholder="your.email@example.com">
+                            <input type="email" id="email" name="email" required placeholder="student@example.com">
                             <div class="error-message" id="emailError" style="display:none; color:red; font-size:12px;">
                                 Please enter a valid email</div>
                         </div>
@@ -103,8 +109,7 @@
 
                     <div class="step" id="step2">
                         <h2>Academic Details</h2>
-                        <p>Tell us about your academic information</p>
-
+                        <p>Academic information</p>
                         <div class="form-group">
                             <label for="admissionDate">Admission Date *</label>
                             <input type="date" id="admissionDate" name="admissionDate" required>
@@ -117,7 +122,7 @@
                         <h2>Review Your Information</h2>
                         <p>Please review your details before submitting</p>
                         <div id="reviewContent"
-                            style="background: #f8fafc; padding: 24px; border-radius: 8px; margin: 20px 0;">
+                            style="background:#f8fafc; padding:24px; border-radius:8px; margin:20px 0;">
                             <p><strong>Name:</strong> <span id="reviewName"></span></p>
                             <p><strong>Email:</strong> <span id="reviewEmail"></span></p>
                             <p><strong>Class:</strong> <span id="reviewClass"></span></p>
@@ -126,9 +131,9 @@
 
                     <div class="buttons">
                         <button type="button" class="btn btn-secondary" id="prevBtn"
-                            style="display: none;">Previous</button>
+                            style="display:none;">Previous</button>
                         <button type="button" class="btn btn-primary" id="nextBtn">Next</button>
-                        <button type="submit" class="btn btn-primary" id="submitBtn" style="display: none;">Submit
+                        <button type="submit" class="btn btn-primary" id="submitBtn" style="display:none;">Submit
                             Registration</button>
                     </div>
                 </form>
@@ -138,26 +143,21 @@
 
     <!-- Main Content -->
     <main class="main-content" id="mainContent">
-        <!-- Header -->
-        <header class="header">
-            <div class="welcome-msg">
-                <h2>Welcome back, <span>Mrs</span>.<span>Johnson</span></h2>
-                <p>Tuesday, 15 September 2025</p>
-            </div>
-            <div class="header-right">
-                <button class="notification-btn">🔔</button>
-                <button class="menu-btn" id="openSidebar">☰</button>
-            </div>
-        </header>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>My Students</h1>
+            <p>View and manage students assigned to your classes</p>
+        </div>
 
         <!-- Students Section -->
-        <section class="students-section">
-            <div class="section-header">
-                <h3 class="section-title">Students</h3>
-                <button class="add-student-btn">+ Add Student</button>
+        <div class="tp-card">
+            <div class="tp-section-header">
+                <span class="tp-section-title">Students</span>
+                <button class="tp-btn tp-btn-primary add-student-btn">+ Add Student</button>
             </div>
 
-            <table class="students-table">
+            <table class="tp-table">
                 <thead>
                     <tr>
                         <th>Student Name</th>
@@ -168,71 +168,38 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Students will be loaded dynamically -->
+                    <!-- Students loaded dynamically -->
                 </tbody>
             </table>
-        </section>
+        </div>
+
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../../scripts/teachersPortalScripts/listOfStudents.js"></script>
     <script src="../../scripts/teachersPortalScripts/teachers_portal_sidebar.js"></script>
     <script>
-        // Sidebar functionality
-        const sidebar = document.getElementById('sidebar');
-        const sidebarOverlay = document.getElementById('sidebarOverlay');
-        const openSidebarBtn = document.getElementById('openSidebar');
-        const closeSidebarBtn = document.getElementById('closeSidebar');
-        const mainContent = document.getElementById('mainContent');
+        (function () {
+            const btn = document.getElementById('hamburgerBtn');
+            const sidebar = document.querySelector('[data-sideBar]');
+            const overlay = document.getElementById('sidebarOverlay');
+            const open = () => { sidebar.classList.add('active'); overlay.classList.add('active'); };
+            const close = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); };
+            if (btn) btn.addEventListener('click', () => sidebar.classList.contains('active') ? close() : open());
+            overlay.addEventListener('click', close);
+            document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+            window.addEventListener('resize', () => { if (window.innerWidth > 768) close(); });
 
-        function openSidebar() {
-            sidebar.classList.add('mobile-visible');
-            sidebarOverlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeSidebar() {
-            sidebar.classList.remove('mobile-visible');
-            sidebarOverlay.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        openSidebarBtn.addEventListener('click', openSidebar);
-        closeSidebarBtn.addEventListener('click', closeSidebar);
-        sidebarOverlay.addEventListener('click', closeSidebar);
-
-        // Close sidebar on escape key
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') {
-                closeSidebar();
-            }
-        });
-
-        // Handle window resize
-        window.addEventListener('resize', function () {
-            if (window.innerWidth > 768) {
-                closeSidebar();
-            }
-        });
-
-        // --- Student Registration Popup Logic ---
-        const popup = document.getElementById('registrationPopup');
-        const openPopupBtn = document.querySelector('.add-student-btn');
-        const closePopupBtn = document.getElementById('closePopup');
-
-        // Ensure popup is hidden on page load
-        if (popup) {
-            popup.style.display = 'none';
-        }
-
-        if (openPopupBtn && popup) {
-            openPopupBtn.addEventListener('click', () => popup.style.display = 'flex');
-        }
-        if (closePopupBtn && popup) {
-            closePopupBtn.addEventListener('click', () => popup.style.display = 'none');
-        }
+            // Popup
+            const popup = document.getElementById('registrationPopup');
+            const openBtn = document.querySelector('.add-student-btn');
+            const closeBtn = document.getElementById('closePopup');
+            if (openBtn && popup) openBtn.addEventListener('click', () => popup.style.display = 'flex');
+            if (closeBtn && popup) closeBtn.addEventListener('click', () => popup.style.display = 'none');
+        })();
     </script>
     <script src="../../scripts/teachersPortalScripts/teacherStudentRegForm.js" type="module"></script>
+    <script src="../../scripts/fontawesome.js"></script>
 </body>
 
 </html>

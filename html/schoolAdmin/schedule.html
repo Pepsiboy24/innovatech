@@ -179,6 +179,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Sidebar -->
     <div class="sidebar" data-sideBar></div>
@@ -319,8 +320,9 @@
             <form id="addEventForm">
                 <div class="form-group">
                     <label for="academicSession">Academic Session *</label>
-                    <input type="text" id="academicSession" name="academicSession" required
-                        placeholder="e.g., 2024/2025">
+                    <select id="academicSession" name="academicSession" required>
+                        <option value="">Loading Sessions...</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="termPeriod">Term/Period *</label>
@@ -332,7 +334,7 @@
                         <option value="Holiday">Holiday</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group full-width">
                     <label for="activityEvent">Activity/Event *</label>
                     <input type="text" id="activityEvent" name="activityEvent" required
                         placeholder="e.g., Mid-Term Break">
@@ -349,7 +351,7 @@
                     <label for="duration">Duration</label>
                     <input type="text" id="duration" name="duration" placeholder="e.g., 5 Days">
                 </div>
-                <div class="form-group">
+                <div class="form-group full-width">
                     <label for="remarks">Remarks</label>
                     <textarea id="remarks" name="remarks" placeholder="Additional notes"></textarea>
                 </div>
@@ -365,10 +367,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="../../scripts/sideBar.js"></script>
     <script src="../../scripts/config.js" type="module"></script>
-    <script src="../../scripts/schoolAdminScripts/shedule_scripts/calendar_display.js" type="module"></script>
-    <script src="../../scripts/schoolAdminScripts/shedule_scripts/add_single_event.js" type="module"></script>
-    <script src="../../scripts/schoolAdminScripts/shedule_scripts/upload_calendar.js"></script>
-    <script src="../../scripts/schoolAdminScripts/shedule_scripts/add_new_event.js"></script>
+    <script src="../../scripts/schoolAdminScripts/shedule_scripts/calendar_display.js?v=2" type="module"></script>
+    <script src="../../scripts/schoolAdminScripts/shedule_scripts/event_manager.js?v=2" type="module"></script>
+    <script src="../../scripts/schoolAdminScripts/shedule_scripts/upload_calendar.js?v=2" type="module"></script>
 
     <!-- <script>
         // Sidebar Toggle

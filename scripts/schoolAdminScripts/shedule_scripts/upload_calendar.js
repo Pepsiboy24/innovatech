@@ -1,9 +1,5 @@
-// Supabase setup (Use your imports if using modules, otherwise window)
-// import { supabase } from "../../config.js"; 
-// OR keep your existing setup if not using modules:
-const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Supabase setup
+import { supabase } from "../../config.js";
 
 document.addEventListener('DOMContentLoaded', function () {
     const fileInput = document.getElementById('fileInput');
@@ -50,9 +46,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // --- FIX STARTS HERE ---
         // 1. Get the current Session Name from the UI (e.g. "2025/2026")
-        // We remove " Academic Session" text to get just the year part
-        const sessionTitle = document.getElementById('monthYear').textContent;
-        let currentSession = sessionTitle.replace(' Academic Session', '').trim();
+        const monthYearEl = document.getElementById('monthYear');
+        let currentSession = monthYearEl.dataset.sessionName;
+
+        // Fallback for older states
+        if (!currentSession) {
+            currentSession = monthYearEl.textContent.replace(' Academic Session', '').trim();
+        }
 
         // Safety check: if the title is empty or generic, ask the user
         if (!currentSession || currentSession.includes('No Academic')) {
@@ -120,13 +120,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 for (let i = 1; i < lines.length; i++) {
                     const values = lines[i].split(',');
                     // Basic check to ensure row isn't empty
-                    if (values.length > 1) { 
+                    if (values.length > 1) {
                         const event = {};
                         headers.forEach((header, index) => {
                             // Handle potential undefined values
                             const value = values[index] ? values[index].trim() : null;
                             const field = mapHeaderToField(header);
-                            
+
                             if (header.includes('date')) {
                                 event[field] = value ? new Date(value).toISOString().split('T')[0] : null;
                             } else {
@@ -167,8 +167,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             const field = mapHeaderToField(header);
 
                             if (header.includes('date')) {
-                                // Excel date handling could go here, but basic string parsing:
-                                event[field] = value ? new Date(value).toISOString().split('T')[0] : null;
+                                event[field] = value ? excelDateToJSDate(value) : null;
                             } else {
                                 event[field] = value || null;
                             }
@@ -214,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     // Removed the hardcoded session here because we inject it in processFile now
                     if (event.activity_event && event.start_date) {
-                        event.term_period = 'Holiday'; 
+                        event.term_period = 'Holiday';
                         events.push(event);
                     }
                 }
@@ -255,12 +254,24 @@ document.addEventListener('DOMContentLoaded', function () {
         };
         // Check exact match first, then partial match
         if (mapping[header]) return mapping[header];
-        
+
         // Fallback: Loop keys to find includes
         for (const key in mapping) {
             if (header.includes(key)) return mapping[key];
         }
-        
+
         return header;
+    }
+
+    function excelDateToJSDate(serial) {
+        if (!serial) return null;
+        if (typeof serial === 'string') {
+            const parsed = new Date(serial);
+            return isNaN(parsed) ? null : parsed.toISOString().split('T')[0];
+        }
+        const utc_days = Math.floor(serial - 25569);
+        const utc_value = utc_days * 86400;
+        const date_info = new Date(utc_value * 1000);
+        return date_info.toISOString().split('T')[0];
     }
 });

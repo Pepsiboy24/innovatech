@@ -34,6 +34,7 @@ function processSessions(data) {
     // 1. Extract unique session names (e.g., "2023/2024", "2024/2025")
     const sessions = data.map(event => event.academic_session).filter(Boolean);
     uniqueSessions = [...new Set(sessions)].sort(); // Sort alphabetically/numerically
+    window.uniqueSessions = uniqueSessions; // Export for event_manager.js
 
     // 2. Default to the last session (most recent) if we have data
     if (uniqueSessions.length > 0) {
@@ -44,7 +45,7 @@ function processSessions(data) {
 // --- 3. Rendering ---
 function renderCurrentSession() {
     tableBody.innerHTML = '';
-    
+
     // If no data exists at all
     if (uniqueSessions.length === 0) {
         monthYearSpan.textContent = "No Academic Sessions Found";
@@ -55,9 +56,24 @@ function renderCurrentSession() {
     // Get the name of the session we want to show
     const currentSessionName = uniqueSessions[currentSessionIndex];
     monthYearSpan.textContent = currentSessionName + " Academic Session";
+    monthYearSpan.dataset.sessionName = currentSessionName;
 
-    // Filter events for this specific session
-    const sessionEvents = allEvents.filter(e => e.academic_session === currentSessionName);
+    // Expand filtering to allow search input overriding
+    let sessionEvents = [];
+    const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+    if (searchTerm) {
+        // If searching, show all matching events across all sessions
+        sessionEvents = allEvents.filter(e =>
+            (e.academic_session && e.academic_session.toLowerCase().includes(searchTerm)) ||
+            (e.activity_event && e.activity_event.toLowerCase().includes(searchTerm))
+        );
+        monthYearSpan.textContent = `Search Results for "${searchTerm}"`;
+        delete monthYearSpan.dataset.sessionName;
+    } else {
+        // Normal session view
+        sessionEvents = allEvents.filter(e => e.academic_session === currentSessionName);
+    }
 
     // Sort events by date within this session
     sessionEvents.sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
@@ -92,7 +108,7 @@ function formatDateRange(start, end) {
 // --- 4. Navigation Features (Next / Prev / Today) ---
 document.getElementById('prevButton').addEventListener('click', () => {
     if (uniqueSessions.length === 0) return;
-    
+
     if (currentSessionIndex > 0) {
         currentSessionIndex--;
         renderCurrentSession();
@@ -115,12 +131,12 @@ document.getElementById('nextButton').addEventListener('click', () => {
 document.getElementById('todayButton').addEventListener('click', () => {
     // Logic: Find which session contains "Today"
     const today = new Date();
-    
+
     // Find the session where today falls between the earliest start and latest end date
     const foundIndex = uniqueSessions.findIndex(sessionName => {
         const events = allEvents.filter(e => e.academic_session === sessionName);
         if (!events.length) return false;
-        
+
         // simple check: does this session match the current year roughly?
         // A more robust check would be comparing dates, but matching string name is often safer if data is messy
         return sessionName.includes(today.getFullYear().toString());
@@ -139,17 +155,10 @@ document.getElementById('todayButton').addEventListener('click', () => {
 if (searchInput) {
     // Update placeholder to reflect new functionality
     searchInput.placeholder = "Search Session (e.g. 2024)...";
-    
+
     searchInput.addEventListener('input', (e) => {
-        const term = e.target.value.trim();
-        
-        // Find a session that matches the search term
-        const matchIndex = uniqueSessions.findIndex(s => s.toLowerCase().includes(term.toLowerCase()));
-        
-        if (matchIndex !== -1) {
-            currentSessionIndex = matchIndex;
-            renderCurrentSession();
-        }
+        // We now just call renderCurrentSession which handles the filtering across allEvents
+        renderCurrentSession();
     });
 }
 
@@ -161,34 +170,42 @@ const calDescInput = document.querySelector('.create-calendar input[placeholder*
 if (createBtn) {
     createBtn.addEventListener('click', () => {
         const newSessionName = calNameInput.value.trim();
+        const newDesc = calDescInput ? calDescInput.value.trim() : '';
         if (!newSessionName) {
             alert("Please enter a Calendar/Session Name");
             return;
         }
 
-        // Logic: Since we don't have a "Calendars" table, we simulate creating a new one
-        // by switching the view to this new name and clearing the table.
-        // The user must then add an event to "save" this session in the DB.
-        
-        // 1. Update title
-        monthYearSpan.textContent = newSessionName;
-        
-        // 2. Clear table to show it's empty
-        tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--primary);">New Session Created. Click "Add New Event" to start populating.</td></tr>';
-        
-        // 3. Update the global variable so "Add Event" modal knows what session to use
-        // Note: You will need to update your add_single_event.js to read this value if possible,
-        // or simply Autofill the modal input:
-        const modalSessionInput = document.getElementById('academicSession');
-        if (modalSessionInput) {
-            modalSessionInput.value = newSessionName;
-        }
+        // Show loading
+        createBtn.textContent = "Creating...";
+        createBtn.disabled = true;
 
-        // Clear inputs
-        calNameInput.value = '';
-        if(calDescInput) calDescInput.value = '';
-        
-        alert(`Switched to new calendar: ${newSessionName}. \nPlease add an event to save this session to the database.`);
+        // Since there is no 'academic_sessions' table, we create the session locally.
+        // It will be permanently saved into 'academic_events' when the first event is added.
+        setTimeout(() => {
+            createBtn.textContent = "Create Calendar";
+            createBtn.disabled = false;
+
+            // 2. Update UI Title and dataset
+            monthYearSpan.textContent = newSessionName + " Academic Session";
+            monthYearSpan.dataset.sessionName = newSessionName;
+
+            // 3. Clear table to show it's empty
+            tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--primary);">New Session Created. Click "Add New Event" to permanently save it to the database.</td></tr>';
+
+            // Clear inputs
+            calNameInput.value = '';
+            if (calDescInput) calDescInput.value = '';
+
+            // Add session to uniqueSessions array to exist in UI state immediately
+            if (!uniqueSessions.includes(newSessionName)) {
+                uniqueSessions.push(newSessionName);
+                window.uniqueSessions = uniqueSessions;
+                currentSessionIndex = uniqueSessions.length - 1;
+            }
+
+            alert(`Switched to new calendar: ${newSessionName}.\n\nNote: This session will be saved automatically to Supabase when you add your first event.`);
+        }, 300);
     });
 }
 
@@ -196,9 +213,9 @@ if (createBtn) {
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
     fetchEvents();
-    
+
     // Expose refresh for other scripts (like add_single_event.js)
-    window.refreshAcademicTable = async function() {
+    window.refreshAcademicTable = async function () {
         await fetchEvents();
     };
 });

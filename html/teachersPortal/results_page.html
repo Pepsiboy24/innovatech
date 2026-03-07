@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Results (Legacy) — TeachSmart</title>
+    <title>Upload Results — TeachSmart</title>
+    <script type="module" src="../../scripts/authGuard.js"></script>
     <link rel="stylesheet" href="../../styles/teachersPortalStyles/sidebar.css">
     <link rel="stylesheet" href="../../styles/teachersPortalStyles/tp-shared.css">
 </head>
@@ -22,7 +23,7 @@
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <!-- Sidebar -->
-    <div class="sidebar" data-sideBar></div>
+    <nav class="sidebar" data-sideBar></nav>
 
     <!-- Main Content -->
     <div class="main-content">
@@ -30,26 +31,27 @@
         <!-- Page Header -->
         <div class="page-header">
             <h1>Upload Results</h1>
-            <p>Term results entry for your classes</p>
+            <p>Enter student scores by class, subject, and term.</p>
         </div>
 
         <div class="tp-card">
             <form id="resultsForm">
-                <span class="tp-section-title" style="display:block; margin-bottom:16px;">Result Entry Details</span>
+                <span class="tp-section-title" style="display:block; margin-bottom:20px;">Result Entry Details</span>
 
-                <!-- Filters row 1 -->
+                <!-- Row 1: Session, Term, Assessment, Max Score -->
                 <div class="tp-filters-row" style="margin-bottom:16px;">
                     <select id="academicSessionSelect" class="tp-select" required>
                         <option value="">Select Session</option>
+                        <option value="2024/2025">2024/2025</option>
                         <option value="2025/2026">2025/2026</option>
                         <option value="2026/2027">2026/2027</option>
                     </select>
 
                     <select id="termSelect" class="tp-select" required>
                         <option value="">Select Term</option>
-                        <option value="1">1st Term</option>
-                        <option value="2">2nd Term</option>
-                        <option value="3">3rd Term</option>
+                        <option value="1st Term">1st Term</option>
+                        <option value="2nd Term">2nd Term</option>
+                        <option value="3rd Term">3rd Term</option>
                     </select>
 
                     <select id="assessmentTypeSelect" class="tp-select" required>
@@ -65,18 +67,19 @@
 
                 <div class="tp-divider"></div>
 
-                <!-- Filters row 2 -->
-                <div class="tp-filters-row" style="margin-bottom:20px;">
+                <!-- Row 2: Class, Subject, Import -->
+                <div class="tp-filters-row" style="margin-bottom:16px;">
                     <select id="classSelect" class="tp-select" required>
-                        <option value="">Select Class</option>
+                        <option value="">Loading Classes...</option>
                     </select>
+
                     <select id="subjectSelect" class="tp-select" required>
                         <option value="">Select Subject</option>
                     </select>
 
                     <div style="flex-grow:1;"></div>
 
-                    <input type="file" id="excelUpload" accept=".xlsx, .xls, .csv" style="display:none;">
+                    <input type="file" id="excelUpload" accept=".xlsx,.xls,.csv" style="display:none;">
                     <button type="button" id="importExcelBtn" class="tp-btn tp-btn-secondary">
                         <svg style="width:15px;height:15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -86,6 +89,7 @@
                     </button>
                 </div>
 
+                <!-- Student Table -->
                 <table class="tp-table" id="studentsTable">
                     <thead>
                         <tr>
@@ -97,14 +101,16 @@
                     </thead>
                     <tbody id="studentTableBody">
                         <tr>
-                            <td colspan="4" style="text-align:center; padding:30px; color:#a0aec0;">
+                            <td colspan="4" style="text-align:center; padding:32px; color:#a0aec0;">
                                 Please select a Class and Subject to load the student list.
                             </td>
                         </tr>
                     </tbody>
                 </table>
 
-                <div class="tp-actions-row" style="justify-content:flex-end;">
+                <div class="tp-actions-row">
+                    <span style="color:#a0aec0; font-size:13px;">Scores are auto-saved using upsert — re-submitting will
+                        update existing entries.</span>
                     <button type="submit" class="tp-btn tp-btn-primary">
                         <svg style="width:15px;height:15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -116,10 +122,9 @@
         </div>
     </div>
 
-    <!-- Scripts -->
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-    <script type="module" src="../../scripts/teachersPortalScripts/upload_results.js"></script>
     <script src="../../scripts/teachersPortalScripts/teachers_portal_sidebar.js"></script>
+    <script type="module" src="../../scripts/teachersPortalScripts/teacher_results.js"></script>
     <script>
         (function () {
             const btn = document.getElementById('hamburgerBtn');
