@@ -1,40 +1,8 @@
+// teachersDashboard.js — Main dashboard logic for the Teachers Portal.
+// All metrics are pulled from real database tables.
+
 import { supabase } from '../config.js';
-
-// Check if teacher is logged in
-async function checkTeacherLogin() {
-    try {
-        const { data: { user }, error } = await supabase.auth.getUser();
-
-        if (error || !user) {
-            console.error('No user logged in:', error);
-            alert('Please log in as a teacher to view this page.');
-            window.location.href = '../../index.html'; // Assuming login page is at root
-            return null;
-        }
-
-        // Verify this user is actually a teacher in the Teachers table
-        const { data: teacherData, error: teacherError } = await supabase
-            .from('Teachers')
-            .select('*')
-            .eq('teacher_id', user.id)
-            .single();
-
-        if (teacherError || !teacherData) {
-            console.error('User is not authorized as a teacher:', teacherError);
-            alert('You are not authorized as a teacher. Please log in with teacher credentials.');
-            await supabase.auth.signOut();
-            window.location.href = '../../index.html';
-            return null;
-        }
-
-        return user.id;
-    } catch (err) {
-        console.error('Error checking teacher login:', err);
-        alert('An error occurred while verifying your login. Please try logging in again.');
-        window.location.href = '../../index.html';
-        return null;
-    }
-}
+import { checkTeacherLogin, startLiveClock } from '../teacherUtils.js';
 
 // Fetch teacher's assigned classes
 async function fetchTeacherClasses(teacherId) {
@@ -56,11 +24,8 @@ async function fetchTeacherClasses(teacherId) {
 }
 
 // Fetch total students count for teacher's classes
-async function fetchTotalStudentsCount(teacherClasses) {
+async function fetchTotalStudentsCount(classIds) {
     try {
-        // Extract just the class_id values into a simple array: [1, 2, 3]
-        const classIds = teacherClasses.map(c => c.class_id);
-
         if (classIds.length === 0) return 0;
 
         const { count, error } = await supabase
@@ -84,7 +49,7 @@ async function fetchStudentsFromClass(classId, limit = 5) {
     try {
         const { data, error } = await supabase
             .from('Students')
-            .select('*')
+            .select('student_id, full_name, date_of_birth, class_id')
             .eq('class_id', classId)
             .limit(limit);
 
@@ -96,6 +61,43 @@ async function fetchStudentsFromClass(classId, limit = 5) {
     } catch (err) {
         console.error('Unexpected error fetching students:', err);
         return [];
+    }
+}
+
+/**
+ * Fetch average grade percentage across all of the teacher's classes.
+ * Queries the Grades table and returns avg(score / max_score * 100).
+ * Returns null if there are no grade records.
+ */
+async function fetchAverageGrade(classIds) {
+    try {
+        if (classIds.length === 0) return null;
+
+        // Get all student_ids in the teacher's classes
+        const { data: students, error: studentsError } = await supabase
+            .from('Students')
+            .select('student_id')
+            .in('class_id', classIds);
+
+        if (studentsError || !students || students.length === 0) return null;
+
+        const studentIds = students.map(s => s.student_id);
+
+        const { data: grades, error: gradesError } = await supabase
+            .from('Grades')
+            .select('score, max_score')
+            .in('student_id', studentIds);
+
+        if (gradesError || !grades || grades.length === 0) return null;
+
+        const validGrades = grades.filter(g => g.max_score && g.max_score > 0);
+        if (validGrades.length === 0) return null;
+
+        const total = validGrades.reduce((sum, g) => sum + (g.score / g.max_score) * 100, 0);
+        return Math.round(total / validGrades.length);
+    } catch (err) {
+        console.error('Unexpected error fetching average grade:', err);
+        return null;
     }
 }
 
@@ -118,34 +120,56 @@ function getInitials(fullName) {
     return fullName.split(' ').map(n => n.charAt(0).toUpperCase()).slice(0, 2).join('');
 }
 
+// Show the no-classes empty state across the entire dashboard
+function showNoClassesState() {
+    const tbody = document.querySelector('.students-table tbody, .tp-table tbody');
+    if (tbody) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 2rem; color: #6b7280;">
+                    No classes assigned yet. Contact Admin.
+                </td>
+            </tr>
+        `;
+    }
+
+    const activeCoursesEl = document.getElementById('active_courses');
+    if (activeCoursesEl) activeCoursesEl.textContent = '0';
+
+    const totalStudentsEl = document.getElementById('total_students');
+    if (totalStudentsEl) totalStudentsEl.textContent = '0';
+
+    const avgPerformanceEl = document.getElementById('avg_performance');
+    if (avgPerformanceEl) avgPerformanceEl.textContent = 'N/A';
+}
+
 // Render students in the table
-function renderStudents(students, className) {
-    const tbody = document.querySelector('.students-table tbody');
+function renderStudents(students, className, avgPerformance) {
+    const tbody = document.querySelector('.students-table tbody, .tp-table tbody');
     if (!tbody) {
         console.error('Students table tbody not found');
         return;
     }
 
-    tbody.innerHTML = ''; // Clear existing rows
+    tbody.innerHTML = '';
 
     if (students.length === 0) {
-        const noDataRow = `
+        tbody.innerHTML = `
             <tr>
                 <td colspan="5" style="text-align: center; padding: 2rem; color: #6b7280;">
                     No students found in your class.
                 </td>
             </tr>
         `;
-        tbody.insertAdjacentHTML('beforeend', noDataRow);
         return;
     }
+
+    const performancePercent = avgPerformance !== null ? avgPerformance : 0;
+    const performanceLabel = avgPerformance !== null ? `${avgPerformance}%` : 'N/A';
 
     students.forEach(student => {
         const age = calculateAge(student.date_of_birth);
         const initials = getInitials(student.full_name);
-
-        // Placeholder performance percentage (you might want to fetch actual performance data)
-        const performancePercent = 85; // Default value
 
         const row = `
             <tr>
@@ -158,14 +182,14 @@ function renderStudents(students, className) {
                 <td>${age}</td>
                 <td>${className || 'N/A'}</td>
                 <td>
-                    <div style="display: flex; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
                         <div class="performance-bar">
                             <div class="performance-fill excellent" style="width: ${performancePercent}%;"></div>
                         </div>
-                        <span class="performance-text">${performancePercent}%</span>
+                        <span class="performance-text">${performanceLabel}</span>
                     </div>
                 </td>
-                <td><a href="#" class="view-details">View Details</a></td>
+                <td><a href="./student_details.html?id=${student.student_id}" class="view-details">View Details</a></td>
             </tr>
         `;
 
@@ -173,55 +197,60 @@ function renderStudents(students, className) {
     });
 }
 
-// Main function to load students for the teacher
+// Main function to load the teacher dashboard
 async function loadTeacherDashboard() {
     console.log('Loading teacher dashboard...');
 
-    // Check if teacher is logged in
-    const teacherId = await checkTeacherLogin();
-    if (!teacherId) return;
+    // Start the live clock
+    startLiveClock('teacherGreetingDate');
+
+    // Auth check
+    const authResult = await checkTeacherLogin();
+    if (!authResult) return;
+
+    const { teacherId, teacherData } = authResult;
+
+    // Personalise the greeting
+    const greetingEl = document.getElementById('teacherGreetingName');
+    if (greetingEl && teacherData) {
+        greetingEl.textContent = `${teacherData.first_name || ''} ${teacherData.last_name || ''}`.trim() || 'Teacher';
+    }
 
     // Fetch teacher's assigned classes
     const teacherClasses = await fetchTeacherClasses(teacherId);
 
-    // Update Active Courses Count
-    const activeCoursesElement = document.getElementById('active_courses');
-    if (activeCoursesElement) {
-        activeCoursesElement.textContent = teacherClasses.length;
-    }
+    // Update Active Courses count
+    const activeCoursesEl = document.getElementById('active_courses');
+    if (activeCoursesEl) activeCoursesEl.textContent = teacherClasses.length;
 
     if (!teacherClasses || teacherClasses.length === 0) {
-        console.error('No classes assigned to this teacher');
-        // alert('No classes are assigned to your account. Please contact an administrator.'); 
-        // Alert might be annoying if they just want to see the dashboard, even if empty.
+        showNoClassesState();
         return;
     }
 
-    console.log('Teacher classes:', teacherClasses);
+    const classIds = teacherClasses.map(c => c.class_id);
 
-    // Fetch total students count
-    const totalStudentsCount = await fetchTotalStudentsCount(teacherClasses);
-    console.log(`Total students count: ${totalStudentsCount}`);
+    // Fetch total students count and average grade in parallel
+    const [totalStudentsCount, avgGrade] = await Promise.all([
+        fetchTotalStudentsCount(classIds),
+        fetchAverageGrade(classIds)
+    ]);
 
-    // Update the total students display
-    const totalStudentsElement = document.getElementById('total_students');
-    if (totalStudentsElement) {
-        totalStudentsElement.textContent = totalStudentsCount;
-    }
+    // Update total students display
+    const totalStudentsEl = document.getElementById('total_students');
+    if (totalStudentsEl) totalStudentsEl.textContent = totalStudentsCount;
 
-    // For displaying students, use the first class (or you could modify to show from all classes)
+    // Update average performance display (if the element exists)
+    const avgPerformanceEl = document.getElementById('avg_performance');
+    if (avgPerformanceEl) avgPerformanceEl.textContent = avgGrade !== null ? `${avgGrade}%` : 'N/A';
+
+    // Display students from first class
     const firstClass = teacherClasses[0];
-
-    // Fetch students from the first class (limited to 5)
     const students = await fetchStudentsFromClass(firstClass.class_id, 5);
-    console.log(`Fetched ${students.length} students from class ${firstClass.class_name} ${firstClass.section}`);
-
-    // Render students in the table
     const classDisplayName = `${firstClass.class_name} ${firstClass.section}`;
-    renderStudents(students, classDisplayName);
+    renderStudents(students, classDisplayName, avgGrade);
 }
 
-// Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     loadTeacherDashboard();
 });

@@ -30,8 +30,8 @@
         <!-- Page Header -->
         <div class="tp-header">
             <div class="tp-header-left">
-                <h1>Welcome back 👋</h1>
-                <p id="teacherGreetingDate">Dashboard</p>
+                <h1>Welcome back, <span id="teacherGreetingName">Teacher</span> 👋</h1>
+                <p id="teacherGreetingDate">Loading date…</p>
             </div>
             <div class="tp-header-right">
                 <button class="notification-btn" title="Notifications"><i class="fa fa-bell"></i></button>
@@ -44,7 +44,7 @@
             <div class="stat-card">
                 <div class="stat-icon blue"><i class="fas fa-book"></i></div>
                 <div class="stat-content">
-                    <h3>24</h3>
+                    <h3 id="active_courses">0</h3>
                     <p>Active Courses</p>
                 </div>
             </div>
@@ -79,7 +79,12 @@
                 <h2 class="card-title">AI Assistant</h2>
                 <div class="ai-feature">
                     <div class="ai-feature-icon">📝</div>
-                    <div class="ai-feature-text">Generate Lesson Notes</div>
+                    <div class="ai-feature-text">
+                        Generate Lesson Notes
+                        <span
+                            style="margin-left:8px;font-size:10px;font-weight:700;background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:12px;letter-spacing:.4px;">COMING
+                            SOON</span>
+                    </div>
                 </div>
                 <div class="ai-feature">
                     <div class="ai-feature-icon"><i class="fa fa-question"></i></div>
@@ -87,7 +92,12 @@
                 </div>
                 <div class="ai-feature">
                     <div class="ai-feature-icon"><i class="fa fa-chart-column"></i></div>
-                    <div class="ai-feature-text">Analyse Student Performance</div>
+                    <div class="ai-feature-text">
+                        Analyse Student Performance
+                        <span
+                            style="margin-left:8px;font-size:10px;font-weight:700;background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:12px;letter-spacing:.4px;">COMING
+                            SOON</span>
+                    </div>
                 </div>
             </div>
 
@@ -116,7 +126,7 @@
             <div class="tp-section-header">
                 <h2 class="card-title" style="margin-bottom:0;">Students</h2>
             </div>
-            <table class="tp-table">
+            <table class="tp-table students-table">
                 <thead>
                     <tr>
                         <th>Name</th>
@@ -138,7 +148,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="../../scripts/teachersPortalScripts/teachersDashboard.js" type="module"></script>
-    <script src="../../scripts/teachersPortalScripts/teachers_portal_sidebar.js"></script>
+    <script src="../../scripts/teachersPortalScripts/teachers_portal_sidebar.js" type="module"></script>
     <script>
         (function () {
             const btn = document.getElementById('hamburgerBtn');

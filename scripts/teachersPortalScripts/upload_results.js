@@ -2,12 +2,9 @@
 // upload_results.js
 // Result upload logic for teachers portal with upsert functionality and Excel import
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { supabase } from '../config.js';
+import { checkTeacherLogin } from '../teacherUtils.js';
 
-const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Global variables
 let currentClassStudents = [];
@@ -19,9 +16,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function initializeUploadResults() {
     try {
-        // 1. Verify Teacher Login
-        currentTeacherId = await checkTeacherLogin();
-        if (!currentTeacherId) return;
+        // 1. Verify Teacher Login (uses shared auth guard)
+        const authResult = await checkTeacherLogin();
+        if (!authResult) return;
+        currentTeacherId = authResult.teacherId;
 
         // 2. Fetch Teacher's Classes
         const classes = await fetchTeacherClasses(currentTeacherId);
@@ -36,39 +34,6 @@ async function initializeUploadResults() {
 }
 
 // --- Auth & Initial Data Fetching ---
-
-async function checkTeacherLogin() {
-    try {
-        const { data: { user }, error } = await supabase.auth.getUser();
-
-        if (error || !user) {
-            console.error('No user logged in:', error);
-            alert('Please log in as a teacher to view this page.');
-            window.location.href = '../../index.html';
-            return null;
-        }
-
-        // Verify this user is actually a teacher
-        const { data: teacherData, error: teacherError } = await supabase
-            .from('Teachers')
-            .select('*')
-            .eq('teacher_id', user.id)
-            .single();
-
-        if (teacherError || !teacherData) {
-            console.error('User is not authorized as a teacher:', teacherError);
-            alert('You are not authorized as a teacher.');
-            await supabase.auth.signOut();
-            window.location.href = '../../index.html';
-            return null;
-        }
-
-        return user.id;
-    } catch (err) {
-        console.error('Error checking teacher login:', err);
-        return null;
-    }
-}
 
 async function fetchTeacherClasses(teacherId) {
     try {

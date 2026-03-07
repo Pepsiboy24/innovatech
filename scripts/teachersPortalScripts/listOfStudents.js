@@ -1,50 +1,13 @@
-// listOfStudents.js - Handles fetching and displaying all students for the logged-in teacher
+// listOfStudents.js — Fetches and displays all students for the logged-in teacher.
+// Attendance percentages come from the real Attendance table.
 
-const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
+import { supabase } from '../config.js';
+import { checkTeacherLogin } from '../teacherUtils.js';
 
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// Check if teacher is logged in
-async function checkTeacherLogin() {
-    try {
-        const { data: { user }, error } = await supabaseClient.auth.getUser();
-
-        if (error || !user) {
-            console.error('No user logged in:', error);
-            alert('Please log in as a teacher to view this page.');
-            window.location.href = '../../index.html';
-            return null;
-        }
-
-        // Verify this user is actually a teacher in the Teachers table
-        const { data: teacherData, error: teacherError } = await supabaseClient
-            .from('Teachers')
-            .select('*')
-            .eq('teacher_id', user.id)
-            .single();
-
-        if (teacherError || !teacherData) {
-            console.error('User is not authorized as a teacher:', teacherError);
-            alert('You are not authorized as a teacher. Please log in with teacher credentials.');
-            await supabaseClient.auth.signOut();
-            window.location.href = '../../index.html';
-            return null;
-        }
-
-        return user.id;
-    } catch (err) {
-        console.error('Error checking teacher login:', err);
-        alert('An error occurred while verifying your login. Please try logging in again.');
-        window.location.href = '../../index.html';
-        return null;
-    }
-}
-
-// Fetch teacher's assigned classes
+// Fetch teacher's assigned class IDs + details
 async function fetchTeacherClasses(teacherId) {
     try {
-        const { data, error } = await supabaseClient
+        const { data, error } = await supabase
             .from('Classes')
             .select('class_id, class_name, section')
             .eq('teacher_id', teacherId);
@@ -60,30 +23,19 @@ async function fetchTeacherClasses(teacherId) {
     }
 }
 
-// Fetch all students from teacher's classes
+// Fetch all students from teacher's classes (with inner-joined class info)
 async function fetchAllStudentsFromTeacherClasses(teacherId) {
     try {
-        // First, get all class_ids for this teacher
-        const { data: classes, error: classesError } = await supabaseClient
-            .from('Classes')
-            .select('class_id')
-            .eq('teacher_id', teacherId);
-
-        if (classesError) {
-            console.error('Error fetching teacher classes:', classesError);
-            return [];
-        }
+        const classes = await fetchTeacherClasses(teacherId);
 
         if (!classes || classes.length === 0) {
             console.log('No classes found for this teacher');
             return [];
         }
 
-        // Extract class_ids into an array
         const classIds = classes.map(cls => cls.class_id);
 
-        // Now fetch students from these classes
-        const { data, error } = await supabaseClient
+        const { data, error } = await supabase
             .from('Students')
             .select(`
                 student_id,
@@ -128,32 +80,49 @@ function getInitials(fullName) {
     return fullName.split(' ').map(n => n.charAt(0).toUpperCase()).slice(0, 2).join('');
 }
 
-// Calculate attendance percentage (placeholder - you might want to fetch actual attendance data)
+/**
+ * Calculate real attendance percentage for a student from the Attendance table.
+ * Returns the percentage (0–100) or 'N/A' if no records exist.
+ */
 async function getAttendancePercentage(studentId) {
-    // Placeholder implementation - replace with actual attendance calculation
-    // For now, return a random percentage between 70-100
-    return Math.floor(Math.random() * 31) + 70;
+    try {
+        const { data, error } = await supabase
+            .from('Attendance')
+            .select('attendance_status')
+            .eq('student_id', studentId);
+
+        if (error || !data || data.length === 0) return 'N/A';
+
+        const total = data.length;
+        const presentCount = data.filter(r =>
+            r.attendance_status && r.attendance_status.toLowerCase() === 'present'
+        ).length;
+
+        return Math.round((presentCount / total) * 100);
+    } catch (err) {
+        console.error('Error fetching attendance for student', studentId, err);
+        return 'N/A';
+    }
 }
 
 // Render students in the table
 async function renderStudents(students) {
-    const tbody = document.querySelector('.students-table tbody');
+    const tbody = document.querySelector('.tp-table tbody');
     if (!tbody) {
         console.error('Students table tbody not found');
         return;
     }
 
-    tbody.innerHTML = ''; // Clear existing rows
+    tbody.innerHTML = '';
 
     if (students.length === 0) {
-        const noDataRow = `
+        tbody.innerHTML = `
             <tr>
                 <td colspan="5" style="text-align: center; padding: 2rem; color: #6b7280;">
                     No students found in your classes.
                 </td>
             </tr>
         `;
-        tbody.insertAdjacentHTML('beforeend', noDataRow);
         return;
     }
 
@@ -161,7 +130,8 @@ async function renderStudents(students) {
         const age = calculateAge(student.date_of_birth);
         const initials = getInitials(student.full_name);
         const attendancePercent = await getAttendancePercentage(student.student_id);
-        const classDisplay = `${student.Classes.class_name} ${student.Classes.section}`;
+        const attendanceDisplay = attendancePercent === 'N/A' ? 'N/A' : `${attendancePercent}%`;
+        const barWidth = attendancePercent === 'N/A' ? 0 : attendancePercent;
 
         const row = `
             <tr>
@@ -180,13 +150,13 @@ async function renderStudents(students) {
                 <td>
                     <div class="performance-container">
                         <div class="performance-bar">
-                            <div class="performance-fill" style="width: ${attendancePercent}%;"></div>
+                            <div class="performance-fill" style="width: ${barWidth}%;"></div>
                         </div>
-                        <span class="performance-text">${attendancePercent}%</span>
+                        <span class="performance-text">${attendanceDisplay}</span>
                     </div>
                 </td>
                 <td>
-                    <a href="#" class="view-all-btn">View All</a>
+                    <a href="./student_details.html?id=${student.student_id}" class="view-all-btn">View Details</a>
                 </td>
             </tr>
         `;
@@ -195,23 +165,40 @@ async function renderStudents(students) {
     }
 }
 
-// Main function to load all students for the teacher
+// Show empty-state message if teacher has no classes
+function showNoClassesState() {
+    const tbody = document.querySelector('.tp-table tbody');
+    if (tbody) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 2rem; color: #6b7280;">
+                    No classes assigned yet. Contact Admin.
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// Main function
 async function loadAllTeacherStudents() {
     console.log('Loading all students for teacher...');
 
-    // Check if teacher is logged in
-    const teacherId = await checkTeacherLogin();
-    if (!teacherId) return;
+    const authResult = await checkTeacherLogin();
+    if (!authResult) return;
 
-    // Fetch all students from teacher's classes
+    const { teacherId } = authResult;
+
     const students = await fetchAllStudentsFromTeacherClasses(teacherId);
-    console.log(`Fetched ${students.length} students from teacher's classes`);
 
-    // Render students in the table
+    if (students.length === 0) {
+        showNoClassesState();
+        return;
+    }
+
+    console.log(`Fetched ${students.length} students from teacher's classes`);
     await renderStudents(students);
 }
 
-// Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     loadAllTeacherStudents();
 });
