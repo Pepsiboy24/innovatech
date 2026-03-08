@@ -144,7 +144,7 @@ function setupModalHandlers() {
         const roomNumber = document.getElementById('roomInput').value;
 
         if (!subjectId || !teacherId || !roomNumber) {
-            alert('Please fill in all fields.');
+            showToast('Please fill in all fields.', 'warning');
             return;
         }
 

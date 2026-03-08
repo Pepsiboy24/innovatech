@@ -1,7 +1,4 @@
-const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
-
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+import { supabase as supabaseClient } from '../config.js';
 
 function excelSerialDateToISO(serial) {
   const EPOCH_DIFF = 25569; // Difference between Excel epoch (Jan 1, 1900) and JS epoch (Jan 1, 1970) in days.
@@ -337,7 +334,7 @@ export function createDragDropArea() {
 // Function to handle file upload
 async function handleFileUpload(file) {
   if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
-    alert('Please select a valid Excel file (.xlsx or .xls)');
+    showToast('Please select a valid Excel file (.xlsx or .xls)', 'warning');
     return;
   }
 
@@ -345,7 +342,7 @@ async function handleFileUpload(file) {
     const results = await uploadAndProcessExcel(file);
     displayResults(results);
   } catch (error) {
-    alert('Error processing file: ' + error.message);
+    showToast('Error processing file: ' + error.message, 'error');
   }
 }
 
@@ -363,5 +360,5 @@ function displayResults(results) {
     });
   }
 
-  alert(message);
+  showToast(message, "info");
 }

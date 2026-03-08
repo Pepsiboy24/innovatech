@@ -218,6 +218,118 @@
                 font-size: 13px;
             }
         }
+
+        /* ── Toast Notifications ───────────────────────────────── */
+        #toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 10px;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        .toast {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            min-width: 280px;
+            max-width: 380px;
+            padding: 14px 16px;
+            border-radius: 10px;
+            background: #1f2937;
+            color: #f9fafb;
+            font-size: 14px;
+            line-height: 1.4;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+            pointer-events: all;
+            animation: toast-in 0.35s cubic-bezier(.21, 1.02, .73, 1) forwards;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .toast.toast-error {
+            border-left-color: #ef4444;
+        }
+
+        .toast.toast-success {
+            border-left-color: #22c55e;
+        }
+
+        .toast.toast-warning {
+            border-left-color: #f59e0b;
+        }
+
+        .toast.toast-info {
+            border-left-color: #3b82f6;
+        }
+
+        .toast-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .toast-body {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .toast-msg {
+            color: #d1d5db;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0;
+            align-self: flex-start;
+            line-height: 1;
+        }
+
+        .toast-close:hover {
+            color: #f9fafb;
+        }
+
+        .toast-out {
+            animation: toast-out 0.3s ease forwards;
+        }
+
+        @keyframes toast-in {
+            from {
+                opacity: 0;
+                transform: translateX(40px) scale(.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        @keyframes toast-out {
+            from {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+                max-height: 120px;
+            }
+
+            to {
+                opacity: 0;
+                transform: translateX(40px) scale(.95);
+                max-height: 0;
+                margin: 0;
+                padding: 0;
+            }
+        }
     </style>
     <!-- <script src="https://cdn.jsdelivr.net/npm/@supabaseClient/supabase-js@2"></script>
     <script src="scripts/config.js"></script> -->
@@ -272,6 +384,9 @@
         </p> -->
     </div>
 
+    <!-- Toast container -->
+    <div id="toast-container"></div>
+
     <!-- <a href="./html/parentsPortal/parentsPortal.html"></a> -->
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -281,7 +396,35 @@
         const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
 
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);;
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ── Toast helper ────────────────────────────────────────────
+        const TOAST_ICONS = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+        const TOAST_TITLES = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Info' };
+
+        function showToast(message, type = 'info', duration = 5000) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <span class="toast-icon">${TOAST_ICONS[type]}</span>
+                <div class="toast-body">
+                    <div class="toast-title">${TOAST_TITLES[type]}</div>
+                    <div class="toast-msg">${message}</div>
+                </div>
+                <button class="toast-close" aria-label="Dismiss">✕</button>
+            `;
+            toast.querySelector('.toast-close').addEventListener('click', () => dismissToast(toast));
+            container.appendChild(toast);
+            const timer = setTimeout(() => dismissToast(toast), duration);
+            toast._timer = timer;
+        }
+
+        function dismissToast(toast) {
+            clearTimeout(toast._timer);
+            toast.classList.add('toast-out');
+            toast.addEventListener('animationend', () => toast.remove(), { once: true });
+        }
 
         // Role tab functionality
         const roleTabs = document.querySelectorAll('.role-tab');
@@ -344,7 +487,7 @@
             const remember = document.getElementById('remember').checked;
 
             if (!email || !password) {
-                alert('Please enter both email and password');
+                showToast('Please enter both your email and password.', 'warning');
                 return;
             }
 
@@ -358,7 +501,7 @@
                 });
 
                 if (error) {
-                    alert('Login failed: ' + error.message);
+                    showToast('Login failed: ' + error.message, 'error');
                     return;
                 }
 
@@ -411,7 +554,7 @@
                 //     .single();
 
                 if (roleError || !roleData) {
-                    alert(`You are not authorized as a ${selectedRole}. Please select the correct role or contact your administrator.`);
+                    showToast(`You are not authorized as a ${selectedRole}. Please select the correct role or contact your administrator.`, 'warning', 7000);
                     // Sign out the user since they don't have the required role
                     await supabaseClient.auth.signOut();
                     return;
@@ -425,19 +568,19 @@
 
             } catch (err) {
                 console.error('Login error:', err);
-                alert('An unexpected error occurred during login. Please try again.');
+                showToast('An unexpected error occurred during login. Please try again.', 'error');
             }
         });
 
         // Signup link functionality
         function showSignup() {
-            alert('Signup functionality would redirect to registration page');
+            showToast('Registration is handled by your school administrator.', 'info');
         }
 
         // Forgot password functionality
         document.querySelector('.forgot-password').addEventListener('click', function (e) {
             e.preventDefault();
-            alert('Forgot password functionality would open password reset form');
+            showToast('Please contact your school administrator to reset your password.', 'info', 6000);
         });
 
         // Add some interactive feedback

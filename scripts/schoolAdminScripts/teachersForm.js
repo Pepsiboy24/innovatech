@@ -7,7 +7,7 @@ function showStep(step) {
   // 1. Clear everything first
   const steps = document.querySelectorAll(".step, #successStep, #errorStep");
   steps.forEach((s) => s.classList.remove("active"));
-  
+
   const prevBtn = document.getElementById("prevBtn");
   const nextBtn = document.getElementById("nextBtn");
   const submitBtn = document.getElementById("submitBtn");
@@ -27,11 +27,11 @@ function showStep(step) {
   if (step === 'error') {
     const errorStep = document.getElementById("errorStep");
     if (errorStep) errorStep.classList.add("active");
-    
+
     // We keep the buttonsContainer visible so the "Back to Edit" button (if inside) can show
     // Or we rely on the button we just added inside the errorStep div itself.
     if (buttonsContainer) buttonsContainer.style.display = "none"; // Hide main nav buttons
-    return; 
+    return;
   }
 
   // 4. Normal step logic
@@ -41,9 +41,9 @@ function showStep(step) {
   const currentStepEl = document.getElementById("step" + step);
   if (currentStepEl) currentStepEl.classList.add("active");
 
-  if(prevBtn) prevBtn.style.display = step === 1 ? "none" : "block";
-  if(nextBtn) nextBtn.style.display = step === totalSteps ? "none" : "block";
-  if(submitBtn) submitBtn.style.display = step === totalSteps ? "block" : "none";
+  if (prevBtn) prevBtn.style.display = step === 1 ? "none" : "block";
+  if (nextBtn) nextBtn.style.display = step === totalSteps ? "none" : "block";
+  if (submitBtn) submitBtn.style.display = step === totalSteps ? "block" : "none";
 
   updateProgress();
   updateStepIndicators();
@@ -93,10 +93,10 @@ function validateStep(step) {
       if (value > today) {
         isValid = false;
         field.classList.add("error");
-        alert("Date of Birth cannot be in the future.");
+        showToast("Date of Birth cannot be in the future.", "warning");
       }
     }
-    
+
     // You can add more checks here (e.g., email format, phone length)
   });
 
@@ -123,7 +123,7 @@ document.getElementById("teacherForm").addEventListener("submit", async function
 
   const submitBtn = document.getElementById("submitBtn");
   const originalText = submitBtn.textContent;
-  
+
   submissionInProgress = true;
   submitBtn.disabled = true;
   submitBtn.textContent = "Verifying & Saving...";
@@ -141,9 +141,9 @@ document.getElementById("teacherForm").addEventListener("submit", async function
       this.style.display = "none";
       const buttonsContainer = document.querySelector(".buttons");
       if (buttonsContainer) buttonsContainer.style.display = "none";
-      showStep('success'); 
+      showStep('success');
     } else {
-      showStep('error'); 
+      showStep('error');
       // We don't necessarily need to throw an error here since we handled the UI
     }
 
@@ -169,27 +169,27 @@ function populateReview() {
   let html = '<div class="review-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">';
   for (let [key, value] of formData.entries()) {
     if (value) {
-        html += `<div><strong>${key.replace(/([A-Z])/g, ' $1')}:</strong> ${value}</div>`;
+      html += `<div><strong>${key.replace(/([A-Z])/g, ' $1')}:</strong> ${value}</div>`;
     }
   }
   html += "</div>";
   reviewContent.innerHTML = html;
 }
 
-document.addEventListener("click", function(e) {
-    if (e.target && e.target.id === "backToEditBtn" || e.target.closest("#backToEditBtn")) {
-        // Reset submission locks
-        submissionInProgress = false;
-        
-        // Go back to the Review Step (Step 7)
-        currentStep = 7; 
-        showStep(currentStep);
-        
-        // Re-enable the submit button
-        const submitBtn = document.getElementById("submitBtn");
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = "Submit Registration";
-        }
+document.addEventListener("click", function (e) {
+  if (e.target && e.target.id === "backToEditBtn" || e.target.closest("#backToEditBtn")) {
+    // Reset submission locks
+    submissionInProgress = false;
+
+    // Go back to the Review Step (Step 7)
+    currentStep = 7;
+    showStep(currentStep);
+
+    // Re-enable the submit button
+    const submitBtn = document.getElementById("submitBtn");
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Submit Registration";
     }
+  }
 });

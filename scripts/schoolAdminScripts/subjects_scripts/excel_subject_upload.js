@@ -1,9 +1,9 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Locate the upload button in your UI
     const uploadBtn = document.querySelector('.action-card .action-icon.add-multiple')?.parentElement;
 
     if (uploadBtn) {
-        uploadBtn.addEventListener('click', function() {
+        uploadBtn.addEventListener('click', function () {
             createUploadModal();
         });
     }
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // 1. Process Excel Data (Clean & Remove internal duplicates)
             const excelSubjectsMap = new Map();
-            
+
             jsonData.forEach(row => {
                 const name = row['Subject Name'] || row['subject name'] || row['Name'] || row['name'];
                 const type = row['Type'] || row['type'] || row['Subject Type'] || row['subject type'];
@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (name && type) {
                     const cleanName = name.trim();
                     const cleanKey = cleanName.toLowerCase();
-                    
+
                     // Only add if we haven't seen this name in the file yet
                     if (!excelSubjectsMap.has(cleanKey)) {
                         excelSubjectsMap.set(cleanKey, {
@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             if (excelSubjectsMap.size === 0) {
-                alert('No valid subjects found in file. Please check column names.');
+                showToast('No valid subjects found in file. Please check column names.', 'warning');
                 uploadBtn.textContent = "Upload Subjects";
                 uploadBtn.disabled = false;
                 return;
@@ -156,7 +156,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // 4. Handle Insert
             if (newSubjectsToInsert.length === 0) {
-                alert(`All ${excelSubjectsMap.size} subjects in the file already exist in the database.`);
+                showToast(`All ${excelSubjectsMap.size} subjects in the file already exist in the database.`, "info");
                 closeUploadModal();
                 return;
             }
@@ -167,25 +167,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (error) {
                 console.error('Error inserting subjects:', error);
-                alert('Failed to upload subjects. Please check the Excel file format.');
+                showToast('Failed to upload subjects. Please check the Excel file format.', 'error');
             } else {
                 console.log('Subjects uploaded successfully:', insertedData);
-                
+
                 let message = `${newSubjectsToInsert.length} new subjects added!`;
                 if (duplicatesCount > 0) {
                     message += `\n(${duplicatesCount} duplicates were skipped)`;
                 }
-                alert(message);
+                showToast(message, 'info');
                 closeUploadModal();
             }
 
         } catch (err) {
             console.error('Error processing Excel file:', err);
-            alert('Error processing the file. Ensure it is a valid Excel file.');
+            showToast('Error processing the file. Ensure it is a valid Excel file.', 'error');
         } finally {
             // Reset button state if modal is still open
             const btn = document.getElementById('uploadBtn');
-            if(btn) {
+            if (btn) {
                 btn.textContent = "Upload Subjects";
                 btn.disabled = false;
             }
@@ -210,7 +210,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Expose close function globally
-    window.closeUploadModal = function() {
+    window.closeUploadModal = function () {
         const modal = document.querySelector('.upload-modal');
         if (modal) modal.remove();
     };

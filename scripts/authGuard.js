@@ -36,8 +36,7 @@ import { supabase } from './config.js';
             // User is a teacher. They are authenticated, but shouldn't be here.
             // Redirect to index (or teacher portal if we knew the URL, but index is safe)
             // DO NOT Sign Out.
-            alert('Access Denied: You are logged in as a Teacher. Redirecting to Home...');
-            window.location.href = '../../index.html'; // Assuming root is up two levels
+            showAccessDeniedModal('You are logged in as a Teacher. Redirecting to Home...', '../../index.html');
             return;
         }
 
@@ -60,4 +59,44 @@ import { supabase } from './config.js';
 function redirectToLogin() {
     console.log('Redirecting to login...');
     window.location.href = '../../index.html';
+}
+
+function showAccessDeniedModal(message, redirectUrl) {
+    const render = () => {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); z-index: 999999; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease;';
+        
+        const modal = document.createElement('div');
+        modal.style.cssText = 'background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 32px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;';
+        
+        modal.innerHTML = `
+            <div style="width: 64px; height: 64px; background: rgba(239, 68, 68, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #ef4444;">
+                <svg style="width: 32px; height: 32px;" stroke="currentColor" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            <h2 style="margin: 0 0 12px; font-size: 20px; font-weight: 600;">Access Denied</h2>
+            <p style="margin: 0 0 24px; color: #94a3b8; font-size: 15px; line-height: 1.5;">${message}</p>
+            <div style="display: flex; justify-content: center;">
+                <div style="width: 24px; height: 24px; border: 3px solid #334155; border-top-color: #3b82f6; border-radius: 50%; animation: authModalSpin 1s linear infinite;"></div>
+            </div>
+            <style>@keyframes authModalSpin { to { transform: rotate(360deg); } }</style>
+        `;
+        
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+        
+        requestAnimationFrame(() => {
+            overlay.style.opacity = '1';
+            modal.style.transform = 'translateY(0)';
+        });
+        
+        setTimeout(() => {
+            window.location.href = redirectUrl;
+        }, 2500);
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', render);
+    } else {
+        render();
+    }
 }

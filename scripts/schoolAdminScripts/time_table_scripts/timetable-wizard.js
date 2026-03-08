@@ -18,7 +18,7 @@ async function fetchClasses() {
     try {
         const { data, error } = await supabase.from('Classes').select('class_id, class_name, section');
         if (error) throw error;
-        
+
         data.forEach(cls => {
             const option = document.createElement('option');
             option.value = cls.class_id;
@@ -87,7 +87,7 @@ async function loadClassConfig(classId) {
         }
 
         if (data) {
-            const wantsToEdit = confirm("A timetable configuration already exists for this class.\n\nClick OK to load and edit the existing configuration.\nClick Cancel to select a different class.");
+            const wantsToEdit = await window.showConfirm("A timetable configuration already exists for this class. Would you like to load and edit it?", "Existing Configuration Found");
 
             if (!wantsToEdit) {
                 document.getElementById('classSelect').value = "";
@@ -98,7 +98,7 @@ async function loadClassConfig(classId) {
             console.log("Loading config for editing...");
             showEditModeBanner(true);
 
-            document.getElementById('startTime').value = data.start_time.slice(0, 5); 
+            document.getElementById('startTime').value = data.start_time.slice(0, 5);
             document.getElementById('periodDuration').value = data.period_duration;
 
             const activeDays = data.active_days || [];
@@ -107,8 +107,8 @@ async function loadClassConfig(classId) {
             });
 
             const container = document.getElementById('breaksContainer');
-            container.innerHTML = ''; 
-            
+            container.innerHTML = '';
+
             const breaks = data.break_times || [];
             let totalBreakMinutes = 0;
 
@@ -132,7 +132,7 @@ async function loadClassConfig(classId) {
             submitBtn.classList.add('btn-warning');
 
         } else {
-            showEditModeBanner(false); 
+            showEditModeBanner(false);
             resetForm();
         }
 
@@ -174,7 +174,7 @@ function resetForm() {
     document.getElementById('periodDuration').value = "40";
     document.querySelectorAll('input[name="active_days"]').forEach(cb => cb.checked = true);
     document.getElementById('breaksContainer').innerHTML = '';
-    addBreakField("10:00", 20); 
+    addBreakField("10:00", 20);
 
     showEditModeBanner(false);
 
@@ -223,11 +223,11 @@ function calculatePeriodsAndValidate(startTime, endTime, periodDuration, breaks)
     const startMinutes = timeToMinutes(startTime);
     const endMinutes = timeToMinutes(endTime);
     const periodDur = parseInt(periodDuration);
-    
+
     let currentTime = startMinutes;
     let periodCount = 0;
     const periodEndTimes = [];
-    
+
     while (currentTime < endMinutes) {
         const periodEnd = currentTime + periodDur;
         if (periodEnd > endMinutes) break;
@@ -235,12 +235,12 @@ function calculatePeriodsAndValidate(startTime, endTime, periodDuration, breaks)
         currentTime = periodEnd;
         periodCount++;
     }
-    
+
     for (const breakItem of breaks) {
         const breakStart = timeToMinutes(breakItem.start);
-        
+
         const alignedBreak = periodEndTimes.find(endTime => endTime === breakStart);
-        
+
         if (!alignedBreak) {
             let closestAlignedTime = null;
             let minDifference = Infinity;
@@ -259,7 +259,7 @@ function calculatePeriodsAndValidate(startTime, endTime, periodDuration, breaks)
             };
         }
     }
-    
+
     return { valid: true, periodsPerDay: periodCount };
 }
 
@@ -275,7 +275,7 @@ async function handleSaveConfig(e) {
         const classId = document.getElementById('classSelect').value;
         const startTime = document.getElementById('startTime').value;
         const periodDuration = parseInt(document.getElementById('periodDuration').value);
-        
+
         const activeDays = Array.from(document.querySelectorAll('input[name="active_days"]:checked')).map(cb => cb.value);
         if (activeDays.length === 0) throw new Error("Please select at least one active day.");
 
@@ -301,27 +301,21 @@ async function handleSaveConfig(e) {
         const { data: existingEntries } = await supabase.from('timetable_entries').select('*').eq('class_id', classId);
 
         let performMigration = false;
-        
-        if (existingConfig && existingEntries && existingEntries.length > 0) {
-             const timeChanged = existingConfig.start_time.slice(0,5) !== startTime;
-             const durationChanged = existingConfig.period_duration !== periodDuration;
-             const breaksChanged = JSON.stringify(existingConfig.break_times) !== JSON.stringify(breaks);
 
-             if (timeChanged || durationChanged || breaksChanged) {
-                 const confirmShift = confirm(
-                     "⚠️ SCHEDULE CHANGE DETECTED\n\n" +
-                     "You have changed the time structure (Start Time, Duration, or Breaks).\n\n" +
-                     "Do you want to auto-adjust your existing classes to the new times?\n" +
-                     "• OK: Auto-shift classes (Recommended)\n" +
-                     "• Cancel: Delete classes and start over"
-                 );
-                 
-                 if (confirmShift) {
-                     performMigration = true;
-                 } else {
-                     await supabase.from('timetable_entries').delete().eq('class_id', classId);
-                 }
-             }
+        if (existingConfig && existingEntries && existingEntries.length > 0) {
+            const timeChanged = existingConfig.start_time.slice(0, 5) !== startTime;
+            const durationChanged = existingConfig.period_duration !== periodDuration;
+            const breaksChanged = JSON.stringify(existingConfig.break_times) !== JSON.stringify(breaks);
+
+            if (timeChanged || durationChanged || breaksChanged) {
+                const confirmShift = await window.showConfirm("You changed the time structure. Auto-adjust existing classes to new times? (Cancel = delete existing entries and start over)", "Schedule Change Detected ⚠️");
+
+                if (confirmShift) {
+                    performMigration = true;
+                } else {
+                    await supabase.from('timetable_entries').delete().eq('class_id', classId);
+                }
+            }
         }
 
         // SAVE CONFIG (Using Option 1: check existence then Update or Insert)
@@ -338,8 +332,8 @@ async function handleSaveConfig(e) {
         // EXECUTE MIGRATION
         if (performMigration) {
             console.log("Migrating entries to new timeline...");
-            const oldPeriodMap = generatePeriodMap(existingConfig); 
-            const newTimesArray = generateValidPeriodTimes(newConfig); 
+            const oldPeriodMap = generatePeriodMap(existingConfig);
+            const newTimesArray = generateValidPeriodTimes(newConfig);
 
             const updates = [];
             const idsToDelete = [];
@@ -353,8 +347,8 @@ async function handleSaveConfig(e) {
                     if (newTime !== oldTime || entry.duration_minutes !== periodDuration) {
                         updates.push({
                             id: entry.id,
-                            start_time: newTime + ":00", 
-                            duration_minutes: periodDuration 
+                            start_time: newTime + ":00",
+                            duration_minutes: periodDuration
                         });
                     }
                 } else {
@@ -367,7 +361,7 @@ async function handleSaveConfig(e) {
                 if (updateErr) console.error("Migration update failed", updateErr);
             }
             if (idsToDelete.length > 0) {
-                 await supabase.from('timetable_entries').delete().in('id', idsToDelete);
+                await supabase.from('timetable_entries').delete().in('id', idsToDelete);
             }
         }
 
@@ -375,7 +369,7 @@ async function handleSaveConfig(e) {
 
     } catch (err) {
         console.error("Save Error:", err);
-        alert(err.message);
+        showToast(err.message, 'error');
         btn.innerHTML = originalText;
         btn.disabled = false;
     }
@@ -388,28 +382,28 @@ function generatePeriodMap(config) {
     const map = {};
     let currentMinutes = 0;
     const limit = config.periods_per_day || 20;
-    
+
     for (let i = 0; i < limit; i++) {
         let timeFound = false;
         let safety = 0;
-        
+
         while (!timeFound && safety < 50) {
             safety++;
             // 🟢 THIS WAS THE MISSING FUNCTION CAUSING YOUR ERROR
-            const t = addMinutes(config.start_time, currentMinutes); 
+            const t = addMinutes(config.start_time, currentMinutes);
             const timeStr = t.slice(0, 5);
-            
+
             const breakObj = config.break_times.find(b => {
                 const start = typeof b === 'object' ? b.start : b;
                 return start.startsWith(timeStr);
             });
 
             if (breakObj) {
-                const dur = typeof breakObj === 'object' ? parseInt(breakObj.duration)||20 : 20;
+                const dur = typeof breakObj === 'object' ? parseInt(breakObj.duration) || 20 : 20;
                 currentMinutes += dur;
             } else {
-                map[timeStr] = i; 
-                const pDur = parseInt(config.period_duration)||40;
+                map[timeStr] = i;
+                const pDur = parseInt(config.period_duration) || 40;
                 currentMinutes += pDur;
                 timeFound = true;
             }
@@ -423,28 +417,28 @@ function generateValidPeriodTimes(config) {
     const times = [];
     let currentMinutes = 0;
     const limit = config.periods_per_day || 20;
-    
+
     for (let i = 0; i < limit; i++) {
         let timeFound = false;
         let safety = 0;
-        
+
         while (!timeFound && safety < 50) {
             safety++;
             // 🟢 THIS ALSO NEEDS addMinutes
             const t = addMinutes(config.start_time, currentMinutes);
             const timeStr = t.slice(0, 5);
-            
+
             const breakObj = config.break_times.find(b => {
                 const start = typeof b === 'object' ? b.start : b;
                 return start.startsWith(timeStr);
             });
 
             if (breakObj) {
-                const dur = typeof breakObj === 'object' ? parseInt(breakObj.duration)||20 : 20;
+                const dur = typeof breakObj === 'object' ? parseInt(breakObj.duration) || 20 : 20;
                 currentMinutes += dur;
             } else {
                 times.push(timeStr);
-                const pDur = parseInt(config.period_duration)||40;
+                const pDur = parseInt(config.period_duration) || 40;
                 currentMinutes += pDur;
                 timeFound = true;
             }

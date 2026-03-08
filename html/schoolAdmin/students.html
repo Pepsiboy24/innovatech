@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../../styles/schoolAdminStyles/students.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="../../scripts/ui_feedback.js"></script>
     <script src="../../scripts/schoolAdminScripts/school_admin_sidebar.js"></script>
 </head>
 
@@ -238,7 +239,7 @@
                 </div>
             </div>
 
-            <div class="action-card">
+            <div class="action-card" id="openExcelUploadBtn">
                 <div class="action-icon add-multiple">
                     <i class="fa-solid fa-file-excel"></i>
                 </div>
@@ -278,110 +279,28 @@
     </div>
 
     <script type="module">
-        // Import the function from your JS file
-        import { createDragDropArea } from '../../scripts/schoolAdminScripts/students_scripts/multipleStudentReg.js';
-
-        // --- Sidebar Logic (Kept from your original code) ---
+        // --- Sidebar Logic ---
         const sidebar = document.querySelector('[data-sideBar]');
         const sidebarOpenBtn = document.querySelector('[data-sideBarOpen]');
         const sidebarCloseBtn = document.querySelector('[data-sideBarClose]');
-
-        if (sidebarOpenBtn && sidebar) {
-            sidebarOpenBtn.addEventListener('click', () => sidebar.classList.add('show'));
-        }
-        if (sidebarCloseBtn && sidebar) {
-            sidebarCloseBtn.addEventListener('click', () => sidebar.classList.remove('show'));
-        }
+        if (sidebarOpenBtn && sidebar) sidebarOpenBtn.addEventListener('click', () => sidebar.classList.add('show'));
+        if (sidebarCloseBtn && sidebar) sidebarCloseBtn.addEventListener('click', () => sidebar.classList.remove('show'));
 
         // --- Single Student Popup Logic ---
         const popup = document.getElementById('registrationPopup');
         const openPopupBtn = document.getElementById('openPopupBtn');
         const closePopupBtn = document.getElementById('closePopup');
+        if (openPopupBtn && popup) openPopupBtn.addEventListener('click', () => popup.style.display = 'flex');
+        if (closePopupBtn && popup) closePopupBtn.addEventListener('click', () => popup.style.display = 'none');
 
-        if (openPopupBtn && popup) {
-            openPopupBtn.addEventListener('click', () => popup.style.display = 'flex');
-        }
-        if (closePopupBtn && popup) {
-            closePopupBtn.addEventListener('click', () => popup.style.display = 'none');
-        }
-
-        // --- Excel Upload Modal Logic ---
-
-        // Make function available globally so onclick works (if you use onclick in HTML)
-        // Or attach event listener (preferred)
-        window.uploadExcelSheet = function () {
-            // 1. Create Modal DOM
-            const modal = document.createElement('div');
-            modal.className = 'upload-modal';
-            modal.innerHTML = `
-            <div class="upload-modal-content">
-                <div class="upload-modal-header">
-                    <h2>Upload Student Excel Sheet</h2>
-                    <button class="close-modal">&times;</button>
-                </div>
-                <div class="upload-modal-body">
-                    <p>Please upload an Excel file with columns: <strong>Full Name, Email</strong> (Required).</p>
-                    <div id="dragDropContainer"></div>
-                </div>
-            </div>
-        `;
-
-            document.body.appendChild(modal);
-
-            // 2. Inject CSS if not exists
-            if (!document.getElementById('upload-modal-styles')) {
-                const style = document.createElement('style');
-                style.id = 'upload-modal-styles';
-                style.textContent = `
-                .upload-modal {
-                    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                    background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center;
-                    align-items: center; z-index: 10001; backdrop-filter: blur(4px);
-                }
-                .upload-modal-content {
-                    background: white; padding: 32px; border-radius: 16px;
-                    max-width: 500px; width: 90%; box-shadow: 0 20px 25px rgba(0,0,0,0.1);
-                }
-                .upload-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-                .close-modal { background: none; border: none; font-size: 24px; cursor: pointer; }
-                
-                /* Drag Drop Box Styles */
-                .drag-drop-box {
-                    border: 2px dashed #e2e8f0; border-radius: 12px; padding: 40px;
-                    text-align: center; background: #f8fafc; transition: all 0.3s;
-                }
-                .drag-drop-box.drag-over { border-color: #6200ea; background-color: #ede7f6; }
-                .upload-icon { font-size: 48px; color: #6200ea; margin-bottom: 16px; }
-                .btn-browse {
-                    margin-top: 15px; padding: 8px 16px; background: #6200ea; 
-                    color: white; border: none; border-radius: 6px; cursor: pointer;
-                }
-                .btn-browse:hover { background: #5000c2; }
-            `;
-                document.head.appendChild(style);
+        // --- Excel Upload Card ---
+        document.getElementById('openExcelUploadBtn')?.addEventListener('click', () => {
+            if (typeof window.openStudentsExcelUpload === 'function') {
+                window.openStudentsExcelUpload();
+            } else {
+                showToast('Upload module is still loading, please try again.', 'info');
             }
-
-            // 3. Attach the Active Drag & Drop Area (Imported from JS)
-            const container = modal.querySelector('#dragDropContainer');
-            const uploadArea = createDragDropArea(); // Call function from multipleStudentReg.js
-            container.appendChild(uploadArea);
-
-            // 4. Close Logic
-            const closeBtn = modal.querySelector('.close-modal');
-            closeBtn.onclick = () => modal.remove();
-
-            // Close on click outside
-            modal.onclick = (e) => {
-                if (e.target === modal) modal.remove();
-            };
-        };
-
-        // Attach listener to the Upload Card
-        const uploadBtnCard = document.querySelector('.action-icon.add-multiple')?.parentElement;
-        if (uploadBtnCard) {
-            uploadBtnCard.addEventListener('click', window.uploadExcelSheet);
-        }
-
+        });
     </script>
 
     <!-- Migration Modal -->
@@ -431,11 +350,10 @@
     <script src="../../scripts/sideBar.js"></script>
 
     <script src="../../scripts/schoolAdminScripts/students_scripts/singleStudentRegScript.js" type="module"></script>
-
     <script src="../../scripts/schoolAdminScripts/students_scripts/singleStudentRegForm.js" type="module"></script>
-
     <script src="../../scripts/schoolAdminScripts/students_scripts/viewAllStudents.js" type="module"></script>
     <script src="../../scripts/schoolAdminScripts/students_scripts/multipleStudentReg.js" type="module"></script>
+    <script type="module" src="../../scripts/schoolAdminScripts/students_scripts/students_upload_modal.js"></script>
 
 </body>
 

@@ -247,7 +247,7 @@ document.getElementById('addSubjectForm').addEventListener('submit', async (e) =
     const { error } = await supabase.from('Subjects').insert([{ subject_name: name, is_core: isCore }]);
     btn.disabled = false; btn.textContent = 'Add Subject';
 
-    if (error) { alert('Error: ' + error.message); return; }
+    if (error) { showToast('Error: ' + error.message, 'error'); return; }
     closeModal('addSubjectModal');
     await loadSubjects();
 });
@@ -274,7 +274,7 @@ document.getElementById('editSubjectForm').addEventListener('submit', async (e) 
     const { error } = await supabase.from('Subjects').update({ subject_name: name, is_core: isCore }).eq('subject_id', id);
     btn.disabled = false; btn.textContent = 'Save Changes';
 
-    if (error) { alert('Error: ' + error.message); return; }
+    if (error) { showToast('Error: ' + error.message, 'error'); return; }
     closeModal('editSubjectModal');
     await loadSubjects();
 });
@@ -298,7 +298,7 @@ document.getElementById('confirmDeleteSubjectBtn').addEventListener('click', asy
     const { error } = await supabase.from('Subjects').delete().eq('subject_id', pendingDeleteSubject.subject_id);
 
     btn.disabled = false; btn.textContent = 'Yes, Delete';
-    if (error) { alert('Error: ' + error.message); return; }
+    if (error) { showToast('Error: ' + error.message, 'error'); return; }
 
     if (selectedSubject && selectedSubject.subject_id === pendingDeleteSubject.subject_id) {
         selectedSubject = null;
@@ -356,7 +356,7 @@ document.getElementById('topicForm').addEventListener('submit', async (e) => {
     btn.disabled = false;
     btn.textContent = editingTopicId ? 'Save Changes' : 'Add Topic';
 
-    if (error) { alert('Error: ' + error.message); return; }
+    if (error) { showToast('Error: ' + error.message, 'error'); return; }
     closeModal('topicModal');
     await loadCurriculum(selectedSubject);
 });
@@ -376,7 +376,7 @@ document.getElementById('confirmDeleteTopicBtn').addEventListener('click', async
     const { error } = await supabase.from('Curriculum').delete().eq('curriculum_id', pendingDeleteTopic);
     btn.disabled = false; btn.textContent = 'Yes, Delete';
 
-    if (error) { alert('Error: ' + error.message); return; }
+    if (error) { showToast('Error: ' + error.message, 'error'); return; }
     pendingDeleteTopic = null;
     closeModal('deleteTopicModal');
     if (selectedSubject) await loadCurriculum(selectedSubject);

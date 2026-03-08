@@ -113,7 +113,7 @@ document.getElementById('prevButton').addEventListener('click', () => {
         currentSessionIndex--;
         renderCurrentSession();
     } else {
-        alert("This is the oldest session record.");
+        showToast("This is the oldest session record.", "info");
     }
 });
 
@@ -124,7 +124,7 @@ document.getElementById('nextButton').addEventListener('click', () => {
         currentSessionIndex++;
         renderCurrentSession();
     } else {
-        alert("This is the latest session record.");
+        showToast("This is the latest session record.", "info");
     }
 });
 
@@ -172,7 +172,7 @@ if (createBtn) {
         const newSessionName = calNameInput.value.trim();
         const newDesc = calDescInput ? calDescInput.value.trim() : '';
         if (!newSessionName) {
-            alert("Please enter a Calendar/Session Name");
+            showToast("Please enter a Calendar/Session Name", "warning");
             return;
         }
 
@@ -204,7 +204,7 @@ if (createBtn) {
                 currentSessionIndex = uniqueSessions.length - 1;
             }
 
-            alert(`Switched to new calendar: ${newSessionName}.\n\nNote: This session will be saved automatically to Supabase when you add your first event.`);
+            showToast(`Switched to new calendar: ${newSessionName}. Note: session saves automatically when you add the first event.`, 'success');
         }, 300);
     });
 }

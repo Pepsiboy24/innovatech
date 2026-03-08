@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../../scripts/ui_feedback.js"></script>
     <script src="../../scripts/schoolAdminScripts/school_admin_sidebar.js"></script>
 </head>
 
@@ -402,7 +403,7 @@
             const classInfo = globalData.classes.find(c => c.class_id == classId);
             const entries = globalData.entries.filter(e => e.class_id == classId);
 
-            if (!config || !classInfo) return alert("Error loading timetable config or class info.");
+            if (!config || !classInfo) { showToast("Error loading timetable config or class info.", "error"); return; }
 
             document.getElementById('viewFullTimetableTitle').textContent = `Full Timetable - ${classInfo.class_name} ${classInfo.section || ''}`;
 
@@ -494,7 +495,7 @@
         }
 
         window.deleteTimetable = async (classId, className) => {
-            const isConfirmed = confirm(`Are you sure you want to completely delete the timetable for ${className}? This will remove all settings and subject entries.`);
+            const isConfirmed = await window.showConfirm(`Are you sure you want to completely delete the timetable for ${className}? This will remove all settings and subject entries.`, 'Delete Timetable');
 
             if (!isConfirmed) return;
 
@@ -515,15 +516,15 @@
 
                 if (configError) throw configError;
 
-                alert('Timetable and all entries cleared successfully!');
+                showToast('Timetable and all entries cleared successfully!', 'success');
                 loadAllTimetableData(); // Refresh the grid
             } catch (err) {
                 console.error("Critical Delete Error:", err);
                 // If it's a foreign key error, explain it to the admin
                 if (err.code === '23503') {
-                    alert("Cannot delete: This timetable is linked to other school records (like Attendance or Results).");
+                    showToast("Cannot delete: This timetable is linked to other school records (like Attendance or Results).", "warning", 8000);
                 } else {
-                    alert("Failed to delete: " + err.message);
+                    showToast("Failed to delete: " + err.message, "error");
                 }
             }
         };
@@ -546,7 +547,7 @@
             const classInfo = globalData.classes.find(c => c.class_id == classId);
 
             if (!config) {
-                alert('No schedule config found for this class. Please set one up first.');
+                showToast('No schedule config found for this class. Please set one up first.', 'warning');
                 return;
             }
 
@@ -608,12 +609,12 @@
 
                 if (error) throw error;
 
-                alert('Timetable updated successfully!');
+                showToast('Timetable updated successfully!', 'success');
                 closeEditModal();
                 loadAllTimetableData(); // Refresh the grid
             } catch (err) {
                 console.error("Update error:", err);
-                alert("Failed to update: " + err.message);
+                showToast("Failed to update: " + err.message, "error");
             }
         };
 
@@ -640,7 +641,7 @@
 
         // --- ENTRY EDITING LOGIC ---
         window.openEditEntryModal = async (day, time, classId) => {
-            if (!classId) return alert('No class selected.');
+            if (!classId) { showToast('No class selected.', 'warning'); return; }
 
             document.getElementById('editEntryDay').value = day;
             document.getElementById('editEntryTime').value = time;
@@ -746,12 +747,12 @@
                     if (error) throw error;
                 }
 
-                alert('Entry updated successfully!');
+                showToast('Entry updated successfully!', 'success');
                 closeEditEntryModal();
                 loadAllTimetableData(); // Refresh the grid
             } catch (err) {
                 console.error("Save error:", err);
-                alert("Failed to save: " + err.message);
+                showToast("Failed to save: " + err.message, "error");
             }
         };
     </script>

@@ -1,11 +1,11 @@
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async function () {
     const tbody = document.querySelector('.students-table tbody');
 
     try {
         // Fetch subjects with their class and teacher assignments
         const { data: classSubjects, error } = await window.supabase
             .from('Class_Subjects')
-                .select(`
+            .select(`
                     class_id,
                     subject_id,
                     teacher_id,
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         if (error) {
             console.error('Error fetching subjects:', error);
-            alert('Failed to load subjects. Please try again.');
+            showToast('Failed to load subjects. Please try again.', 'error');
             return;
         }
 
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             const subject = assignment.Subjects;
             const classInfo = assignment.Classes;
             const teacher = assignment.Teachers;
-            
+
             const subjectName = subject.subject_name;
             const isCore = subject.is_core;
             const type = isCore ? 'Core' : 'Elective';
@@ -68,12 +68,12 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     } catch (err) {
         console.error('Unexpected error:', err);
-        alert('An unexpected error occurred while loading subjects.');
+        showToast('An unexpected error occurred while loading subjects.', 'error');
     }
 });
 
 // Make refresh function available globally
-window.refreshSubjectsTable = function() {
+window.refreshSubjectsTable = function () {
     const tbody = document.querySelector('.students-table tbody');
     if (tbody) {
         // Trigger the DOMContentLoaded event logic again

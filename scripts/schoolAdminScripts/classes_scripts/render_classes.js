@@ -58,12 +58,12 @@ async function handleDeleteClass(elem) {
 
     // Block deletion if students are enrolled
     if (studentCount > 0) {
-        alert(`Cannot delete "${elem.class_name}". It has ${studentCount} active student${studentCount > 1 ? 's' : ''}. Please reassign them first.`);
+        showToast(`Cannot delete "${elem.class_name}". It has ${studentCount} active student${studentCount > 1 ? 's' : ''}. Please reassign students first.`, "warning");
         return;
     }
 
     // Confirm before deleting
-    const confirmed = confirm(`Are you sure you want to delete "${elem.class_name}${elem.section ? ' - ' + elem.section : ''}"? This cannot be undone.`);
+    const confirmed = await window.showConfirm(`Are you sure you want to delete "${elem.class_name}${elem.section ? ' - ' + elem.section : ''}"? This cannot be undone.`, "Delete Class");
     if (!confirmed) return;
 
     try {
@@ -79,7 +79,7 @@ async function handleDeleteClass(elem) {
 
     } catch (error) {
         console.error("Delete error:", error);
-        alert("Failed to delete class: " + error.message);
+        showToast("Failed to delete class: " + error.message, "error");
     }
 }
 

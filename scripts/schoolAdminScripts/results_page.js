@@ -43,7 +43,7 @@ async function checkTeacherLogin() {
 
         if (error || !user) {
             console.error('No user logged in:', error);
-            alert('Please log in as a teacher to view this page.');
+            showToast('Please log in as a teacher to view this page.', 'warning');
             window.location.href = '../../index.html';
             return null;
         }
@@ -57,7 +57,7 @@ async function checkTeacherLogin() {
 
         if (teacherError || !teacherData) {
             console.error('User is not authorized as a teacher:', teacherError);
-            alert('You are not authorized as a teacher.');
+            showToast('You are not authorized as a teacher.', 'error');
             await supabase.auth.signOut();
             window.location.href = '../../index.html';
             return null;
@@ -214,7 +214,7 @@ async function fetchStudentsInClass(classId) {
 
     } catch (error) {
         updateStudentTable([]);
-        alert("Error loading students: " + error.message);
+        showToast("Error loading students: " + error.message, "error");
     }
 }
 
@@ -262,7 +262,7 @@ async function handleExcelUpload(event) {
     if (!file) return;
 
     if (currentClassStudents.length === 0) {
-        alert('Please fetch students (select Class & Subject) first before importing scores.');
+        showToast('Please fetch students (select Class & Subject) first before importing scores.', 'warning');
         event.target.value = '';
         return;
     }
@@ -284,7 +284,7 @@ async function handleExcelUpload(event) {
 
         // Basic validation: Check if we have at least some data
         if (json.length < 2) {
-            alert('File appears to be empty or missing headers.');
+            showToast('File appears to be empty or missing headers.', 'warning');
             return;
         }
 
@@ -314,7 +314,7 @@ async function handleExcelUpload(event) {
             }
         }
 
-        alert(`Imported scores for ${matchCount} students.`);
+        showToast(`Imported scores for ${matchCount} students.`, 'success');
         event.target.value = ''; // Reset file input
     };
 
@@ -336,7 +336,7 @@ async function handleSaveResults(e) {
 
         // Validation
         if (!classId || !subjectId || !term || !academicSession || !assessmentType || !maxScore) {
-            alert('Please fill in all required fields.');
+            showToast('Please fill in all required fields.', 'warning');
             return;
         }
 
@@ -375,11 +375,11 @@ async function handleSaveResults(e) {
         });
 
         if (scores.length === 0) {
-            alert('No scores entered.');
+            showToast('No scores entered.', 'warning');
             return;
         }
 
-        if (confirm(`Are you sure you want to submit ${scores.length} results?`)) {
+        if (await window.showConfirm(`Submit ${scores.length} result${scores.length !== 1 ? 's' : ''}?`, 'Save Results')) {
             // Upsert Logic
             const { data, error } = await supabase
                 .from('Grades')
@@ -391,7 +391,7 @@ async function handleSaveResults(e) {
 
             if (error) throw error;
 
-            alert('Results saved successfully!');
+            showToast('Results saved successfully!', 'success');
             // Optional: clear inputs?
             // document.getElementById('resultsForm').reset(); 
             // We probably want to keep them visible for confirmation, maybe just clear file input
@@ -399,7 +399,7 @@ async function handleSaveResults(e) {
 
     } catch (error) {
         console.error('Error saving results:', error);
-        alert('Failed to save results. Please check console for details.');
+        showToast('Failed to save results. Check console for details.', 'error');
     }
 }
 
@@ -443,7 +443,7 @@ function saveGradingSettings() {
     localStorage.setItem('grade_settings_scale', gradeScale);
     localStorage.setItem('grade_settings_pass_mark', passMark);
 
-    alert('Grading configuration saved!');
+    showToast('Grading configuration saved!', 'success');
     window.toggleSettingsModal(); // Close modal
     applyGradingSettings(); // Refresh UI
 }

@@ -21,7 +21,7 @@ async function handleCsvUpload(event) {
   if (!file) return;
 
   if (!file.name.endsWith('.csv')) {
-    alert('Please select a CSV file.');
+    showToast('Please select a CSV file.', 'warning');
     return;
   }
 
@@ -30,7 +30,7 @@ async function handleCsvUpload(event) {
     const csvText = e.target.result;
     const rows = csvText.split('\n').filter(row => row.trim() !== '');
     if (rows.length < 2) {
-      alert('CSV file must have at least a header row and one data row.');
+      showToast('CSV file must have at least a header row and one data row.', 'warning');
       return;
     }
 
@@ -39,7 +39,7 @@ async function handleCsvUpload(event) {
 
     const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
     if (missingHeaders.length > 0) {
-      alert(`CSV is missing required columns: ${missingHeaders.join(', ')}`);
+      showToast(`CSV is missing required columns: ${missingHeaders.join(", ")}`, "warning");
       return;
     }
 
@@ -63,7 +63,7 @@ async function handleCsvUpload(event) {
     }
 
     if (classesData.length === 0) {
-      alert('No valid class data found in CSV.');
+      showToast('No valid class data found in CSV.', 'warning');
       return;
     }
 
@@ -114,7 +114,7 @@ async function handleCsvUpload(event) {
 
     // Show results
     if (successCount > 0) {
-      alert(`${successCount} class(es) created successfully!`);
+      showToast(`${successCount} class(es) created successfully!`, "success");
       // Re-render classes if renderClasses function is available
       if (typeof renderClasses === 'function') {
         renderClasses();
@@ -122,7 +122,7 @@ async function handleCsvUpload(event) {
     }
 
     if (errorCount > 0) {
-      alert(`${errorCount} class(es) failed to create. Check console for details.`);
+      showToast(`${errorCount} class(es) failed to create. Check console for details.`, "error");
     }
   };
 

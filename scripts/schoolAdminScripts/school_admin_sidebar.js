@@ -30,7 +30,7 @@
                 </div>
                 <div class="icon mobile-menu-btn" data-sideBarClose><i class="fa fa-times"></i></div>
             </div>
-            <nav>
+            <nav style="display: flex; flex-direction: column; flex: 1;">
                 <a href="${a}schoolAdminDashboard.html" class="nav-item">
                     <i class="fa-solid fa-table-columns nav-icon"></i>
                     Dashboard
@@ -67,6 +67,11 @@
                     <i class="fa-solid fa-file-lines nav-icon"></i>
                     Manage Notes
                 </a>
+                
+                <a href="#" id="schoolAdminLogoutBtn" class="nav-item" style="margin-top: auto; border-top: 1px solid var(--border); border-radius: 0; padding-top: 16px;">
+                    <i class="fa-solid fa-sign-out-alt nav-icon"></i>
+                    Logout
+                </a>
             </nav>`;
     }
 
@@ -101,6 +106,23 @@
         if (closeBtn) {
             closeBtn.addEventListener('click', () => {
                 sidebarElement.classList.remove('show', 'open', 'active');
+            });
+        }
+
+        // Logout functionality
+        const logoutBtn = sidebarElement.querySelector('#schoolAdminLogoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                try {
+                    // Dynamically import config.js to get the initialized supabase client 
+                    // (paths are relative to the HTML file: html/schoolAdmin/page.html -> ../../scripts/config.js)
+                    const { supabase } = await import('../../scripts/config.js');
+                    await supabase.auth.signOut();
+                } catch (error) {
+                    console.error("Logout Error:", error);
+                }
+                window.location.href = '../../index.html';
             });
         }
     });

@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Validate required fields
             if (!session || !term || !activity || !startStr) {
-                alert("Please fill in all required fields (Session, Term, Activity, Start Date).");
+                showToast("Please fill in all required fields (Session, Term, Activity, Start Date).", "warning");
                 return;
             }
 
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const startDate = new Date(startStr);
                 const endDate = new Date(endStr);
                 if (endDate < startDate) {
-                    alert("The End Date cannot be earlier than the Start Date.");
+                    showToast("The End Date cannot be earlier than the Start Date.", "warning");
                     return;
                 }
             }
@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (error) throw error;
 
                 // Success Actions
-                alert("Event added successfully!");
+                showToast("Event added successfully!", "success");
 
                 closeModal();
 
@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (err) {
                 console.error("Error adding event:", err);
-                alert("Failed to save event: " + err.message);
+                showToast("Failed to save event: " + err.message, "error");
             } finally {
                 if (submitBtn) {
                     submitBtn.textContent = originalBtnText;

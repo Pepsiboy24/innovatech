@@ -192,7 +192,7 @@ async function executeMigration() {
     const targetClassId = select ? parseInt(select.value) : null;
 
     if (!targetClassId) {
-        alert('Please select a destination class.');
+        showToast('Please select a destination class.', 'warning');
         return;
     }
     if (!_migrationStudentId) return;
@@ -214,7 +214,7 @@ async function executeMigration() {
 
     } catch (err) {
         console.error('Migration error:', err);
-        alert('Failed to move student: ' + err.message);
+        showToast('Failed to move student: ' + err.message, 'error');
     } finally {
         if (btn) { btn.disabled = false; btn.textContent = 'Move Student'; }
     }

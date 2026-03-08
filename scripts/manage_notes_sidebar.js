@@ -88,12 +88,17 @@ export async function initializeSidebar() {
                 </div>
                 <div class="icon mobile-menu-btn" data-sideBarClose><i class="fa fa-times"></i></div>
             </div>
-            <nav>
+            <nav style="display: flex; flex-direction: column; flex: 1;">
                 ${links.map(link => `
                 <a href="${link.path}" class="nav-item${isActive(link.path) ? ' active' : ''}">
                     <i class="fa-solid ${link.icon} nav-icon"></i>
                     <span>${link.title}</span>
                 </a>`).join('')}
+                
+                <a href="#" id="manageNotesLogoutBtn" class="nav-item" style="margin-top: auto; border-top: 1px solid var(--border); border-radius: 0; padding-top: 16px;">
+                    <i class="fa-solid fa-sign-out-alt nav-icon"></i>
+                    Logout
+                </a>
             </nav>
         `;
 
@@ -137,13 +142,23 @@ export async function initializeSidebar() {
                 </li>`).join('')}
             </ul>
             <div class="user-section">
-                <div class="user-info">
-                    <div class="user-avatar">T</div>
-                    <span>Teacher</span>
-                </div>
-                <button class="logout-btn" onclick="window.location.href='/login.html'">Logout</button>
+                <button class="logout-btn" id="manageNotesLogoutBtn">Logout</button>
             </div>
         `;
+    }
+
+    // Attach click listener for the logout button (shared for both admins and teachers)
+    const logoutBtn = document.getElementById('manageNotesLogoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                await supabaseClient.auth.signOut();
+            } catch (error) {
+                console.error("Logout Error:", error);
+            }
+            window.location.href = '/index.html';
+        });
     }
 }
 

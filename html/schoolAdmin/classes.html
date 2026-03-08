@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../../styles/schoolAdminStyles/classes.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="../../scripts/ui_feedback.js"></script>
     <script src="../../scripts/schoolAdminScripts/school_admin_sidebar.js" defer></script>
 </head>
 
@@ -34,15 +35,13 @@
                 <div class="profile"></div>
             </div>
         </div>
-
         <!-- Classes Section -->
         <section class="classes-section">
             <div class="section-header">
                 <div class="header-actions">
-                    <input type="file" id="csvUpload" accept=".csv" style="display: none;" />
-                    <button class="btn-secondary" id="uploadCsvBtn">
-                        <i class="fas fa-upload"></i>
-                        <span>Upload CSV</span>
+                    <button class="btn-secondary" id="uploadExcelCsvBtn" onclick="window.openClassesExcelUpload?.()">
+                        <i class="fas fa-file-excel"></i>
+                        <span>Upload Excel / CSV</span>
                     </button>
                     <button class="btn-primary" id="createClassBtn">
                         <i class="fas fa-plus"></i>
@@ -175,7 +174,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="../../scripts/sideBar.js"></script>
 
-    <script type="module" src="../../scripts/schoolAdminScripts/classes_scripts/csvUpload.js"></script>
+    <script type="module" src="../../scripts/schoolAdminScripts/classes_scripts/classes_excel_upload.js"></script>
     <script type="module" src="../../scripts/schoolAdminScripts/classes_scripts/classes.js"></script>
     <script type="module" src="../../scripts/schoolAdminScripts/classes_scripts/searchableDropdown.js"></script>
     <script type="module" src="../../scripts/schoolAdminScripts/classes_scripts/render_classes.js"></script>

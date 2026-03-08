@@ -4,27 +4,44 @@ import { supabaseClient } from './supabase_client.js';
 // Function to fetch all teachers from Supabase
 async function fetchTeachers() {
     try {
-        const { data, error } = await supabaseClient
-            .from('Teachers')
-            .select(`
-                *,
-                school_employment ( job_title, contract_type, salary, start_date ),
-                qualifications ( school_name, certificate_name, feild_of_study, graduation_year ),
-                work_experience ( professional_development, position_held, duration, total_experience, school_name ),
-                emergency_contact ( name, relationship, phone_number, address )
-            `)
-            .order('created_at', { ascending: false }); // Order by creation date, newest first
+        // Fetch Teachers and all related tables in parallel.
+        // Using explicit per-table queries instead of PostgREST join syntax
+        // because the FK relationships may not be registered in the schema cache.
+        const [
+            teachersRes,
+            employmentRes,
+            qualificationsRes,
+            workExpRes,
+            emergencyRes,
+        ] = await Promise.all([
+            supabaseClient.from('Teachers').select('*').order('created_at', { ascending: false }),
+            supabaseClient.from('school_employment').select('teacher_id, job_title, contract_type, salary, start_date'),
+            supabaseClient.from('qualifications').select('teacher_id, school_name, certificate_name, feild_of_study, graduation_year'),
+            supabaseClient.from('work_experience').select('teacher_id, professional_development, position_held, duration, total_experience, school_name'),
+            supabaseClient.from('emergency_contact').select('teacher_id, name, relationship, phone_number, address'),
+        ]);
 
-        if (error) {
-            console.error('Error fetching teachers:', error);
+        if (teachersRes.error) {
+            console.error('Error fetching teachers:', teachersRes.error);
             return [];
         }
 
-        return (data || []).map(t => {
-            const emp = t.school_employment?.[0] || {};
-            const qual = t.qualifications?.[0] || {};
-            const exp = t.work_experience?.[0] || {};
-            const ec = t.emergency_contact?.[0] || {};
+        // Build lookup maps keyed by teacher_id (first record wins per teacher)
+        const empMap = {};
+        const qualMap = {};
+        const expMap = {};
+        const ecMap = {};
+
+        (employmentRes.data || []).forEach(r => { if (!empMap[r.teacher_id]) empMap[r.teacher_id] = r; });
+        (qualificationsRes.data || []).forEach(r => { if (!qualMap[r.teacher_id]) qualMap[r.teacher_id] = r; });
+        (workExpRes.data || []).forEach(r => { if (!expMap[r.teacher_id]) expMap[r.teacher_id] = r; });
+        (emergencyRes.data || []).forEach(r => { if (!ecMap[r.teacher_id]) ecMap[r.teacher_id] = r; });
+
+        return (teachersRes.data || []).map(t => {
+            const emp = empMap[t.teacher_id] || {};
+            const qual = qualMap[t.teacher_id] || {};
+            const exp = expMap[t.teacher_id] || {};
+            const ec = ecMap[t.teacher_id] || {};
 
             return {
                 ...t,

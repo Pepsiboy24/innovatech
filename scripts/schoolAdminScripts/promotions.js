@@ -128,11 +128,10 @@ executeBtn.addEventListener('click', async () => {
     const sourceClass = allClasses.find(c => c.class_id === sourceId);
     const sourceName = sourceClass ? `${sourceClass.class_name}${sourceClass.section ? ' - ' + sourceClass.section : ''}` : 'this class';
 
-    const confirmed = confirm(
-        targetId === 'graduate'
-            ? `Graduate all ${count} student(s) from "${sourceName}"? They will be removed from the active class pool.`
-            : `Move all ${count} student(s) from "${sourceName}" to the selected class? This cannot be undone.`
-    );
+    const message = targetId === 'graduate'
+        ? `Graduate all ${count} student(s) from "${sourceName}"? They will be removed from the active class pool.`
+        : `Move all ${count} student(s) from "${sourceName}" to the selected class? This cannot be undone.`;
+    const confirmed = await window.showConfirm(message, 'Confirm Promotion');
     if (!confirmed) return;
 
     executeBtn.disabled = true;

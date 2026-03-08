@@ -221,7 +221,7 @@ function updateStateFromDOM() {
 
 async function saveConfiguration() {
     if (!currentSession || !currentTerm) {
-        alert("Please select a valid Session and Term.");
+        showToast("Please select a valid Session and Term.", "warning");
         return;
     }
 
@@ -232,7 +232,7 @@ async function saveConfiguration() {
         // 1. Auth Check
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-            alert("You must be logged in to save configuration.");
+            showToast("You must be logged in to save configuration.", "error");
             throw new Error("Unauthorized");
         }
 
@@ -262,11 +262,11 @@ async function saveConfiguration() {
         if (insertError) throw insertError;
 
         // Success
-        alert("Grading Structure saved successfully!");
+        showToast("Grading Structure saved successfully!", "success");
 
     } catch (err) {
         console.error("Save failed:", err);
-        alert("Failed to save grading structure. Check console for details.");
+        showToast("Failed to save grading structure. Check console for details.", "error");
     } finally {
         saveConfigBtn.disabled = false;
         saveConfigBtn.innerHTML = '<i class="fa fa-save"></i> Save Configuration';

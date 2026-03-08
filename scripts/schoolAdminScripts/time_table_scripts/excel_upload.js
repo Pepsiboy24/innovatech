@@ -22,11 +22,11 @@ function addExcelUploadButton() {
 
     const excelBtn = document.createElement('button');
     excelBtn.type = 'button';
-    excelBtn.className = 'btn btn-primary'; 
+    excelBtn.className = 'btn btn-primary';
     excelBtn.id = 'excelUploadBtn';
     excelBtn.innerHTML = '<i class="fa-solid fa-file-excel"></i> Upload Excel';
     excelBtn.style.cssText = 'background-color: #107c41; border-color: #107c41; color: white; margin-right: 10px;';
-    
+
     excelBtn.onclick = openExcelUploadModal;
 
     if (insertBeforeElement && container.contains(insertBeforeElement)) {
@@ -63,8 +63,8 @@ async function processExcelUpload() {
     const urlParams = new URLSearchParams(window.location.search);
     let classId = urlParams.get('classId');
     if (!classId) classId = prompt("Enter Class ID:");
-    
-    if (!fileInput.files.length) return alert('Select a file');
+
+    if (!fileInput.files.length) { showToast('Please select an Excel file first.', 'warning'); return; }
 
     const progressDiv = document.getElementById('uploadProgress');
     progressDiv.style.display = 'block';
@@ -81,8 +81,8 @@ async function processExcelUpload() {
         if (processed.errors.length > 0) {
             // Join errors with newlines for alert
             const errorMsg = `Found ${processed.errors.length} issues:\n- ${processed.errors.slice(0, 5).join('\n- ')}\n${processed.errors.length > 5 ? '...and more.' : ''}\n\nDo you want to continue anyway?`;
-            
-            if (!confirm(errorMsg)) {
+
+            if (!await window.showConfirm(errorMsg, 'Format Warning')) {
                 progressDiv.style.display = 'none';
                 return;
             }
@@ -92,16 +92,16 @@ async function processExcelUpload() {
         if (window.previewUploadedData) {
             window.previewUploadedData(processed.entries);
             window.closeExcelModal();
-            alert(`Ready! ${processed.entries.length} classes loaded.`);
+            showToast(`Ready! ${processed.entries.length} classes loaded.`, 'success');
         } else {
-            alert("Error: previewUploadedData function missing in main script.");
+            showToast("Error: previewUploadedData function missing in main script.", "error");
         }
 
     } catch (error) {
         console.error(error);
-        alert(error.message);
+        showToast(error.message, 'error');
     } finally {
-        if(progressDiv) progressDiv.style.display = 'none';
+        if (progressDiv) progressDiv.style.display = 'none';
     }
 }
 
@@ -114,7 +114,7 @@ async function processExcelData(jsonData, classId) {
         .select('*')
         .eq('class_id', classId)
         .single();
-        
+
     if (error || !config) throw new Error("Please complete 'Setup' first. No schedule config found.");
 
     // 2. Generate Expected Times (Skeleton)
@@ -139,9 +139,9 @@ async function processExcelData(jsonData, classId) {
     // 3. Prepare Headers
     const headers = jsonData[0];
     const dayColumns = [];
-    headers.forEach((h, i) => { 
+    headers.forEach((h, i) => {
         if (h && DAYS_OF_WEEK.includes(h.trim())) {
-            dayColumns.push({day: h.trim(), index: i});
+            dayColumns.push({ day: h.trim(), index: i });
         }
     });
 
@@ -155,40 +155,40 @@ async function processExcelData(jsonData, classId) {
         if (!row || !row.length) continue;
 
         const firstCell = row[0] ? row[0].toString().toLowerCase() : "";
-        
+
         // Skip visual breaks in Excel
         if (firstCell.includes("break") || firstCell.includes("lunch")) {
-            continue; 
+            continue;
         }
 
         // Stop if we exceed configured periods (Validation already caught this, but safety check)
         if (periodIndex >= validPeriodTimes.length) {
-            continue; 
+            continue;
         }
 
-        const timeStr = validPeriodTimes[periodIndex]; 
+        const timeStr = validPeriodTimes[periodIndex];
 
         for (const col of dayColumns) {
             const subName = row[col.index];
             if (subName && subName.toString().trim()) {
                 const term = subName.toLowerCase().trim();
                 let match = subjects.find(s => s.subject_name.toLowerCase() === term || (s.subject_code && s.subject_code.toLowerCase() === term));
-                
+
                 if (match) {
                     entries.push({
                         class_id: parseInt(classId),
                         subject_id: match.subject_id,
                         day_of_week: col.day,
-                        start_time: timeStr + ":00", 
+                        start_time: timeStr + ":00",
                         duration_minutes: parseInt(config.period_duration) || 40,
                         // room_number: 'TBD'
                     });
                 } else {
-                    errors.push(`Row ${r+1} (${col.day}): Subject "${subName}" not found.`);
+                    errors.push(`Row ${r + 1} (${col.day}): Subject "${subName}" not found.`);
                 }
             }
         }
-        
+
         periodIndex++;
     }
 
@@ -206,21 +206,21 @@ function generateValidPeriodTimes(config) {
     while (periodsFound < limit && safety < 50) {
         safety++;
         const timeStr = addMinutes(config.start_time, currentMinutes);
-        
+
         // Check Break
         const breakObj = config.break_times.find(b => {
-             const start = typeof b === 'object' ? b.start : b;
-             return start.startsWith(timeStr);
+            const start = typeof b === 'object' ? b.start : b;
+            return start.startsWith(timeStr);
         });
 
         if (breakObj) {
             // Add duration to clock, DO NOT save time
-            const dur = typeof breakObj === 'object' ? parseInt(breakObj.duration, 10)||20 : 20;
+            const dur = typeof breakObj === 'object' ? parseInt(breakObj.duration, 10) || 20 : 20;
             currentMinutes += dur;
         } else {
             // Save time, add duration
             times.push(timeStr);
-            const pDur = parseInt(config.period_duration, 10)||40;
+            const pDur = parseInt(config.period_duration, 10) || 40;
             currentMinutes += pDur;
             periodsFound++;
         }

@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../../styles/schoolAdminStyles/schooladmins.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="../../scripts/ui_feedback.js"></script>
     <script src="../../scripts/schoolAdminScripts/school_admin_sidebar.js"></script>
 </head>
 
@@ -205,7 +206,7 @@
                 </div>
             </div>
 
-            <div class="action-card">
+            <div class="action-card" id="openExcelUploadBtn">
                 <div class="action-icon add-multiple">
                     <i class="fa-solid fa-file-excel"></i>
                 </div>
@@ -251,6 +252,7 @@
     <script src="../../scripts/schoolAdminScripts/schooladminsForm.js" type="module"></script>
     <script src="../../scripts/schoolAdminScripts/schooladminsFormDB.js" type="module"></script>
     <script src="../../scripts/schoolAdminScripts/viewAllSchoolAdmins.js" type="module"></script>
+    <script src="../../scripts/schoolAdminScripts/schooladmins_excel_upload.js" type="module"></script>
 
     <script>
         // // Sidebar Toggle
@@ -281,6 +283,15 @@
                 popup.style.display = 'none';
             });
         }
+
+        // Excel Upload card
+        document.getElementById('openExcelUploadBtn').addEventListener('click', () => {
+            if (typeof window.openAdminExcelUpload === 'function') {
+                window.openAdminExcelUpload();
+            } else {
+                showToast('Upload module is still loading, please try again.', 'info');
+            }
+        });
 
         // Form Handling Logic
         const adminForm = document.getElementById('adminForm');

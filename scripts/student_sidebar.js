@@ -32,6 +32,10 @@ const sidebarHTML = `
                 <i class="fas fa-clock"></i>
                 Schedule
             </a>
+            <a href="./cbtEngine.html" class="nav-item" data-path="cbtEngine.html">
+                <i class="fas fa-pencil-alt"></i>
+                CBT Practice
+            </a>
         </nav>
         
         <div class="sidebar-footer" style="margin-top: auto; padding: 20px; border-top: 1px solid rgba(255,255,255,0.1);">

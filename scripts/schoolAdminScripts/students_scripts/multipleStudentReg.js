@@ -262,7 +262,7 @@ function displayResults(results) {
     });
   }
 
-  alert(message);
+  showToast(message, 'info');
   document.querySelector('.upload-modal')?.remove();
 
   if (typeof window.refreshStudentList === 'function') {

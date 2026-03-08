@@ -55,7 +55,7 @@ function renderTimetables(timetables) {
     const container = document.getElementById('timetablesGrid');
     if (!container) {
         console.error("Container not found!");
-        alert("Container not found!");
+        showToast("Container not found!", "error");
         return;
     }
     

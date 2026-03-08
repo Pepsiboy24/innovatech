@@ -413,12 +413,12 @@ window.openModal = function (day, time, entryData) {
 // 7. QUICK-DELETE (X button on cell) — persisted entries go to DB; unsaved removed locally
 // =============================================================================
 window.quickDelete = async function (entryId, day, timeSlot) {
-    if (!confirm(`Delete the entry at ${day} ${timeSlot}?`)) return;
+    if (!await window.showConfirm(`Delete the entry at ${day} ${timeSlot}?`, 'Delete Entry')) return;
 
     if (entryId) {
         // Saved to DB — delete from Supabase
         const { error } = await supabase.from('timetable_entries').delete().eq('id', entryId);
-        if (error) { alert('Delete failed: ' + error.message); return; }
+        if (error) { showToast('Delete failed: ' + error.message, 'error'); return; }
     }
 
     // Remove from local array (both saved & unsaved cases)
@@ -438,10 +438,10 @@ window.deleteCurrentEntry = async function () {
     const entryId = document.getElementById('modalEntryId').value;
     if (!entryId) return;
 
-    if (!confirm('Permanently delete this timetable entry?')) return;
+    if (!await window.showConfirm('Permanently delete this timetable entry?', 'Delete Entry')) return;
 
     const { error } = await supabase.from('timetable_entries').delete().eq('id', entryId);
-    if (error) { alert('Delete failed: ' + error.message); return; }
+    if (error) { showToast('Delete failed: ' + error.message, 'error'); return; }
 
     entries = entries.filter(e => e.id !== entryId);
     window.closeModal();
@@ -477,7 +477,7 @@ if (form) {
                 .update(payload)
                 .eq('id', entryId);
 
-            if (error) { alert('Update failed: ' + error.message); return; }
+            if (error) { showToast('Update failed: ' + error.message, 'error'); return; }
             window.location.reload();   // refresh from DB
         }
         // ── SCENARIO B: Edit an unsaved (preview) entry ───────────────────────
@@ -522,17 +522,17 @@ function setupSaveButton() {
 
     fresh.addEventListener('click', async () => {
         const unsaved = entries.filter(e => !e.id);
-        if (!unsaved.length) return alert('No unsaved changes.');
+        if (!unsaved.length) { showToast('No unsaved changes.', 'info'); return; }
 
         fresh.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
         try {
             const clean = unsaved.map(({ tempId, ...rest }) => rest);
             const { error } = await supabase.from('timetable_entries').insert(clean);
             if (error) throw error;
-            alert('Saved!');
+            showToast('Timetable entries saved!', 'success');
             location.reload();
         } catch (err) {
-            alert('Error: ' + err.message);
+            showToast('Error: ' + err.message, 'error');
             fresh.innerHTML = '<i class="fa-solid fa-save"></i> Save Timetable';
         }
     });

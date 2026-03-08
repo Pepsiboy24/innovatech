@@ -117,7 +117,7 @@ async function assignClass(entryData) {
 
         if (error) {
             console.error('Error assigning class:', error);
-            alert('Failed to assign class. Please try again.');
+            showToast('Failed to assign class. Please try again.', 'error');
             return false;
         }
 
@@ -125,7 +125,7 @@ async function assignClass(entryData) {
         return true;
     } catch (err) {
         console.error('Unexpected error assigning class:', err);
-        alert('An unexpected error occurred. Please try again.');
+        showToast('An unexpected error occurred. Please try again.', 'error');
         return false;
     }
 }
@@ -219,18 +219,18 @@ async function handleCreateTimetable(event) {
 
         if (error) {
             console.error('Error creating timetable entry:', error);
-            alert('Failed to create timetable entry. Please try again.');
+            showToast('Failed to create timetable entry. Please try again.', 'error');
             return;
         }
 
         console.log('Timetable entry created successfully:', data);
-        alert('Schedule Created Successfully!');
+        showToast('Schedule Created Successfully!', 'success');
 
         // Close modal and reset form
         closeCreateModal();
         event.target.reset();
     } catch (err) {
         console.error('Unexpected error creating timetable entry:', err);
-        alert('An unexpected error occurred. Please try again.');
+        showToast('An unexpected error occurred. Please try again.', 'error');
     }
 }

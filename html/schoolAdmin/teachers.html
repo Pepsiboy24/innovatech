@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../../styles/schoolAdminStyles/teachers.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="../../scripts/ui_feedback.js"></script>
     <script src="../../scripts/schoolAdminScripts/school_admin_sidebar.js"></script>
 </head>
 
@@ -437,16 +438,19 @@
                         </div>
                     </div>
                     <div id="errorStep" class="step">
-    <div class="error-message" style="text-align: center; padding: 40px;">
-        <i class="fa fa-exclamation-circle" style="font-size: 48px; color: #ef4444; margin-bottom: 20px;"></i>
-        <h2>Registration Failed</h2>
-        <p id="errorMessage">The server rejected the registration. The email might already be in use.</p>
-        
-        <button type="button" class="btn btn-secondary" id="backToEditBtn" style="margin-top: 20px;">
-            <i class="fa fa-arrow-left"></i> Back to Edit
-        </button>
-    </div>
-</div>
+                        <div class="error-message" style="text-align: center; padding: 40px;">
+                            <i class="fa fa-exclamation-circle"
+                                style="font-size: 48px; color: #ef4444; margin-bottom: 20px;"></i>
+                            <h2>Registration Failed</h2>
+                            <p id="errorMessage">The server rejected the registration. The email might already be in
+                                use.</p>
+
+                            <button type="button" class="btn btn-secondary" id="backToEditBtn"
+                                style="margin-top: 20px;">
+                                <i class="fa fa-arrow-left"></i> Back to Edit
+                            </button>
+                        </div>
+                    </div>
                     <div class="buttons">
                         <button type="button" class="btn btn-secondary" id="prevBtn"
                             style="display: none;">Previous</button>
@@ -706,7 +710,7 @@
                 </div>
             </div>
 
-            <div class="action-card">
+            <div class="action-card" id="openTeacherExcelUploadBtn">
                 <div class="action-icon add-multiple">
                     <i class="fa-solid fa-file-excel"></i>
                 </div>
@@ -861,121 +865,16 @@
 
 
 
-        // Upload Excel Functionality
-        async function uploadExcelSheet() {
-            // Create a modal or overlay for the upload interface
-            const modal = document.createElement('div');
-            modal.className = 'upload-modal';
-            modal.innerHTML = `
-                <div class="upload-modal-content">
-                    <div class="upload-modal-header">
-                        <h2>Upload Teacher Excel Sheet</h2>
-                        <button class="close-modal" onclick="closeUploadModal()">&times;</button>
-                    </div>
-                    <div class="upload-modal-body">
-                        <p>Please upload an Excel file with the required columns (First Name, Last Name, Email, etc.)</p>
-                        <div id="dragDropContainer"></div>
-                    </div>
-                </div>
-            `;
-
-            document.body.appendChild(modal);
-
-            // Add styles dynamically if not present
-            if (!document.getElementById('upload-modal-styles')) {
-                const style = document.createElement('style');
-                style.id = 'upload-modal-styles';
-                style.textContent = `
-                    .upload-modal {
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        background: rgba(0, 0, 0, 0.5);
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        z-index: 10001;
-                        backdrop-filter: blur(4px);
-                    }
-                    .upload-modal-content {
-                        background: white;
-                        padding: 32px;
-                        border-radius: 16px;
-                        max-width: 500px;
-                        width: 90%;
-                        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-                    }
-                    .upload-modal-header {
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        margin-bottom: 24px;
-                    }
-                    .upload-modal-header h2 {
-                        font-size: 20px;
-                        font-weight: 700;
-                        color: #1e293b;
-                    }
-                    .close-modal {
-                        background: none;
-                        border: none;
-                        font-size: 24px;
-                        cursor: pointer;
-                        color: #64748b;
-                    }
-                    .upload-modal-body p {
-                        color: #64748b;
-                        margin-bottom: 12px;
-                    }
-                    #dragDropArea {
-                        border: 2px dashed #e2e8f0;
-                        border-radius: 12px;
-                        padding: 40px;
-                        text-align: center;
-                        margin: 20px 0;
-                        transition: all 0.3s;
-                        background: #f8fafc;
-                        cursor: pointer;
-                    }
-                    #dragDropArea:hover, #dragDropArea.drag-over {
-                        border-color: #6200ea;
-                        background-color: #ede7f6;
-                    }
-                `;
-                document.head.appendChild(style);
-            }
-
-            // Placeholder for drag drop area
-            const container = document.getElementById('dragDropContainer');
-            container.innerHTML = `
-                <div id="dragDropArea">
-                    <i class="fa-solid fa-cloud-arrow-up" style="font-size: 48px; color: #6200ea; margin-bottom: 16px;"></i>
-                    <h3>Drag & Drop or Click to Upload</h3>
-                    <p>Supported formats: .xlsx, .xls</p>
-                </div>
-            `;
-
-            // Add click listener to placeholder
-            document.getElementById('dragDropArea').addEventListener('click', () => {
-                alert('File selection dialog would open here');
-            });
-        }
-
-        function closeUploadModal() {
-            const modal = document.querySelector('.upload-modal');
-            if (modal) {
-                modal.remove();
-            }
-        }
-
         // Attach upload function to the button
-        const uploadBtn = document.querySelector('.action-icon.add-multiple').parentElement;
-        if (uploadBtn) {
-            uploadBtn.addEventListener('click', uploadExcelSheet);
-        }
+        document.getElementById('openTeacherExcelUploadBtn')?.addEventListener('click', () => {
+            if (typeof window.openTeachersExcelUpload === 'function') {
+                window.openTeachersExcelUpload();
+            } else {
+                showToast('Upload module is still loading, please try again.', 'info');
+            }
+        });
     </script>
+    <script type="module" src="../../scripts/schoolAdminScripts/teachers_upload_modal.js"></script>
 </body>
 
 </html>

@@ -87,7 +87,7 @@ async function handleCreateClass(e) {
   const studentsCount = document.getElementById("studentsCount").value;
 
   if (!teacherName) {
-    alert("Please select a teacher.");
+    showToast("Please select a teacher.", "warning");
     return;
   }
 
@@ -103,7 +103,7 @@ async function handleCreateClass(e) {
     if (teachers && teachers.length > 0) {
       teacherId = teachers[0].teacher_id;
     } else {
-      alert(`Teacher '${teacherName}' not found.`);
+      showToast(`Teacher '${teacherName}' not found.`, 'warning');
       return;
     }
   } catch (error) {
@@ -121,18 +121,18 @@ async function handleCreateClass(e) {
     if (editId) {
       const { error } = await supabaseClient.from("Classes").update(formData).eq('class_id', editId);
       if (error) throw error;
-      alert("Class updated!");
+      showToast("Class updated successfully!", "success");
     } else {
       const { error } = await supabaseClient.from("Classes").insert([formData]);
       if (error) throw error;
-      alert("Class created!");
+      showToast("Class created successfully!", "success");
     }
 
     closeModal();
     location.reload();
   } catch (error) {
     console.error("Save error:", error);
-    alert("Error saving class: " + error.message);
+    showToast("Error saving class: " + error.message, "error");
   }
 }
 

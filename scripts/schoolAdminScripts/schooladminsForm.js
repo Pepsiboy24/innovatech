@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const emailInput = document.getElementById('email');
 
             if (!fullNameInput.value.trim() || !emailInput.value.trim()) {
-                alert("Please fill in all required fields.");
+                showToast("Please fill in all required fields.", "warning");
                 return;
             }
 

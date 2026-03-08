@@ -81,7 +81,7 @@ function buildRow(note) {
     const title = note.title ?? 'Untitled';
 
     const uploaderCell = currentRole === 'ADMIN'
-        ? `<td>${escAttr(note.Teachers?.first_name ?? '')} ${escAttr(note.Teachers?.last_name ?? '')}</td>`
+        ? `<td data-label="Uploaded By">${escAttr(note.Teachers?.first_name ?? '')} ${escAttr(note.Teachers?.last_name ?? '')}</td>`
         : '';
 
     const viewBtn = fileUrl
@@ -100,12 +100,12 @@ function buildRow(note) {
 
     return `
         <tr>
-            <td class="title-cell">${escAttr(title)}</td>
-            <td>${escAttr(cls)}${section ? ' – ' + escAttr(section) : ''}</td>
-            <td>${escAttr(subject)}</td>
-            <td>${escAttr(uploadDate)}</td>
+            <td class="title-cell" data-label="Title">${escAttr(title)}</td>
+            <td data-label="Class">${escAttr(cls)}${section ? ' – ' + escAttr(section) : ''}</td>
+            <td data-label="Subject">${escAttr(subject)}</td>
+            <td data-label="Date">${escAttr(uploadDate)}</td>
             ${uploaderCell}
-            <td class="actions-cell">${viewBtn} ${deleteBtn}</td>
+            <td class="actions-cell" data-label="Actions">${viewBtn} ${deleteBtn}</td>
         </tr>`;
 }
 
@@ -186,7 +186,11 @@ async function doDelete() {
         setNoteCount(allNotes.length);
 
     } catch (err) {
-        alert('Delete failed — ' + err.message + '\n\nThe note record has been kept safe.');
+        if (typeof showToast === 'function') {
+            showToast('Delete failed — ' + err.message + '. The note record has been kept safe.', 'error', 7000);
+        } else {
+            console.error('Delete failed — ' + err.message);
+        }
         console.error('[manage_notes] doDelete error:', err);
     } finally {
         confirmDelete.disabled = false;

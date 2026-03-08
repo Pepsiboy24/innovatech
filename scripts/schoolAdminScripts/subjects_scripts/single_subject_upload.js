@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const subjectForm = document.getElementById('subjectForm');
     const popup = document.getElementById('registrationPopup');
     const classSelect = document.getElementById('classSelect');
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (subjectForm) {
-        subjectForm.addEventListener('submit', async function(e) {
+        subjectForm.addEventListener('submit', async function (e) {
             e.preventDefault();
 
             // 1. Get Values
@@ -57,10 +57,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const subjectName = subjectNameInput.value.trim();
             const classId = parseInt(classIdInput.value);
             const teacherId = teacherIdInput.value;
-            
+
             // Basic Validation
             if (!subjectName || !subjectTypeInput || !classId || !teacherId) {
-                alert('Please fill in all required fields.');
+                showToast('Please fill in all required fields.', 'warning');
                 return;
             }
 
@@ -76,12 +76,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (checkError) {
                     console.error('Error checking duplicates:', checkError);
-                    alert('Network error. Please try again.');
+                    showToast('Network error. Please try again.', 'error');
                     return;
                 }
 
                 if (existingSubjects && existingSubjects.length > 0) {
-                    alert(`Subject "${subjectName}" already exists!`);
+                    showToast(`Subject "${subjectName}" already exists!`, "warning");
                     return; // Stop here, do not insert
                 }
 
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (subjectError) {
                     console.error('Error inserting subject:', subjectError);
-                    alert('Failed to add subject. Please try again.');
+                    showToast('Failed to add subject. Please try again.', 'error');
                     return;
                 }
 
@@ -117,12 +117,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (linkError) {
                     console.error('Error creating class-subject link:', linkError);
                     // Note: Subject was created but link failed - might need cleanup
-                    alert('Subject was created but failed to assign to class. Please contact administrator.');
+                    showToast('Subject was created but failed to assign to class. Please contact administrator.', 'error');
                     return;
                 }
 
                 console.log('Subject and assignment created successfully:', newSubject);
-                alert(`Subject "${subjectName}" (${subjectTypeInput.value}) assigned to class successfully!`);
+                showToast(`Subject "${subjectName}" (${subjectTypeInput.value}) assigned to class successfully!`, "success");
 
                 // Close popup and reset form
                 popup.style.display = 'none';
@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             } catch (err) {
                 console.error('Unexpected error:', err);
-                alert('An unexpected error occurred. Please try again.');
+                showToast('An unexpected error occurred. Please try again.', 'error');
             }
         });
     }

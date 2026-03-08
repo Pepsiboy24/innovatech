@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!currentSession || currentSession.includes('No Academic')) {
             currentSession = prompt("Please enter the Academic Session for these events (e.g., 2025/2026):");
             if (!currentSession) {
-                alert("Upload cancelled. Session name is required.");
+                showToast("Upload cancelled. Session name is required.", "warning");
                 return;
             }
         }
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if (events.length === 0) {
-                alert('No events found in the file.');
+                showToast('No events found in the file.', 'warning');
                 return;
             }
 
@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (error) throw error;
 
-            alert(`Successfully uploaded ${eventsWithSession.length} events to ${currentSession}!`);
+            showToast(`Successfully uploaded ${eventsWithSession.length} events to ${currentSession}!`, "success");
             fileInput.value = '';
             fileNameDisplay.textContent = '';
 
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         } catch (error) {
             console.error('Error processing file:', error);
-            alert('Failed to upload file: ' + error.message);
+            showToast('Failed to upload file: ' + error.message, 'error');
         }
     }
 
