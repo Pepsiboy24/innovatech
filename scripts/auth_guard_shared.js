@@ -1,4 +1,4 @@
-import { supabaseClient } from './supabase_client.js';
+import { supabase as supabaseClient } from './config.js';
 
 export async function protectSharedPage() {
     // 1. Check if user is logged in at all

@@ -1,6 +1,17 @@
 import { supabaseClient } from './supabase_client.js';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-// const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
+
+// Create a dedicated auth client for signing up new users without overwriting the current session
+const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+    detectSessionInUrl: false
+  }
+});
 
 // Store student data temporarily after signup
 export async function registerNewStudent(
@@ -18,7 +29,7 @@ export async function registerNewStudent(
     const {
       data: { user: studentUser },
       error,
-    } = await supabaseClient.auth.signUp({
+    } = await authClient.auth.signUp({
       email,
       password,
     });
@@ -31,7 +42,7 @@ export async function registerNewStudent(
     // Now, insert the student's profile into the public.Students table.
     // We explicitly use the user's unique ID (uid) for the student_id
     // to satisfy the RLS policy.
-    const { error: insertError } = await supabaseClient
+    const { error: insertError } = await authClient
       .from("Students")
       .insert([
         {
@@ -57,7 +68,7 @@ export async function registerNewStudent(
       // If we don't have a linked parent ID, we must create a new parent
       if (!finalParentId) {
         // Step B: Parent Auth Signup
-        const { data: { user: parentUser }, error: parentAuthError } = await supabaseClient.auth.signUp({
+        const { data: { user: parentUser }, error: parentAuthError } = await authClient.auth.signUp({
           email: parentInfo.parentEmail,
           password: '123456',
         });
@@ -71,7 +82,7 @@ export async function registerNewStudent(
         const authUserId = parentUser ? parentUser.id : null;
 
         // Insert Parent Record
-        const { data: newParentData, error: parentInsertError } = await supabaseClient
+        const { data: newParentData, error: parentInsertError } = await authClient
           .from("Parents")
           .insert([
             {
@@ -95,7 +106,7 @@ export async function registerNewStudent(
       }
 
       // Step C: Establishing the Link
-      const { error: linkError } = await supabaseClient
+      const { error: linkError } = await authClient
         .from("Parent_Student_Links")
         .insert([
           {

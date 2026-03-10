@@ -1,69 +1,87 @@
 import { registerNewStudent } from "../../scripts/schoolAdminScripts/students_scripts/singleStudentRegScript.js";
+import { supabase as supabaseClient } from "../config.js";
+import { checkTeacherLogin } from "../teacherUtils.js";
 
 // --- 1. Supabase Configuration ---
-const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
-
-// Ensure Supabase is available
-const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-
 if (!supabaseClient) {
   console.error("Supabase client not loaded. Make sure the CDN script is in your HTML.");
 }
 
-// --- 2. Teacher Authentication ---
-// async function checkTeacherLogin() {
-//     try {
-//         const { data: { user }, error } = await supabaseClient.auth.getUser();
+// --- 3. Populate Teacher's Classes ---
+let teacherClasses = [];
 
-//         if (error || !user) {
-//             console.error('No user logged in:', error);
-//             alert('Please log in as a teacher to view this page.');
-//             window.location.href = '../../index.html';
-//             return null;
-//         }
-
-//         // Verify this user is actually a teacher in the Teachers table
-//         const { data: teacherData, error: teacherError } = await supabaseClient
-//             .from('Teachers')
-//             .select('*')
-//             .eq('teacher_id', user.id)
-//             .single();
-
-//         if (teacherError || !teacherData) {
-//             console.error('User is not authorized as a teacher:', teacherError);
-//             alert('You are not authorized as a teacher. Please log in with teacher credentials.');
-//             await supabaseClient.auth.signOut();
-//             window.location.href = '../../index.html';
-//             return null;
-//         }
-
-//         return user.id;
-//     } catch (err) {
-//         console.error('Error checking teacher login:', err);
-//         alert('An error occurred while verifying your login. Please try logging in again.');
-//         window.location.href = '../../index.html';
-//         return null;
-//     }
-// }
-
-// --- 3. Get Teacher's Class ---
-async function getTeacherClass(teacherId) {
+async function populateTeacherClasses(teacherId) {
     try {
-        const { data, error } = await supabaseClient
-            .from('Classes')
-            .select('class_id, class_name, section')
-            .eq('teacher_id', teacherId)
-            .single();
+        const [formClassesRes, subjectClassesRes] = await Promise.all([
+            supabaseClient
+                .from('Classes')
+                .select('class_id, class_name, section')
+                .eq('teacher_id', teacherId),
+            supabaseClient
+                .from('Class_Subjects')
+                .select(`
+                    class_id,
+                    Classes!inner(class_name, section)
+                `)
+                .eq('teacher_id', teacherId)
+        ]);
 
-        if (error) {
-            console.error('Error fetching teacher class:', error);
-            return null;
+        const classSelect = document.getElementById("classSelect");
+        if (!classSelect) return;
+
+        if (formClassesRes.error && subjectClassesRes.error) {
+            window.showToast?.('Error fetching teacher classes.', 'error');
+            classSelect.innerHTML = '<option value="">Error loading classes</option>';
+            return;
         }
-        return data;
+
+        const uniqueClasses = [];
+        const seen = new Set();
+        
+        (formClassesRes.data || []).forEach(record => {
+            if (!seen.has(record.class_id)) {
+                seen.add(record.class_id);
+                uniqueClasses.push({
+                    class_id: record.class_id,
+                    class_name: record.class_name,
+                    section: record.section
+                });
+            }
+        });
+
+        (subjectClassesRes.data || []).forEach(record => {
+            if (!seen.has(record.class_id)) {
+                seen.add(record.class_id);
+                uniqueClasses.push({
+                    class_id: record.class_id,
+                    class_name: record.Classes?.class_name,
+                    section: record.Classes?.section
+                });
+            }
+        });
+
+        teacherClasses = uniqueClasses;
+
+        if (teacherClasses.length === 0) {
+            classSelect.innerHTML = '<option value="">No classes assigned</option>';
+            classSelect.disabled = true;
+            document.getElementById("nextBtn").disabled = true;
+            window.showToast?.('No classes assigned to this account.', 'warning');
+            return;
+        }
+
+        classSelect.innerHTML = '<option value="">Select a class</option>';
+        teacherClasses.forEach(c => {
+            const option = document.createElement("option");
+            option.value = c.class_id;
+            option.textContent = `${c.class_name} ${c.section || ''}`.trim();
+            classSelect.appendChild(option);
+        });
+        classSelect.disabled = false;
+        document.getElementById("nextBtn").disabled = false;
+
     } catch (err) {
-        console.error('Unexpected error fetching teacher class:', err);
-        return null;
+        window.showToast?.('Unexpected error fetching classes.', 'error');
     }
 }
 
@@ -187,6 +205,17 @@ function validateStep(step) {
 
   if (step === 2) {
     const admissionDate = document.getElementById("admissionDate");
+    const classSelect = document.getElementById("classSelect");
+
+    // Class Validation
+    if (classSelect) {
+      if (!classSelect.value) {
+        showError("classSelectError");
+        isValid = false;
+      } else {
+        hideError("classSelectError");
+      }
+    }
 
     // Admission Date Validation (Check Past)
     const admitError = document.getElementById("admissionDateError");
@@ -255,13 +284,13 @@ async function populateReview() {
   const gender = formData.get("gender");
   const admissionDate = formData.get("admissionDate");
 
-  // Get teacher's class for display
-  const teacherId = await checkTeacherLogin();
+  // Get teacher's class for display safely from dropdown
   let classDisplay = "N/A";
-  if (teacherId) {
-    const teacherClass = await getTeacherClass(teacherId);
-    if (teacherClass) {
-      classDisplay = `${teacherClass.class_name} ${teacherClass.section}`;
+  const classSelect = document.getElementById("classSelect");
+  if (classSelect && classSelect.options[classSelect.selectedIndex]) {
+    const selectedText = classSelect.options[classSelect.selectedIndex].text;
+    if (classSelect.value) { // Ensure a real value is selected
+      classDisplay = selectedText;
     }
   }
 
@@ -315,6 +344,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Initialize Steps
   showStep(currentStep);
+
+  const loginInfo = await checkTeacherLogin();
+  if (loginInfo && loginInfo.teacherId) {
+      await populateTeacherClasses(loginInfo.teacherId);
+  }
 });
 
 // --- 6. Form Submission ---
@@ -324,13 +358,14 @@ document
     e.preventDefault();
 
     if (validateStep(currentStep)) {
-      // Check teacher login and get class
-      const teacherId = await checkTeacherLogin();
-      if (!teacherId) return;
+      const loginInfo = await checkTeacherLogin();
+      if (!loginInfo || !loginInfo.teacherId) return;
 
-      const teacherClass = await getTeacherClass(teacherId);
-      if (!teacherClass) {
-        alert('No class is assigned to your account. Please contact an administrator.');
+      const classSelect = document.getElementById("classSelect");
+      const selectedClassId = classSelect ? classSelect.value : null;
+
+      if (!selectedClassId) {
+        window.showToast?.('Please select a class first.', 'error');
         return;
       }
 
@@ -352,7 +387,7 @@ document
           dateOfBirth,
           admissionDate,
           profilePicUrl,
-          teacherClass.class_id,
+          selectedClassId,
           gender
       );
 
@@ -360,14 +395,17 @@ document
         document.getElementById("step3").classList.remove("active");
         document.getElementById("successStep").classList.add("active");
         document.querySelector(".buttons").style.display = "none";
+        
+        window.showToast?.('Student registered successfully!', 'success');
 
         // Refresh the student list
-        if (typeof loadAllTeacherStudents === 'function') {
-            console.log("🔄 Refreshing student table...");
-            loadAllTeacherStudents();
+        if (typeof window.loadAllTeacherStudents === 'function') {
+            window.loadAllTeacherStudents();
+        } else {
+            window.location.reload();
         }
       } else {
-        console.error("Registration failed. Please try again.");
+        window.showToast?.("Registration failed. Please try again.", "error");
       }
     }
   });

@@ -9,8 +9,8 @@ async function checkTeacherLogin() {
 
         if (error || !user) {
             console.error('No user logged in:', error);
-            alert('Please log in as a teacher to view this page.');
-            window.location.href = '../../index.html';
+            showToast('Please log in as a teacher to view this page.', 'error');
+            setTimeout(() => window.location.href = '../../index.html', 1500);
             return null;
         }
 
@@ -23,9 +23,9 @@ async function checkTeacherLogin() {
 
         if (teacherError || !teacherData) {
             console.error('User is not authorized as a teacher:', teacherError);
-            alert('You are not authorized as a teacher. Please log in with teacher credentials.');
+            showToast('You are not authorized as a teacher. Please log in with teacher credentials.', 'error');
             await supabase.auth.signOut();
-            window.location.href = '../../index.html';
+            setTimeout(() => window.location.href = '../../index.html', 1500);
             return null;
         }
 
@@ -33,8 +33,8 @@ async function checkTeacherLogin() {
         return user.id;
     } catch (err) {
         console.error('Error checking teacher login:', err);
-        alert('An error occurred while verifying your login. Please try logging in again.');
-        window.location.href = '../../index.html';
+        showToast('An error occurred while verifying your login. Please try logging in again.', 'error');
+        setTimeout(() => window.location.href = '../../index.html', 1500);
         return null;
     }
 }
@@ -56,6 +56,35 @@ async function fetchTeacherClasses(teacherId) {
         return data || [];
     } catch (err) {
         console.error('Unexpected error fetching teacher classes:', err);
+        return [];
+    }
+}
+
+// Fetch subjects for a specific class and teacher
+async function fetchClassSubjects(classId) {
+    try {
+        console.log(`Fetching subjects for class ${classId} and teacher ${currentTeacherId}`);
+        const { data, error } = await supabase
+            .from('Class_Subjects')
+            .select(`
+                subject_id,
+                Subjects (subject_name)
+            `)
+            .eq('class_id', classId)
+            .eq('teacher_id', currentTeacherId);
+
+        if (error) {
+            console.error('Error fetching class subjects:', error);
+            return [];
+        }
+
+        // Format the return data
+        return data.map(item => ({
+            subject_id: item.subject_id,
+            subject_name: item.Subjects?.subject_name || 'Unknown Subject'
+        }));
+    } catch (err) {
+        console.error('Unexpected error fetching class subjects:', err);
         return [];
     }
 }
@@ -93,6 +122,28 @@ function populateClassSelector(classes) {
         option.textContent = `${cls.class_name} ${cls.section}`;
         classSelect.appendChild(option);
     });
+}
+
+// Populate subject selector dynamically based on selected class
+function populateSubjectSelector(subjects) {
+    const subjectSelect = document.querySelector('.subject-select');
+    if (!subjectSelect) return;
+
+    subjectSelect.innerHTML = '<option value="">Select a subject</option>';
+
+    if (!subjects || subjects.length === 0) {
+        subjectSelect.disabled = true;
+        return;
+    }
+
+    subjects.forEach(sub => {
+        const option = document.createElement('option');
+        option.value = sub.subject_id;
+        option.textContent = sub.subject_name;
+        subjectSelect.appendChild(option);
+    });
+
+    subjectSelect.disabled = false;
 }
 
 // Get initials for avatar
@@ -184,9 +235,16 @@ async function gatherAttendanceData() {
 
     const dateInput = document.querySelector('.date-input');
     const attendanceDate = dateInput ? dateInput.value : '';
+    const subjectSelect = document.querySelector('.subject-select');
+    const selectedSubjectId = subjectSelect ? subjectSelect.value : null;
 
     if (!attendanceDate) {
-        alert('Please select a date for the attendance.');
+        showToast('Please select a date for the attendance.', 'warning');
+        return [];
+    }
+
+    if (!selectedSubjectId) {
+        showToast('Please select a subject for the attendance.', 'warning');
         return [];
     }
 
@@ -211,10 +269,10 @@ async function gatherAttendanceData() {
         attendanceData.push({
             student_id: studentId,
             date: attendanceDate,
+            subject_id: selectedSubjectId, // Added subject ID
             attendance_status: status,
             notes: notes,
             recorded_by_user_id: currentTeacherId,
-            // record_at: new Date().toISOString(),
         });
     }
 
@@ -226,7 +284,7 @@ async function handleSaveAttendance() {
     const attendanceData = await gatherAttendanceData();
 
     if (attendanceData.length === 0) {
-        alert('No attendance data to save.');
+        showToast('No attendance data to save.', 'warning');
         return;
     }
 
@@ -241,14 +299,14 @@ async function handleSaveAttendance() {
 
         if (error) {
             console.error('Error saving attendance:', error);
-            alert('Failed to save attendance: ' + error.message);
+            showToast('Failed to save attendance: ' + error.message, 'error');
         } else {
             console.log('Attendance saved successfully:', data);
-            alert('Attendance saved successfully!');
+            showToast('Attendance saved successfully!', 'success');
         }
     } catch (error) {
         console.error('Error submitting attendance:', error);
-        alert('Error submitting attendance. See console for details.');
+        showToast('Error submitting attendance. See console for details.', 'error');
     }
 }
 
@@ -270,14 +328,22 @@ function setupSaveButton() {
 async function handleClassChange() {
     const classSelect = document.querySelector('.class-select');
     const selectedClassId = parseInt(classSelect.value);
+    
+    // Clear the current students and summary
+    document.getElementById('attendanceTableBody').innerHTML = '';
+    document.getElementById('totalCount').textContent = '0';
+    updateSummary();
 
     if (!selectedClassId || isNaN(selectedClassId)) {
-        document.getElementById('attendanceTableBody').innerHTML = '';
-        document.getElementById('totalCount').textContent = '0';
-        updateSummary();
+        populateSubjectSelector([]); // Disable subject dropdown
         return;
     }
 
+    // Fetch and populate subjects for this specific class
+    const subjects = await fetchClassSubjects(selectedClassId);
+    populateSubjectSelector(subjects);
+
+    // Fetch and render students
     const students = await fetchStudentsFromClass(selectedClassId);
     renderStudents(students);
 }
@@ -291,7 +357,7 @@ async function initializeAttendanceModule() {
     // Fetch and populate classes
     const classes = await fetchTeacherClasses(teacherId);
     if (classes.length === 0) {
-        alert('No classes are assigned to your account. Please contact an administrator.');
+        showToast('No classes are assigned to your account. Please contact an administrator.', 'error');
         return;
     }
 

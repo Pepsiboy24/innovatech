@@ -1,5 +1,5 @@
 // upload_notes.js — Teacher Lesson Notes Upload Engine
-import { supabaseClient } from './supabase_client.js';
+import { supabase as supabaseClient } from '../config.js';
 
 // ─── CDN library references (loaded via <script> tags in HTML) ───
 // window.mammoth   — DOCX → HTML

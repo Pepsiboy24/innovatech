@@ -380,36 +380,162 @@ body {
 
     .main-content {
         margin-left: 0;
-        padding: 16px;
+        padding: 80px 16px 24px; /* match listOfStudents padding to clear top bar */
     }
 
     .menu-btn {
         display: flex;
     }
 
-    .attendance-options {
+    .tp-filters-row {
         flex-direction: column;
+        width: 100%;
+    }
+
+    .tp-filters-row .date-input,
+    .tp-filters-row .class-select,
+    .tp-filters-row .subject-select {
+        width: 100%;
+        margin-bottom: 8px; /* space them out when stacked */
+    }
+
+    .attendance-options {
+        flex-direction: row;
+        flex-wrap: wrap;
         gap: 8px;
-        align-items: flex-start;
+        align-items: center;
+        width: 100%;
     }
 
-    .attendance-table {
-        font-size: 12px;
+    /* HCI Improvement: Make radio buttons large tappable blocks on mobile */
+    .radio-group {
+        flex: 1;
+        min-width: calc(33.333% - 8px);
+        padding: 10px 4px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        justify-content: center;
+        text-align: center;
+        transition: all 0.2s;
     }
 
-    .attendance-table thead th,
-    .attendance-table tbody td {
-        padding: 8px 6px;
+    .radio-group input[type="radio"] {
+        display: none; /* Hide actual radio circle */
     }
 
-    .student-avatar {
-        width: 32px;
-        height: 32px;
-        font-size: 12px;
+    .radio-group label {
+        font-size: 13px;
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Selected states for the blocks */
+    .radio-group.present:has(input:checked) {
+        background: #f0fff4;
+        border-color: #38a169;
+    }
+    
+    .radio-group.present:has(input:checked) label {
+        font-weight: 700;
+    }
+
+    .radio-group.absent:has(input:checked) {
+        background: #fff5f5;
+        border-color: #e53e3e;
+    }
+
+    .radio-group.absent:has(input:checked) label {
+        font-weight: 700;
+    }
+
+    .radio-group.late:has(input:checked) {
+        background: #fffaf0;
+        border-color: #d69e2e;
+    }
+
+    .radio-group.late:has(input:checked) label {
+        font-weight: 700;
     }
 
     .remarks-input {
-        max-width: 150px;
+        max-width: 100%;
+        margin-top: 12px;
+        padding: 12px; /* Larger tap target for input */
+    }
+
+    /* Responsive Attendance Table - Card Layout */
+    .attendance-table thead {
+        display: none;
+    }
+
+    .attendance-table,
+    .attendance-table tbody,
+    .attendance-table tr,
+    .attendance-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .attendance-table tr {
+        margin-bottom: 16px;
+        border: 1px solid var(--tp-border, #e2e8f0);
+        border-radius: 12px;
+        padding: 16px;
+        background: #fff;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .attendance-table td {
+        display: flex;
+        flex-direction: column;
+        border-bottom: 1px solid #f5f5f5;
+        padding: 12px 0;
+        font-size: 14px;
+        text-align: left;
+    }
+
+    .attendance-table td:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .attendance-table td:first-child {
+        padding-top: 0;
+    }
+
+    /* Add labels before content */
+    .attendance-table td:nth-child(2)::before {
+        content: "Attendance Status";
+        font-weight: 600;
+        color: #718096;
+        font-size: 11px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .attendance-table td:nth-child(3)::before {
+        content: "Remarks";
+        font-weight: 600;
+        color: #718096;
+        font-size: 11px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .quick-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .quick-action-btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .save-btn {
+        width: 100%;
     }
 }
 

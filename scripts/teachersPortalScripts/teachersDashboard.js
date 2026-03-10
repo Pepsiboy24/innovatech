@@ -126,7 +126,7 @@ function showNoClassesState() {
     if (tbody) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="5" style="text-align: center; padding: 2rem; color: #6b7280;">
+                <td colspan="5" style="display: flex; justify-content: center; padding: 2rem; color: #6b7280;">
                     No classes assigned yet. Contact Admin.
                 </td>
             </tr>
@@ -156,7 +156,7 @@ function renderStudents(students, className, avgPerformance) {
     if (students.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="5" style="text-align: center; padding: 2rem; color: #6b7280;">
+                <td colspan="5" style="display: flex; justify-content: center; padding: 2rem; color: #6b7280;">
                     No students found in your class.
                 </td>
             </tr>
@@ -173,15 +173,15 @@ function renderStudents(students, className, avgPerformance) {
 
         const row = `
             <tr>
-                <td>
+                <td data-label="Name">
                     <div class="student-name">
                         <div class="student-avatar">${initials}</div>
                         <span>${student.full_name || 'Unknown'}</span>
                     </div>
                 </td>
-                <td>${age}</td>
-                <td>${className || 'N/A'}</td>
-                <td>
+                <td data-label="Age">${age}</td>
+                <td data-label="Class">${className || 'N/A'}</td>
+                <td data-label="Performance">
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <div class="performance-bar">
                             <div class="performance-fill excellent" style="width: ${performancePercent}%;"></div>
@@ -189,7 +189,7 @@ function renderStudents(students, className, avgPerformance) {
                         <span class="performance-text">${performanceLabel}</span>
                     </div>
                 </td>
-                <td><a href="./student_details.html?id=${student.student_id}" class="view-details">View Details</a></td>
+                <td data-label="Action"><a href="./student_details.html?id=${student.student_id}" class="view-details">View Details</a></td>
             </tr>
         `;
 

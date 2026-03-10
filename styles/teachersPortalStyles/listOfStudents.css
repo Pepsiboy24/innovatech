@@ -243,6 +243,7 @@ body {
 
     .main-content {
         margin-left: 0;
+        padding: 80px 16px 24px;
     }
 
     .menu-btn {

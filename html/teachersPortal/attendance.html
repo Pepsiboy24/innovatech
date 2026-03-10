@@ -40,12 +40,16 @@
                 <div class="tp-filters-row">
                     <input type="date" class="tp-input date-input">
                     <select class="tp-select class-select">
-                        <!-- Options populated dynamically -->
+                        <option value="">Select a class</option>
+                    </select>
+                    <select class="tp-select subject-select" disabled>
+                        <option value="">Select a subject</option>
                     </select>
                 </div>
 
                 <!-- Quick Actions -->
                 <div class="quick-actions">
+                    <button class="tp-btn tp-btn-primary save-btn">Save</button>
                     <button class="tp-btn tp-btn-outline" onclick="markAllPresent()">✔ Mark All Present</button>
                     <button class="tp-btn tp-btn-outline" onclick="markAllAbsent()">✘ Mark All Absent</button>
                     <button class="tp-btn tp-btn-outline" onclick="clearAll()">↺ Clear All</button>
@@ -84,16 +88,13 @@
                     <!-- Students loaded dynamically -->
                 </tbody>
             </table>
-
-            <div class="tp-actions-row" style="justify-content:flex-end;">
-                <button class="tp-btn tp-btn-primary save-btn">Save Attendance</button>
-            </div>
         </div>
 
     </main>
 
     <script src="../../scripts/fontawesome.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="../../scripts/ui_feedback.js"></script>
     <script type="module" src="../../scripts/teachersPortalScripts/attendace.js"></script>
     <script src="../../scripts/teachersPortalScripts/teachers_portal_sidebar.js" type="module"></script>
     <script>

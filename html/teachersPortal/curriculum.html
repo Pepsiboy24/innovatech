@@ -159,6 +159,72 @@
         .curriculum-action-btn:hover {
             background: #ebf8ff;
         }
+
+        .action-btn {
+            background: transparent;
+            color: #3182ce;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        /* Responsive Table for Curriculum */
+        @media (max-width: 768px) {
+            .tp-filters-row {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .tp-filters-row .tp-select,
+            .tp-filters-row .tp-btn {
+                width: 100%;
+                margin-bottom: 8px; /* add some spacing between stacked elements */
+            }
+
+            .tp-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 1px solid #f5f5f5;
+                padding: 10px 0;
+                font-size: 13px;
+                text-align: right;
+            }
+
+            .tp-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: var(--tp-text-muted);
+                font-size: 11px;
+                text-transform: uppercase;
+                flex-shrink: 0;
+                margin-right: 12px;
+                text-align: left;
+            }
+
+            .tp-table td[data-label="Topic"] {
+                flex-direction: column;
+                align-items: flex-start;
+                text-align: left;
+            }
+
+            .tp-table td[data-label="Topic"]::before {
+                margin-bottom: 8px;
+            }
+
+            .tp-table td[data-label="Progress"] {
+                flex-direction: column;
+                align-items: flex-end;
+            }
+
+            .tp-table td[data-label="Progress"]::before {
+                align-self: flex-start;
+                margin-bottom: 8px;
+            }
+        }
     </style>
 </body>
 

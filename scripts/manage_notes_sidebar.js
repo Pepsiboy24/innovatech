@@ -58,6 +58,56 @@ export async function initializeSidebar() {
             main.classList.add('main-content');
             container.replaceWith(main); // remove the .container wrapper
         }
+
+        // Add tp-shared.css dynamically
+        const tpSharedLink = document.createElement('link');
+        tpSharedLink.rel = 'stylesheet';
+        tpSharedLink.href = '../../styles/teachersPortalStyles/tp-shared.css';
+        document.head.appendChild(tpSharedLink);
+
+        // Inject the mobile top bar and overlay so it matches other teacher pages
+        document.body.insertAdjacentHTML('afterbegin', `
+            <div class="mobile-top-bar" id="mobileTopBar">
+                <span class="brand">TeachSmart</span>
+                <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle sidebar">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+            <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        `);
+
+        // Transform the admin .header into the teacher .page-header
+        const oldHeader = document.querySelector('.header');
+        if (oldHeader) {
+            oldHeader.className = 'page-header';
+            
+            // Keep the title and subtitle elements so manage_notes.js can update them
+            const pTitle = document.getElementById('pageTitle');
+            const pSubtitle = document.getElementById('pageSubtitle');
+            
+            if (pTitle && pSubtitle) {
+                // Clear the old header HTML (removes the mobile-menu-btn and flex wrappers)
+                oldHeader.innerHTML = '';
+                // Strip existing classes that might conflict with page-header styles
+                pTitle.className = '';
+                pSubtitle.className = '';
+                oldHeader.appendChild(pTitle);
+                oldHeader.appendChild(pSubtitle);
+            }
+        }
+
+        // Attach event listeners for the newly injected hamburger and overlay
+        setTimeout(() => {
+            const btn = document.getElementById('hamburgerBtn');
+            const sidebar = document.querySelector('[data-sideBar]');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            const open = () => { sidebar.classList.add('active'); overlay.classList.add('active'); };
+            const close = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); };
+            
+            if (btn) btn.addEventListener('click', () => sidebar.classList.contains('active') ? close() : open());
+            if (overlay) overlay.addEventListener('click', close);
+        }, 0);
     }
 
     // 6. Active link helper
