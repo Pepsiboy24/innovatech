@@ -71,6 +71,7 @@
      flex: 1;
      margin-left: 250px;
      padding: 2rem;
+     min-width: 0; /* Prevents flex child from blowing out parent on mobile */
  }
 
  /* Header */
@@ -546,5 +547,9 @@
 
      .day-switcher {
          display: flex;
+     }
+
+     .section {
+         padding: 1rem;
      }
  }

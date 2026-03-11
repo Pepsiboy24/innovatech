@@ -29,13 +29,11 @@
                     <p>Manage your classes, assignments, and projects</p>
                 </div>
                 <div class="header-actions">
-                    <button class="notification-btn">
+                    <button class="notification-btn" aria-label="Notifications">
                         <i class="fas fa-bell"></i>
                     </button>
-                    <button class="profile-btn">
-                        A
-                    </button>
-                    <button class="nav-btn" data-nav-display>
+                    <button class="profile-btn" id="profileInitial">S</button>
+                    <button class="nav-btn" data-nav-display aria-label="Toggle menu">
                         <i class="fa fa-bars" data-ie></i>
                     </button>
                 </div>
@@ -71,9 +69,7 @@
             <section class="section">
                 <div class="section-header">
                     <h2 class="section-title">Today's Schedule</h2>
-                    <button id="viewFullScheduleBtn" class="view-all-btn"
-                        style="background: none; border: none; font: inherit; cursor: pointer; color: var(--primary-color, #3b82f6); text-decoration: underline; font-weight:500; font-size:14px; padding:0;">View
-                        Full Schedule</button>
+                    <button id="viewFullScheduleBtn" class="view-all-btn">View Full Schedule</button>
                 </div>
                 <div class="timetable-grid" id="timetableGrid" style="display:block;">
                     <!-- Live timetable entries injected here -->
