@@ -195,3 +195,9 @@ header .profilePic > .user{
         font-size: 1rem;
     }
 }
+
+/* Prevent iOS auto-zoom on form inputs */
+input, select, textarea, button {
+    font-size: 16px !important;
+}
+

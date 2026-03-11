@@ -494,3 +494,9 @@
         .chart-container canvas {
             border-radius: 4px;
         }
+
+/* Prevent iOS auto-zoom on form inputs */
+input, select, textarea, button {
+    font-size: 16px !important;
+}
+

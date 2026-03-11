@@ -633,3 +633,9 @@ body {
         font-size: 20px;
     }
 }
+
+/* Prevent iOS auto-zoom on form inputs */
+input, select, textarea, button {
+    font-size: 16px !important;
+}
+
