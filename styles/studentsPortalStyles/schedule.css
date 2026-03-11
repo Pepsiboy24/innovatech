@@ -27,6 +27,7 @@
      overflow-y: auto;
      display: flex;
      flex-direction: column;
+     z-index: 1111;
  }
 
  .sidebar-header {
@@ -71,7 +72,8 @@
      flex: 1;
      margin-left: 250px;
      padding: 2rem;
-     min-width: 0; /* Prevents flex child from blowing out parent on mobile */
+     min-width: 0;
+     /* Prevents flex child from blowing out parent on mobile */
  }
 
  /* Header */
