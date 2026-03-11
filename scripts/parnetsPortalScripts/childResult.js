@@ -22,9 +22,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 2. Start the switcher logic with the verified user object
     await initializeChildSwitcher(user);
 
-    // 3. UI Setup for sidebar (only runs once)
-    setupSidebar();
-
   } catch (err) {
     console.error("Initialization error:", err.message);
   } finally {
@@ -209,22 +206,4 @@ function calculateStats(grades) {
 
   const posEl = document.getElementById('classPosition');
   if (posEl) posEl.textContent = 'Calculated EOT';
-}
-
-function setupSidebar() {
-  const mobileBtn = document.querySelector(".mobile-menu-btn");
-  const sidebar = document.getElementById("sidebar");
-
-  if (!mobileBtn || !sidebar) return;
-
-  mobileBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    sidebar.classList.toggle("open");
-  });
-
-  document.addEventListener("click", (e) => {
-    if (window.innerWidth <= 768 && !sidebar.contains(e.target) && !mobileBtn.contains(e.target) && sidebar.classList.contains("open")) {
-      sidebar.classList.remove("open");
-    }
-  });
 }

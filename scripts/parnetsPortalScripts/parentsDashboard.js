@@ -8,9 +8,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   await fetchRecentGrades(childId);
   await fetchOverallProgress(childId);
-
-  // Sidebar listeners
-  setupSidebar();
 });
 
 
@@ -218,41 +215,5 @@ function updateChart(labels, data) {
         },
       },
     },
-  });
-}
-
-function setupSidebar() {
-  // Mobile UX: Sidebar functionality
-  const mobileBtn = document.querySelector(".mobile-menu-btn");
-  const sidebar = document.getElementById("sidebar");
-
-  // Ensure we are selecting the right elements
-  if (!mobileBtn || !sidebar) return;
-
-  // Remove existing listeners (crudely) by cloning or just adding new ones carefully
-  // Since this script runs once, it's fine.
-
-  mobileBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    sidebar.classList.toggle("open");
-  });
-
-  // Close sidebar when clicking outside on mobile
-  document.addEventListener("click", function (e) {
-    if (
-      window.innerWidth <= 768 &&
-      !sidebar.contains(e.target) &&
-      !mobileBtn.contains(e.target) &&
-      sidebar.classList.contains("open")
-    ) {
-      sidebar.classList.remove("open");
-    }
-  });
-
-  // Handle window resize
-  window.addEventListener("resize", function () {
-    if (window.innerWidth > 768) {
-      sidebar.classList.remove("open");
-    }
   });
 }

@@ -11,16 +11,8 @@
         return './';          // default: already in parentsPortal
     }
 
-    // Compute path to the shared folder from the current page
-    function sharedPrefix() {
-        const path = window.location.pathname;
-        if (path.includes('/html/shared/')) return './';
-        return '../shared/';  // from parentsPortal → go up one, into shared
-    }
-
     function buildSidebar() {
         const p = parentPrefix();
-        const sh = sharedPrefix();
 
         return `
             <div class="sidebar-header">
@@ -55,8 +47,8 @@
                 </li>
             </ul>
 
-            <div style="margin-top: auto; padding: 20px; border-top: 1px solid var(--border-color);">
-                <a href="#" id="parentLogoutBtn" class="nav-link" style="color: #ef4444; margin: 0;">
+            <div style="margin-top: auto; padding: 20px; border-top: 1px solid #e2e8f0;">
+                <a href="#" id="parentLogoutBtn" class="nav-link" style="color: #ef4444; margin: 0; display: flex; align-items: center; gap: 0.75rem;">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Logout</span>
                 </a>
@@ -64,8 +56,9 @@
         `;
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const sidebarElement = document.querySelector('[data-sideBar]');
+    function initSidebar() {
+        // Target any element with class 'sidebar' to ensure it finds the container regardless of HTML tags
+        const sidebarElement = document.querySelector('.sidebar');
         if (!sidebarElement) return;
 
         sidebarElement.innerHTML = buildSidebar();
@@ -76,7 +69,6 @@
 
         sidebarElement.querySelectorAll('.nav-link').forEach(link => {
             const linkHref = link.getAttribute('href') || '';
-            // Match by filename at end of path
             const filename = linkHref.split('/').pop();
             const cleanParent = parentOverride ? parentOverride.split('/').pop() : null;
 
@@ -90,22 +82,12 @@
             }
         });
 
-        // Mobile close button (if there was one in this design. Using the toggle logic usually handled globally, but here is a hook if needed)
-        const closeBtn = sidebarElement.querySelector('[data-sideBarClose]');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                sidebarElement.classList.remove('active', 'show'); // Adjust classes based on parents portal css
-            });
-        }
-
         // Logout functionality
         const logoutBtn = sidebarElement.querySelector('#parentLogoutBtn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
                 try {
-                    // Dynamically import config.js to get the initialized supabase client 
-                    // (paths are relative to the HTML file: html/parentsPortal/page.html -> ../../scripts/config.js)
                     const { supabase } = await import('../../scripts/config.js');
                     await supabase.auth.signOut();
                 } catch (error) {
@@ -114,5 +96,60 @@
                 window.location.href = '../../index.html';
             });
         }
-    });
+
+        // --- Standardized Mobile Toggle Handling ---
+        let overlay = document.getElementById('parentOverlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'parentOverlay';
+            overlay.className = 'sidebar-overlay';
+            overlay.style.cssText = 'display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1999;';
+            document.body.appendChild(overlay);
+        }
+        
+        // Define toggle function
+        function toggleSidebar() {
+            sidebarElement.classList.toggle('active');
+            if (overlay) {
+                overlay.style.display = sidebarElement.classList.contains('active') ? 'block' : 'none';
+            }
+        }
+
+        // Attach to overlay click (click outside to close)
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                sidebarElement.classList.remove('active');
+                overlay.style.display = 'none';
+            });
+        }
+
+        // We export it globally because some HTML buttons use inline onclick="toggleSidebar()"
+        window.toggleSidebar = toggleSidebar;
+
+        // Also attach via Event Listeners for buttons without inline handlers (like payments.html #menuToggle)
+        const paymentMenuToggle = document.getElementById('menuToggle');
+        if (paymentMenuToggle) {
+            paymentMenuToggle.addEventListener('click', toggleSidebar);
+        }
+        
+        // Attach to `.mobile-menu-btn` if it exists and doesn't have inline onclick
+        document.querySelectorAll('.mobile-menu-btn:not([onclick])').forEach(btn => {
+            btn.addEventListener('click', toggleSidebar);
+        });
+
+        // Hide overlay and reset sidebar state when resizing back to desktop
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                sidebarElement.classList.remove('active');
+                if (overlay) overlay.style.display = 'none';
+            }
+        });
+    }
+
+    // Execute immediately if DOM is already parsed (common for module scripts), else wait.
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSidebar);
+    } else {
+        initSidebar();
+    }
 })();
