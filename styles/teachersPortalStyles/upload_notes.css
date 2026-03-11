@@ -4,19 +4,43 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+/* --- 1. GLOBAL RESET & MOBILE ZOOM LOCKDOWN --- */
+:root {
+    --primary-color: #3b82f6;
+    --primary-hover: #2563eb;
+    --secondary-color: #64748b;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --background-color: #f8fafc;
+    --card-background: #ffffff;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --border-color: #e2e8f0;
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+html,
 body {
+    width: 100%;
+    overflow-x: hidden;
+    /* Stops horizontal "wobble" */
+    position: relative;
+    -webkit-text-size-adjust: 100%;
+    /* Prevents text from jumping on rotate */
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    display: flex;
-    height: 100vh;
-    background: #f0f4f8;
-    overflow: hidden;
-    color: #2d3748;
+    background: radial-gradient(circle at top right, #f8fafc 0%, #f1f5f9 100%);
+    color: var(--text-primary);
+    height: auto;
+    /* Allow body to grow on mobile */
+    min-height: 100vh;
 }
 
 /* ---- Layout ---- */
@@ -25,7 +49,8 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow-x: hidden;
+    max-width: 100vw;
 }
 
 /* ---- Header ---- */
@@ -45,13 +70,11 @@ body {
     font-size: 22px;
     font-weight: 700;
     color: #1a202c;
-    margin-bottom: 0;
 }
 
 .page-header p {
     font-size: 13px;
     color: #718096;
-    margin-top: 0;
 }
 
 /* ---- Scroll area ---- */
@@ -84,10 +107,16 @@ body {
 /* ---- Cards ---- */
 .card {
     background: #ffffff;
-    border-radius: 14px;
+    border-radius: 16px;
     padding: 24px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
-    border: 1px solid #e8edf2;
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover {
+    box-shadow: var(--card-shadow-hover);
+    transform: translateY(-2px);
 }
 
 .card-title {
@@ -134,19 +163,35 @@ body {
     color: #4a5568;
 }
 
-.form-group select,
-.form-group input[type="text"] {
+/* --- 2. UNIVERSAL INPUT PROTECTION --- */
+/* Strictly enforces 16px font to prevent iOS Safari auto-zoom */
+input,
+input[type="text"],
+select,
+textarea,
+button {
+    font-size: 16px !important;
+    touch-action: manipulation !important;
     padding: 10px 14px;
     border: 1.5px solid #e2e8f0;
     border-radius: 9px;
-    font-size: 14px;
     font-family: inherit;
     color: #2d3748;
     background: #f9fbff;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: all 0.2s;
     outline: none;
     appearance: none;
     -webkit-appearance: none;
+    max-width: 100%;
+}
+
+input:focus,
+input[type="text"]:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    background: #fff;
 }
 
 .form-group select {
@@ -154,13 +199,6 @@ body {
     background-repeat: no-repeat;
     background-position: right 12px center;
     padding-right: 36px;
-}
-
-.form-group select:focus,
-.form-group input[type="text"]:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
-    background: #fff;
 }
 
 /* ---- Drop Zone ---- */
@@ -204,13 +242,13 @@ body {
 .drop-zone h3 {
     font-size: 16px;
     font-weight: 600;
-    color: #2d3748;
+    color: var(--text-primary);
     margin-bottom: 6px;
 }
 
 .drop-zone p {
     font-size: 13px;
-    color: #718096;
+    color: var(--text-secondary);
 }
 
 .drop-zone .file-types {
@@ -249,7 +287,6 @@ body {
 .stepper {
     display: flex;
     flex-direction: column;
-    gap: 0;
 }
 
 .step-item {
@@ -268,15 +305,6 @@ body {
     bottom: 0;
     width: 2px;
     background: #e2e8f0;
-    z-index: 0;
-}
-
-.step-item.done::after {
-    background: #48bb78;
-}
-
-.step-item.active::after {
-    background: linear-gradient(to bottom, #667eea, #e2e8f0);
 }
 
 .step-dot {
@@ -293,20 +321,12 @@ body {
     color: #a0aec0;
     flex-shrink: 0;
     z-index: 1;
-    transition: all 0.3s;
 }
 
 .step-item.active .step-dot {
-    border-color: #667eea;
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: #fff;
     animation: pulse-dot 1.4s ease-in-out infinite;
-}
-
-.step-item.done .step-dot {
-    border-color: #48bb78;
-    background: #48bb78;
-    color: #fff;
 }
 
 @keyframes pulse-dot {
@@ -319,6 +339,20 @@ body {
     50% {
         box-shadow: 0 0 0 8px rgba(102, 126, 234, 0);
     }
+}
+
+.step-item.done::after {
+    background: #10b981;
+}
+
+.step-item.active::after {
+    background: linear-gradient(to bottom, #667eea, #e2e8f0);
+}
+
+.step-item.done .step-dot {
+    border-color: #10b981;
+    background: #10b981;
+    color: #fff;
 }
 
 .step-text h4 {
@@ -358,6 +392,7 @@ body {
     }
 }
 
+
 /* ---- Preview Panel ---- */
 .preview-frame-wrap {
     flex: 1;
@@ -367,6 +402,7 @@ body {
     background: #f7fafc;
     min-height: 340px;
     position: relative;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
 .preview-placeholder {
@@ -401,26 +437,24 @@ body {
 .btn {
     padding: 12px 24px;
     border-radius: 10px;
-    font-size: 14px;
     font-weight: 600;
-    font-family: inherit;
     border: none;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    transition: all 0.2s;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-primary {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: #fff;
     width: 100%;
-    justify-content: center;
 }
 
 .btn-primary:hover:not(:disabled) {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
@@ -435,11 +469,11 @@ body {
     color: #667eea;
     border: 1.5px solid #667eea;
     width: 100%;
-    justify-content: center;
 }
 
 .btn-outline:hover:not(:disabled) {
     background: #f0f3ff;
+    transform: translateY(-1px);
 }
 
 /* ---- Alerts ---- */
@@ -459,39 +493,41 @@ body {
 
 .alert-success {
     background: #f0fff4;
-    border: 1px solid #68d391;
-    color: #276749;
+    border: 1px solid #10b981;
+    color: #065f46;
 }
 
 .alert-error {
-    background: #fff5f5;
-    border: 1px solid #fc8181;
-    color: #c53030;
+    background: #fef2f2;
+    border: 1px solid #ef4444;
+    color: #991b1b;
 }
 
-/* ---- Mobile ---- */
+/* --- 3. MOBILE RESPONSIVENESS (THE LOCKDOWN) --- */
 @media (max-width: 900px) {
     .upload-body {
         flex-direction: column;
+        padding: 16px;
+        /* Tighter padding for mobile */
     }
 
     .right-panel {
-        width: 100%;
+        width: 100% !important;
+        /* Force full width on tablets/phones */
+        order: 2;
+        /* Put the preview below the upload cards */
+    }
+
+    .left-panel {
+        width: 100% !important;
+        order: 1;
     }
 }
 
 @media (max-width: 768px) {
-    body {
-        overflow: auto;
-    }
-
     .main-content {
-        margin-left: 0;
+        margin-left: 0 !important;
         overflow: visible;
-    }
-
-    .upload-body {
-        padding: 16px;
     }
 
     .page-header {
@@ -500,13 +536,22 @@ body {
 
     .form-row {
         grid-template-columns: 1fr;
+        /* Stack Class and Subject inputs */
+    }
+
+    .card {
+        padding: 16px;
+        /* Save space inside cards */
     }
 }
 
-/* Explicitly prevent iOS Safari auto-zoom on focus by enforcing >= 16px */
-input, input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="search"],
-textarea, select, button {
-    font-size: 16px !important;
-    touch-action: manipulation !important;
-}
+@media (max-width: 480px) {
+    .preview-frame-wrap {
+        min-height: 250px;
+        /* Slimmer preview for small phones */
+    }
 
+    .page-header h1 {
+        font-size: 18px;
+    }
+}

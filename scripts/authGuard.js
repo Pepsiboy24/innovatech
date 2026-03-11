@@ -40,6 +40,23 @@ import { supabase } from './config.js';
             return;
         }
 
+        const { data: parentRecord, error: parentError } = await supabase
+            .from('Parents')
+            .select('parent_id, user_id')
+            .eq('user_id', user.id) // Using user_id for Parents as per schema
+            .maybeSingle();
+
+        if (parentRecord) {
+            console.log('Role: Parent');
+            // If the user is a Parent, allow them to stay if they are in the Parent Portal
+            // Or redirect if they are trying to access the Admin area
+            if (!window.location.pathname.includes('parentsPortal')) {
+                showAccessDeniedModal('You are logged in as a Parent. Redirecting to your portal...', '../parentsPortal/parentPortal.html');
+                return;
+            }
+            return; // Allow access to Parent Portal
+        }
+
         // 3. Neither Admin nor Teacher
         console.warn('Role: Unknown. User is authenticated but not found in Admin or Teacher tables.');
         console.log('User Email:', user.email);
@@ -65,10 +82,10 @@ function showAccessDeniedModal(message, redirectUrl) {
     const render = () => {
         const overlay = document.createElement('div');
         overlay.style.cssText = 'position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); z-index: 999999; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease;';
-        
+
         const modal = document.createElement('div');
         modal.style.cssText = 'background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 32px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;';
-        
+
         modal.innerHTML = `
             <div style="width: 64px; height: 64px; background: rgba(239, 68, 68, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #ef4444;">
                 <svg style="width: 32px; height: 32px;" stroke="currentColor" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
@@ -80,15 +97,15 @@ function showAccessDeniedModal(message, redirectUrl) {
             </div>
             <style>@keyframes authModalSpin { to { transform: rotate(360deg); } }</style>
         `;
-        
+
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
-        
+
         requestAnimationFrame(() => {
             overlay.style.opacity = '1';
             modal.style.transform = 'translateY(0)';
         });
-        
+
         setTimeout(() => {
             window.location.href = redirectUrl;
         }, 2500);

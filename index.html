@@ -348,25 +348,17 @@ textarea, select, button {
 
 <body>
     <div class="login-container">
-        <div class="school-icon">
-            🎓
+        <div class="school-icon" style="background: transparent; color: var(--primary);">
+            <i class="fa-solid fa-graduation-cap" style="font-size: 40px; color: #3b82f6;"></i>
         </div>
 
-        <h1 class="title">School Management System</h1>
+        <h1 class="title">EduHub</h1>
         <p class="subtitle">Sign in to your account</p>
-
-        <div class="role-tabs">
-            <button class="role-tab" data-role="student"> Student</button>
-            <button class="role-tab active" data-role="teacher"> Teacher</button>
-            <button class="role-tab" data-role="admin"> Admin</button>
-            <button class="role-tab" data-role="parent"> Parent</button>
-            <!-- <button class="role-tab" data-role="admin">  Admin</button> -->
-        </div>
 
         <form id="loginForm">
             <div class="form-group">
                 <label class="form-label" for="email">Email Address</label>
-                <input type="email" id="email" class="form-input" placeholder="Enter your email" required>
+                <input type="email" id="email" class="form-input" placeholder="Enter your school email" required>
             </div>
 
             <div class="form-group">
@@ -387,7 +379,7 @@ textarea, select, button {
                 <a href="#" class="forgot-password">Forgot password?</a>
             </div>
 
-            <button type="submit" class="signin-btn">Sign In</button>
+            <button type="submit" id="submitBtn" class="signin-btn">Sign In</button>
         </form>
 
         <!-- <p class="signup-link">
@@ -403,11 +395,8 @@ textarea, select, button {
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-    <script>
-        const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
-
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <script type="module">
+        import { supabase } from './scripts/config.js';
 
         // ── Toast helper ────────────────────────────────────────────
         const TOAST_ICONS = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
@@ -437,46 +426,8 @@ textarea, select, button {
             toast.addEventListener('animationend', () => toast.remove(), { once: true });
         }
 
-        // Role tab functionality
-        const roleTabs = document.querySelectorAll('.role-tab');
-        let selectedRole = 'teacher';
-
-        roleTabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                // Remove active class from all tabs
-                roleTabs.forEach(t => t.classList.remove('active'));
-                // Add active class to clicked tab
-                tab.classList.add('active');
-                // Update selected role
-                selectedRole = tab.dataset.role;
-
-                // Update placeholder text based on role
-                updatePlaceholders(selectedRole);
-            });
-        });
-
-        function updatePlaceholders(role) {
-            const emailInput = document.getElementById('email');
-            const passwordInput = document.getElementById('password');
-
-            switch (role) {
-                case 'student':
-                    emailInput.placeholder = 'Enter your student email';
-                    break;
-                case 'teacher':
-                    emailInput.placeholder = 'Enter your teacher email';
-                    break;
-                case 'admin':
-                    emailInput.placeholder = 'Enter your admin email';
-                    break;
-                case 'parent':
-                    emailInput.placeholder = 'Enter your parent email';
-                    break;
-            }
-        }
-
         // Password visibility toggle
-        function togglePassword() {
+        window.togglePassword = function togglePassword() {
             const passwordInput = document.getElementById('password');
             const toggleBtn = document.querySelector('.toggle-password');
 
@@ -487,99 +438,103 @@ textarea, select, button {
                 passwordInput.type = 'password';
                 toggleBtn.textContent = '👁️';
             }
+        };
+
+        // Button Loading State
+        const submitBtn = document.getElementById('submitBtn');
+        function setLoading(isLoading) {
+            submitBtn.disabled = isLoading;
+            submitBtn.innerHTML = isLoading ? '<i class="fa-solid fa-spinner fa-spin"></i> Authenticating...' : 'Sign In';
         }
 
-        // Form submission
+        // Form submission waterfall
         document.getElementById('loginForm').addEventListener('submit', async function (e) {
             e.preventDefault();
 
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
-            const remember = document.getElementById('remember').checked;
 
             if (!email || !password) {
                 showToast('Please enter both your email and password.', 'warning');
                 return;
             }
 
+            setLoading(true);
+
             try {
-                console.log("Attempting login for:", email);
-                console.log(typeof password);
-                // Attempt to sign in with Supabase
-                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                // 1. Authenticate with Supabase
+                const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
 
-                if (error) {
-                    showToast('Login failed: ' + error.message, 'error');
+                if (authError) {
+                    showToast('Login failed: Invalid email or password.', 'error');
+                    setLoading(false);
                     return;
                 }
 
-                // Check if user exists in the appropriate table based on selected role
-                const userId = data.user.id;
-                let tableName;
-                let redirectUrl;
+                const userId = authData.user.id;
 
-                // ... inside your sign-in event listener ...
+                // 2. Waterfall checks to determine role
+                
+                // Check School_Admin
+                const { data: adminData } = await supabase
+                    .from('School_Admin')
+                    .select('admin_id')
+                    .eq('admin_id', userId)
+                    .maybeSingle();
 
-                let idColumnName; // Add this variable
-
-                switch (selectedRole) {
-                    case 'admin':
-                        tableName = 'School_Admin';
-                        idColumnName = 'admin_id'; // Verify this in your table editor
-                        redirectUrl = './html/schoolAdmin/schoolAdminDashboard.html';
-                        break;
-                    case 'teacher':
-                        tableName = 'Teachers'; // Ensure this matches your DB capitalization
-                        idColumnName = 'teacher_id'; // Verify this in your table editor
-                        redirectUrl = './html/teachersPortal/teachersPortal.html';
-                        break;
-                    case 'student':
-                        tableName = 'Students'; // Use capital 'S' to match your screenshot
-                        idColumnName = 'student_id'; // Matches your screenshot!
-                        redirectUrl = './html/studentsPortal/studentPortal.html';
-                        break;
-                    case 'parent':
-                        tableName = 'Parents';
-                        // CHANGE THIS: Use 'user_id' because that's where the Auth ID is stored
-                        idColumnName = 'user_id';
-                        redirectUrl = './html/parentsPortal/parentsPortal.html';
-                        break;
-                    // ...
+                if (adminData) {
+                    window.location.href = './html/schoolAdmin/schoolAdminDashboard.html';
+                    return; // Prevent further execution while redirecting
                 }
 
-                // Now use the dynamic column name in the query
-                const { data: roleData, error: roleError } = await supabaseClient
-                    .from(tableName)
-                    .select('*')
-                    .eq(idColumnName, userId) // Use the variable here instead of 'id'
-                    .single();
+                // Check Teachers
+                const { data: teacherData } = await supabase
+                    .from('Teachers')
+                    .select('teacher_id')
+                    .eq('teacher_id', userId)
+                    .maybeSingle();
 
-                // Check if user exists in the selected role table
-                // const { data: roleData, error: roleError } = await supabaseClient
-                //     .from(tableName)
-                //     .select('*')
-                //     .eq('id', userId)
-                //     .single();
-
-                if (roleError || !roleData) {
-                    showToast(`You are not authorized as a ${selectedRole}. Please select the correct role or contact your administrator.`, 'warning', 7000);
-                    // Sign out the user since they don't have the required role
-                    await supabaseClient.auth.signOut();
+                if (teacherData) {
+                    window.location.href = './html/teachersPortal/teachersPortal.html';
                     return;
                 }
 
-                // Successful login and role verification
-                console.log(`Logged in as ${selectedRole}:`, data.user.email);
+                // Check Students
+                const { data: studentData } = await supabase
+                    .from('Students')
+                    .select('student_id')
+                    .eq('student_id', userId)
+                    .maybeSingle();
 
-                // Supabase handles authentication automatically - no need to manually store tokens
-                window.location.href = redirectUrl;
+                if (studentData) {
+                    window.location.href = './html/studentsPortal/studentPortal.html';
+                    return;
+                }
+
+                // Check Parents
+                const { data: parentData } = await supabase
+                    .from('Parents')
+                    .select('user_id')
+                    .eq('user_id', userId)
+                    .maybeSingle();
+
+                if (parentData) {
+                    window.location.href = './html/parentsPortal/parentsPortal.html';
+                    return;
+                }
+
+                // Fallback: Authenticated but no profile matches
+                showToast('Account verified but no profile found. Please contact administration.', 'warning', 7000);
+                await supabase.auth.signOut();
+                setLoading(false);
 
             } catch (err) {
                 console.error('Login error:', err);
-                showToast('An unexpected error occurred during login. Please try again.', 'error');
+                showToast('An unexpected server error occurred during login. Please try again.', 'error');
+                setLoading(false);
             }
         });
 
@@ -606,8 +561,7 @@ textarea, select, button {
             });
         });
 
-        // Initialize with teacher role selected
-        updatePlaceholders('teacher');
+
     </script>
 </body>
 
