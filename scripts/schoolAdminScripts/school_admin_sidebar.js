@@ -63,6 +63,14 @@
                     <i class="fa-solid fa-clock nav-icon"></i>
                     Time Table
                 </a>
+                <a href="${a}settings.html" class="nav-item">
+                    <i class="fa-solid fa-cog nav-icon"></i>
+                    School Settings
+                </a>
+                <a href="${a}payments_config.html" class="nav-item">
+                    <i class="fa-solid fa-credit-card nav-icon"></i>
+                    Payment Config
+                </a>
                 <a href="${sh}manage_notes.html" class="nav-item">
                     <i class="fa-solid fa-file-lines nav-icon"></i>
                     Manage Notes

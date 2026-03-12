@@ -9,6 +9,7 @@
     <title>School Payments - EduPay Portal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css?v=1.1">
     <link rel="stylesheet" href="../../styles/parentsPortalStyles/payments.css?v=1.1">
+    <script src="../../scripts/config.js"></script>
 </head>
 
 <body>
@@ -34,139 +35,77 @@
                 </div>
             </div>
 
-            <div class="payment-card">
-                <div class="payment-header">
-                    <div class="fee-info">
-                        <div class="fee-details">
-                            <h2>
-                                <div class="fee-icon">
-                                    <i class="fas fa-book-open"></i>
-                                </div>
-                                School Fees
-                            </h2>
-                            <div class="fee-period">2nd Term - 2023/2024 Academic Session</div>
-                        </div>
-                        <div class="fee-amount">₦50,000</div>
-                    </div>
+            <!-- Loading State -->
+            <div id="loadingState" class="loading-state">
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>Loading payment items...</span>
                 </div>
+            </div>
 
-                <div class="services-section">
-                    <h3 class="section-title">Additional Services</h3>
-
-                    <div class="service-item" onclick="toggleService(this, 2000)">
-                        <div class="service-left">
-                            <div class="service-checkbox"></div>
-                            <div class="service-info">
-                                <div class="service-icon">
-                                    <i class="fas fa-home"></i>
-                                </div>
-                                <div class="service-name">Hostel Accommodation</div>
-                            </div>
+            <!-- Payment Content -->
+            <div id="paymentContent" class="payment-content" style="display: none;">
+                <div class="payment-card">
+                    <!-- School Info Header -->
+                    <div class="school-info-header" id="schoolInfoHeader">
+                        <div class="school-logo">
+                            <img id="schoolLogo" src="https://placehold.co/60x60/e8e8e8/363636?text=Logo" alt="School Logo">
                         </div>
-                        <div class="service-price">₦2,000</div>
-                    </div>
-
-                    <div class="service-item" onclick="toggleService(this, 1500)">
-                        <div class="service-left">
-                            <div class="service-checkbox"></div>
-                            <div class="service-info">
-                                <div class="service-icon">
-                                    <i class="fas fa-bus"></i>
-                                </div>
-                                <div class="service-name">School Bus Service</div>
-                            </div>
-                        </div>
-                        <div class="service-price">₦1,500</div>
-                    </div>
-
-                    <div class="service-item" onclick="toggleService(this, 3000)">
-                        <div class="service-left">
-                            <div class="service-checkbox"></div>
-                            <div class="service-info">
-                                <div class="service-icon">
-                                    <i class="fas fa-mountain"></i>
-                                </div>
-                                <div class="service-name">Educational Excursion</div>
-                            </div>
-                        </div>
-                        <div class="service-price">₦3,000</div>
-                    </div>
-                </div>
-
-                <div class="summary-section">
-                    <h3 class="section-title">Payment Summary</h3>
-
-                    <div class="summary-items" id="summaryItems">
-                        <div class="summary-item">
-                            <span>School Fees</span>
-                            <span>₦50,000</span>
+                        <div class="school-details">
+                            <h2 id="schoolName">Loading School...</h2>
+                            <p id="academicSession">2023/2024 Academic Session</p>
                         </div>
                     </div>
 
-                    <div class="summary-total">
-                        <span class="total-label">Total Amount</span>
-                        <span class="total-amount" id="totalAmount">₦50,000</span>
+                    <!-- Compulsory Items Section -->
+                    <div class="compulsory-section" id="compulsorySection">
+                        <h3 class="section-title">Compulsory Payments</h3>
+                        <div id="compulsoryItems" class="payment-items">
+                            <!-- Compulsory items will be loaded here -->
+                        </div>
                     </div>
 
-                    <button class="pay-button">
-                        <i class="fas fa-lock"></i> Proceed to Payment
-                    </button>
+                    <!-- Optional Items Section -->
+                    <div class="services-section" id="optionalSection">
+                        <h3 class="section-title">Optional Services</h3>
+                        <div id="optionalItems" class="payment-items">
+                            <!-- Optional items will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="emptyState" class="empty-state" style="display: none;">
+                        <div class="empty-icon">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <h3>No Payment Items Available</h3>
+                        <p>There are currently no payment items configured for your school. Please contact the school administration.</p>
+                    </div>
+
+                    <!-- Payment Summary -->
+                    <div class="summary-section" id="summarySection" style="display: none;">
+                        <h3 class="section-title">Payment Summary</h3>
+
+                        <div class="summary-items" id="summaryItems">
+                            <!-- Summary items will be loaded here -->
+                        </div>
+
+                        <div class="summary-total">
+                            <span class="total-label">Total Amount</span>
+                            <span class="total-amount" id="totalAmount">₦0</span>
+                        </div>
+
+                        <button class="pay-button" onclick="proceedToPayment()">
+                            <i class="fas fa-lock"></i> Proceed to Payment
+                        </button>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <script>
-        let selectedServices = [];
-        const baseAmount = 50000;
-
-        function toggleService(element, price) {
-            const checkbox = element.querySelector('.service-checkbox');
-            const serviceName = element.querySelector('.service-name').textContent;
-            const isSelected = element.classList.contains('selected');
-
-            if (isSelected) {
-                element.classList.remove('selected');
-                checkbox.classList.remove('checked');
-                selectedServices = selectedServices.filter(service => service.name !== serviceName);
-            } else {
-                element.classList.add('selected');
-                checkbox.classList.add('checked');
-                selectedServices.push({ name: serviceName, price: price });
-            }
-
-            updateSummary();
-        }
-
-        function updateSummary() {
-            const summaryItems = document.getElementById('summaryItems');
-            const totalAmount = document.getElementById('totalAmount');
-
-            // Clear current items except school fees
-            summaryItems.innerHTML = `
-                <div class="summary-item">
-                    <span>School Fees</span>
-                    <span>₦50,000</span>
-                </div>
-            `;
-
-            let total = baseAmount;
-
-            selectedServices.forEach(service => {
-                const item = document.createElement('div');
-                item.className = 'summary-item';
-                item.innerHTML = `
-                    <span>${service.name}</span>
-                    <span>₦${service.price.toLocaleString()}</span>
-                `;
-                summaryItems.appendChild(item);
-                total += service.price;
-            });
-
-            totalAmount.textContent = `₦${total.toLocaleString()}`;
-        }
-
-    </script>
+    <!-- Scripts -->
+    <script src="../../scripts/parentsPortalScripts/payments.js"></script>
     <script type="module" src="../../scripts/parnetsPortalScripts/parents_portal_sidebar.js"></script>
 </body>
 

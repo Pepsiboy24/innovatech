@@ -51,7 +51,7 @@ import { supabase } from './config.js';
             // If the user is a Parent, allow them to stay if they are in the Parent Portal
             // Or redirect if they are trying to access the Admin area
             if (!window.location.pathname.includes('parentsPortal')) {
-                showAccessDeniedModal('You are logged in as a Parent. Redirecting to your portal...', '../parentsPortal/parentPortal.html');
+                showAccessDeniedModal('You are logged in as a Parent. Redirecting to your portal...', '../../index.html');
                 return;
             }
             return; // Allow access to Parent Portal

@@ -11,17 +11,118 @@
         return './';          // default: already in parentsPortal
     }
 
-    function buildSidebar() {
+    async function loadSchoolBranding() {
+        try {
+            // Get current student's school ID
+            const studentId = localStorage.getItem('student_id') || 
+                             sessionStorage.getItem('student_id') ||
+                             window.currentStudentId;
+            
+            if (!studentId) {
+                console.log('No student ID found, using default branding');
+                return { school_name: 'EdTech', logo_url: null };
+            }
+            
+            // Import supabase
+            const { supabase } = await import('../../scripts/config.js');
+            
+            // Get student's class and school
+            const { data: studentData } = await supabase
+                .from('Students')
+                .select('class_id')
+                .eq('student_id', studentId)
+                .single();
+            
+            if (!studentData) {
+                console.log('Student data not found, using default branding');
+                return { school_name: 'EdTech', logo_url: null };
+            }
+            
+            // Get school info
+            const { data: classData } = await supabase
+                .from('Classes')
+                .select('school_id')
+                .eq('class_id', studentData.class_id)
+                .single();
+            
+            if (!classData) {
+                console.log('Class data not found, using default branding');
+                return { school_name: 'EdTech', logo_url: null };
+            }
+            
+            const { data: schoolData } = await supabase
+                .from('Schools')
+                .select('school_name, logo_url')
+                .eq('school_id', classData.school_id)
+                .single();
+            
+            return schoolData || { school_name: 'EdTech', logo_url: null };
+            
+        } catch (error) {
+            console.error('Error loading school branding:', error);
+            return { school_name: 'EdTech', logo_url: null };
+        }
+    }
+
+    async function loadUserInfo() {
+        try {
+            const studentId = localStorage.getItem('student_id') || 
+                             sessionStorage.getItem('student_id') ||
+                             window.currentStudentId;
+            
+            if (!studentId) {
+                return { name: 'John Smith', relation: 'Parent of Alex Smith', initials: 'JS' };
+            }
+            
+            const { supabase } = await import('../../scripts/config.js');
+            
+            const { data: studentData } = await supabase
+                .from('Students')
+                .select('full_name')
+                .eq('student_id', studentId)
+                .single();
+            
+            if (studentData) {
+                const studentName = studentData.full_name;
+                const initials = studentName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+                return { 
+                    name: 'Parent', 
+                    relation: `Parent of ${studentName}`, 
+                    initials: initials || 'PA'
+                };
+            }
+            
+            return { name: 'John Smith', relation: 'Parent of Alex Smith', initials: 'JS' };
+            
+        } catch (error) {
+            console.error('Error loading user info:', error);
+            return { name: 'John Smith', relation: 'Parent of Alex Smith', initials: 'JS' };
+        }
+    }
+
+    async function buildSidebar() {
         const p = parentPrefix();
+        
+        // Load school branding and user info
+        const [schoolBranding, userInfo] = await Promise.all([
+            loadSchoolBranding(),
+            loadUserInfo()
+        ]);
+        
+        const logoHtml = schoolBranding.logo_url 
+            ? `<img src="${schoolBranding.logo_url}" alt="${schoolBranding.school_name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem;">`
+            : schoolBranding.school_name.substring(0, 2).toUpperCase();
 
         return `
             <div class="sidebar-header">
-                <div class="logo">EdTech</div>
+                <div class="logo" data-school-name="${schoolBranding.school_name}">
+                    ${logoHtml}
+                </div>
                 <div class="user-info">
-                    <div class="user-avatar">JS</div>
+                    <div class="user-avatar">${userInfo.initials}</div>
                     <div class="user-details">
-                        <h4>John Smith</h4>
-                        <p>Parent of Alex Smith</p>
+                        <h4>${userInfo.name}</h4>
+                        <p>${userInfo.relation}</p>
                     </div>
                 </div>
             </div>
@@ -56,12 +157,13 @@
         `;
     }
 
-    function initSidebar() {
+    async function initSidebar() {
         // Target any element with class 'sidebar' to ensure it finds the container regardless of HTML tags
         const sidebarElement = document.querySelector('.sidebar');
         if (!sidebarElement) return;
 
-        sidebarElement.innerHTML = buildSidebar();
+        // Build sidebar with dynamic content
+        sidebarElement.innerHTML = await buildSidebar();
 
         // Active link highlighting
         const currentPath = window.location.pathname;

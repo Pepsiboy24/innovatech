@@ -5,15 +5,70 @@
  * 1. Injects the student portal sidebar into #sidebarAnchor.
  * 2. Automatically detects the active page and highlights the nav item.
  * 3. Handles logout logic via Supabase.
+ * 4. Loads dynamic school branding from Schools table.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
 import { supabase } from './config.js';
 
-const sidebarHTML = `
+// Dynamic school branding
+let schoolBranding = { school_name: 'EduHub', logo_url: null };
+
+async function loadSchoolBranding() {
+    try {
+        // Get current student ID
+        const studentId = localStorage.getItem('student_id') || 
+                         sessionStorage.getItem('student_id') ||
+                         window.currentStudentId;
+        
+        if (!studentId) {
+            console.log('No student ID found, using default branding');
+            return;
+        }
+        
+        // Get student's class and school
+        const { data: studentData } = await supabase
+            .from('Students')
+            .select('class_id')
+            .eq('student_id', studentId)
+            .single();
+        
+        if (!studentData) return;
+        
+        // Get school info
+        const { data: classData } = await supabase
+            .from('Classes')
+            .select('school_id')
+            .eq('class_id', studentData.class_id)
+            .single();
+        
+        if (!classData) return;
+        
+        const { data: schoolData } = await supabase
+            .from('Schools')
+            .select('school_name, logo_url')
+            .eq('school_id', classData.school_id)
+            .single();
+        
+        if (schoolData) {
+            schoolBranding = schoolData;
+        }
+        
+    } catch (error) {
+        console.error('Error loading school branding:', error);
+    }
+}
+
+function getSidebarHTML() {
+    const logoHtml = schoolBranding.logo_url 
+        ? `<img src="${schoolBranding.logo_url}" alt="${schoolBranding.school_name}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 0.5rem;">`
+        : schoolBranding.school_name.substring(0, 2).toUpperCase();
+
+    return `
     <aside class="sidebar" data-nav>
         <div class="sidebar-header">
-            <h2>EduHub</h2>
+            <div class="school-logo">${logoHtml}</div>
+            <h2 data-school-name="${schoolBranding.school_name}">${schoolBranding.school_name}</h2>
         </div>
         <nav class="sidebar-nav">
             <a href="./studentPortal.html" class="nav-item" data-path="studentPortal.html">
@@ -46,15 +101,19 @@ const sidebarHTML = `
         </div>
     </aside>
 `;
+}
 
-function injectSidebar() {
+async function injectSidebar() {
+    // Load school branding first
+    await loadSchoolBranding();
+    
     const anchor = document.getElementById('sidebarAnchor');
     if (!anchor) {
         console.warn('[Sidebar] No #sidebarAnchor found in HTML.');
         return;
     }
 
-    anchor.innerHTML = sidebarHTML;
+    anchor.innerHTML = getSidebarHTML();
 
     // ── ACTIVE LINK DETECTION ───────────────────────────────────────────────
     const currentPath = window.location.pathname.split('/').pop() || 'studentPortal.html';
