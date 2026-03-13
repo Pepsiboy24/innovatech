@@ -1,4 +1,5 @@
 import { supabase } from './config.js';
+import { hasFeatureAccess, getCurrentUserTier, TIERS } from './tierAccess.js';
 
 (async function authGuard() {
     try {
@@ -19,6 +20,25 @@ import { supabase } from './config.js';
         }
 
         const userSchoolId = user.user_metadata.school_id;
+        const currentPath = window.location.pathname;
+
+        // Get user's tier for access control
+        const userTier = await getCurrentUserTier();
+        if (!userTier) {
+            console.error('Could not determine user tier, redirecting to login');
+            await supabase.auth.signOut();
+            redirectToLogin();
+            return;
+        }
+
+        console.log(`User tier: ${userTier}, Path: ${currentPath}`);
+
+        // Check tier-based route restrictions
+        if (!(await checkRouteAccess(currentPath, userTier))) {
+            console.warn(`Access denied to ${currentPath} for tier ${userTier}`);
+            showAccessDeniedModal('Your subscription tier does not allow access to this feature.', '../../index.html');
+            return;
+        }
 
         // 1. Check School_Admin table
         const { data: adminRecord, error: adminError } = await supabase
@@ -151,4 +171,48 @@ function showAccessDeniedModal(message, redirectUrl) {
     } else {
         render();
     }
+}
+
+// Route access checking based on tier
+async function checkRouteAccess(path, userTier) {
+    // Define route-tier mappings
+    const routeTierMap = {
+        // Student Dashboard
+        '/studentsPortal': TIERS.STUDENT_ENGAGEMENT,
+        '/studentsPortal.html': TIERS.STUDENT_ENGAGEMENT,
+        
+        // CBT Exams
+        '/cbt': TIERS.STUDENT_ENGAGEMENT,
+        '/cbt/': TIERS.STUDENT_ENGAGEMENT,
+        '/exams': TIERS.STUDENT_ENGAGEMENT,
+        
+        // Parent Portal
+        '/parentsPortal': TIERS.FULL_CONNECT,
+        '/parentsPortal.html': TIERS.FULL_CONNECT,
+        '/parentsPortal/': TIERS.FULL_CONNECT,
+        
+        // AI Assistants
+        '/ai': TIERS.FULL_CONNECT,
+        '/ai/': TIERS.FULL_CONNECT,
+        '/assistant': TIERS.FULL_CONNECT,
+        
+        // Admin routes - always accessible for tier 1+
+        '/schoolAdmin': TIERS.ADMIN_CORE,
+        '/schoolAdmin/': TIERS.ADMIN_CORE,
+        
+        // Teacher routes - always accessible for tier 1+
+        '/teachersPortal': TIERS.ADMIN_CORE,
+        '/teachersPortal.html': TIERS.ADMIN_CORE,
+        '/teachersPortal/': TIERS.ADMIN_CORE,
+    };
+
+    // Find matching route
+    for (const [route, requiredTier] of Object.entries(routeTierMap)) {
+        if (path.startsWith(route)) {
+            return userTier >= requiredTier;
+        }
+    }
+
+    // Default: allow access
+    return true;
 }
