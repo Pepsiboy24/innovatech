@@ -3,8 +3,8 @@
 //   html/schoolAdmin/anyPage.html  → prefix = "./"
 //   html/shared/anyPage.html       → prefix = "../schoolAdmin/"
 
-(function () {
-    // Compute the relative path from the current page to the schoolAdmin folder
+(async function () {
+    // Compute relative path from current page to schoolAdmin folder
     function adminPrefix() {
         const path = window.location.pathname;
         if (path.includes('/html/shared/')) return '../schoolAdmin/';
@@ -18,15 +18,47 @@
         return '../shared/';  // from schoolAdmin → go up one, into shared
     }
 
-    function buildSidebar() {
+    // Fetch school branding data
+    async function getSchoolBranding() {
+        try {
+            const { supabase } = await import('../../scripts/config.js');
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user || !user.user_metadata?.school_id) {
+                console.warn('No school_id found in user metadata');
+                return { school_name: 'EduHubAdmin', school_logo_url: null };
+            }
+
+            const schoolId = user.user_metadata.school_id;
+            const { data: school, error } = await supabase
+                .from('Schools')
+                .select('school_name, school_logo_url')
+                .eq('school_id', schoolId)
+                .single();
+
+            if (error) {
+                console.error('Error fetching school data:', error);
+                return { school_name: 'EduHubAdmin', school_logo_url: null };
+            }
+
+            return school || { school_name: 'EduHubAdmin', school_logo_url: null };
+        } catch (error) {
+            console.error('Error getting school branding:', error);
+            return { school_name: 'EduHubAdmin', school_logo_url: null };
+        }
+    }
+
+    function buildSidebar(branding = { school_name: 'EduHubAdmin', school_logo_url: null }) {
         const a = adminPrefix();
         const sh = sharedPrefix();
 
         return `
             <div class="logo">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <div class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></div>
-                    <span>EduHubAdmin</span>
+                    ${branding.school_logo_url ? 
+                        `<img src="${branding.school_logo_url}" alt="School Logo" style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover;">` :
+                        `<div class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></div>`
+                    }
+                    <span style="font-weight: 600; color: #1e293b;">${branding.school_name}</span>
                 </div>
                 <div class="icon mobile-menu-btn" data-sideBarClose><i class="fa fa-times"></i></div>
             </div>
@@ -83,11 +115,15 @@
             </nav>`;
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
         const sidebarElement = document.querySelector('[data-sideBar]');
         if (!sidebarElement) return;
 
-        sidebarElement.innerHTML = buildSidebar();
+        // Fetch school branding data
+        const branding = await getSchoolBranding();
+        
+        // Build sidebar with dynamic branding
+        sidebarElement.innerHTML = buildSidebar(branding);
 
         // Active link highlighting
         const currentPath = window.location.pathname;

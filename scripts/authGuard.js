@@ -10,11 +10,22 @@ import { supabase } from './config.js';
             return;
         }
 
+        // Verify user has school_id in metadata (multi-tenant requirement)
+        if (!user.user_metadata?.school_id) {
+            console.warn('User missing school_id in metadata, redirecting to login');
+            await supabase.auth.signOut();
+            redirectToLogin();
+            return;
+        }
+
+        const userSchoolId = user.user_metadata.school_id;
+
         // 1. Check School_Admin table
         const { data: adminRecord, error: adminError } = await supabase
             .from('School_Admin')
-            .select('admin_id, role')
+            .select('admin_id, role, school_id')
             .eq('email', user.email) // Using "email" as per schema
+            .eq('school_id', userSchoolId) // Verify school_id matches
             .maybeSingle();
 
         if (adminRecord) {
@@ -27,8 +38,9 @@ import { supabase } from './config.js';
         // Note: Schema says Teachers table has 'email' column
         const { data: teacherRecord, error: teacherError } = await supabase
             .from('Teachers')
-            .select('teacher_id')
+            .select('teacher_id, school_id')
             .eq('email', user.email)
+            .eq('school_id', userSchoolId) // Verify school_id matches
             .maybeSingle();
 
         if (teacherRecord) {
@@ -48,13 +60,36 @@ import { supabase } from './config.js';
 
         if (parentRecord) {
             console.log('Role: Parent');
-            // If the user is a Parent, allow them to stay if they are in the Parent Portal
-            // Or redirect if they are trying to access the Admin area
-            if (!window.location.pathname.includes('parentsPortal')) {
-                showAccessDeniedModal('You are logged in as a Parent. Redirecting to your portal...', '../../index.html');
-                return;
+            // For parents, we need to verify their student belongs to the same school
+            // Get the student(s) linked to this parent
+            const { data: studentLinks } = await supabase
+                .from('Parent_Student_Links')
+                .select('student_id')
+                .eq('parent_id', parentRecord.parent_id);
+
+            if (studentLinks && studentLinks.length > 0) {
+                // Check if any linked student belongs to the same school
+                const { data: studentData } = await supabase
+                    .from('Students')
+                    .select('school_id')
+                    .in('student_id', studentLinks.map(link => link.student_id))
+                    .eq('school_id', userSchoolId)
+                    .maybeSingle();
+
+                if (studentData) {
+                    // Parent has a student in the same school, allow access to parent portal
+                    if (!window.location.pathname.includes('parentsPortal')) {
+                        showAccessDeniedModal('You are logged in as a Parent. Redirecting to your portal...', '../../index.html');
+                        return;
+                    }
+                    return; // Allow access to Parent Portal
+                }
             }
-            return; // Allow access to Parent Portal
+            
+            // Parent exists but no students in the same school
+            console.warn('Parent has no students in the same school');
+            showAccessDeniedModal('Access denied. No students found in your school.', '../../index.html');
+            return;
         }
 
         // 3. Neither Admin nor Teacher

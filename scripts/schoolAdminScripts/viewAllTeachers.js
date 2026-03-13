@@ -4,6 +4,15 @@ import { supabaseClient } from './supabase_client.js';
 // Function to fetch all teachers from Supabase
 async function fetchTeachers() {
     try {
+        // Get current user's school_id from metadata
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        const userSchoolId = user?.user_metadata?.school_id;
+        
+        if (!userSchoolId) {
+            console.error('User missing school_id in metadata');
+            return [];
+        }
+
         // Fetch Teachers and all related tables in parallel.
         // Using explicit per-table queries instead of PostgREST join syntax
         // because the FK relationships may not be registered in the schema cache.
@@ -14,7 +23,7 @@ async function fetchTeachers() {
             workExpRes,
             emergencyRes,
         ] = await Promise.all([
-            supabaseClient.from('Teachers').select('*').order('created_at', { ascending: false }),
+            supabaseClient.from('Teachers').select('*').eq('school_id', userSchoolId).order('created_at', { ascending: false }),
             supabaseClient.from('school_employment').select('teacher_id, job_title, contract_type, salary, start_date'),
             supabaseClient.from('qualifications').select('teacher_id, school_name, certificate_name, feild_of_study, graduation_year'),
             supabaseClient.from('work_experience').select('teacher_id, professional_development, position_held, duration, total_experience, school_name'),

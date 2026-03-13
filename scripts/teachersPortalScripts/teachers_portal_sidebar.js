@@ -1,9 +1,9 @@
 // teachers_portal_sidebar.js — ES Module
-// Injects the sidebar HTML.
+// Injects the sidebar HTML with dynamic school branding.
 
 import { supabase } from '../config.js';
 
-(function () {
+(async function () {
     function teacherPrefix() {
         const path = window.location.pathname;
         if (path.includes('/html/shared/')) return '../teachersPortal/';
@@ -16,6 +16,34 @@ import { supabase } from '../config.js';
         return '../shared/';
     }
 
+    // Fetch school branding data
+    async function getSchoolBranding() {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user || !user.user_metadata?.school_id) {
+                console.warn('No school_id found in user metadata');
+                return { school_name: 'TeachSmart', school_logo_url: null };
+            }
+
+            const schoolId = user.user_metadata.school_id;
+            const { data: school, error } = await supabase
+                .from('Schools')
+                .select('school_name, school_logo_url')
+                .eq('school_id', schoolId)
+                .single();
+
+            if (error) {
+                console.error('Error fetching school data:', error);
+                return { school_name: 'TeachSmart', school_logo_url: null };
+            }
+
+            return school || { school_name: 'TeachSmart', school_logo_url: null };
+        } catch (error) {
+            console.error('Error getting school branding:', error);
+            return { school_name: 'TeachSmart', school_logo_url: null };
+        }
+    }
+
     // SVG icon helpers
     const homeIcon = `<svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9,22 9,12 15,12 15,22"></polyline></svg>`;
     const usersIcon = `<svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`;
@@ -26,9 +54,17 @@ import { supabase } from '../config.js';
     const linkIcon = `<svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 0 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`;
     const aiIcon = `<svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5L12 2z"/></svg>`;
 
-    function buildSidebar(t, sh) {
+    function buildSidebar(t, sh, branding = { school_name: 'TeachSmart', school_logo_url: null }) {
         return `
-            <div class="logo">TeachSmart</div>
+            <div class="logo">
+                <div style="display: flex; align-items: center; gap: 10px; justify-content: center;">
+                    ${branding.school_logo_url ? 
+                        `<img src="${branding.school_logo_url}" alt="School Logo" style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover;">` :
+                        `<i class="fa-solid fa-graduation-cap" style="font-size: 24px; color: #667eea;"></i>`
+                    }
+                    <span style="font-weight: 600; color: #1e293b; font-size: 16px;">${branding.school_name}</span>
+                </div>
+            </div>
             <ul class="sidebar-menu">
                 <li><a href="${t}teachersPortal.html" class="nav-item">${homeIcon} Dashboard</a></li>
                 <li><a href="${t}listOfStudents.html" class="nav-item">${usersIcon} Students</a></li>
@@ -45,14 +81,17 @@ import { supabase } from '../config.js';
             </div>`;
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
         const sidebarEl = document.querySelector('[data-sideBar]');
         if (!sidebarEl) return;
 
+        // Fetch school branding data
+        const branding = await getSchoolBranding();
+        
         const t = teacherPrefix();
         const sh = sharedPrefix();
 
-        sidebarEl.innerHTML = buildSidebar(t, sh);
+        sidebarEl.innerHTML = buildSidebar(t, sh, branding);
 
         // Active link highlighting
         const currentPath = window.location.pathname;

@@ -1,514 +1,459 @@
-Schemas
-auth
-storage
-vault
-realtime
-public
-extensions
-graphql
-graphql_public
-pgbouncer
-auth
-users
-RLS: enabled
-Rows: 51
-Primary key: id
-Columns:
-instance_id (uuid)
-id (uuid)
-aud (character varying)
-role (character varying)
-email (character varying)
-encrypted_password (character varying)
-invited_at (timestamptz)
-confirmation_token (character varying)
-confirmation_sent_at (timestamptz)
-recovery_token (character varying)
-recovery_sent_at (timestamptz)
-email_change (character varying)
-email_change_sent_at (timestamptz)
-last_sign_in_at (timestamptz)
-raw_app_meta_data (jsonb)
-raw_user_meta_data (jsonb)
-is_super_admin (boolean)
-created_at (timestamptz)
-updated_at (timestamptz)
-email_change_token_new (character varying)
-phone_confirmed_at (timestamptz)
-phone_change_sent_at (timestamptz)
-email_confirmed_at (timestamptz)
-confirmed_at (timestamptz) — generated (LEAST(email_confirmed_at, phone_confirmed_at))
-phone_change_token (character varying) — default ''::character varying
-phone (text) — unique
-phone_change (text) — default ''::character varying
-email_change_token_current (character varying) — default ''::character varying
-email_change_confirm_status (smallint) — default 0, check 0..2
-banned_until (timestamptz)
-reauthentication_token (character varying) — default ''::character varying
-reauthentication_sent_at (timestamptz)
-is_sso_user (boolean) — default false (comment: SSO accounts)
-deleted_at (timestamptz)
-is_anonymous (boolean) — default false
-Foreign keys:
-auth.identities.user_id → auth.users.id
-auth.sessions.user_id → auth.users.id
-auth.mfa_factors.user_id → auth.users.id
-auth.one_time_tokens.user_id → auth.users.id
-auth.oauth_authorizations.user_id → auth.users.id
-auth.oauth_consents.user_id → auth.users.id
-Comment: Auth: Stores user login data within a secure schema.
-refresh_tokens
-RLS: enabled
-Rows: 122
-Primary key: id
-Columns: instance_id (uuid), token (varchar, unique), user_id (varchar), revoked (bool), created_at, updated_at, id (bigint, seq), parent (varchar), session_id (uuid)
-Foreign keys:
-auth.refresh_tokens.session_id → auth.sessions.id
-Comment: Store of tokens used to refresh JWT tokens once they expire.
-instances
-RLS: enabled
-Rows: 0
-Primary key: id
-Columns: id (uuid), uuid (uuid), raw_base_config (text), created_at, updated_at
-Comment: Auth: Manages users across multiple sites.
-audit_log_entries
-RLS: enabled
-Rows: 93
-Primary key: id
-Columns: instance_id (uuid), id (uuid), payload (json), created_at, ip_address (varchar default '')
-Comment: Auth: Audit trail for user actions.
-schema_migrations
-RLS: enabled
-Rows: 2
-Primary key: version
-Columns: version
-Comment: Auth: Manages updates to the auth system.
-identities
-RLS: enabled
-Rows: 7
-Primary key: id
-Columns: user_id (uuid), identity_data (jsonb), provider (text), last_sign_in_at (timestamptz), created_at, updated_at, provider_id (text), email (text, generated lower((identity_data ->> 'email'))), id (uuid)
-Foreign keys:
-auth.identities.user_id → auth.users.id
-Comment: Auth: Stores identities associated to a user.
-sessions
-RLS: enabled
-Rows: 71
-Primary key: id
-Columns include: id (uuid), user_id (uuid), created_at, updated_at, factor_id, aal (aal_level enum), not_after, refreshed_at, user_agent, ip (inet), tag, oauth_client_id (uuid), refresh_token_hmac_key, refresh_token_counter, scopes (text, check length <= 4096)
-Foreign keys:
-auth.sessions.user_id → auth.users.id
-auth.sessions.oauth_client_id → auth.oauth_clients.id
-auth.mfa_amr_claims.session_id → auth.sessions.id
-auth.refresh_tokens.session_id → auth.refresh_tokens.session_id (note: refresh_tokens references sessions)
-Comment: Auth: Stores session data associated to a user.
-mfa_factors
-RLS: enabled
-Rows: 0
-Primary key: id
-Columns include id, user_id, friendly_name, factor_type (enum: totp, webauthn, phone), status (enum), created_at, updated_at, secret, phone, last_challenged_at (unique), web_authn_credential (jsonb), web_authn_aaguid (uuid), last_webauthn_challenge_data (jsonb)
-Foreign keys:
-auth.mfa_factors.user_id → auth.users.id
-auth.mfa_challenges.factor_id → auth.mfa_factors.id
-Comment: auth: stores metadata about factors
-mfa_challenges
-RLS: enabled
-Rows: 0
-Primary key: id
-Columns: id, factor_id, created_at, verified_at, ip_address (inet), otp_code (text), web_authn_session_data (jsonb)
-Foreign keys:
-auth.mfa_challenges.factor_id → auth.mfa_factors.id
-Comment: auth: stores metadata about challenge requests made
-mfa_amr_claims
-RLS: enabled
-Rows: 23
-Primary key: id
-Columns: session_id (uuid), created_at, updated_at, authentication_method (text), id (uuid)
-Foreign keys:
-auth.mfa_amr_claims.session_id → auth.sessions.id
-Comment: auth: stores authenticator method reference claims for multi factor authentication
-sso_providers / sso_domains / saml_providers / saml_relay_states
-RLS: enabled (where applicable), rows: 0
-Manage SSO/SAML provider config and domain mappings.
-Foreign keys connect sso_providers → sso_domains, saml_providers, saml_relay_states, etc.
-flow_state
-RLS: enabled
-Rows: 0
-Columns: code_challenge, id, user_id, provider_type, provider_access_token, provider_refresh_token, created_at, updated_at, authentication_method, auth_code_issued_at, invite_token, referrer, oauth_client_state_id, linking_target_id, email_optional (bool default false), code_challenge_method (enum), auth_code
-Foreign keys:
-saml_relay_states.flow_state_id → auth.flow_state.id
-Comment: Stores metadata for OAuth/SSO login flows
-one_time_tokens
-RLS: enabled
-Rows: 0
-Primary key: id
-Columns: id, user_id, token_type (enum), token_hash (text check length>0), relates_to (text), created_at (timestamp default now()), updated_at
-Foreign keys:
-auth.one_time_tokens.user_id → auth.users.id
-oauth_clients / oauth_authorizations / oauth_consents / oauth_client_states
-Manage OAuth clients, authorizations, consents, and client states.
-oauth_clients primary key: id (uuid)
-oauth_authorizations has client_id → oauth_clients.id and user_id → auth.users.id
-oauth_consents has user_id → auth.users.id and client_id → oauth_clients.id
-oauth_client_states
-RLS: disabled
-Rows: 0
-Columns: id (uuid), provider_type, code_verifier, created_at
-Comment: Stores OAuth states for third-party provider authentication flows where Supabase acts as the OAuth client.
-storage
-buckets
-RLS: enabled
-Rows: 0
-Primary key: id (text)
-Columns: id, name, owner (uuid) [deprecated, use owner_id], created_at (default now()), updated_at (default now()), type (enum buckettype: STANDARD, ANALYTICS, VECTOR), allowed_mime_types (text[]), public (bool default false), avif_autodetection (bool default false), file_size_limit (bigint), owner_id (text)
-Foreign keys:
-storage.s3_multipart_uploads_parts.bucket_id → storage.buckets.id
-storage.objects.bucket_id → storage.buckets.id
-storage.s3_multipart_uploads.bucket_id → storage.buckets.id
-objects
-RLS: enabled
-Rows: 0
-Primary key: id (uuid, default gen_random_uuid())
-Columns: bucket_id (text), name (text), owner (uuid) [deprecated], created_at (timestamptz default now()), id (uuid), metadata (jsonb), updated_at (timestamptz default now()), last_accessed_at (timestamptz default now()), path_tokens (text[] generated string_to_array(name,'/')), version (text), owner_id (text), user_metadata (jsonb)
-Foreign keys:
-storage.objects.bucket_id → storage.buckets.id
-migrations
-RLS: enabled
-Rows: 7
-Primary key: id
-Columns: id (int), name (varchar unique), hash (varchar), executed_at (timestamp default CURRENT_TIMESTAMP)
-s3_multipart_uploads / s3_multipart_uploads_parts
-RLS: enabled
-Track multipart uploads, parts, sizes, etags.
-Foreign keys to storage.buckets
-buckets_analytics / buckets_vectors / vector_indexes
-RLS: enabled
-buckets_analytics rows: 0 columns include id (uuid gen_random_uuid), type (buckettype), format (text default 'ICEBERG'), created_at, updated_at, name, deleted_at
-buckets_vectors rows: 0
-vector_indexes: stores vector index config with id (text gen_random_uuid()), bucket_id → buckets_vectors.id
-vault
-secrets
-RLS: disabled
-Rows: 0
-Primary key: id (uuid default gen_random_uuid())
-Columns: name (text), secret (text), key_id (uuid), id (uuid), description (text default ''), nonce (bytea default vault._crypto_aead_det_noncegen()), created_at (timestamptz default CURRENT_TIMESTAMP), updated_at (timestamptz default CURRENT_TIMESTAMP)
-Comment: Table with encrypted secret column for storing sensitive information on disk._
-realtime
-schema_migrations
-RLS: disabled
-Rows: 2
-Primary key: version
-Columns: version (bigint), inserted_at (timestamp)
-subscription
-RLS: disabled
-Rows: 0
-Primary key: id
-Columns: action_filter (text default ''), id (bigint identity), entity (regclass), filters (user_defined_filter[] default '{}'), subscription_id (uuid), claims (jsonb), claims_role (regrole generated), created_at (timestamp default timezone('utc', now()))
-messages
-RLS: enabled
-Rows: 0
-Primary key: inserted_at, id
-Columns: id (uuid default gen_random_uuid()), topic (text), extension (text), payload (jsonb), event (text), private (bool default false), updated_at (timestamp default now()), inserted_at (timestamp default now())
-public
-This schema contains your application tables (school management).
+Table of contents
+Schemas summary
+Installed extensions
+auth schema (tables & columns)
+storage schema (tables & columns)
+vault schema (tables & columns)
+realtime schema (tables & columns)
+public schema (tables & columns — prioritized list)
+Foreign key relationships (summary)
+Notes for AI consumption
+Change log
+1. Schemas summary
+realtime — Supabase realtime internal objects and messaging tables.
+pgbouncer — Connection pooling metadata.
+extensions — metadata for installed extensions.
+vault — Supabase vault (secrets) tables.
+graphql_public / graphql — GraphQL service objects.
+auth — Authentication tables (managed by Supabase).
+storage — Buckets, objects, and vector/index tables.
+public — Application tables (students, teachers, schools, etc.).
+2. Installed extensions
+vector (default_version 0.8.0)
+moddatetime
+postgis (3.3.7)
+pg_stat_statements (installed)
+postgis_tiger_geocoder
+intagg
+insert_username
+pg_cron
+bloom
+uuid-ossp (installed)
+dict_int
+pgtap
+postgis_topology
+dict_xsyn
+address_standardizer
+pgroonga
+pg_freespacemap
+autoinc
+pg_repack
+hypopg
+pgjwt
+pg_hashids
+pgstattuple
+fuzzystrmatch
+plpgsql_check
+file_fdw
+lo
+unaccent
+pageinspect
+rum
+pg_surgery
+tsm_system_rows
+pg_jsonschema
+cube
+dblink
+sslinfo
+http
+pgmq
+pg_trgm
+earthdistance
+pgcrypto (installed)
+pg_stat_monitor
+pg_tle
+hstore
+intarray
+tsm_system_time
+ltree
+address_standardizer_data_us
+citext (installed)
+pg_buffercache
+pgaudit
+index_advisor
+supabase_vault (installed in vault schema)
+tablefunc
+btree_gin
+postgres_fdw
+pgsodium
+refint
+btree_gist
+pgrowlocks
+postgis_raster
+pgroonga_database
+wrappers
+isn
+plpgsql (installed)
+amcheck
+seg
+pg_net
+pgrouting
+pg_walinspect
+pg_prewarm
+pg_visibility
+pg_graphql (installed in graphql schema)
+postgis_sfcgal
+tcn
+xml2
+3. auth schema — tables & columns (selected)
+auth.users (rls_enabled: true) — rows: 97
 
-School_Admin
-RLS: disabled
-Rows: 0
-Primary key: admin_id (uuid default gen_random_uuid())
-Columns: admin_id, created_at (timestamptz default now()), email (varchar), role (text), permissions_json (jsonb), phone_number (text), last_login (timestamp), full_name (varchar)
-Teachers
-RLS: disabled
-Rows: 0
-Primary key: teacher_id (uuid default gen_random_uuid())
-Columns include last_name, date_of_birth (date), teacher_id, address (text), created_at (timestamptz default now()), first_name, marital_status, trcn_reg_number, email, gender, phone_number, date_hired (date), profile_picture
-Foreign keys (references from other tables listed below)
-Classes
-RLS: disabled
-Rows: 3
-Primary key: class_id (integer identity)
-Columns: teacher_id (uuid default gen_random_uuid()), class_id, created_at (timestamptz default now()), class_name (varchar), section (varchar)
-Foreign keys:
-public.Classes.teacher_id → public.Teachers.teacher_id
-public.Students.class_id → public.Classes.class_id
-public.timetable_entries.class_id → public.Classes.class_id
-public.schedule_configs.class_id → public.Classes.class_id
-public.Curriculum.class_id → public.Classes.class_id
-public.Class_Subjects.class_id → public.Classes.class_id
-Subjects
-RLS: disabled
-Rows: 6
-Primary key: subject_id (uuid default gen_random_uuid())
-Columns: subject_id, created_at (timestamptz default now()), subject_name (varchar), is_core (bool default false), teacher_id (uuid)
-Foreign keys:
-public.Class_Subjects.subject_id → public.Subjects.subject_id
-public.student_subject.subject_id → public.Subjects.subject_id
-public.timetable_entries.subject_id → public.Subjects.subject_id
-public.Subjects.teacher_id → public.Teachers.teacher_id
-public.Grades.subject_id → public.Subjects.subject_id
-public.Curriculum.subject_id → public.Subjects.subject_id
-Students
-RLS: disabled
-Rows: 7
-Primary key: student_id (uuid default gen_random_uuid())
-Columns: admission_date (date), profile_picture (varchar), total_points (int), class_id (int), student_id, created_at (timestamptz default now()), full_name (varchar), date_of_birth (date), gender (text)
-Foreign keys:
-public.Students.class_id → public.Classes.class_id
-public.Grades.student_id → public.Students.student_id
-public.Attendance.student_id → public.Students.student_id
-public.student_subject.student_id → public.Students.student_id
-Class_Subjects
-RLS: disabled
-Rows: 2
-Primary key: class_subjects__id (uuid default gen_random_uuid())
-Columns: teacher_id (uuid), class_subjects__id, created_at (timestamptz default now()), class_id (int), subject_id (uuid default gen_random_uuid())
-Foreign keys:
-public.Class_Subjects.class_id → public.Classes.class_id
-public.Class_Subjects.teacher_id → public.Teachers.teacher_id
-public.Class_Subjects.subject_id → public.Subjects.subject_id
-student_subject
-RLS: enabled
-Rows: 0
-Primary key: student_subject_id (uuid default gen_random_uuid())
-Columns: subject_id (uuid default gen_random_uuid()), student_id (uuid default gen_random_uuid()), student_subject_id (uuid default gen_random_uuid()), created_at (timestamptz default now())
-Foreign keys:
-public.student_subject.student_id → public.Students.student_id
-public.student_subject.subject_id → public.Subjects.subject_id
-emergency_contact
-RLS: disabled
-Rows: 0
-Primary key: contact_id (bigint identity)
-Columns: teacher_id (uuid default gen_random_uuid()), contact_id, created_at (timestamptz default now()), name (varchar), relationship (varchar), phone_number (varchar), address (text)
-Foreign keys:
-public.emergency_contact.teacher_id → public.Teachers.teacher_id
-qualifications
-RLS: disabled
-Rows: 0
-Primary key: qualification_id (bigint identity)
-Columns: qualification_id, created_at (timestamptz default now()), teacher_id (uuid default gen_random_uuid()), school_name (varchar), certificate_name (varchar), feild_of_study (varchar), graduation_year (int)
-work_experience
-RLS: disabled
-Rows: 0
-Primary key: experience_id (bigint identity)
-Columns: professional_development (text), position_held (varchar), duration (varchar), total_experience (varchar), experience_id, created_at (timestamptz default now()), teacher_id (uuid default gen_random_uuid()), school_name (varchar)
-Foreign keys:
-public.work_experience.teacher_id → public.Teachers.teacher_id
-school_employment
-RLS: disabled
-Rows: 0
-Primary key: employment_id (bigint identity)
-Columns: employment_id, created_at (timestamptz default now()), teacher_id (uuid default gen_random_uuid()), start_date (date), job_title (varchar), contract_type (varchar), salary (numeric)
-Foreign keys:
-public.school_employment.teacher_id → public.Teachers.teacher_id
-buckets_analytics (storage)
-See storage section (analytics buckets)
-study_materials
-RLS: enabled
-Rows: 0
-Primary key: id (int seq)
-Columns: title (varchar), subject (varchar), type (varchar), description (text), file_url (text), file_path (text), file_size (bigint), file_type (varchar), uploaded_by (varchar), id (int), uploaded_at (timestamptz default now())
-academic_events
-RLS: disabled
-Rows: 0
-Primary key: id (bigint identity)
-Columns: id, created_at (timestamptz default now()), term_period (text), activity_event (text), start_date (date), end_date (date), duration (text), remarks (text), academic_session (text)
-Attendance
-RLS: disabled
-Rows: 14
-Primary key: id (bigint identity)
-Columns: id, student_id (uuid default gen_random_uuid()), record_at (timestamptz default now()), date (date), attendance_status (text), notes (text), recorded_by_user_id (uuid default gen_random_uuid())
-Foreign keys:
-public.Attendance.recorded_by_user_id → public.Teachers.teacher_id
-public.Attendance.student_id → public.Students.student_id
-timetable_entries
-RLS: disabled
-Rows: 0
-Primary key: id (uuid default extensions.uuid_generate_v4())
-Columns: subject_id (uuid), class_id (int), day_of_week (varchar), start_time (time), id (uuid), duration_minutes (int default 40), created_at (timestamptz default now())
-Foreign keys:
-public.timetable_entries.subject_id → public.Subjects.subject_id
-public.timetable_entries.class_id → public.Classes.class_id
-schedule_configs
-RLS: disabled
-Rows: 2
-Primary key: id (uuid default extensions.uuid_generate_v4())
-Columns: class_id (int unique), start_time (time), period_duration (int), periods_per_day (int), active_days (text[]), break_times (jsonb), id (uuid), created_at (timestamptz default now())
-Foreign keys:
-public.schedule_configs.class_id → public.Classes.class_id
-Grades
-RLS: enabled
-Rows: 0
-Primary key: grade_id (uuid default gen_random_uuid())
-Columns: student_id (uuid), subject_id (uuid), score (numeric), term (text), academic_session (text), grade_id (uuid), max_score (numeric default 100), created_at (timestamptz default now())
-Foreign keys:
-public.Grades.student_id → public.Students.student_id
-public.Grades.subject_id → public.Subjects.subject_id
-Curriculum
-RLS: disabled
-Rows: 10
-Primary key: id (uuid default gen_random_uuid())
-Columns: teacher_id (uuid), class_id (int), subject_id (uuid), week (text), topic (text), sub_topic (text), academic_session (text), id (uuid), status (text default 'incomplete'), created_at (timestamptz default now()), progress (smallint)
-Foreign keys:
-public.Curriculum.class_id → public.Classes.class_id
-public.Curriculum.teacher_id → public.Teachers.teacher_id
-public.Curriculum.subject_id → public.Subjects.subject_id
+instance_id: uuid
+id: uuid (PK)
+aud: varchar
+role: varchar
+email: varchar
+encrypted_password: varchar
+email_confirmed_at: timestamptz
+invited_at: timestamptz
+confirmation_token: varchar
+confirmation_sent_at: timestamptz
+recovery_token: varchar
+recovery_sent_at: timestamptz
+email_change_token_new: varchar
+email_change: varchar
+email_change_sent_at: timestamptz
+last_sign_in_at: timestamptz
+raw_app_meta_data: jsonb
+raw_user_meta_data: jsonb
+is_super_admin: boolean
+created_at: timestamptz
+updated_at: timestamptz
+phone: text (unique)
+phone_confirmed_at: timestamptz
+phone_change: text (default '')
+phone_change_token: varchar (default '')
+phone_change_sent_at: timestamptz
+confirmed_at: timestamptz (generated: LEAST(email_confirmed_at, phone_confirmed_at))
+email_change_token_current: varchar (default '')
+email_change_confirm_status: smallint (default 0, check 0..2)
+banned_until: timestamptz
+reauthentication_token: varchar (default '')
+reauthentication_sent_at: timestamptz
+is_sso_user: boolean (default false)
+deleted_at: timestamptz
+is_anonymous: boolean (default false)
+auth.refresh_tokens (rls_enabled: true)
 
+id: bigint (PK, seq)
+token: varchar (unique)
+user_id: varchar
+revoked: boolean
+created_at: timestamptz
+updated_at: timestamptz
+parent: varchar
+session_id: uuid (FK -> auth.sessions.id)
+auth.sessions (rls_enabled: true)
 
-Grading_Structure
-Schema: public
-RLS: disabled (matches other public tables; enable if required)
-Rows: 0 (new)
-Primary key: id
-Columns:
-id (uuid) — default: gen_random_uuid(), PRIMARY KEY
-assessment_name (text) — NOT NULL — e.g., '1st CA'
-max_score (smallint / int2) — NOT NULL — e.g., 20
-term (text) — NOT NULL — e.g., 'First Term'
-academic_session (text) — NOT NULL
-created_at (timestamptz) — default: now()
+id: uuid (PK)
+user_id: uuid (FK -> auth.users.id)
+created_at/updated_at: timestamptz
+factor_id: uuid
+aal: aal_level enum (aal1, aal2, aal3)
+not_after: timestamptz
+refreshed_at: timestamp
+user_agent: text
+ip: inet
+tag: text
+oauth_client_id: uuid (FK -> auth.oauth_clients.id)
+refresh_token_hmac_key: text
+refresh_token_counter: bigint
+scopes: text (check length <= 4096)
+auth.identities (rls_enabled: true)
 
-Lesson_Notes
-Schema: public
+id: uuid (PK, default gen_random_uuid())
+provider_id: text
+user_id: uuid (FK -> auth.users.id)
+identity_data: jsonb
+provider: text
+last_sign_in_at: timestamptz
+created_at/updated_at: timestamptz
+email: generated lower((identity_data ->> 'email'))
+Other auth tables: instances, audit_log_entries, schema_migrations, mfa_factors, mfa_challenges, mfa_amr_claims, sso_providers, sso_domains, saml_providers, saml_relay_states, flow_state, one_time_tokens, oauth_clients, oauth_authorizations, oauth_consents, oauth_client_states, custom_oauth_providers.
 
-RLS: enabled
+4. storage schema — tables & columns (selected)
+storage.buckets (rls_enabled: true) — rows: 1
 
-Rows: (existing)
+id: text (PK)
+name: text
+owner: uuid (deprecated)
+owner_id: text
+created_at: timestamptz (default now())
+updated_at: timestamptz (default now())
+public: boolean (default false)
+avif_autodetection: boolean (default false)
+file_size_limit: bigint
+allowed_mime_types: text[]
+type: buckettype enum (STANDARD, ANALYTICS, VECTOR) default 'STANDARD'
+storage.objects (rls_enabled: true) — rows: 5
 
-Primary key: (existing primary key)
+id: uuid (PK, default gen_random_uuid())
+bucket_id: text (FK -> storage.buckets.id)
+name: text
+owner: uuid (deprecated)
+owner_id: text
+created_at: timestamptz (default now())
+updated_at: timestamptz (default now())
+last_accessed_at: timestamptz (default now())
+metadata: jsonb
+path_tokens: text[] (generated string_to_array(name, '/'))
+version: text
+user_metadata: jsonb
+storage.s3_multipart_uploads / storage.s3_multipart_uploads_parts
 
-Columns: (list columns here — copy from your current schema if you want exact names/types)
+s3_multipart_uploads: id text (PK), in_progress_size bigint default 0, upload_signature text, bucket_id text (FK), key text, version text, owner_id text, created_at, user_metadata jsonb
+s3_multipart_uploads_parts: id uuid PK, upload_id text (FK), size bigint default 0, part_number int, bucket_id text, key text, etag text, owner_id text, created_at
+storage.buckets_vectors, storage.vector_indexes (vector support)
 
-e.g., id (uuid)
-e.g., lesson_id (uuid)
-e.g., content (text)
-created_at (timestamptz)
-uploaded_by (uuid)
-(adjust to match your actual columns)
-Row-Level Security (policies)
+storage.buckets_vectors: id text PK, type buckettype enum ('VECTOR'), created_at, updated_at, name, deleted_at
+storage.vector_indexes: id text, name text, bucket_id text (FK -> buckets_vectors.id), data_type text, dimension int, distance_metric text, metadata_configuration jsonb, created_at/updated_at
+storage.migrations (metadata table for storage migrations)
 
-"Enable read access for all users"
-Operation: SELECT
-Applies to: public (no role restriction)
-USING clause: true
-Effect: Any user (including unauthenticated/anon) can read Lesson_Notes rows.
-"Teachers can insert notes"
-Operation: INSERT
-Applies to: authenticated
-WITH CHECK clause: true
-Effect: Only logged-in users (any authenticated user) can insert new Lesson_Notes rows.
-(Note: this policy allows all authenticated users — if you want to restrict inserts to teachers/admins only, change the TO clause or WITH CHECK to validate a role claim, e.g.:
-TO authenticated USING (...) AND (auth.jwt() ->> 'role') = 'teacher'
-or WITH CHECK ((auth.jwt() ->> 'role') IN ('teacher','admin')))
+5. vault schema — tables & columns
+vault.secrets (rls_enabled: false)
 
-Parents
-Description: Stores parent/guardian records for students.
+id: uuid PK (default gen_random_uuid())
+name: text
+description: text (default '')
+secret: text (encrypted on disk)
+key_id: uuid
+nonce: bytea (default vault._crypto_aead_det_noncegen())
+created_at/updated_at: timestamptz (default CURRENT_TIMESTAMP)
+Supabase vault extension installed: supabase_vault (schema vault)_
 
-DDL: CREATE TABLE public."Parents" with columns:
+6. realtime schema — tables & columns (selected)
+realtime.messages (rls_enabled: true) — rows: 0
 
-parent_id: uuid, primary key, default gen_random_uuid()
-full_name: varchar, NOT NULL
-email: varchar, UNIQUE
-phone_number: text, UNIQUE, NOT NULL
+topic: text
+extension: text
+payload: jsonb
+event: text
+private: boolean (default false)
+inserted_at: timestamp (PK part)
+updated_at: timestamp
+id: uuid (default gen_random_uuid()) — PK part
+realtime.subscription, realtime.schema_migrations (internal)
+
+7. public schema — tables & columns (selected, prioritized for AI context)
+Use these lines when building context or embeddings for your AI model.
+
+public.Schools (rls_enabled: true)
+
+school_id: uuid PK (default gen_random_uuid())
+school_name: varchar
+school_logo_url: text
+bank_name: varchar
+account_number: varchar
+bank_code: varchar
+sub_account_code: varchar
+commission_rate: numeric (default 1.5)
+is_active: boolean (default true)
+created_at: timestamptz (default now())
+public.Teachers
+
+teacher_id: uuid PK (default gen_random_uuid())
+created_at: timestamptz (default now())
+first_name: varchar
+last_name: varchar
+email: varchar
+phone_number: varchar
+date_hired: date
+date_of_birth: date
+profile_picture: varchar
+address: text
+marital_status: varchar
+trcn_reg_number: varchar
+gender: varchar
+school_id: uuid (FK -> public.Schools.school_id)
+public.Students
+
+student_id: uuid PK (default gen_random_uuid())
+created_at: timestamptz (default now())
+full_name: varchar
+date_of_birth: date
+gender: text
+admission_date: date
+profile_picture: varchar
+total_points: integer
+class_id: integer (FK -> public.Classes.class_id)
+school_id: uuid (FK -> public.Schools.school_id)
+public.Classes
+
+class_id: integer PK (identity BY DEFAULT)
+class_name: varchar
+section: varchar
+teacher_id: uuid (FK -> public.Teachers.teacher_id)
+school_id: uuid (FK -> public.Schools.school_id)
+created_at: timestamptz (default now())
+public.Subjects
+
+subject_id: uuid PK (default gen_random_uuid())
+created_at: timestamptz (default now())
+subject_name: varchar
+is_core: boolean (default false)
+teacher_id: uuid (FK -> public.Teachers.teacher_id)
+public.Class_Subjects
+
+class_subjects__id: uuid PK (default gen_random_uuid())
+created_at: timestamptz (default now())
+subject_id: uuid (FK -> public.Subjects.subject_id)
+class_id: integer (FK -> public.Classes.class_id)
+teacher_id: uuid (FK -> public.Teachers.teacher_id)
+public.student_subject (rls_enabled: true)
+
+student_subject_id: uuid PK (default gen_random_uuid())
+created_at: timestamptz (default now())
+subject_id: uuid (FK -> public.Subjects.subject_id)
+student_id: uuid (FK -> public.Students.student_id)
+public.Parents
+
+parent_id: uuid PK (default gen_random_uuid())
+full_name: varchar
+email: varchar (unique)
+phone_number: text (unique)
 address: text
 occupation: text
-created_at: timestamptz, default now()
-Columns:
+created_at: timestamptz (default now())
+user_id: uuid (FK -> auth.users.id)
+public.Parent_Student_Links
 
-parent_id (uuid, PK, default gen_random_uuid()) — Primary key.
-full_name (varchar, NOT NULL) — Parent full name.
-email (varchar, UNIQUE) — Optional email address, unique when present.
-phone_number (text, UNIQUE, NOT NULL) — Required phone number, unique.
-address (text) — Postal address.
-occupation (text) — Parent occupation.
-created_at (timestamptz, default now()) — Record creation timestamp.
-Notes:
-
-RLS: ENABLED.
-Ensure pgcrypto (or an extension providing gen_random_uuid) is available: CREATE EXTENSION IF NOT EXISTS pgcrypto;
-Consider normalizing phone/email formats and adding CHECK constraints if needed (e.g., phone format).
-Consider specifying varchar lengths (e.g., varchar(255)) if you want stricter limits.
-Parent_Student_Links
-Description: Junction table linking parents to students (many-to-many). Prevents duplicate links via a unique constraint on (parent_id, student_id).
-
-DDL: CREATE TABLE public."Parent_Student_Links" with columns:
-
-link_id: uuid, primary key, default gen_random_uuid()
-parent_id: uuid, foreign key references public."Parents"(parent_id), ON DELETE CASCADE
-student_id: uuid, foreign key references public."Students"(student_id), ON DELETE CASCADE
+link_id: uuid PK (default gen_random_uuid())
+parent_id: uuid (FK -> public.Parents.parent_id)
+student_id: uuid (FK -> public.Students.student_id)
 relationship: text
-created_at: timestamptz, default now()
-UNIQUE(parent_id, student_id)
-Columns:
+created_at: timestamptz (default now())
+public.Attendance
 
-link_id (uuid, PK, default gen_random_uuid()) — Primary key.
-parent_id (uuid, FK → public."Parents"(parent_id), ON DELETE CASCADE) — Parent reference.
-student_id (uuid, FK → public."Students"(student_id), ON DELETE CASCADE) — Student reference.
-relationship (text) — Relationship type (e.g., 'Mother', 'Father', 'Guardian').
-created_at (timestamptz, default now()) — Link creation timestamp.
-Notes:
+id: bigint PK (identity BY DEFAULT)
+student_id: uuid (FK -> public.Students.student_id)
+record_at: timestamptz (default now())
+date: date
+attendance_status: text
+notes: text
+recorded_by_user_id: uuid (FK -> public.Teachers.teacher_id)
+public.Grades
 
-RLS: ENABLED.
-This table references public."Students". Ensure the Students table exists before applying this DDL, or add the FK constraints later with ALTER TABLE if creating in a different order.
-Recommended indexes for performance if you query by these columns frequently:
-index on student_id
-index on parent_id
-Row-Level Security
-Both tables have RLS enabled.
+grade_id: uuid PK (default gen_random_uuid())
+student_id: uuid (FK -> public.Students.student_id)
+subject_id: uuid (FK -> public.Subjects.subject_id)
+score: numeric
+max_score: numeric (default 100)
+term: text
+academic_session: text
+created_at: timestamptz (default now())
+assessment_type: text
+teacher_id: uuid (FK -> public.Teachers.teacher_id)
+comment: text
+class_id: integer (FK -> public.Classes.class_id)
+public.Curriculum
 
-RLS state: ALTER TABLE public."Parents" ENABLE ROW LEVEL SECURITY; ALTER TABLE public."Parent_Student_Links" ENABLE ROW LEVEL SECURITY;
+id: uuid PK (default gen_random_uuid())
+teacher_id: uuid (FK -> public.Teachers.teacher_id)
+class_id: integer (FK -> public.Classes.class_id)
+subject_id: uuid (FK -> public.Subjects.subject_id)
+week: text
+topic: text
+sub_topic: text
+status: text (default 'incomplete')
+progress: smallint
+academic_session: text
+created_at: timestamptz (default now())
+public.Lesson_Notes (rls_enabled: true)
 
-Example policy ideas (replace with your app logic):
+note_id: uuid PK (default gen_random_uuid())
+created_at: timestamptz (default now())
+title: text
+file_url: text
+subject_id: uuid (FK -> public.Subjects.subject_id)
+class_id: integer (FK -> public.Classes.class_id)
+teacher_id: uuid (FK -> public.Teachers.teacher_id)
+file_size_kb: numeric
+public.study_materials
 
-Parents: allow authenticated users to SELECT only their own parent records using auth.uid().
-Parent_Student_Links: allow authenticated users to see links where parent_id = auth.uid() OR where student_id is associated with the auth user (replace with your student ownership mapping).
-Add INSERT/UPDATE/DELETE policies as needed for authorized operations.
-Extensions
-Required extension for gen_random_uuid: CREATE EXTENSION IF NOT EXISTS pgcrypto;
+id: integer PK (nextval sequence)
+title: varchar
+subject: varchar
+type: varchar
+description: text
+file_url: text
+file_path: text
+file_size: bigint
+file_type: varchar
+uploaded_by: varchar
+uploaded_at: timestamptz (default now())
+public.schedule_configs
 
-Parents (updated)
-Description: Stores parent/guardian records for students. Now includes an optional link to an auth user (user account for the parent).
+id: uuid PK (default extensions.uuid_generate_v4())
+class_id: integer (unique, FK -> public.Classes.class_id)
+start_time: time
+period_duration: integer
+periods_per_day: integer
+active_days: text[]
+break_times: jsonb
+created_at: timestamptz (default now())
+public.timetable_entries
 
-DDL: ALTER TABLE public."Parents" to ensure user_id column exists:
+id: uuid PK (default extensions.uuid_generate_v4())
+subject_id: uuid (FK -> public.Subjects.subject_id)
+class_id: integer (FK -> public.Classes.class_id)
+day_of_week: varchar
+start_time: time
+duration_minutes: integer (default 40)
+created_at: timestamptz (default now())
+public.School_Admin
 
-user_id: uuid, nullable, references auth.users(id) ON DELETE SET NULL
-Existing columns (for completeness):
+admin_id: uuid PK (default gen_random_uuid())
+created_at: timestamptz (default now())
+email: varchar
+role: text
+permissions_json: jsonb
+phone_number: text
+last_login: timestamp
+full_name: varchar
+school_id: uuid (FK -> public.Schools.school_id)
+public.Payment_Items, public.Student_Virtual_Accounts, public.Qualifications, public.work_experience, public.school_employment, public.Grading_Structure, public.academic_events and others — (columns included in full DB export; include as needed for AI context)
 
-parent_id (uuid, PK, default gen_random_uuid()) — Primary key.
-full_name (varchar, NOT NULL) — Parent full name.
-email (varchar, UNIQUE) — Optional email address, unique when present.
-phone_number (text, UNIQUE, NOT NULL) — Required phone number, unique.
-address (text) — Postal address.
-occupation (text) — Parent occupation.
-created_at (timestamptz, default now()) — Record creation timestamp.
-user_id (uuid, FK → auth.users(id), ON DELETE SET NULL) — Optional link to an auth user account for this parent.
-Notes:
+8. Foreign key relationships (summary)
+auth.* -> auth.users.id (sessions, refresh_tokens, identities, one_time_tokens, oauth_authorizations, oauth_consents, mfa_factors, etc.)
+public.profiles.id -> auth.users.id
+public.Parents.user_id -> auth.users.id
+storage.objects.bucket_id -> storage.buckets.id
+storage.vector_indexes.bucket_id -> storage.buckets_vectors.id
+public.School_Admin.school_id -> public.Schools.school_id
+public.Teachers.school_id -> public.Schools.school_id
+public.Students.school_id -> public.Schools.school_id
+public.Classes.school_id -> public.Schools.school_id
+public.Classes.teacher_id -> public.Teachers.teacher_id
+public.Students.class_id -> public.Classes.class_id
+public.Class_Subjects.class_id -> public.Classes.class_id
+public.Class_Subjects.subject_id -> public.Subjects.subject_id
+public.student_subject.student_id -> public.Students.student_id
+public.student_subject.subject_id -> public.Subjects.subject_id
+public.Parent_Student_Links.parent_id -> public.Parents.parent_id
+public.Parent_Student_Links.student_id -> public.Students.student_id
+public.Attendance.student_id -> public.Students.student_id
+public.Attendance.recorded_by_user_id -> public.Teachers.teacher_id
+public.Lesson_Notes.subject_id -> public.Subjects.subject_id
+public.Lesson_Notes.class_id -> public.Classes.class_id
+public.Lesson_Notes.teacher_id -> public.Teachers.teacher_id
+public.Grades.student_id -> public.Students.student_id
+public.Grades.subject_id -> public.Subjects.subject_id
+public.Grades.teacher_id -> public.Teachers.teacher_id
+public.Grades.class_id -> public.Classes.class_id*
+9. Notes for AI consumption
+Use the exact column names and types above when constructing SQL or building embeddings.
+Primary keys: many tables use UUID primary keys (gen_random_uuid()); some use integer identity columns (Attendance.id, Classes.class_id).
+RLS: Many auth and storage tables have RLS enabled. When querying as end-users via Supabase client, RLS will filter rows by JWT/auth context. For safe server-side access use the service_role key.
+Enums and user-defined types: examples include aal_level, buckettype, oauth enums. If your AI performs type inference include enum values.
+Extensions: postgis, vector, pg_trgm, pgcrypto, uuid-ossp — include these in context if you plan to use spatial, vector, fuzzy search, or cryptographic functions.
+For building prompts, include a one-line summary for each key table (example below).
+Example compact prompt snippets:
 
-The user_id column allows mapping a parent record to a Supabase Auth user. When the referenced auth.user is deleted, user_id will be set to NULL.
-If you expect many parent lookups by user account, consider an index on user_id:
-CREATE INDEX ON public."Parents"(user_id);
-RLS: when writing policies that allow parents to manage their data, check profiles.role or auth.uid() = user_id as appropriate.
-Parent_Student_Links
-Description: Junction table linking parents to students (many-to-many).
+"Students(student_id: uuid PK, full_name: varchar, date_of_birth: date, class_id: int FK->Classes.class_id, school_id: uuid FK->Schools.school_id, created_at: timestamptz)"
+"Teachers(teacher_id: uuid PK, first_name: varchar, last_name: varchar, email: varchar, school_id: uuid FK->Schools.school_id)"
+"Classes(class_id: int PK, class_name: varchar, section: varchar, teacher_id: uuid FK->Teachers.teacher_id, school_id: uuid FK->Schools.school_id)"
+"Subjects(subject_id: uuid PK, subject_name: varchar, is_core: boolean, teacher_id: uuid FK->Teachers.teacher_id)"
+Include additional one-line entries for Grades, Attendance, Parents, Parent_Student_Links, Lesson_Notes, Study_materials, storage.objects, storage.buckets, auth.users as needed.
 
-Columns (summary):
-
-link_id (uuid, PK, default gen_random_uuid())
-parent_id (uuid, FK → public."Parents"(parent_id), ON DELETE CASCADE)
-student_id (uuid, FK → public."Students"(student_id), ON DELETE CASCADE)
-relationship (text)
-created_at (timestamptz, default now())
-UNIQUE(parent_id, student_id)
-Notes:
-
-Ensure the Students table exists before applying the FK or add FK constraints later if needed.
-Consider indexes on student_id and parent_id for query performance.
-Row-Level Security (RLS)
-Current RLS state (if already applied):
-
-public."Parents" — RLS ENABLED
-public."Parent_Student_Links" — RLS ENABLED
-Additions to document:
-
-When creating policies, use profiles.role and auth.uid() to implement role-based behavior. Example checks:
-To allow a parent user to SELECT their parent record: profiles.id = auth.uid() OR public."Parents".user_id = auth.uid()
-To allow teachers/admins broader access: check profiles.role IN ('teacher','admin')
+10. Change log
+2026-03-12 — Generated schema file (initial auto-export of tables, columns, foreign keys, and installed extensions).

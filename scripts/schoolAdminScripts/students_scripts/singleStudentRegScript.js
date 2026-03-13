@@ -53,12 +53,44 @@ export async function registerNewStudent(
           admission_date: admissionDate,
           profile_picture: profilePicUrl,
           class_id: classId,
+          school_id: classData?.school_id || null, // Attach school_id for multi-tenant
         },
       ]);
 
     if (insertError) {
       console.error("Error inserting student profile:", insertError.message);
       return false;
+    }
+
+    // --- STEP D: Create Monnify Virtual Account ---
+    try {
+      // Get school_id from the class
+      const { data: classData } = await authClient
+        .from("Classes")
+        .select("school_id")
+        .eq("class_id", classId)
+        .single();
+
+      if (classData?.school_id) {
+        const { data: virtualAccountData, error: virtualAccountError } = await authClient.functions.invoke('create-student-virtual-account', {
+          body: {
+            studentId: studentUser.id,
+            studentName: fullName,
+            schoolId: classData.school_id,
+            parentEmail: parentInfo?.parentEmail || null
+          }
+        });
+
+        if (virtualAccountError) {
+          console.warn("Failed to create virtual account:", virtualAccountError.message);
+          // Don't fail the registration, just log the warning
+        } else if (virtualAccountData?.success) {
+          console.log("Virtual account created successfully:", virtualAccountData.accountNumber);
+        }
+      }
+    } catch (virtualError) {
+      console.warn("Virtual account creation error:", virtualError.message);
+      // Don't fail the registration, just log the warning
     }
 
     // --- STEP B & C: Parent Auth & Link ---

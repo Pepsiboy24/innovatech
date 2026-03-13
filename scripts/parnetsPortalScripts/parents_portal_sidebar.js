@@ -20,7 +20,7 @@
             
             if (!studentId) {
                 console.log('No student ID found, using default branding');
-                return { school_name: 'EdTech', logo_url: null };
+                return { school_name: 'EdTech', school_logo_url: null };
             }
             
             // Import supabase
@@ -35,7 +35,7 @@
             
             if (!studentData) {
                 console.log('Student data not found, using default branding');
-                return { school_name: 'EdTech', logo_url: null };
+                return { school_name: 'EdTech', school_logo_url: null };
             }
             
             // Get school info
@@ -47,20 +47,20 @@
             
             if (!classData) {
                 console.log('Class data not found, using default branding');
-                return { school_name: 'EdTech', logo_url: null };
+                return { school_name: 'EdTech', school_logo_url: null };
             }
             
             const { data: schoolData } = await supabase
                 .from('Schools')
-                .select('school_name, logo_url')
+                .select('school_name, school_logo_url')
                 .eq('school_id', classData.school_id)
                 .single();
             
-            return schoolData || { school_name: 'EdTech', logo_url: null };
+            return schoolData || { school_name: 'EdTech', school_logo_url: null };
             
         } catch (error) {
             console.error('Error loading school branding:', error);
-            return { school_name: 'EdTech', logo_url: null };
+            return { school_name: 'EdTech', school_logo_url: null };
         }
     }
 
@@ -109,8 +109,8 @@
             loadUserInfo()
         ]);
         
-        const logoHtml = schoolBranding.logo_url 
-            ? `<img src="${schoolBranding.logo_url}" alt="${schoolBranding.school_name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem;">`
+        const logoHtml = schoolBranding.school_logo_url 
+            ? `<img src="${schoolBranding.school_logo_url}" alt="${schoolBranding.school_name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem;">`
             : schoolBranding.school_name.substring(0, 2).toUpperCase();
 
         return `

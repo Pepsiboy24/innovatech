@@ -92,10 +92,20 @@ async function fetchClassSubjects(classId) {
 // Fetch students from a specific class
 async function fetchStudentsFromClass(classId) {
     try {
+        // Get current user's school_id from metadata
+        const { data: { user } } = await supabase.auth.getUser();
+        const userSchoolId = user?.user_metadata?.school_id;
+        
+        if (!userSchoolId) {
+            console.error('User missing school_id in metadata');
+            return [];
+        }
+
         const { data, error } = await supabase
             .from('Students')
             .select('*')
             .eq('class_id', classId)
+            .eq('school_id', userSchoolId) // Filter by current school
             .order('full_name', { ascending: true });
 
         if (error) {

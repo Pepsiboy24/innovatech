@@ -10,9 +10,19 @@ let _countMap = {};   // class_id → student count (for capacity warning)
 // --- 1. Fetch Students ---
 async function fetchStudents() {
     try {
+        // Get current user's school_id from metadata
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        const userSchoolId = user?.user_metadata?.school_id;
+        
+        if (!userSchoolId) {
+            console.error('User missing school_id in metadata');
+            return [];
+        }
+
         const { data, error } = await supabaseClient
             .from('Students')
             .select('*')
+            .eq('school_id', userSchoolId) // Filter by current school
             .order('created_at', { ascending: false });
 
         if (error) {
@@ -26,12 +36,22 @@ async function fetchStudents() {
     }
 }
 
-// --- 2. Fetch Classes (To match the ID) ---
+// --- 2. Fetch Classes (To match ID) ---
 async function fetchClasses() {
     try {
+        // Get current user's school_id from metadata
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        const userSchoolId = user?.user_metadata?.school_id;
+        
+        if (!userSchoolId) {
+            console.error('User missing school_id in metadata');
+            return [];
+        }
+
         const { data, error } = await supabaseClient
             .from('Classes')
-            .select('class_id, class_name, section');
+            .select('class_id, class_name, section')
+            .eq('school_id', userSchoolId) // Filter by current school
 
         if (error) {
             console.error('Error fetching classes:', error);

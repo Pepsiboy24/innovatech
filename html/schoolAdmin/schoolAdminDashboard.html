@@ -88,6 +88,62 @@
                 </div>
             </div>
 
+            <!-- Termly Billing Section -->
+            <div class="billing-section">
+                <h2 class="section-title">Termly Billing</h2>
+                <div class="billing-grid">
+                    <div class="billing-card">
+                        <div class="billing-header">
+                            <h3>Current Term</h3>
+                            <div class="billing-status active">Active</div>
+                        </div>
+                        <div class="billing-content">
+                            <div class="billing-item">
+                                <span class="billing-label">Term:</span>
+                                <span class="billing-value" id="current-term">First Term 2026</span>
+                            </div>
+                            <div class="billing-item">
+                                <span class="billing-label">Active Students:</span>
+                                <span class="billing-value" id="active-students-count">0</span>
+                            </div>
+                            <div class="billing-item">
+                                <span class="billing-label">Rate per Student:</span>
+                                <span class="billing-value">₦2,500</span>
+                            </div>
+                            <div class="billing-item">
+                                <span class="billing-label">Total Owed:</span>
+                                <span class="billing-value total-amount" id="total-owed">₦0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="billing-card">
+                        <div class="billing-header">
+                            <h3>Payment Status</h3>
+                            <div class="billing-status pending">Pending</div>
+                        </div>
+                        <div class="billing-content">
+                            <div class="billing-item">
+                                <span class="billing-label">Paid Students:</span>
+                                <span class="billing-value" id="paid-students-count">0</span>
+                            </div>
+                            <div class="billing-item">
+                                <span class="billing-label">Unpaid Students:</span>
+                                <span class="billing-value" id="unpaid-students-count">0</span>
+                            </div>
+                            <div class="billing-item">
+                                <span class="billing-label">Collection Rate:</span>
+                                <span class="billing-value" id="collection-rate">0%</span>
+                            </div>
+                            <div class="billing-item">
+                                <span class="billing-label">Next Due Date:</span>
+                                <span class="billing-value" id="next-due-date">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Recent Activity -->
             <div class="activity-section">
                 <h2 class="section-title">Recent Activity</h2>
@@ -189,5 +245,6 @@
 </body>
 
 <script type="module" src="../../scripts/schoolAdminScripts/adminStats.js"></script>
+<script type="module" src="../../scripts/schoolAdminScripts/billingSummary.js"></script>
 
 </html>
