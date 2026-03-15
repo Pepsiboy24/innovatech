@@ -186,6 +186,14 @@ import { hasFeatureAccess, getCurrentUserTier } from '../tierAccess.js';
             });
         }
 
+        // Mobile open button (from header)
+        const openBtn = document.querySelector('[data-sideBarOpen]');
+        if (openBtn) {
+            openBtn.addEventListener('click', () => {
+                sidebarElement.classList.add('show', 'open', 'active');
+            });
+        }
+
         // Logout functionality
         const logoutBtn = sidebarElement.querySelector('#schoolAdminLogoutBtn');
         if (logoutBtn) {

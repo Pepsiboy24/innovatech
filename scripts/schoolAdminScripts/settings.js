@@ -32,18 +32,32 @@ async function initializeSettings() {
 
 async function getCurrentAdminId() {
     try {
-        // Get admin ID from localStorage or session
-        const adminId = localStorage.getItem('admin_id') || 
-                       sessionStorage.getItem('admin_id') ||
-                       window.currentAdminId;
+        // Get authenticated user
+        const { data: { user }, error } = await window.supabase.auth.getUser();
         
-        if (!adminId) {
-            // Try to get from auth
-            const { data: { user } } = await window.supabase.auth.getUser();
-            return user?.id;
+        if (error || !user) {
+            console.error('Error getting authenticated user:', error);
+            return null;
         }
         
-        return adminId;
+        // Get admin record from School_Admin table using email
+        const { data: adminData, error: adminError } = await window.supabase
+            .from('School_Admin')
+            .select('admin_id, school_id')
+            .eq('email', user.email)
+            .single();
+            
+        if (adminError) {
+            console.error('Error getting admin data:', adminError);
+            return null;
+        }
+        
+        // Store school_id for later use
+        if (adminData.school_id) {
+            currentSchoolId = adminData.school_id;
+        }
+        
+        return adminData.admin_id;
     } catch (error) {
         console.error('Error getting admin ID:', error);
         return null;
@@ -78,24 +92,19 @@ async function loadSchoolSettings() {
     try {
         showLoading(true);
         
-        // Get admin with school info
-        const { data: adminData, error: adminError } = await window.supabase
-            .from('School_Admin')
-            .select('school_id')
-            .eq('admin_id', currentAdminId)
-            .single();
-
-        if (adminError) {
-            console.error('Error getting admin data:', adminError);
-            throw adminError;
+        // If we don't have school_id yet, get it
+        if (!currentSchoolId) {
+            const adminId = await getCurrentAdminId();
+            if (!adminId) {
+                showError('Unable to identify admin user. Please log in again.');
+                return;
+            }
         }
 
-        if (!adminData.school_id) {
+        if (!currentSchoolId) {
             showError('No school assigned to this admin account.');
             return;
         }
-
-        currentSchoolId = adminData.school_id;
 
         // Load school data
         const { data: schoolData, error: schoolError } = await window.supabase
@@ -128,9 +137,13 @@ async function createDefaultSchool() {
     try {
         const defaultSchoolData = {
             school_name: 'My School',
-            logo_url: null,
-            bank_details: null,
-            current_balance: 0
+            school_logo_url: null,
+            bank_name: null,
+            account_number: null,
+            bank_code: null,
+            sub_account_code: null,
+            commission_rate: 1.5,
+            is_active: true
         };
 
         const { data: newSchool, error: insertError } = await window.supabase
@@ -163,36 +176,27 @@ async function createDefaultSchool() {
 function populateForm(schoolData) {
     // Basic information
     document.getElementById('schoolName').value = schoolData.school_name || '';
-    document.getElementById('schoolEmail').value = schoolData.school_email || '';
-    document.getElementById('schoolPhone').value = schoolData.school_phone || '';
-    document.getElementById('schoolAddress').value = schoolData.school_address || '';
+    
+    // These fields don't exist in the Schools table, so leave them empty
+    document.getElementById('schoolEmail').value = '';
+    document.getElementById('schoolPhone').value = '';
+    document.getElementById('schoolAddress').value = '';
 
     // Logo
-    if (schoolData.logo_url) {
-        document.getElementById('currentLogo').src = schoolData.logo_url;
+    if (schoolData.school_logo_url) {
+        document.getElementById('currentLogo').src = schoolData.school_logo_url;
     }
 
-    // Bank details (stored as JSON)
-    if (schoolData.bank_details) {
-        try {
-            const bankDetails = typeof schoolData.bank_details === 'string' 
-                ? JSON.parse(schoolData.bank_details) 
-                : schoolData.bank_details;
-            
-            document.getElementById('bankName').value = bankDetails.bank_name || '';
-            document.getElementById('accountName').value = bankDetails.account_name || '';
-            document.getElementById('accountNumber').value = bankDetails.account_number || '';
-            document.getElementById('sortCode').value = bankDetails.sort_code || '';
-        } catch (error) {
-            console.error('Error parsing bank details:', error);
-        }
-    }
+    // Bank details - Schools table has individual columns, not JSON
+    document.getElementById('bankName').value = schoolData.bank_name || '';
+    document.getElementById('accountNumber').value = schoolData.account_number || '';
+    document.getElementById('sortCode').value = schoolData.bank_code || '';
+    
+    // Account name would need to be stored separately or derived
+    document.getElementById('accountName').value = schoolData.account_name || '';
 
-    // Current balance
-    if (schoolData.current_balance !== undefined) {
-        document.getElementById('currentBalance').textContent = 
-            `₦${parseFloat(schoolData.current_balance).toFixed(2)}`;
-    }
+    // Current balance - this column doesn't exist in Schools table
+    document.getElementById('currentBalance').textContent = '';
 }
 
 async function handleFormSubmit(e) {
@@ -234,27 +238,22 @@ async function handleFormSubmit(e) {
 }
 
 function collectFormData() {
-    // Basic information
+    // Basic information - only include fields that exist in Schools table
     const schoolData = {
-        school_name: document.getElementById('schoolName').value.trim(),
-        school_email: document.getElementById('schoolEmail').value.trim(),
-        school_phone: document.getElementById('schoolPhone').value.trim(),
-        school_address: document.getElementById('schoolAddress').value.trim()
+        school_name: document.getElementById('schoolName').value.trim()
     };
 
-    // Bank details as JSON
-    const bankDetails = {
-        bank_name: document.getElementById('bankName').value.trim(),
-        account_name: document.getElementById('accountName').value.trim(),
-        account_number: document.getElementById('accountNumber').value.trim(),
-        sort_code: document.getElementById('sortCode').value.trim()
-    };
+    // Bank details - Schools table has individual columns, not JSON
+    const bankName = document.getElementById('bankName').value.trim();
+    const accountNumber = document.getElementById('accountNumber').value.trim();
+    const bankCode = document.getElementById('sortCode').value.trim();
 
-    // Only include non-empty bank details
-    const hasBankDetails = Object.values(bankDetails).some(value => value !== '');
-    if (hasBankDetails) {
-        schoolData.bank_details = bankDetails;
-    }
+    if (bankName) schoolData.bank_name = bankName;
+    if (accountNumber) schoolData.account_number = accountNumber;
+    if (bankCode) schoolData.bank_code = bankCode;
+
+    // Note: school_email, school_phone, school_address don't exist in Schools table
+    // These would need to be stored in a separate table or added as columns
 
     return schoolData;
 }

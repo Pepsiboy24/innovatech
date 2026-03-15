@@ -150,7 +150,7 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: 0.2s;
         }
 
         .logout-btn:hover {
@@ -262,7 +262,7 @@
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: 0.2s;
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -397,16 +397,12 @@
                 width: 100px;
             }
         }
-    </style>
+        </style>
 </head>
 
 <body>
     <div class="mobile-header">
-        <div class="hamburger" onclick="toggleSidebar()">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
+        <div class="icon mobile-menu-btn" data-sideBarOpen><i class="fa fa-bars"></i></div>
         <div class="logo">EdTech</div>
         <div style="width: 30px;"></div>
     </div>

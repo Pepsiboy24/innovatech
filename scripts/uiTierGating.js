@@ -1,3 +1,4 @@
+import { supabase } from './config.js';
 import { hasFeatureAccess, getCurrentUserTier, TIERS } from './tierAccess.js';
 
 // UI Element hiding based on tier
@@ -21,6 +22,9 @@ class UITierGating {
 
         console.log(`Applying UI gating for tier ${userTier}`);
 
+        // Check if we should show setup checklist
+        await this.checkSetupStatus();
+
         // Hide navigation items based on tier
         this.hideNavigationItems(userTier);
 
@@ -32,6 +36,96 @@ class UITierGating {
 
         // Update branding based on tier
         this.updateBranding(userTier);
+    }
+
+    async checkSetupStatus() {
+        try {
+            // Get current user's school data
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            
+            if (userError || !user) {
+                console.error('User not authenticated');
+                return;
+            }
+
+            const schoolId = user.user_metadata?.school_id;
+            if (!schoolId) {
+                console.error('School ID not found in user metadata');
+                return;
+            }
+
+            // Check school setup status
+            const { data: school, error: schoolError } = await supabase
+                .from('Schools')
+                .select('setup_completed, setup_progress')
+                .eq('school_id', schoolId)
+                .single();
+
+            if (schoolError) {
+                console.error('Error fetching school data:', schoolError);
+                return;
+            }
+
+            // Check if school has actual data (classes, teachers, students)
+            const { data: classes } = await supabase
+                .from('Classes')
+                .select('class_id')
+                .eq('school_id', schoolId)
+                .limit(1);
+
+            const { data: teachers } = await supabase
+                .from('Teachers')
+                .select('teacher_id')
+                .eq('school_id', schoolId)
+                .limit(1);
+
+            const hasClasses = classes && classes.length > 0;
+            const hasTeachers = teachers && teachers.length > 0;
+            const setupCompleted = school?.setup_completed || false;
+
+            // Determine which view to show
+            const setupChecklist = document.getElementById('setupChecklist');
+            const standardDashboard = document.getElementById('standardDashboard');
+
+            if (setupChecklist && standardDashboard) {
+                if (!setupCompleted && (!hasClasses || !hasTeachers)) {
+                    // Show setup checklist
+                    setupChecklist.style.display = 'block';
+                    standardDashboard.style.display = 'none';
+                    
+                    // Update setup progress
+                    this.updateSetupProgress(school?.setup_progress || 0);
+                } else {
+                    // Show standard dashboard
+                    setupChecklist.style.display = 'none';
+                    standardDashboard.style.display = 'block';
+                }
+            }
+
+        } catch (error) {
+            console.error('Error checking setup status:', error);
+            // Show standard dashboard as fallback
+            const setupChecklist = document.getElementById('setupChecklist');
+            const standardDashboard = document.getElementById('standardDashboard');
+            
+            if (setupChecklist && standardDashboard) {
+                setupChecklist.style.display = 'none';
+                standardDashboard.style.display = 'block';
+            }
+        }
+    }
+
+    updateSetupProgress(progress) {
+        const progressBar = document.getElementById('setupProgress');
+        const progressText = document.getElementById('progressPercentage');
+        
+        if (progressBar) {
+            progressBar.style.width = `${progress}%`;
+        }
+        
+        if (progressText) {
+            progressText.textContent = `Setup Progress: ${progress}%`;
+        }
     }
 
     hideNavigationItems(userTier) {

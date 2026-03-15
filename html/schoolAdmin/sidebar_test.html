@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidebar Test</title>
+    <link rel="stylesheet" href="../../styles/schoolAdminStyles/schoolAdminDashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            z-index: 10000;
+        }
+        .main {
+            margin-left: 260px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-info" id="debugInfo">
+        Loading...
+    </div>
+    
+    <div class="sidebar" data-sideBar></div>
+    
+    <div class="container">
+        <div class="main">
+            <h1>Sidebar Test Page</h1>
+            <p>This page tests if the sidebar loads correctly.</p>
+            
+            <button onclick="testSidebar()">Test Sidebar</button>
+            <button onclick="toggleSidebar()">Toggle Sidebar</button>
+            
+            <div id="testResults"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase } from '../../scripts/config.js';
+        
+        function updateDebug(message) {
+            document.getElementById('debugInfo').innerHTML += '<br>' + message;
+        }
+        
+        window.testSidebar = function() {
+            const sidebar = document.querySelector('[data-sideBar]');
+            const results = document.getElementById('testResults');
+            
+            results.innerHTML = `
+                <h3>Sidebar Test Results:</h3>
+                <p>Sidebar element exists: ${sidebar ? 'YES' : 'NO'}</p>
+                <p>Sidebar innerHTML length: ${sidebar ? sidebar.innerHTML.length : 'N/A'}</p>
+                <p>Sidebar has content: ${sidebar && sidebar.innerHTML.trim().length > 0 ? 'YES' : 'NO'}</p>
+                <p>Supabase client: ${supabase ? 'LOADED' : 'NOT LOADED'}</p>
+            `;
+            
+            if (sidebar) {
+                updateDebug('Sidebar element found');
+                if (sidebar.innerHTML.trim().length === 0) {
+                    updateDebug('ERROR: Sidebar is empty - script not working');
+                } else {
+                    updateDebug('Sidebar has content');
+                }
+            } else {
+                updateDebug('ERROR: Sidebar element not found');
+            }
+        };
+        
+        window.toggleSidebar = function() {
+            const sidebar = document.querySelector('[data-sideBar]');
+            if (sidebar) {
+                sidebar.classList.toggle('show');
+                updateDebug('Sidebar toggled');
+            }
+        };
+        
+        // Test on load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDebug('DOM loaded');
+            setTimeout(() => {
+                testSidebar();
+            }, 1000);
+        });
+    </script>
+    
+    <!-- Load the sidebar script -->
+    <script src="../../scripts/schoolAdminScripts/sidebar_simple_test.js"></script>
+</body>
+</html>

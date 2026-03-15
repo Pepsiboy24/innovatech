@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=1.1">
     <script src="../../scripts/ui_feedback.js"></script>
-    <script src="../../scripts/schoolAdminScripts/school_admin_sidebar.js"></script>
+    <script src="../../scripts/schoolAdminScripts/sidebar_simple_test.js"></script>
 </head>
 
 <body>
@@ -279,31 +279,6 @@
         </div>
     </div>
 
-    <script type="module">
-        // --- Sidebar Logic ---
-        const sidebar = document.querySelector('[data-sideBar]');
-        const sidebarOpenBtn = document.querySelector('[data-sideBarOpen]');
-        const sidebarCloseBtn = document.querySelector('[data-sideBarClose]');
-        if (sidebarOpenBtn && sidebar) sidebarOpenBtn.addEventListener('click', () => sidebar.classList.add('show'));
-        if (sidebarCloseBtn && sidebar) sidebarCloseBtn.addEventListener('click', () => sidebar.classList.remove('show'));
-
-        // --- Single Student Popup Logic ---
-        const popup = document.getElementById('registrationPopup');
-        const openPopupBtn = document.getElementById('openPopupBtn');
-        const closePopupBtn = document.getElementById('closePopup');
-        if (openPopupBtn && popup) openPopupBtn.addEventListener('click', () => popup.style.display = 'flex');
-        if (closePopupBtn && popup) closePopupBtn.addEventListener('click', () => popup.style.display = 'none');
-
-        // --- Excel Upload Card ---
-        document.getElementById('openExcelUploadBtn')?.addEventListener('click', () => {
-            if (typeof window.openStudentsExcelUpload === 'function') {
-                window.openStudentsExcelUpload();
-            } else {
-                showToast('Upload module is still loading, please try again.', 'info');
-            }
-        });
-    </script>
-
     <!-- Migration Modal -->
     <div id="migrationOverlay"
         style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); z-index:10000;">
@@ -345,11 +320,53 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="../../scripts/font-awesome.js"></script>
-    <script src="../../scripts/sideBar.js"></script>
-
+    <!-- Scripts -->
+    <script type="module" src="../../scripts/config.js"></script>
+    <script src="../../scripts/schoolAdminScripts/sidebar_simple_test.js"></script>
+    
+    <!-- Simple UI Handlers -->
+    <script>
+        // Popup functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            const popup = document.getElementById('registrationPopup');
+            const openPopupBtn = document.getElementById('openPopupBtn');
+            const closePopupBtn = document.getElementById('closePopup');
+            
+            if (openPopupBtn && popup) {
+                openPopupBtn.addEventListener('click', () => {
+                    popup.style.display = 'flex';
+                });
+            }
+            
+            if (closePopupBtn && popup) {
+                closePopupBtn.addEventListener('click', () => {
+                    popup.style.display = 'none';
+                });
+            }
+            
+            // Excel upload functionality
+            const excelUploadBtn = document.getElementById('openExcelUploadBtn');
+            if (excelUploadBtn) {
+                excelUploadBtn.addEventListener('click', () => {
+                    if (typeof window.openStudentsExcelUpload === 'function') {
+                        window.openStudentsExcelUpload();
+                    } else {
+                        alert('Upload module is still loading, please try again.');
+                    }
+                });
+            }
+        });
+        
+        // Migration modal functions
+        window.closeMigrationModal = function() {
+            const overlay = document.getElementById('migrationOverlay');
+            const modal = document.getElementById('migrationModal');
+            if (overlay) overlay.style.display = 'none';
+            if (modal) modal.style.display = 'none';
+        };
+    </script>
+    
+    <!-- Student Management Scripts -->
     <script src="../../scripts/schoolAdminScripts/students_scripts/singleStudentRegScript.js" type="module"></script>
     <script src="../../scripts/schoolAdminScripts/students_scripts/singleStudentRegForm.js" type="module"></script>
     <script src="../../scripts/schoolAdminScripts/students_scripts/viewAllStudents.js" type="module"></script>

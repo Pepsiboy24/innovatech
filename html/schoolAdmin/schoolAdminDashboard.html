@@ -11,9 +11,171 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=1.1">
     <script src="../../scripts/ui_feedback.js"></script>
-    <script src="../../scripts/schoolAdminScripts/school_admin_sidebar.js"></script>
+    <script src="../../scripts/schoolAdminScripts/sidebar_simple_test.js"></script>
     <style>
+        /* Setup Checklist Styles */
+        .setup-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            color: white;
+        }
 
+        .progress-container {
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: white;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .checklist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .checklist-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .checklist-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        .checklist-card.completed {
+            border-color: #16a34a;
+            background: #f0fdf4;
+        }
+
+        .card-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .card-icon i {
+            font-size: 24px;
+            color: white;
+        }
+
+        .card-content h3 {
+            margin: 0 0 8px 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .card-content p {
+            margin: 0 0 16px 0;
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .card-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .card-status i.incomplete {
+            color: #dc2626;
+        }
+
+        .card-status i.completed {
+            color: #16a34a;
+        }
+
+        .card-btn {
+            width: 100%;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .card-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .setup-actions {
+            text-align: center;
+            margin-top: 32px;
+        }
+
+        .skip-setup-btn {
+            padding: 12px 24px;
+            background: transparent;
+            color: #64748b;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .skip-setup-btn:hover {
+            background: #f8fafc;
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .checklist-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .setup-header {
+                padding: 16px;
+            }
+        }
     </style>
 </head>
 
@@ -41,7 +203,105 @@
                 </div>
             </div>
 
-            <!-- Stats Cards -->
+            <!-- Setup Checklist (shown when school has no data) -->
+            <div id="setupChecklist" style="display: none;">
+                <div class="setup-header">
+                    <h2 class="page-title">Welcome to EduHub!</h2>
+                    <p class="page-subtitle">Let's get your school set up in just a few steps</p>
+                    
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="setupProgress" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span id="progressPercentage">Setup Progress: 0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="checklist-grid">
+                    <div class="checklist-card" data-step="profile">
+                        <div class="card-icon">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Customize Profile</h3>
+                            <p>Add your school logo and complete address information</p>
+                            <div class="card-status" id="profile-status">
+                                <i class="fas fa-circle incomplete"></i>
+                                <span>Incomplete</span>
+                            </div>
+                            <button class="card-btn" onclick="window.location.href='settings.html'">
+                                <i class="fas fa-arrow-right"></i>
+                                Go to Settings
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="checklist-card" data-step="classes">
+                        <div class="card-icon">
+                            <i class="fas fa-chalkboard"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Add Classes</h3>
+                            <p>Define your school levels and create class structures</p>
+                            <div class="card-status" id="classes-status">
+                                <i class="fas fa-circle incomplete"></i>
+                                <span>Incomplete</span>
+                            </div>
+                            <button class="card-btn" onclick="window.location.href='classes.html'">
+                                <i class="fas fa-arrow-right"></i>
+                                Manage Classes
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="checklist-card" data-step="teachers">
+                        <div class="card-icon">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Register Teachers</h3>
+                            <p>Add your first staff members and assign their roles</p>
+                            <div class="card-status" id="teachers-status">
+                                <i class="fas fa-circle incomplete"></i>
+                                <span>Incomplete</span>
+                            </div>
+                            <button class="card-btn" onclick="window.location.href='teachers.html'">
+                                <i class="fas fa-arrow-right"></i>
+                                Add Teachers
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="checklist-card" data-step="students">
+                        <div class="card-icon">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Enroll Students</h3>
+                            <p>Add students to their respective classes and start managing</p>
+                            <div class="card-status" id="students-status">
+                                <i class="fas fa-circle incomplete"></i>
+                                <span>Incomplete</span>
+                            </div>
+                            <button class="card-btn" onclick="window.location.href='students.html'">
+                                <i class="fas fa-arrow-right"></i>
+                                Add Students
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setup-actions">
+                    <button class="skip-setup-btn" onclick="skipSetup()">
+                        Skip Setup <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Standard Dashboard (shown when school has data) -->
+            <div id="standardDashboard">
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon-wrapper students">
@@ -176,8 +436,218 @@
     </div>
 
     <script>
-        // Add interactive functionality
+        // Setup Checklist JavaScript
+        let setupData = {
+            profile: false,
+            classes: false,
+            teachers: false,
+            students: false
+        };
+
+        function updateSetupProgress() {
+            const completedSteps = Object.values(setupData).filter(Boolean).length;
+            const totalSteps = Object.keys(setupData).length;
+            const progressPercentage = Math.round((completedSteps / totalSteps) * 100);
+            
+            // Update progress bar
+            const progressBar = document.getElementById('setupProgress');
+            const progressText = document.getElementById('progressPercentage');
+            
+            if (progressBar) {
+                progressBar.style.width = `${progressPercentage}%`;
+            }
+            
+            if (progressText) {
+                progressText.textContent = `Setup Progress: ${progressPercentage}%`;
+            }
+            
+            // Update card statuses
+            Object.keys(setupData).forEach(step => {
+                const card = document.querySelector(`[data-step="${step}"]`);
+                const status = document.getElementById(`${step}-status`);
+                
+                if (card && status) {
+                    if (setupData[step]) {
+                        card.classList.add('completed');
+                        status.innerHTML = '<i class="fas fa-check-circle completed"></i><span>Completed</span>';
+                    } else {
+                        card.classList.remove('completed');
+                        status.innerHTML = '<i class="fas fa-circle incomplete"></i><span>Incomplete</span>';
+                    }
+                }
+            });
+            
+            // Check if setup is complete
+            if (progressPercentage === 100) {
+                setTimeout(() => {
+                    completeSetup();
+                }, 1000);
+            }
+        }
+
+        function completeSetup() {
+            // Mark setup as completed in database
+            // This would be implemented with actual database call
+            console.log('Setup completed!');
+            
+            // Show standard dashboard
+            document.getElementById('setupChecklist').style.display = 'none';
+            document.getElementById('standardDashboard').style.display = 'block';
+        }
+
+        function skipSetup() {
+            if (confirm('Are you sure you want to skip setup? You can always complete these steps later.')) {
+                document.getElementById('setupChecklist').style.display = 'none';
+                document.getElementById('standardDashboard').style.display = 'block';
+            }
+        }
+
+        // Check setup status on page load
+        async function checkSetupStatus() {
+            try {
+                // Get current user's school data
+                const { data: { user }, error: userError } = await supabase.auth.getUser();
+                
+                if (userError || !user) {
+                    console.error('User not authenticated');
+                    return;
+                }
+
+                const schoolId = user.user_metadata?.school_id;
+                if (!schoolId) {
+                    console.error('School ID not found in user metadata');
+                    return;
+                }
+
+                // Check school setup status
+                const { data: school, error: schoolError } = await supabase
+                    .from('Schools')
+                    .select('is_active, created_at')
+                    .eq('school_id', schoolId)
+                    .maybeSingle();
+
+                if (schoolError) {
+                    console.error('Error fetching school data:', schoolError);
+                    return;
+                }
+
+                // Check if school has actual data (classes, teachers, students)
+                const { data: classes } = await supabase
+                    .from('Classes')
+                    .select('class_id')
+                    .eq('school_id', schoolId)
+                    .limit(1);
+
+                const { data: teachers } = await supabase
+                    .from('Teachers')
+                    .select('teacher_id')
+                    .eq('school_id', schoolId)
+                    .limit(1);
+
+                const { data: students } = await supabase
+                    .from('Students')
+                    .select('student_id')
+                    .eq('school_id', schoolId)
+                    .limit(1);
+
+                const hasClasses = classes && classes.length > 0;
+                const hasTeachers = teachers && teachers.length > 0;
+                const hasStudents = students && students.length > 0;
+                const schoolActive = school?.is_active || false;
+                
+                // Determine which view to show
+                const setupChecklist = document.getElementById('setupChecklist');
+                const standardDashboard = document.getElementById('standardDashboard');
+                
+                if (setupChecklist && standardDashboard) {
+                    if (!schoolActive || (!hasClasses || !hasTeachers)) {
+                        // Show setup checklist
+                        setupChecklist.style.display = 'block';
+                        standardDashboard.style.display = 'none';
+                        
+                        // Update setup progress based on actual data
+                        setupData = {
+                            profile: true, // Assume profile is complete if user is here
+                            classes: hasClasses,
+                            teachers: hasTeachers,
+                            students: hasStudents
+                        };
+                        
+                        updateSetupProgress();
+                        updateStepLocking();
+                    } else {
+                        // Show standard dashboard
+                        setupChecklist.style.display = 'none';
+                        standardDashboard.style.display = 'block';
+                    }
+                }
+
+            } catch (error) {
+                console.error('Error checking setup status:', error);
+                // Show standard dashboard as fallback
+                const setupChecklist = document.getElementById('setupChecklist');
+                const standardDashboard = document.getElementById('standardDashboard');
+                
+                if (setupChecklist && standardDashboard) {
+                    setupChecklist.style.display = 'none';
+                    standardDashboard.style.display = 'block';
+                }
+            }
+        }
+
+        function updateStepLocking() {
+            // Lock steps that shouldn't be accessible yet
+            const canRegisterTeachers = setupData.classes; // Can only register teachers if at least one class exists
+            const canEnrollStudents = setupData.classes && setupData.teachers; // Can only enroll students if both classes and teachers exist
+
+            // Update teachers step
+            const teachersCard = document.querySelector('[data-step="teachers"]');
+            const teachersBtn = teachersCard?.querySelector('.card-btn');
+            const teachersStatus = document.getElementById('teachers-status');
+            
+            if (teachersCard && teachersBtn && teachersStatus) {
+                if (canRegisterTeachers) {
+                    teachersBtn.disabled = false;
+                    teachersBtn.style.opacity = '1';
+                    teachersBtn.style.cursor = 'pointer';
+                    teachersCard.classList.remove('locked');
+                    teachersStatus.innerHTML = '<i class="fas fa-circle incomplete"></i><span>Incomplete</span>';
+                } else {
+                    teachersBtn.disabled = true;
+                    teachersBtn.style.opacity = '0.5';
+                    teachersBtn.style.cursor = 'not-allowed';
+                    teachersCard.classList.add('locked');
+                    teachersStatus.innerHTML = '<i class="fas fa-lock"></i><span>Locked - Add classes first</span>';
+                }
+            }
+
+            // Update students step
+            const studentsCard = document.querySelector('[data-step="students"]');
+            const studentsBtn = studentsCard?.querySelector('.card-btn');
+            const studentsStatus = document.getElementById('students-status');
+            
+            if (studentsCard && studentsBtn && studentsStatus) {
+                if (canEnrollStudents) {
+                    studentsBtn.disabled = false;
+                    studentsBtn.style.opacity = '1';
+                    studentsBtn.style.cursor = 'pointer';
+                    studentsCard.classList.remove('locked');
+                    studentsStatus.innerHTML = '<i class="fas fa-circle incomplete"></i><span>Incomplete</span>';
+                } else {
+                    studentsBtn.disabled = true;
+                    studentsBtn.style.opacity = '0.5';
+                    studentsBtn.style.cursor = 'not-allowed';
+                    studentsCard.classList.add('locked');
+                    studentsStatus.innerHTML = '<i class="fas fa-lock"></i><span>Locked - Add classes and teachers first</span>';
+                }
+            }
+        }
+
+        // Main initialization
         document.addEventListener('DOMContentLoaded', function () {
+            // Initialize setup check
+            checkSetupStatus();
+            
             // Search functionality
             const searchInput = document.querySelector('.search-input');
             if (searchInput) {
@@ -241,6 +711,78 @@
                 element.textContent = displayValue;
             }, 20);
         }
+        
+        function updateSetupProgress() {
+            const completedSteps = Object.values(setupData).filter(Boolean).length;
+            const totalSteps = Object.keys(setupData).length;
+            const progressPercentage = Math.round((completedSteps / totalSteps) * 100);
+            
+            // Update progress bar
+            const progressBar = document.getElementById('setupProgress');
+            const progressText = document.getElementById('progressPercentage');
+            
+            if (progressBar) {
+                progressBar.style.width = `${progressPercentage}%`;
+            }
+            
+            if (progressText) {
+                progressText.textContent = `Setup Progress: ${progressPercentage}%`;
+            }
+            
+            // Update card statuses
+            Object.keys(setupData).forEach(step => {
+                const card = document.querySelector(`[data-step="${step}"]`);
+                const status = document.getElementById(`${step}-status`);
+                
+                if (card && status) {
+                    if (setupData[step]) {
+                        card.classList.add('completed');
+                        status.innerHTML = '<i class="fas fa-check-circle completed"></i><span>Completed</span>';
+                    } else {
+                        card.classList.remove('completed');
+                        status.innerHTML = '<i class="fas fa-circle incomplete"></i><span>Incomplete</span>';
+                    }
+                }
+            });
+            
+            // Check if setup is complete
+            if (progressPercentage === 100) {
+                setTimeout(() => {
+                    completeSetup();
+                }, 1000);
+            }
+        }
+
+        function completeSetup() {
+            // Mark setup as completed in database
+            // This would be implemented with actual database call
+            console.log('Setup completed!');
+            
+            // Show standard dashboard
+            document.getElementById('setupChecklist').style.display = 'none';
+            document.getElementById('standardDashboard').style.display = 'block';
+        }
+        
+        // Add CSS for locked cards
+        const style = document.createElement('style');
+        style.textContent = `
+            .checklist-card.locked {
+                opacity: 0.6;
+                border-color: #d1d5db;
+            }
+            
+            .checklist-card.locked .card-btn {
+                background: #9ca3af;
+                cursor: not-allowed;
+            }
+            
+            .checklist-card.locked .card-btn:hover {
+                background: #9ca3af;
+                transform: none;
+                box-shadow: none;
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 

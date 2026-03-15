@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=1.1">
     <script src="../../scripts/ui_feedback.js"></script>
-    <script src="../../scripts/schoolAdminScripts/school_admin_sidebar.js"></script>
+    <script src="../../scripts/schoolAdminScripts/sidebar_simple_test.js"></script>
 </head>
 
 <body>
@@ -109,14 +109,14 @@
                         <p>Address and contact details for communication</p>
 
                         <div class="form-group">
-                            <label for="address">Residential Address <span class="required">*</span></label>
-                            <textarea id="address" name="address" required></textarea>
+                            <label for="address">Residential Address *</label>
+                            <textarea id="address" name="address"></textarea>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="mobilePhone">Mobile Phone <span class="required">*</span></label>
-                                <input type="tel" id="mobilePhone" name="mobilePhone" required>
+                                <label for="mobilePhone">Mobile Phone *</label>
+                                <input type="tel" id="mobilePhone" name="mobilePhone">
                             </div>
                             <div class="form-group">
                                 <label for="homePhone">Home Phone</label>
@@ -125,25 +125,22 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="personalEmail">Personal Email <span class="required">*</span></label>
-                            <input type="email" id="personalEmail" name="personalEmail" required>
+                            <label for="personalEmail">Personal Email *</label>
+                            <input type="email" id="personalEmail" name="personalEmail">
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="emergencyContactName">Emergency Contact Name <span
-                                        class="required">*</span></label>
-                                <input type="text" id="emergencyContactName" name="emergencyContactName" required>
+                                <label for="emergencyContactName">Emergency Contact Name *</label>
+                                <input type="text" id="emergencyContactName" name="emergencyContactName">
                             </div>
                             <div class="form-group">
-                                <label for="emergencyContactRelation">Relationship <span
-                                        class="required">*</span></label>
-                                <select id="emergencyContactRelation" name="emergencyContactRelation" required>
+                                <label for="emergencyContactRelation">Relationship *</label>
+                                <select id="emergencyContactRelation" name="emergencyContactRelation">
                                     <option value="">Select relationship</option>
                                     <option value="spouse">Spouse</option>
                                     <option value="parent">Parent</option>
                                     <option value="sibling">Sibling</option>
-                                    <option value="child">Child</option>
                                     <option value="friend">Friend</option>
                                     <option value="other">Other</option>
                                 </select>
@@ -151,9 +148,8 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="emergencyContactPhone">Emergency Contact Phone <span
-                                    class="required">*</span></label>
-                            <input type="tel" id="emergencyContactPhone" name="emergencyContactPhone" required>
+                            <label for="emergencyContactPhone">Emergency Contact Phone *</label>
+                            <input type="tel" id="emergencyContactPhone" name="emergencyContactPhone">
                         </div>
                     </div>
 
@@ -165,7 +161,7 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="highestDegree">Highest Degree <span class="required">*</span></label>
-                                <select id="highestDegree" name="highestDegree" required>
+                                <select id="highestDegree" name="highestDegree">
                                     <option value="">Select degree</option>
                                     <option value="bachelor">Bachelor's Degree</option>
                                     <option value="master">Master's Degree</option>
@@ -175,18 +171,18 @@
                             </div>
                             <div class="form-group">
                                 <label for="degreeMajor">Major/Field of Study <span class="required">*</span></label>
-                                <input type="text" id="degreeMajor" name="degreeMajor" required>
+                                <input type="text" id="degreeMajor" name="degreeMajor">
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="institution">Institution <span class="required">*</span></label>
-                                <input type="text" id="institution" name="institution" required>
+                                <input type="text" id="institution" name="institution">
                             </div>
                             <div class="form-group">
                                 <label for="graduationYear">Graduation Year <span class="required">*</span></label>
-                                <input type="number" id="graduationYear" name="graduationYear" required min="1950"
+                                <input type="number" id="graduationYear" name="graduationYear" min="1950"
                                     max="2024">
                             </div>
                         </div>
@@ -259,7 +255,7 @@
                         <div class="form-group">
                             <label for="totalExperience">Total Years of Teaching Experience <span
                                     class="required">*</span></label>
-                            <select id="totalExperience" name="totalExperience" required>
+                            <select id="totalExperience" name="totalExperience">
                                 <option value="">Select experience</option>
                                 <option value="new">New Teacher (0 years)</option>
                                 <option value="1-2">1-2 years</option>
@@ -301,12 +297,12 @@
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="startDate">Start Date <span class="required">*</span></label>
-                                <input type="date" id="startDate" name="startDate" required>
+                                <label for="startDate">Start Date</label>
+                                <input type="date" id="startDate" name="startDate">
                             </div>
                             <div class="form-group">
-                                <label for="jobTitle">Job Title <span class="required">*</span></label>
-                                <select id="jobTitle" name="jobTitle" required>
+                                <label for="jobTitle">Job Title</label>
+                                <select id="jobTitle" name="jobTitle">
                                     <option value="">Select position</option>
                                     <option value="teacher">Teacher</option>
                                     <option value="lead_teacher">Lead Teacher</option>
@@ -320,8 +316,8 @@
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="contractType">Contract Type <span class="required">*</span></label>
-                                <select id="contractType" name="contractType" required>
+                                <label for="contractType">Contract Type</label>
+                                <select id="contractType" name="contractType">
                                     <option value="">Select contract type</option>
                                     <option value="full_time_permanent">Full-time Permanent</option>
                                     <option value="full_time_temporary">Full-time Temporary</option>
@@ -367,7 +363,7 @@
                         <div class="form-group">
                             <label for="workAuthorization">Legal Authorization to Work <span
                                     class="required">*</span></label>
-                            <select id="workAuthorization" name="workAuthorization" required>
+                            <select id="workAuthorization" name="workAuthorization">
                                 <option value="">Select status</option>
                                 <option value="citizen">U.S. Citizen</option>
                                 <option value="permanent_resident">Permanent Resident</option>

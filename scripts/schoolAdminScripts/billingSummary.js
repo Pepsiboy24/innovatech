@@ -25,11 +25,11 @@ class BillingSummary {
 
             // Fetch current term enrollment data
             const { data: enrollmentData, error: enrollmentError } = await supabase
-                .from('Termly_Enrollment')
-                .select('*')
+                .from('Students')
+                .select('student_id, full_name, created_at')
                 .eq('school_id', userSchoolId)
-                .eq('term_status', 'ACTIVE')
-                .order('enrollment_date', { ascending: false });
+                .eq('enrollment_status', 'ENROLLED')
+                .order('created_at', { ascending: false });
 
             if (enrollmentError) {
                 console.error('Error fetching enrollment data:', enrollmentError);

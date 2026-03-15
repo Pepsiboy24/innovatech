@@ -7,7 +7,7 @@
     <title>School Settings - Admin Portal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../../styles/schoolAdminStyles/adminPortal.css">
-    <script src="../../scripts/config.js"></script>
+    <script type="module" src="../../scripts/config.js"></script>
 </head>
 <body>
     <div class="container">
@@ -23,9 +23,7 @@
                     <p>Manage your school information and branding</p>
                 </div>
                 <div class="header-actions">
-                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
-                        <i class="fas fa-bars"></i>
-                    </button>
+                    <div class="icon mobile-menu-btn" data-sideBarOpen><i class="fa fa-bars"></i></div>
                 </div>
             </div>
 
@@ -165,7 +163,7 @@
     </div>
 
     <!-- Scripts -->
-    <script src="../../scripts/schoolAdminScripts/school_admin_sidebar.js"></script>
-    <script src="../../scripts/schoolAdminScripts/settings.js"></script>
+    <script src="../../scripts/schoolAdminScripts/sidebar_simple_test.js"></script>
+    <script type="module" src="../../scripts/schoolAdminScripts/settings.js"></script>
 </body>
 </html>

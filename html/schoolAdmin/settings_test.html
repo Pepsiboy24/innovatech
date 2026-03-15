@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings Test - School Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../../styles/schoolAdminStyles/adminPortal.css">
+    <style>
+        .test-container {
+            margin-left: 260px;
+            padding: 20px;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 5px 0;
+        }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        .test-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-btn:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="sidebar" data-sideBar></div>
+    
+    <div class="test-container">
+        <div class="test-section">
+            <h1>🧪 Settings Data Loading Test</h1>
+            <p>This page tests the school settings data loading functionality.</p>
+            
+            <h2>🔧 Issues Fixed</h2>
+            <ul>
+                <li><span class="status success">FIXED</span> Supabase client properly initialized as module</li>
+                <li><span class="status success">FIXED</span> Admin ID retrieved from authenticated user</li>
+                <li><span class="status success">FIXED</span> Database schema alignment</li>
+                <li><span class="status success">FIXED</span> Form population with correct field names</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>🔍 Debug Information</h2>
+            <button class="test-btn" onclick="testAuth()">Test Authentication</button>
+            <button class="test-btn" onclick="testAdminData()">Test Admin Data</button>
+            <button class="test-btn" onclick="testSchoolData()">Test School Data</button>
+            <button class="test-btn" onclick="testFullLoad()">Test Full Load</button>
+            
+            <div id="debugInfo" class="debug-info">
+                Click test buttons to see debug information...
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Database Schema Mappings</h2>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                    <thead>
+                        <tr style="background: #f8f9fa;">
+                            <th style="border: 1px solid #dee2e6; padding: 8px; text-align: left;">Form Field</th>
+                            <th style="border: 1px solid #dee2e6; padding: 8px; text-align: left;">Database Column</th>
+                            <th style="border: 1px solid #dee2e6; padding: 8px; text-align: left;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;">schoolName</td>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;">school_name</td>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;"><span class="status success">✅ Match</span></td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;">schoolEmail</td>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;">-</td>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;"><span class="status error">❌ Not in DB</span></td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;">schoolPhone</td>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;">-</td>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;"><span class="status error">❌ Not in DB</span></td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;">schoolAddress</td>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;">-</td>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;"><span class="status error">❌ Not in DB</span></td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;">currentLogo</td>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;">school_logo_url</td>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;"><span class="status success">✅ Match</span></td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;">bankName</td>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;">bank_name</td>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;"><span class="status success">✅ Match</span></td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;">accountNumber</td>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;">account_number</td>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;"><span class="status success">✅ Match</span></td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;">sortCode</td>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;">bank_code</td>
+                            <td style="border: 1px solid #dee2e6; padding: 8px;"><span class="status success">✅ Match</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🚀 Next Steps</h2>
+            <p><strong>To fully fix the settings page:</strong></p>
+            <ol>
+                <li>Add missing columns to Schools table (school_email, school_phone, school_address)</li>
+                <li>Or create a separate School_Details table for additional information</li>
+                <li>Update the form to only show fields that exist in the database</li>
+                <li>Test with real authenticated user data</li>
+            </ol>
+            
+            <p><strong>Current Status:</strong> <span class="status info">🔧 Partially Working</span></p>
+            <p>The settings page should now load existing school data (school name, logo, bank details) but some form fields won't save because they don't exist in the database.</p>
+        </div>
+    </div>
+
+    <script type="module" src="../../scripts/config.js"></script>
+    <script src="../../scripts/schoolAdminScripts/sidebar_simple_test.js"></script>
+    
+    <script>
+        function updateDebug(message) {
+            const debugDiv = document.getElementById('debugInfo');
+            debugDiv.innerHTML += '<br>' + new Date().toLocaleTimeString() + ': ' + message;
+        }
+
+        async function testAuth() {
+            updateDebug('Testing authentication...');
+            try {
+                const { data: { user }, error } = await window.supabase.auth.getUser();
+                if (error) {
+                    updateDebug('❌ Auth Error: ' + error.message);
+                } else if (user) {
+                    updateDebug('✅ Auth Success: ' + user.email);
+                    updateDebug('User ID: ' + user.id);
+                } else {
+                    updateDebug('⚠️ No authenticated user');
+                }
+            } catch (err) {
+                updateDebug('❌ Auth Exception: ' + err.message);
+            }
+        }
+
+        async function testAdminData() {
+            updateDebug('Testing admin data...');
+            try {
+                const { data: { user } } = await window.supabase.auth.getUser();
+                if (!user) {
+                    updateDebug('❌ No user - cannot test admin data');
+                    return;
+                }
+
+                const { data: adminData, error } = await window.supabase
+                    .from('School_Admin')
+                    .select('admin_id, school_id, email, full_name')
+                    .eq('email', user.email)
+                    .single();
+
+                if (error) {
+                    updateDebug('❌ Admin Error: ' + error.message);
+                } else {
+                    updateDebug('✅ Admin Success: ' + adminData.full_name);
+                    updateDebug('Admin ID: ' + adminData.admin_id);
+                    updateDebug('School ID: ' + adminData.school_id);
+                }
+            } catch (err) {
+                updateDebug('❌ Admin Exception: ' + err.message);
+            }
+        }
+
+        async function testSchoolData() {
+            updateDebug('Testing school data...');
+            try {
+                const { data: { user } } = await window.supabase.auth.getUser();
+                if (!user) {
+                    updateDebug('❌ No user - cannot test school data');
+                    return;
+                }
+
+                const { data: adminData } = await window.supabase
+                    .from('School_Admin')
+                    .select('school_id')
+                    .eq('email', user.email)
+                    .single();
+
+                if (!adminData?.school_id) {
+                    updateDebug('❌ No school_id found for admin');
+                    return;
+                }
+
+                const { data: schoolData, error } = await window.supabase
+                    .from('Schools')
+                    .select('*')
+                    .eq('school_id', adminData.school_id)
+                    .single();
+
+                if (error) {
+                    updateDebug('❌ School Error: ' + error.message);
+                } else {
+                    updateDebug('✅ School Success: ' + schoolData.school_name);
+                    updateDebug('School ID: ' + schoolData.school_id);
+                    updateDebug('Logo URL: ' + (schoolData.school_logo_url || 'None'));
+                    updateDebug('Bank Name: ' + (schoolData.bank_name || 'None'));
+                }
+            } catch (err) {
+                updateDebug('❌ School Exception: ' + err.message);
+            }
+        }
+
+        async function testFullLoad() {
+            updateDebug('Testing full settings load sequence...');
+            try {
+                // Simulate the full load sequence from settings.js
+                const { data: { user } } = await window.supabase.auth.getUser();
+                if (!user) {
+                    updateDebug('❌ No authenticated user');
+                    return;
+                }
+
+                updateDebug('✅ Step 1: User authenticated - ' + user.email);
+
+                const { data: adminData, error: adminError } = await window.supabase
+                    .from('School_Admin')
+                    .select('admin_id, school_id')
+                    .eq('email', user.email)
+                    .single();
+
+                if (adminError) {
+                    updateDebug('❌ Step 2 Failed: ' + adminError.message);
+                    return;
+                }
+
+                updateDebug('✅ Step 2: Admin data found - ID: ' + adminData.admin_id);
+
+                if (!adminData.school_id) {
+                    updateDebug('❌ Step 3 Failed: No school_id assigned');
+                    return;
+                }
+
+                updateDebug('✅ Step 3: School ID found - ' + adminData.school_id);
+
+                const { data: schoolData, error: schoolError } = await window.supabase
+                    .from('Schools')
+                    .select('*')
+                    .eq('school_id', adminData.school_id)
+                    .single();
+
+                if (schoolError) {
+                    if (schoolError.code === 'PGRST116') {
+                        updateDebug('⚠️ Step 4: School not found - would create default');
+                    } else {
+                        updateDebug('❌ Step 4 Failed: ' + schoolError.message);
+                    }
+                    return;
+                }
+
+                updateDebug('✅ Step 4: School data loaded successfully');
+                updateDebug('📊 School Name: ' + schoolData.school_name);
+                updateDebug('📊 Bank: ' + (schoolData.bank_name || 'Not set'));
+                updateDebug('📊 Logo: ' + (schoolData.school_logo_url ? 'Set' : 'Not set'));
+
+            } catch (err) {
+                updateDebug('❌ Full Load Exception: ' + err.message);
+            }
+        }
+
+        // Auto-test on load
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                updateDebug('Page loaded - ready for testing');
+                testAuth();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

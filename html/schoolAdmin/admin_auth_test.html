@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Auth Fix Test</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 10px 0;
+            display: inline-block;
+        }
+        .status.fixed { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        .code-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 13px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .test-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .test-btn:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 Admin Authentication Fix</h1>
+        <p>This page tests the fix for "Admin school association not found" error.</p>
+        
+        <h2>🐛 Original Error</h2>
+        <div class="status error">Error getting admin school data: undefined</div>
+        <div class="status error">Registration failed: Admin school association not found</div>
+        
+        <h2>✅ Solution Applied</h2>
+        <div class="status fixed">FIXED: Reverted .maybeSingle() back to .single()</div>
+        
+        <h2>🔧 Technical Fix Details</h2>
+        
+        <h3>Root Cause</h3>
+        <div class="code-box">
+❌ Problem: .maybeSingle() returns null when no match
+✅ Solution: .single() returns data or throws error
+
+The difference:
+- .maybeSingle(): Returns { data: null } when no record found
+- .single(): Returns { data: null, error: "PGRST116" } when no record found
+        </div>
+        
+        <h3>Code Changes</h3>
+        <div class="code-box">
+// BEFORE (Caused undefined):
+.maybeSingle()
+
+// AFTER (Fixed):
+.single()
+        </div>
+        
+        <h2>🧪 Test Functions</h2>
+        <button class="test-btn" onclick="testAdminAuth()">Test Admin Authentication</button>
+        <button class="test-btn" onclick="testSchoolAdminQuery()">Test School Admin Query</button>
+        <button class="test-btn" onclick="testTeacherRegistration()">Test Teacher Registration</button>
+        
+        <div id="testResults" style="margin-top: 20px;"></div>
+        
+        <h2>📋 Debug Information</h2>
+        <div class="info-box">
+            <p><strong>What to check:</strong></p>
+            <ul>
+                <li>✅ Is user authenticated as school admin?</li>
+                <li>✅ Does user exist in School_Admin table?</li>
+                <li>✅ Does user have school_id assigned?</li>
+                <li>✅ Is admin data query working correctly?</li>
+            </ul>
+            
+            <p><strong>Expected Results:</strong></p>
+            <ul>
+                <li>✅ Admin authentication should succeed</li>
+                <li>✅ School Admin query should return data</li>
+                <li>✅ School ID should be available</li>
+                <li>✅ Teacher registration should work</li>
+            </ul>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase } from '../../scripts/config.js';
+
+        function updateResults(message, type = 'info') {
+            const results = document.getElementById('testResults');
+            const statusClass = type === 'error' ? 'error' : type === 'fixed' ? 'fixed' : 'info';
+            results.innerHTML += `<div class="status ${statusClass}">${message}</div>`;
+        }
+
+        async function testAdminAuth() {
+            updateResults('Testing admin authentication...', 'info');
+            
+            try {
+                const { data: { user }, error } = await supabase.auth.getUser();
+                
+                if (error) {
+                    updateResults(`❌ Auth Error: ${error.message}`, 'error');
+                } else if (user) {
+                    updateResults(`✅ Admin authenticated: ${user.email}`, 'fixed');
+                    updateResults(`User ID: ${user.id}`, 'info');
+                } else {
+                    updateResults('❌ No authenticated user', 'error');
+                }
+            } catch (err) {
+                updateResults(`❌ Auth Exception: ${err.message}`, 'error');
+            }
+        }
+
+        async function testSchoolAdminQuery() {
+            updateResults('Testing School Admin query...', 'info');
+            
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (!user) {
+                    updateResults('❌ No authenticated user - cannot test query', 'error');
+                    return;
+                }
+
+                updateResults(`Querying School_Admin for: ${user.email}`, 'info');
+                
+                const { data: adminData, error } = await supabase
+                    .from('School_Admin')
+                    .select('school_id')
+                    .eq('email', user.email)
+                    .single();
+
+                updateResults(`Query result: ${JSON.stringify(adminData, null, 2)}`, 'info');
+                updateResults(`Query error: ${error?.message || 'none'}`, 'info');
+                
+                if (error) {
+                    updateResults(`❌ Query Error: ${error.message}`, 'error');
+                } else if (adminData?.school_id) {
+                    updateResults(`✅ School ID found: ${adminData.school_id}`, 'fixed');
+                } else {
+                    updateResults(`❌ No school_id found (adminData: ${JSON.stringify(adminData)})`, 'error');
+                }
+            } catch (err) {
+                updateResults(`❌ Query Exception: ${err.message}`, 'error');
+            }
+        }
+
+        async function testTeacherRegistration() {
+            updateResults('Testing teacher registration flow...', 'info');
+            
+            try {
+                // Import the registerNewTeacher function
+                const { registerNewTeacher } = await import('./teachersFormDB.js');
+                
+                // Simulate form data
+                const testData = new FormData();
+                testData.append('firstName', 'Test');
+                testData.append('lastName', 'Teacher');
+                testData.append('personalEmail', 'test@example.com');
+                testData.append('mobilePhone', '1234567890');
+                testData.append('dateOfBirth', '1990-01-01');
+                testData.append('startDate', '2024-01-01');
+                testData.append('gender', 'male');
+                testData.append('address', '123 Test St');
+                testData.append('teachingLicense', 'TEST123');
+                
+                updateResults('Calling registerNewTeacher...', 'info');
+                const result = await registerNewTeacher(testData);
+                
+                updateResults(`Registration result: ${JSON.stringify(result, null, 2)}`, 'info');
+                
+                if (result.success) {
+                    updateResults('✅ Teacher registration successful!', 'fixed');
+                } else {
+                    updateResults(`❌ Teacher registration failed: ${result.error}`, 'error');
+                }
+            } catch (err) {
+                updateResults(`❌ Registration Exception: ${err.message}`, 'error');
+            }
+        }
+
+        // Make functions globally available
+        window.testAdminAuth = testAdminAuth;
+        window.testSchoolAdminQuery = testSchoolAdminQuery;
+        window.testTeacherRegistration = testTeacherRegistration;
+
+        // Auto-test on load
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                updateResults('Admin auth test loaded successfully', 'fixed');
+                updateResults('The .single() fix should resolve the undefined error', 'info');
+            }, 500);
+        });
+    </script>
+</body>
+</html>

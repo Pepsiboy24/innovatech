@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidebar Comprehensive Test</title>
+    <link rel="stylesheet" href="../../styles/schoolAdminStyles/schoolAdminDashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .test-container {
+            margin-left: 260px;
+            padding: 20px;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .test-link {
+            display: block;
+            padding: 12px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #495057;
+            transition: all 0.2s;
+        }
+        .test-link:hover {
+            background: #e9ecef;
+            border-color: #6200ea;
+            color: #6200ea;
+        }
+        .status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status.fixed {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.test {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" data-sideBar></div>
+    
+    <div class="test-container">
+        <div class="test-section">
+            <h1>🔧 Sidebar Comprehensive Test</h1>
+            <p>This page tests the sidebar functionality across all school admin pages.</p>
+            
+            <h2>✅ Fixes Applied</h2>
+            <ul>
+                <li><span class="status fixed">FIXED</span> Replaced complex sidebar script with working simple version</li>
+                <li><span class="status fixed">FIXED</span> Updated all school admin pages to use consistent script</li>
+                <li><span class="status fixed">FIXED</span> Added mobile menu buttons to missing pages</li>
+                <li><span class="status fixed">FIXED</span> Standardized mobile menu toggle functionality</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>🧪 Test All School Admin Pages</h2>
+            <p>Click each link to test the sidebar on different pages:</p>
+            
+            <div class="test-links">
+                <a href="schoolAdminDashboard.html" class="test-link">
+                    <i class="fa fa-dashboard"></i> Dashboard
+                    <small>Main admin dashboard</small>
+                </a>
+                <a href="classes.html" class="test-link">
+                    <i class="fa fa-chalkboard-user"></i> Classes
+                    <small>Class management</small>
+                </a>
+                <a href="students.html" class="test-link">
+                    <i class="fa fa-user-graduate"></i> Students
+                    <small>Student management</small>
+                </a>
+                <a href="teachers.html" class="test-link">
+                    <i class="fa fa-chalkboard-teacher"></i> Teachers
+                    <small>Teacher management</small>
+                </a>
+                <a href="subjects.html" class="test-link">
+                    <i class="fa fa-book"></i> Subjects
+                    <small>Subject management</small>
+                </a>
+                <a href="settings.html" class="test-link">
+                    <i class="fa fa-cog"></i> Settings
+                    <small>School settings</small>
+                </a>
+                <a href="payments_config.html" class="test-link">
+                    <i class="fa fa-credit-card"></i> Payments
+                    <small>Payment configuration</small>
+                </a>
+                <a href="academic_manager.html" class="test-link">
+                    <i class="fa fa-book-open"></i> Academic
+                    <small>Academic management</small>
+                </a>
+                <a href="schedule.html" class="test-link">
+                    <i class="fa fa-calendar"></i> Schedule
+                    <small>Schedule management</small>
+                </a>
+                <a href="timeTable.html" class="test-link">
+                    <i class="fa fa-clock"></i> Timetable
+                    <small>Timetable management</small>
+                </a>
+                <a href="results_page.html" class="test-link">
+                    <i class="fa fa-chart-bar"></i> Results
+                    <small>Results management</small>
+                </a>
+                <a href="promotions.html" class="test-link">
+                    <i class="fa fa-arrow-up"></i> Promotions
+                    <small>Student promotions</small>
+                </a>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔍 What to Check on Each Page</h2>
+            <ul>
+                <li>✅ Sidebar appears on the left side</li>
+                <li>✅ Navigation links are clickable and highlighted correctly</li>
+                <li>✅ Mobile menu button (hamburger icon) works on smaller screens</li>
+                <li>✅ Sidebar can be opened/closed on mobile</li>
+                <li>✅ Logout button appears at the bottom</li>
+                <li>✅ No JavaScript errors in browser console</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>🛠️ Technical Details</h2>
+            <p><strong>Script Used:</strong> <code>sidebar_simple_test.js</code></p>
+            <p><strong>Mobile Toggle:</strong> <code>data-sideBarOpen</code> and <code>data-sideBarClose</code></p>
+            <p><strong>Sidebar Element:</strong> <code>&lt;div class="sidebar" data-sideBar&gt;&lt;/div&gt;</p>
+            <p><strong>CSS Classes:</strong> <code>.show</code>, <code>.open</code>, <code>.active</code> for mobile states</p>
+        </div>
+    </div>
+
+    <script src="../../scripts/schoolAdminScripts/sidebar_simple_test.js"></script>
+</body>
+</html>

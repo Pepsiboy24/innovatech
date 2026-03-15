@@ -36,7 +36,7 @@ import { hasFeatureAccess, getCurrentUserTier, TIERS } from './tierAccess.js';
         // Check tier-based route restrictions
         if (!(await checkRouteAccess(currentPath, userTier))) {
             console.warn(`Access denied to ${currentPath} for tier ${userTier}`);
-            showAccessDeniedModal('Your subscription tier does not allow access to this feature.', '../../index.html');
+            showAccessDeniedModal('Your subscription tier does not allow access to this feature.', '../../landing_page/html/login.html');
             return;
         }
 
@@ -68,7 +68,7 @@ import { hasFeatureAccess, getCurrentUserTier, TIERS } from './tierAccess.js';
             // User is a teacher. They are authenticated, but shouldn't be here.
             // Redirect to index (or teacher portal if we knew the URL, but index is safe)
             // DO NOT Sign Out.
-            showAccessDeniedModal('You are logged in as a Teacher. Redirecting to Home...', '../../index.html');
+            showAccessDeniedModal('You are logged in as a Teacher. Redirecting to Home...', '../../landing_page/html/login.html');
             return;
         }
 
@@ -99,7 +99,7 @@ import { hasFeatureAccess, getCurrentUserTier, TIERS } from './tierAccess.js';
                 if (studentData) {
                     // Parent has a student in the same school, allow access to parent portal
                     if (!window.location.pathname.includes('parentsPortal')) {
-                        showAccessDeniedModal('You are logged in as a Parent. Redirecting to your portal...', '../../index.html');
+                        showAccessDeniedModal('You are logged in as a Parent. Redirecting to your portal...', '../../landing_page/html/login.html');
                         return;
                     }
                     return; // Allow access to Parent Portal
@@ -108,7 +108,7 @@ import { hasFeatureAccess, getCurrentUserTier, TIERS } from './tierAccess.js';
             
             // Parent exists but no students in the same school
             console.warn('Parent has no students in the same school');
-            showAccessDeniedModal('Access denied. No students found in your school.', '../../index.html');
+            showAccessDeniedModal('Access denied. No students found in your school.', '../../landing_page/html/login.html');
             return;
         }
 
@@ -130,7 +130,7 @@ import { hasFeatureAccess, getCurrentUserTier, TIERS } from './tierAccess.js';
 
 function redirectToLogin() {
     console.log('Redirecting to login...');
-    window.location.href = '../../index.html';
+    window.location.href = '../../landing_page/html/login.html';
 }
 
 function showAccessDeniedModal(message, redirectUrl) {
