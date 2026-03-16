@@ -342,17 +342,20 @@ document
         }
       );
 
-      if (registrationResult) {
+      if (registrationResult && registrationResult.success) {
         document.getElementById("step3").classList.remove("active");
         document.getElementById("successStep").classList.add("active");
         document.querySelector(".buttons").style.display = "none";
-
+        
         if (typeof window.refreshStudentList === 'function') {
           console.log("🔄 Refreshing student table...");
           window.refreshStudentList();
         }
       } else {
         console.error("Registration failed. Please try again.");
+        // Show error message - we could add an error step here if needed
+        // For now, just show a generic error
+        alert("Registration failed: " + (registrationResult.error || "Unknown error"));
       }
     }
   });

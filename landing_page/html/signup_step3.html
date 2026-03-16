@@ -587,6 +587,17 @@
                         throw signInError;
                     }
 
+                    // Wait a moment for the session to be fully established
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    // Verify user is properly authenticated
+                    const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
+                    if (userError || !currentUser) {
+                        throw new Error('User authentication failed after sign in');
+                    }
+
+                    console.log('✅ User authenticated:', currentUser.email);
+
                     // Insert into Schools table
                     const { data: school, error: schoolError } = await supabase
     .from('Schools')
@@ -632,15 +643,24 @@
                         throw new Error(`Admin assignment failed: ${adminError.message}`);
                     }
 
-                    // Update Auth Metadata
-                    await supabase.auth.updateUser({
+                    console.log('✅ School_Admin record created successfully');
+
+                    // CRITICAL: Immediately lock user into their school_id metadata
+                    // This ensures RLS policies work correctly for all future operations
+                    const { error: metadataError } = await supabase.auth.updateUser({
                         data: { 
                             school_id: school.school_id,
                             tier: school.tier,
-                            user_type: 'school_admin',
-                            setup_completed: false
+                            user_type: 'school_admin'
                         }
                     });
+
+                    if (metadataError) {
+                        console.error('❌ Failed to update user metadata:', metadataError);
+                        throw new Error(`Metadata update failed: ${metadataError.message}`);
+                    }
+
+                    console.log('✅ User metadata locked to school:', school.school_id);
 
                     this.showSuccess('School setup completed! Redirecting to confirmation...');
 
@@ -695,8 +715,8 @@
             new SchoolSignupStep3();
         });
 
-        // Tier selection function
-        function selectTier(tier) {
+        // Make selectTier function globally available
+        window.selectTier = function(tier) {
             // This function is available globally for onclick handlers
             document.querySelectorAll('.tier-option').forEach(option => {
                 option.classList.remove('selected');
@@ -705,7 +725,7 @@
             document.querySelector(`[data-tier="${tier}"]`).classList.add('selected');
             document.getElementById('tierSelect').value = tier;
             sessionStorage.setItem('selectedTier', tier);
-        }
+        };
     </script>
 </body>
 </html>

@@ -26,6 +26,21 @@ export async function registerNewStudent(
   parentInfo = null // Additional object containing parent details
 ) {
   try {
+    // Get current authenticated user (school admin) to get school_id
+    const { data: { user: adminUser }, error: adminError } = await supabaseClient.auth.getUser();
+    
+    if (adminError || !adminUser) {
+      console.error("Error getting authenticated admin:", adminError?.message);
+      return { success: false, error: "Admin authentication required" };
+    }
+
+    // Get school_id from admin's metadata
+    const schoolId = adminUser.user_metadata?.school_id;
+    if (!schoolId) {
+      console.error("Admin missing school_id in metadata");
+      return { success: false, error: "Admin school association not found" };
+    }
+
     const {
       data: { user: studentUser },
       error,
@@ -36,13 +51,13 @@ export async function registerNewStudent(
 
     if (error) {
       console.error("Error signing up user:", error.message);
-      return false;
+      return { success: false, error: error.message };
     }
 
-    // Now, insert the student's profile into the public.Students table.
-    // We explicitly use the user's unique ID (uid) for the student_id
-    // to satisfy the RLS policy.
-    const { error: insertError } = await authClient
+    // Now, insert student's profile into public.Students table.
+    // We explicitly use user's unique ID (uid) for student_id
+    // to satisfy RLS policy.
+    const { error: insertError } = await supabaseClient
       .from("Students")
       .insert([
         {
@@ -53,30 +68,23 @@ export async function registerNewStudent(
           admission_date: admissionDate,
           profile_picture: profilePicUrl,
           class_id: classId,
-          school_id: classData?.school_id || null, // Attach school_id for multi-tenant
+          school_id: schoolId, // CRITICAL: Use school_id from authenticated admin
         },
       ]);
 
     if (insertError) {
       console.error("Error inserting student profile:", insertError.message);
-      return false;
+      return { success: false, error: insertError.message };
     }
 
     // --- STEP D: Create Monnify Virtual Account ---
     try {
-      // Get school_id from the class
-      const { data: classData } = await authClient
-        .from("Classes")
-        .select("school_id")
-        .eq("class_id", classId)
-        .single();
-
-      if (classData?.school_id) {
-        const { data: virtualAccountData, error: virtualAccountError } = await authClient.functions.invoke('create-student-virtual-account', {
+      if (schoolId) {
+        const { data: virtualAccountData, error: virtualAccountError } = await supabaseClient.functions.invoke('create-student-virtual-account', {
           body: {
             studentId: studentUser.id,
             studentName: fullName,
-            schoolId: classData.school_id,
+            schoolId: schoolId,
             parentEmail: parentInfo?.parentEmail || null
           }
         });
@@ -108,13 +116,13 @@ export async function registerNewStudent(
         if (parentAuthError) {
           // If parent email already exists, it may fail here if not properly handled
           console.error("Error signing up parent auth:", parentAuthError.message);
-          return false;
+          return { success: false, error: parentAuthError.message };
         }
 
         const authUserId = parentUser ? parentUser.id : null;
 
         // Insert Parent Record
-        const { data: newParentData, error: parentInsertError } = await authClient
+        const { data: newParentData, error: parentInsertError } = await supabaseClient
           .from("Parents")
           .insert([
             {
@@ -131,14 +139,14 @@ export async function registerNewStudent(
 
         if (parentInsertError) {
           console.error("Error inserting parent profile:", parentInsertError.message);
-          return false;
+          return { success: false, error: parentInsertError.message };
         }
 
         finalParentId = newParentData.parent_id;
       }
 
       // Step C: Establishing the Link
-      const { error: linkError } = await authClient
+      const { error: linkError } = await supabaseClient
         .from("Parent_Student_Links")
         .insert([
           {
@@ -150,14 +158,14 @@ export async function registerNewStudent(
 
       if (linkError) {
         console.error("Error establishing parent-student link:", linkError.message);
-        return false;
+        return { success: false, error: linkError.message };
       }
     }
 
     console.log("User signed up and profile inserted successfully.");
-    return true;
+    return { success: true, error: null };
   } catch (err) {
     console.error("An unexpected error occurred:", err.message);
-    return false;
+    return { success: false, error: err.message };
   }
 }

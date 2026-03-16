@@ -114,7 +114,17 @@ function renderStudents(students, classMap = {}) {
     tbody.innerHTML = '';
 
     if (students.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:2rem;">No students found.</td></tr>`;
+        // Check if this is a new school by checking if there are any classes
+        checkAndShowSetupWizard();
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:2rem;">
+            <div style="max-width: 400px; margin: 0 auto;">
+                <h3 style="color: #6b7280; margin-bottom: 1rem;">No students found</h3>
+                <p style="color: #9ca3af; margin-bottom: 1rem;">Start by adding your first students to the system.</p>
+                <button onclick="showStudentRegistration()" style="background: #3b82f6; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer;">
+                    Add First Student
+                </button>
+            </div>
+        </td></tr>`;
         return;
     }
 
@@ -317,3 +327,58 @@ window.refreshStudentList = async () => {
 };
 
 export { fetchStudents };
+
+// Helper functions for empty state handling
+async function checkAndShowSetupWizard() {
+    try {
+        // Get current user's school_id from metadata
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        const userSchoolId = user?.user_metadata?.school_id;
+        
+        if (!userSchoolId) return;
+
+        // Check if there are any classes or teachers
+        const { count: classCount } = await supabaseClient
+            .from('Classes')
+            .select('*', { count: 'exact', head: true })
+            .eq('school_id', userSchoolId);
+
+        const { count: teacherCount } = await supabaseClient
+            .from('Teachers')
+            .select('*', { count: 'exact', head: true })
+            .eq('school_id', userSchoolId);
+
+        // If no classes and no teachers, this is likely a new school
+        if (classCount === 0 && teacherCount === 0) {
+            console.log('New school detected - showing setup wizard');
+            showSetupWizard();
+        }
+    } catch (err) {
+        console.error('Error checking setup status:', err);
+    }
+}
+
+function showSetupWizard() {
+    // Hide standard dashboard and show setup checklist
+    const setupChecklist = document.getElementById('setupChecklist');
+    const standardDashboard = document.getElementById('standardDashboard');
+    
+    if (setupChecklist && standardDashboard) {
+        setupChecklist.style.display = 'block';
+        standardDashboard.style.display = 'none';
+        console.log('Setup wizard activated for new school');
+    }
+}
+
+function showStudentRegistration() {
+    // Navigate to student registration or show registration modal
+    console.log('Opening student registration...');
+    // You can implement this based on your UI flow
+    // For example: window.location.href = 'student-registration.html';
+    alert('Student registration feature coming soon!');
+}
+
+// Make functions globally available
+window.checkAndShowSetupWizard = checkAndShowSetupWizard;
+window.showSetupWizard = showSetupWizard;
+window.showStudentRegistration = showStudentRegistration;

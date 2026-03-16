@@ -254,43 +254,6 @@ class SchoolOnboarding {
 
         try {
             submitBtn.disabled = true;
-
-        // 3. Update Auth Metadata for seamless portal access
-        await supabase.auth.updateUser({
-            data: { 
-                school_id: school.school_id,
-                tier: school.tier,
-                user_type: 'school_admin',
-                setup_completed: false
-            }
-        });
-
-        this.showSuccess('School setup complete! Redirecting to login...');
-        
-        setTimeout(() => {
-            // Clear sessionStorage and redirect to main login page
-            sessionStorage.clear();
-            window.location.href = '../../html/login.html';
-        }, 2000);
-
-    } catch (error) {
-        console.error('Onboarding error:', error);
-        this.showError(error.message);
-        submitBtn.disabled = false;
-        loadingSpinner.style.display = 'none';
-        btnText.textContent = 'Create School Account';
-            loadingSpinner.style.display = 'none';
-            btnText.textContent = 'Create School Account';
-        }
-    }
-
-    async createSchoolAccount() {
-        const submitBtn = document.getElementById('submitBtn');
-        const loadingSpinner = document.getElementById('loadingSpinner');
-        const btnText = document.getElementById('btnText');
-
-        try {
-            submitBtn.disabled = true;
             loadingSpinner.style.display = 'inline-block';
             btnText.textContent = 'Creating Account...';
 
@@ -339,7 +302,7 @@ class SchoolOnboarding {
                 logoUrl = await this.uploadLogo(this.logoFile);
             }
 
-            // 1. Insert into Schools table
+            // 1. Insert into Schools table (using correct schema)
             const { data: school, error: schoolError } = await supabase
                 .from('Schools')
                 .insert([{
@@ -350,12 +313,10 @@ class SchoolOnboarding {
                     bank_code: this.formData.bankCode,
                     sub_account_code: this.formData.subAccountCode,
                     commission_rate: this.formData.commissionRate,
-                    academic_session: this.formData.academicSession,
+                    current_session: this.formData.academicSession,
                     current_term: this.formData.currentTerm,
                     next_term_start_date: this.formData.nextTermStartDate,
                     tier: this.formData.tier,
-                    setup_completed: false,
-                    setup_progress: 0,
                     is_active: true,
                     created_at: new Date().toISOString()
                 }])
@@ -379,16 +340,16 @@ class SchoolOnboarding {
 
             if (adminError) throw new Error(`Admin assignment failed: ${adminError.message}`);
 
-            // 3. Update Auth Metadata for seamless portal access
+            // 3. Update Auth Metadata for RLS compliance
             await supabase.auth.updateUser({
                 data: { 
                     school_id: school.school_id,
                     tier: school.tier,
-                    user_type: 'school_admin',
-                    setup_completed: false
+                    user_type: 'school_admin'
                 }
             });
 
+            console.log('School created successfully with ID:', school.school_id);
             this.showSuccess('School setup complete! Redirecting to login...');
             
             setTimeout(() => {

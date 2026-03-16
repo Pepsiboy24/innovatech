@@ -31,6 +31,43 @@ export async function registerNewTeacher(formData) {
     // Generate a unique teacher_id (UUID)
     const teacherId = crypto.randomUUID();
 
+    // Validate and format dates
+    let dateHired = null;
+    let dateOfBirth = null;
+    
+    // Handle start date
+    if (formData.startDate && formData.startDate.trim() !== '') {
+      const startDate = new Date(formData.startDate);
+      if (!isNaN(startDate.getTime())) {
+        dateHired = startDate.toISOString().split('T')[0];
+      }
+    }
+    
+    // Handle date of birth
+    if (formData.dateOfBirth && formData.dateOfBirth.trim() !== '') {
+      const dobDate = new Date(formData.dateOfBirth);
+      if (!isNaN(dobDate.getTime())) {
+        dateOfBirth = dobDate.toISOString().split('T')[0];
+      }
+    }
+    
+    // Check if dates are valid and required
+    if (!dateHired && formData.startDate && formData.startDate.trim() !== '') {
+      return { success: false, error: "Invalid start date format. Please use YYYY-MM-DD format." };
+    }
+    
+    if (!dateOfBirth && formData.dateOfBirth && formData.dateOfBirth.trim() !== '') {
+      return { success: false, error: "Invalid date of birth format. Please use YYYY-MM-DD format." };
+    }
+    
+    // Log the processed dates for debugging
+    console.log('Processed dates:', { 
+      originalStartDate: formData.startDate, 
+      processedDateHired: dateHired,
+      originalDateOfBirth: formData.dateOfBirth, 
+      processedDateOfBirth: dateOfBirth 
+    });
+
     // Insert into main Teachers table with school_id
     const teacherData = {
       teacher_id: teacherId,
@@ -38,8 +75,8 @@ export async function registerNewTeacher(formData) {
       last_name: formData.lastName,
       email: formData.personalEmail,
       phone_number: formData.mobilePhone,
-      date_hired: formData.startDate,
-      date_of_birth: formData.dateOfBirth,
+      date_hired: dateHired,
+      date_of_birth: dateOfBirth,
       address: formData.address,
       trcn_reg_number: formData.teachingLicense || null,
       gender: formData.gender,

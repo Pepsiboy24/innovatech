@@ -7,10 +7,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function fetchAdminStats() {
     try {
+        // Get current user's school_id for RLS compliance
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user || !user.user_metadata?.school_id) {
+            console.error('User authentication error:', userError);
+            return;
+        }
+
+        const schoolId = user.user_metadata.school_id;
+
         // Fetch Students count
         const { count: studentCount, error: studentError } = await supabase
             .from('Students')
-            .select('*', { count: 'exact', head: true });
+            .select('*', { count: 'exact', head: true })
+            .eq('school_id', schoolId); // RLS: Only count students from this school
 
         if (studentError) {
             console.error('Error fetching students count:', studentError);
@@ -21,7 +31,8 @@ async function fetchAdminStats() {
         // Fetch Teachers count
         const { count: teacherCount, error: teacherError } = await supabase
             .from('Teachers')
-            .select('*', { count: 'exact', head: true });
+            .select('*', { count: 'exact', head: true })
+            .eq('school_id', schoolId); // RLS: Only count teachers from this school
 
         if (teacherError) {
             console.error('Error fetching teachers count:', teacherError);
@@ -29,25 +40,32 @@ async function fetchAdminStats() {
             updateStat('total-teachers-count', teacherCount);
         }
 
+        // Check if this is a new school (no data yet)
+        if (studentCount === 0 && teacherCount === 0) {
+            console.log('New school detected - showing setup wizard');
+            showSetupWizard();
+        }
+
     } catch (err) {
         console.error('Unexpected error fetching stats:', err);
+    }
+}
+
+function showSetupWizard() {
+    // Hide standard dashboard and show setup checklist
+    const setupChecklist = document.getElementById('setupChecklist');
+    const standardDashboard = document.getElementById('standardDashboard');
+    
+    if (setupChecklist && standardDashboard) {
+        setupChecklist.style.display = 'block';
+        standardDashboard.style.display = 'none';
+        console.log('Setup wizard activated for new school');
     }
 }
 
 function updateStat(elementId, value) {
     const element = document.getElementById(elementId);
     if (element) {
-        // Simple update, animation is handled by existing script if it runs after this,
-        // but existing script might have already run.
-        // The existing script uses .stat-number class and animates from 0.
-        // We can just set the text content and let the existing animation script pick it up 
-        // IF the existing script runs after this one. 
-        // However, this script is async. 
-        // Let's just set the text content. If the animation script has already run, it might overwrite this?
-        // Actually the animation script animates to `finalValue` which it gets from `stat.textContent`.
-        // If we update `textContent` before the animation script runs, it will animate to our new value.
-        // If we update it after, we should probably manually trigger animation or just set it.
-        // Given we are loading data, just setting it is fine for now.
         element.textContent = value.toLocaleString();
     }
 }

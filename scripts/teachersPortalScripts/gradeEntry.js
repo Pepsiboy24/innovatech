@@ -195,6 +195,15 @@ async function saveGrades() {
         return;
     }
 
+    // Get current user's school_id for RLS compliance
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user || !user.user_metadata?.school_id) {
+        alert('Authentication error. Please log in again.');
+        return;
+    }
+
+    const schoolId = user.user_metadata.school_id;
+
     const inputs = document.querySelectorAll('.score-input');
     const gradesToSave = [];
 
@@ -213,7 +222,8 @@ async function saveGrades() {
                 score: parseFloat(score),
                 remarks: remarks,
                 term: term,
-                date_recorded: new Date().toISOString()
+                date_recorded: new Date().toISOString(),
+                school_id: schoolId // CRITICAL: Add school_id for RLS compliance
             });
         }
     });

@@ -111,10 +111,21 @@ async function handleCreateClass(e) {
     return;
   }
 
+  // Get current user's school_id for RLS compliance
+  const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+  if (userError || !user || !user.user_metadata?.school_id) {
+    console.error('User authentication error:', userError);
+    showToast('Authentication error. Please log in again.', 'error');
+    return;
+  }
+
+  const schoolId = user.user_metadata.school_id;
+
   const formData = {
     class_name: className,
     section: section,
-    teacher_id: teacherId
+    teacher_id: teacherId,
+    school_id: schoolId // CRITICAL: Add school_id for RLS
   };
 
   try {

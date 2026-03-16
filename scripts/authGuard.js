@@ -13,10 +13,21 @@ import { hasFeatureAccess, getCurrentUserTier, TIERS } from './tierAccess.js';
 
         // Verify user has school_id in metadata (multi-tenant requirement)
         if (!user.user_metadata?.school_id) {
-            console.warn('User missing school_id in metadata, redirecting to login');
-            await supabase.auth.signOut();
-            redirectToLogin();
+            console.warn('User missing school_id in metadata, redirecting to onboarding');
+            // User is logged in but hasn't completed school setup
+            redirectToOnboarding();
             return;
+        }
+
+        // Verify user has user_type in metadata
+        if (!user.user_metadata?.user_type) {
+            console.warn('User missing user_type in metadata, updating...');
+            await supabase.auth.updateUser({
+                data: { 
+                    school_id: user.user_metadata.school_id,
+                    user_type: 'school_admin' // Default to admin for safety
+                }
+            });
         }
 
         const userSchoolId = user.user_metadata.school_id;
@@ -131,6 +142,11 @@ import { hasFeatureAccess, getCurrentUserTier, TIERS } from './tierAccess.js';
 function redirectToLogin() {
     console.log('Redirecting to login...');
     window.location.href = '../../landing_page/html/login.html';
+}
+
+function redirectToOnboarding() {
+    console.log('Redirecting to onboarding...');
+    window.location.href = '../../landing_page/html/onboarding.html';
 }
 
 function showAccessDeniedModal(message, redirectUrl) {

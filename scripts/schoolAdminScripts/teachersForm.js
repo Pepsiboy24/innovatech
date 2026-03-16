@@ -219,6 +219,20 @@ document.getElementById("teacherForm").addEventListener("submit", async function
   try {
     const formData = new FormData(this);
     const data = Object.fromEntries(formData.entries());
+    
+    // Ensure date fields are properly captured and validated
+    const dateOfBirth = document.getElementById('dateOfBirth')?.value;
+    const startDate = document.getElementById('startDate')?.value;
+    
+    // Add dates to data object if they exist and are not empty
+    if (dateOfBirth) {
+      data.dateOfBirth = dateOfBirth;
+    }
+    if (startDate) {
+      data.startDate = startDate;
+    }
+    
+    console.log('Form data being submitted:', data);
 
     // Import and Execute
     const { registerNewTeacher } = await import('./teachersFormDB.js');
