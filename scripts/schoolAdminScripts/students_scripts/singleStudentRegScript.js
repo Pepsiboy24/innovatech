@@ -41,12 +41,40 @@ export async function registerNewStudent(
       return { success: false, error: "Admin school association not found" };
     }
 
+    // Fetch school name for email generation
+    let schoolName = 'school';
+    try {
+      const { data: schoolData } = await supabaseClient
+        .from('Schools')
+        .select('school_name')
+        .eq('school_id', schoolId)
+        .single();
+      
+      if (schoolData?.school_name) {
+        schoolName = schoolData.school_name.toLowerCase().replace(/\s+/g, '');
+      }
+    } catch (error) {
+      console.warn('Could not fetch school name, using default:', error.message);
+    }
+
+    // Generate student email if not provided
+    const studentEmail = email || `${fullName.toLowerCase().replace(/\s+/g, '.')}@${schoolName}.com`;
+    const studentPassword = '123456'; // Hardcoded default password
+
+    console.log('📧 Creating student account:', { email: studentEmail, fullName, schoolId });
+
     const {
       data: { user: studentUser },
       error,
     } = await authClient.auth.signUp({
-      email,
-      password,
+      email: studentEmail,
+      password: studentPassword,
+      options: {
+        data: {
+          user_type: 'student',
+          school_id: schoolId
+        }
+      }
     });
 
     if (error) {

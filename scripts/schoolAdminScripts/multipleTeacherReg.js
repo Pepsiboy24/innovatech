@@ -55,6 +55,23 @@ function sanitizeValue(value) {
 // Function to handle Excel file upload and process teachers
 export async function uploadAndProcessExcel(file) {
   try {
+    // Get current authenticated user (school admin) to get school_id
+    const { data: { user: adminUser }, error: adminError } = await supabaseClient.auth.getUser();
+    
+    if (adminError || !adminUser) {
+      console.error("Admin authentication required:", adminError?.message);
+      throw new Error("Admin authentication required");
+    }
+
+    // Get school_id from admin's metadata
+    const schoolId = adminUser.user_metadata?.school_id;
+    if (!schoolId) {
+      console.error("Admin missing school_id in metadata");
+      throw new Error("Admin school association not found");
+    }
+
+    console.log("✅ Processing teachers for school_id:", schoolId);
+
     const data = await file.arrayBuffer();
     const workbook = XLSX.read(data);
     const sheetName = workbook.SheetNames[0];
@@ -131,15 +148,24 @@ export async function uploadAndProcessExcel(file) {
         continue;
       }
 
-      // Generate a password (you might want to customize this)
+      // Generate a password (hardcoded default for development)
       const password = "123456";
 
       try {
-        // Sign up the user
+        // Sign up the user with proper metadata
         const { data: authData, error: authError } = await supabaseClient.auth.signUp({
           email: teacherData.email,
-          password: password,
+          password: password, // Hardcoded default password
+          options: {
+            data: {
+              user_type: 'teacher',
+              school_id: schoolId
+            }
+          }
         });
+
+        // Add small delay to prevent "Too Many Requests" from Supabase
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         if (authError) {
           console.error("Error signing up teacher:", authError.message);
@@ -147,8 +173,19 @@ export async function uploadAndProcessExcel(file) {
           continue;
         }
 
-        // Insert into main Teachers table
+        if (!authData.user || !authData.user.id) {
+          console.error("Failed to create teacher auth user - no user ID returned");
+          results.push({ success: false, error: "Failed to create teacher auth user", data: teacherData });
+          continue;
+        }
+
+        // Use the auth user ID as teacher_id
+        const teacherId = authData.user.id;
+        console.log('✅ Teacher auth user created:', { email: teacherData.email, teacherId });
+
+        // Insert into main Teachers table with auth user ID and school_id
         const mainTeacherData = {
+          teacher_id: teacherId, // Use auth user ID
           first_name: teacherData.first_name,
           last_name: teacherData.last_name,
           email: teacherData.email,
@@ -158,6 +195,7 @@ export async function uploadAndProcessExcel(file) {
           address: teacherData.address,
           trcn_reg_number: teacherData.teaching_license || null,
           gender: teacherData.gender,
+          school_id: schoolId, // CRITICAL: Add school_id for RLS compliance
         };
 
         const { data: teacherInsert, error: teacherError } = await supabaseClient
@@ -171,7 +209,7 @@ export async function uploadAndProcessExcel(file) {
           continue;
         }
 
-        const teacherId = teacherInsert[0].id;
+        console.log("✅ Teacher record created successfully:", { email: teacherData.email, teacherId });
 
         // Insert into qualifications table
         if (teacherData.highest_degree || teacherData.institution) {

@@ -44,7 +44,7 @@ export async function uploadAndProcessExcel(file) {
         continue;
       }
 
-      const password = generatePassword();
+      const password = "123456"; // Hardcoded default password
       let class_id = null;
 
       try {
@@ -59,8 +59,11 @@ export async function uploadAndProcessExcel(file) {
           error: authError,
         } = await supabaseClient.auth.signUp({
           email: studentData.email,
-          password: password,
+          password: password, // Hardcoded default password
         });
+
+        // Add small delay to prevent "Too Many Requests" from Supabase
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         if (authError) {
           // Check if email already exists and skip with logging

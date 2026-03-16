@@ -340,14 +340,24 @@ class SchoolOnboarding {
 
             if (adminError) throw new Error(`Admin assignment failed: ${adminError.message}`);
 
-            // 3. Update Auth Metadata for RLS compliance
-            await supabase.auth.updateUser({
+            console.log('✅ School_Admin record created successfully');
+
+            // 3. CRITICAL: Update Auth Metadata for RLS compliance and tier persistence
+            // This ensures the tier selection 'sticks' to the user's session for dashboard gating
+            const { error: metadataError } = await supabase.auth.updateUser({
                 data: { 
                     school_id: school.school_id,
-                    tier: school.tier,
+                    tier: parseInt(school.tier), // Ensure tier is an integer
                     user_type: 'school_admin'
                 }
             });
+
+            if (metadataError) {
+                console.error('❌ Failed to update user metadata:', metadataError);
+                throw new Error(`Metadata update failed: ${metadataError.message}`);
+            }
+
+            console.log('✅ User metadata updated - school_id:', school.school_id, 'tier:', school.tier);
 
             console.log('School created successfully with ID:', school.school_id);
             this.showSuccess('School setup complete! Redirecting to login...');

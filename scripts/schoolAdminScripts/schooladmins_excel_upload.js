@@ -245,9 +245,12 @@ async function uploadAdmins(validRows) {
             // 1. Auth signUp
             const { data: authData, error: authErr } = await tempClient.auth.signUp({
                 email: row.email,
-                password: DEFAULT_PASSWORD,
+                password: DEFAULT_PASSWORD, // Already set to '123456'
                 options: { data: { full_name: row.fullName, role: row.role } }
             });
+
+            // Add small delay to prevent "Too Many Requests" from Supabase
+            await new Promise(resolve => setTimeout(resolve, 100));
 
             if (authErr) throw new Error(`Auth: ${authErr.message}`);
             if (!authData.user) throw new Error('Auth signup returned no user');

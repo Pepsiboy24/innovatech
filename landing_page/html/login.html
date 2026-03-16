@@ -181,9 +181,20 @@
                         // Successful login
                         this.showSuccess('Login successful! Redirecting...');
                         
+                        // Force identity refresh to ensure school_id and user_type are loaded
+                        const { data: { user: refreshedUser }, error: refreshError } = await supabase.auth.getUser();
+                        
+                        if (refreshError) {
+                            console.error('Error refreshing user identity:', refreshError);
+                            // Continue with original user data if refresh fails
+                        }
+                        
+                        // Use refreshed user data if available, otherwise use original
+                        const userToRedirect = refreshedUser || data.user;
+                        
                         // Redirect user to appropriate portal
                         setTimeout(() => {
-                            this.redirectUser(data.user);
+                            this.redirectUser(userToRedirect);
                         }, 1000);
                     }
 
@@ -218,27 +229,34 @@
                 console.log('Redirecting user:', { userType, schoolId });
 
                 // Redirect logic based on user state
-                if (userType === 'pending' || !schoolId) {
-                    // User needs to complete onboarding
+                // STRICT: Always redirect to onboarding if school_id is missing, regardless of user_type
+                if (!schoolId) {
+                    console.warn('Missing school_id, redirecting to onboarding');
+                    window.location.href = 'onboarding.html';
+                    return;
+                }
+
+                if (userType === 'pending') {
+                    // User with pending status
                     window.location.href = 'onboarding.html';
                     return;
                 }
 
                 if (userType === 'school_admin' && schoolId) {
                     // School admin with completed onboarding
-                    window.location.href = '../../html/schoolAdmin/schoolAdminDashboard.html';
+                    window.location.href = '../html/schoolAdmin/schoolAdminDashboard.html';
                     return;
                 }
 
                 if (userType === 'teacher' && schoolId) {
                     // Teacher user
-                    window.location.href = '../../html/teachersPortal/teachersPortalDashboard.html';
+                    window.location.href = '../html/teachersPortal/teachersPortal.html';
                     return;
                 }
 
                 if (userType === 'student' && schoolId) {
                     // Student user
-                    window.location.href = '../../html/studentsPortal/studentsPortalDashboard.html';
+                    window.location.href = '../html/studentsPortal/studentPortal.html';
                     return;
                 }
 
@@ -295,16 +313,30 @@
                 const errorElement = document.getElementById(fieldId + 'Error');
                 const fieldElement = document.getElementById(fieldId);
                 
-                errorElement.textContent = message;
-                fieldElement.classList.add('error');
+                if (errorElement) {
+                    errorElement.textContent = message;
+                    errorElement.style.display = 'block';
+                }
+                
+                if (fieldElement) {
+                    fieldElement.classList.add('error');
+                    fieldElement.setAttribute('aria-invalid', 'true');
+                }
             }
 
             clearFieldError(fieldId) {
                 const errorElement = document.getElementById(fieldId + 'Error');
                 const fieldElement = document.getElementById(fieldId);
                 
-                errorElement.textContent = '';
-                fieldElement.classList.remove('error');
+                if (errorElement) {
+                    errorElement.textContent = '';
+                    errorElement.style.display = 'none';
+                }
+                
+                if (fieldElement) {
+                    fieldElement.classList.remove('error');
+                    fieldElement.removeAttribute('aria-invalid');
+                }
             }
 
             showError(message) {

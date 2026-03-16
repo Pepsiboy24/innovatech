@@ -28,8 +28,30 @@ export async function registerNewTeacher(formData) {
 
     console.log("✅ Admin school_id found:", adminData?.school_id);
 
-    // Generate a unique teacher_id (UUID)
-    const teacherId = crypto.randomUUID();
+    // Step 1: Create auth user for the teacher
+    const { data: { user }, error: authError } = await supabaseClient.auth.signUp({
+      email: formData.personalEmail,
+      password: '123456', // Hardcoded default password
+      options: {
+        data: {
+          user_type: 'teacher',
+          school_id: adminData.school_id
+        }
+      }
+    });
+
+    if (authError) {
+      console.error("Error creating teacher auth user:", authError.message);
+      return { success: false, error: `Failed to create teacher account: ${authError.message}` };
+    }
+
+    if (!user || !user.id) {
+      return { success: false, error: "Failed to create teacher auth user - no user ID returned" };
+    }
+
+    // Use the auth user ID as teacher_id
+    const teacherId = user.id;
+    console.log("✅ Teacher auth user created with ID:", teacherId);
 
     // Validate and format dates
     let dateHired = null;
@@ -70,7 +92,7 @@ export async function registerNewTeacher(formData) {
 
     // Insert into main Teachers table with school_id
     const teacherData = {
-      teacher_id: teacherId,
+      teacher_id: teacherId, // Use auth user ID
       first_name: formData.firstName,
       last_name: formData.lastName,
       email: formData.personalEmail,
@@ -80,10 +102,10 @@ export async function registerNewTeacher(formData) {
       address: formData.address,
       trcn_reg_number: formData.teachingLicense || null,
       gender: formData.gender,
-      school_id: adminData.school_id, // CRITICAL: Add school_id for RLS
+      school_id: adminData.school_id, // CRITICAL: Add school_id for RLS compliance
     };
     
-    console.log("Inserting teacher data:", teacherData);
+    console.log("📝 Inserting teacher data with RLS compliance:", teacherData);
 
     const { data: teacherInsert, error: teacherError } = await supabaseClient
       .from("Teachers")
@@ -91,11 +113,12 @@ export async function registerNewTeacher(formData) {
       .select();
 
     if (teacherError) {
-      console.error("Error inserting teacher:", teacherError.message);
+      console.error("❌ Error inserting teacher:", teacherError.message);
       return { success: false, error: teacherError.message };
     }
 
     const teacherRecord = teacherInsert[0];
+    console.log("✅ Teacher record created successfully:", teacherRecord);
 
     // Insert into Teacher_Qualifications
     const qualData = {

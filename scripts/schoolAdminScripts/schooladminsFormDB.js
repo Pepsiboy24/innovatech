@@ -14,14 +14,16 @@ async function submitSchoolAdmin(adminData) {
         // @ts-ignore
         const tempClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // 2. Register User in Supabase Auth
+        // 2. Register User in Supabase Auth with proper metadata
         const { data: authData, error: authError } = await tempClient.auth.signUp({
             email: adminData.email,
             password: '123456', // Default password as requested
             options: {
                 data: {
                     full_name: adminData.full_name,
-                    role: adminData.role
+                    role: adminData.role,
+                    user_type: 'school_admin',
+                    school_id: adminData.school_id // CRITICAL: Include school_id for RLS
                 }
             }
         });
@@ -43,12 +45,15 @@ async function submitSchoolAdmin(adminData) {
 
         console.log('Auth user created successfully:', authData.user.id);
 
-        // 3. Insert into School_Admin table with linked ID
+        // 3. Insert into School_Admin table with linked ID and school_id
         // We use the Auth User ID as the Primary Key (admin_id)
         const dbPayload = {
             ...adminData,
-            admin_id: authData.user.id
+            admin_id: authData.user.id,
+            school_id: adminData.school_id // Ensure school_id is included
         };
+
+        console.log('📝 Inserting school admin with RLS compliance:', dbPayload);
 
         const { data, error } = await supabaseClient
             .from('School_Admin')
