@@ -30,7 +30,10 @@ import { hasFeatureAccess, getCurrentUserTier } from '../tierAccess.js';
                 console.warn('No school_id found in user metadata');
                 return { school_name: 'EduHubAdmin', school_logo_url: null };
             }
-
+if (user) {
+        console.log("Current User Tier:", user.user_metadata.tier);
+        console.log("Full User Metadata:", user.user_metadata);
+    }
             const schoolId = user.user_metadata.school_id;
             const { data: school, error } = await supabase
                 .from('Schools')
@@ -55,6 +58,36 @@ import { hasFeatureAccess, getCurrentUserTier } from '../tierAccess.js';
         const sh = sharedPrefix();
 
         return `
+            <style>
+                .sidebar-nav {
+                    display: flex;
+                    flex-direction: column;
+                    flex: 1;
+                    overflow-y: auto;
+                    overflow-x: hidden;
+                    max-height: calc(100vh - 120px);
+                    scrollbar-width: thin;
+                    scrollbar-color: #cbd5e1 #f1f5f9;
+                }
+                
+                .sidebar-nav::-webkit-scrollbar {
+                    width: 6px;
+                }
+                
+                .sidebar-nav::-webkit-scrollbar-track {
+                    background: #f1f5f9;
+                    border-radius: 3px;
+                }
+                
+                .sidebar-nav::-webkit-scrollbar-thumb {
+                    background: #cbd5e1;
+                    border-radius: 3px;
+                }
+                
+                .sidebar-nav::-webkit-scrollbar-thumb:hover {
+                    background: #94a3b8;
+                }
+            </style>
             <div class="logo">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     ${branding.school_logo_url ? 
@@ -65,7 +98,7 @@ import { hasFeatureAccess, getCurrentUserTier } from '../tierAccess.js';
                 </div>
                 <div class="icon mobile-menu-btn" data-sideBarClose><i class="fa fa-times"></i></div>
             </div>
-            <nav style="display: flex; flex-direction: column; flex: 1;">
+            <nav class="sidebar-nav">
                 <a href="${a}schoolAdminDashboard.html" class="nav-item">
                     <i class="fa-solid fa-table-columns nav-icon"></i>
                     Dashboard
@@ -74,59 +107,48 @@ import { hasFeatureAccess, getCurrentUserTier } from '../tierAccess.js';
                     <i class="fa-solid fa-chalkboard-user nav-icon"></i>
                     <span>Classes</span>
                 </a>
-                <a href="${a}students.html" class="nav-item" data-feature="student-management" data-tier="1">
+                <a href="${a}students.html" class="nav-item" data-tier="1">
                     <i class="fa-solid fa-user-graduate nav-icon"></i>
                     Students
                 </a>
-                <a href="${a}teachers.html" class="nav-item" data-feature="teacher-management" data-tier="1">
+                <a href="${a}teachers.html" class="nav-item" data-tier="1">
                     <i class="fa-solid fa-chalkboard-teacher nav-icon"></i>
                     Teachers
                 </a>
-                <a href="${a}schooladmins.html" class="nav-item" data-feature="admin-management" data-tier="1">
+                <a href="${a}schooladmins.html" class="nav-item" data-tier="1">
                     <i class="fa-solid fa-user-tie nav-icon"></i>
                     School Admins
                 </a>
-                <a href="${a}academic_manager.html" class="nav-item" data-feature="academic-management" data-tier="1">
+                <a href="${a}academic_manager.html" class="nav-item" data-tier="1">
                     <i class="fa-solid fa-book-open nav-icon"></i>
                     <span>Academic Manager</span>
                 </a>
-                <a href="${a}schedule.html" class="nav-item" data-feature="schedule-management" data-tier="1">
+                <a href="${a}schedule.html" class="nav-item" data-tier="1">
                     <i class="fa-regular fa-calendar nav-icon"></i>
                     Schedule
                 </a>
-                <a href="${a}timeTable.html" class="nav-item" data-feature="timetable-management" data-tier="1">
+                <a href="${a}timeTable.html" class="nav-item" data-tier="1">
                     <i class="fa-solid fa-clock nav-icon"></i>
                     Time Table
                 </a>
-                <a href="${a}settings.html" class="nav-item" data-feature="school-settings" data-tier="1">
+                <a href="${a}settings.html" class="nav-item" data-tier="1">
                     <i class="fa-solid fa-cog nav-icon"></i>
                     School Settings
                 </a>
-                <a href="${a}payments_config.html" class="nav-item" data-feature="payment-config" data-tier="1">
+                <a href="${a}payments_config.html" class="nav-item" data-tier="1">
                     <i class="fa-solid fa-credit-card nav-icon"></i>
                     Payment Config
                 </a>
-                <a href="${sh}manage_notes.html" class="nav-item" data-feature="manage-notes" data-tier="1">
+                <a href="${sh}manage_notes.html" class="nav-item" data-tier="1">
                     <i class="fa-solid fa-file-lines nav-icon"></i>
                     Manage Notes
                 </a>
+
                 
-                <!-- Tier-gated features -->
-                <a href="${a}cbt_exams.html" class="nav-item" data-feature="cbt-exams" data-tier="2">
-                    <i class="fa-solid fa-clipboard-list nav-icon"></i>
-                    CBT Exams
-                </a>
-                <a href="${a}ai_assistants.html" class="nav-item" data-feature="ai-assistants" data-tier="3">
-                    <i class="fa-solid fa-robot nav-icon"></i>
-                    AI Assistants
-                </a>
-                <a href="${a}parent_portal.html" class="nav-item" data-feature="parent-portal" data-tier="3">
+                
+                <a href="${a}parent_portal.html" class="nav-item" data-tier="3">
                     <i class="fa-solid fa-users nav-icon"></i>
                     Parent Portal
-                </a>
-                <a href="${a}white_label.html" class="nav-item" data-feature="white-labeling" data-tier="4">
-                    <i class="fa-solid fa-palette nav-icon"></i>
-                    White Labeling
                 </a>
                 
                 <a href="#" id="schoolAdminLogoutBtn" class="nav-item" style="margin-top: auto; border-top: 1px solid var(--border); border-radius: 0; padding-top: 16px;">
@@ -146,16 +168,28 @@ import { hasFeatureAccess, getCurrentUserTier } from '../tierAccess.js';
         // Build sidebar with dynamic branding
         sidebarElement.innerHTML = buildSidebar(branding);
 
-        // Apply tier-based filtering to navigation items
+        // Apply tier-based filtering to navigation items - FIXED for School Admins
         const userTier = await getCurrentUserTier();
+        const safeUserTier = Number(userTier) || 1; // Fallback to tier 1 if undefined
+        console.log('User tier:', userTier, 'Safe tier:', safeUserTier); // Debug log
+        
+        const items = sidebarElement.querySelectorAll('.nav-item[data-tier]');
+        console.log("Gated items found:", items.length); // Should say 13
+        
         if (userTier) {
             sidebarElement.querySelectorAll('.nav-item[data-tier]').forEach(item => {
                 const requiredTier = parseInt(item.getAttribute('data-tier'));
-                if (userTier < requiredTier) {
+                // Explicit number conversion comparison
+                if (Number(userTier) < Number(requiredTier)) {
                     item.style.display = 'none';
                     item.setAttribute('aria-hidden', 'true');
+                } else {
+                    item.style.display = '';
+                    item.removeAttribute('aria-hidden');
                 }
             });
+        } else {
+            console.warn('No user tier found, showing all items');
         }
 
         // Active link highlighting
@@ -207,7 +241,7 @@ import { hasFeatureAccess, getCurrentUserTier } from '../tierAccess.js';
                 } catch (error) {
                     console.error("Logout Error:", error);
                 }
-                window.location.href = '../../index.html';
+                window.location.href = '../../landing_page/html/login.html';
             });
         }
     });

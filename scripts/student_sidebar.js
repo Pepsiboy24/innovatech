@@ -136,7 +136,7 @@ async function injectSidebar() {
             if (error) {
                 console.error('[Sidebar] Logout Error:', error.message);
             }
-            window.location.replace('../../index.html');
+            window.location.replace('../../landing_page/html/login.html');
         });
     }
 

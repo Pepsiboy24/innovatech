@@ -14,7 +14,7 @@ export async function initializeSidebar() {
 
     if (authError || !user) {
         console.warn('Sidebar: Unauthorized. Redirecting to login...');
-        window.location.href = '/login.html';
+        window.location.href = '/landing_page/html/login.html';
         return;
     }
 
@@ -207,7 +207,7 @@ export async function initializeSidebar() {
             } catch (error) {
                 console.error("Logout Error:", error);
             }
-            window.location.href = '/index.html';
+            window.location.href = '/landing_page/html/login.html';
         });
     }
 }

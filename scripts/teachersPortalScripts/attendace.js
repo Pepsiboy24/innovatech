@@ -243,18 +243,21 @@ async function gatherAttendanceData() {
         return [];
     }
 
-    const dateInput = document.querySelector('.date-input');
-    const attendanceDate = dateInput ? dateInput.value : '';
-    const subjectSelect = document.querySelector('.subject-select');
-    const selectedSubjectId = subjectSelect ? subjectSelect.value : null;
+    const attendanceDate = document.getElementById('attendanceDate').value;
+    const selectedSubjectId = document.getElementById('subjectSelect').value;
 
-    if (!attendanceDate) {
-        showToast('Please select a date for the attendance.', 'warning');
+    if (!attendanceDate || !selectedSubjectId) {
+        showToast('Please select both date and subject.', 'warning');
         return [];
     }
 
-    if (!selectedSubjectId) {
-        showToast('Please select a subject for the attendance.', 'warning');
+    // Get current user's school_id from metadata
+    const { data: { user } } = await supabase.auth.getUser();
+    const userSchoolId = user?.user_metadata?.school_id;
+    
+    if (!userSchoolId) {
+        console.error('User missing school_id in metadata');
+        showToast('Authentication error: missing school information', 'error');
         return [];
     }
 
@@ -283,12 +286,12 @@ async function gatherAttendanceData() {
             attendance_status: status,
             notes: notes,
             recorded_by_user_id: currentTeacherId,
+            school_id: userSchoolId, // CRITICAL: Add school_id for RLS compliance
         });
     }
 
     return attendanceData;
 }
-
 // Function to handle Save Attendance button click
 async function handleSaveAttendance() {
     const attendanceData = await gatherAttendanceData();

@@ -344,7 +344,7 @@
                     if (schoolId) {
                         this.showSuccess('Login successful! Redirecting to dashboard...');
                         setTimeout(() => {
-                            window.location.href = '../../html/schoolAdmin/schoolAdminDashboard.html';
+                            window.location.href = '../html/schoolAdmin/schoolAdminDashboard.html';
                         }, 1500);
                     } else {
                         this.showError('Account not properly configured. Please contact support.');
@@ -360,7 +360,7 @@
 
             redirectToLogin() {
                 sessionStorage.clear();
-                window.location.href = '../../html/login.html';
+                window.location.href = '../html/login.html';
             }
 
             setLoading(isLoading) {

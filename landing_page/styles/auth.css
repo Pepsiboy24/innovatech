@@ -10,6 +10,17 @@
     --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.1);
     --shadow-medium: 0 20px 40px rgba(0, 0, 0, 0.15);
     --shadow-strong: 0 30px 60px rgba(0, 0, 0, 0.25);
+    --auth-primary: #667eea;
+    --auth-primary-dark: #5a67d8;
+    --auth-gradient: var(--primary-gradient);
+    --auth-border: #d1d5db;
+    --auth-white: #ffffff;
+    --auth-transition: all 0.3s ease;
+    --auth-error: #ef4444;
+    --auth-success: #10b981;
+    --auth-radius: 12px;
+    --auth-text-light: #64748b;
+    --auth-text-muted: #9ca3af;
 }
 
 * {
@@ -26,7 +37,7 @@ body {
 }
 
 /* Base Container Styles */
-.signup-container, .onboarding-container, .confirmation-container, .redirect-container {
+.signup-container, .onboarding-container, .confirmation-container, .redirect-container, .auth-container {
     min-height: 100vh;
     background: var(--primary-gradient);
     display: flex;
@@ -36,7 +47,7 @@ body {
     position: relative;
 }
 
-.signup-container::before, .onboarding-container::before {
+.signup-container::before, .onboarding-container::before, .auth-container::before {
     content: '';
     position: absolute;
     top: 0;
@@ -48,7 +59,7 @@ body {
     pointer-events: none;
 }
 
-.signup-card, .onboarding-card, .confirmation-card, .redirect-card {
+.signup-card, .onboarding-card, .confirmation-card, .redirect-card, .auth-card {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
     border-radius: 24px;
@@ -61,7 +72,7 @@ body {
     border: 1px solid var(--glass-border);
 }
 
-.signup-card::before, .onboarding-card::before, .confirmation-card::before, .redirect-card::before {
+.signup-card::before, .onboarding-card::before, .confirmation-card::before, .redirect-card::before, .auth-card::before {
     content: '';
     position: absolute;
     top: 0;
@@ -78,12 +89,12 @@ body {
     100% { background-position: 200% 0; }
 }
 
-.step-header {
+.step-header, .auth-header {
     text-align: center;
     margin-bottom: 40px;
 }
 
-.step-header h1 {
+.step-header h1, .auth-header h1 {
     font-size: clamp(24px, 4vw, 32px);
     font-weight: 800;
     margin-bottom: 12px;
@@ -94,10 +105,30 @@ body {
     text-fill-color: transparent;
 }
 
-.step-header p {
+.step-header p, .auth-header p {
     font-size: 16px;
     color: #64748b;
     margin-bottom: 8px;
+}
+
+.auth-header .logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--auth-primary);
+}
+
+.auth-header .logo i {
+    font-size: 36px;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
 }
 
 /* Step Indicator */
@@ -242,6 +273,7 @@ body {
     cursor: pointer;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     background: rgba(255, 255, 255, 0.8);
+}
 
 .checkmark {
     width: 20px;
@@ -292,6 +324,20 @@ body {
     margin-bottom: 24px;
     position: relative;
     overflow: hidden;
+    cursor: pointer;
+    border: none;
+    color: var(--auth-white);
+    transition: var(--auth-transition);
+}
+
+.auth-form .btn-primary {
+    background: var(--auth-gradient);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.auth-form .btn-primary:hover {
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    transform: translateY(-1px);
 }
 
 .auth-form .btn::before {

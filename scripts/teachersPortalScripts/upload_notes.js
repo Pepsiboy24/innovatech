@@ -301,6 +301,10 @@ async function uploadToSupabase() {
         const { data: { user }, error: authErr } = await supabaseClient.auth.getUser();
         if (authErr || !user) throw new Error('Not authenticated. Please log in again.');
 
+        // Get school_id from user metadata
+        const schoolId = user.user_metadata?.school_id;
+        if (!schoolId) throw new Error('User missing school_id in metadata');
+
         // Build a unique filename
         const safeTitle = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
         const timestamp = Date.now();
@@ -334,6 +338,7 @@ async function uploadToSupabase() {
                 file_url: fileUrl,
                 title: title,
                 teacher_id: user.id,
+                school_id: schoolId, // CRITICAL: Add school_id for RLS compliance
             }]);
 
         if (dbErr) throw new Error(`Database: ${dbErr.message}`);

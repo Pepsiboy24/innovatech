@@ -101,6 +101,15 @@ async function fetchAllStudentsFromTeacherClasses(classes) {
             return [];
         }
 
+        // Get current user's school_id from metadata
+        const { data: { user } } = await supabase.auth.getUser();
+        const userSchoolId = user?.user_metadata?.school_id;
+        
+        if (!userSchoolId) {
+            console.error('User missing school_id in metadata');
+            return [];
+        }
+
         const classIds = classes.map(cls => cls.class_id);
 
         const { data, error } = await supabase
@@ -121,6 +130,7 @@ async function fetchAllStudentsFromTeacherClasses(classes) {
                 student_subject(subject_id)
             `)
             .in('class_id', classIds)
+            .eq('school_id', userSchoolId) // CRITICAL: Filter by current school
             .order('full_name', { ascending: true });
 
         if (error) {

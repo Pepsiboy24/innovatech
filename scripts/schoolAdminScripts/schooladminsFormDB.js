@@ -1,21 +1,12 @@
-const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
-const SUPABASE_ANON_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
-
-// @ts-ignore
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+import { supabase } from '../config.js';
 
 // Function to submit school admin data to Supabase
 async function submitSchoolAdmin(adminData) {
     try {
         console.log('Submitting school admin data with Auth registration:', adminData);
 
-        // 1. Create a temporary Supabase client for registration (avoids signing out current user)
-        // @ts-ignore
-        const tempClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
         // 2. Register User in Supabase Auth with proper metadata
-        const { data: authData, error: authError } = await tempClient.auth.signUp({
+        const { data: authData, error: authError } = await supabase.auth.signUp({
             email: adminData.email,
             password: '123456', // Default password as requested
             options: {
@@ -55,7 +46,7 @@ async function submitSchoolAdmin(adminData) {
 
         console.log('📝 Inserting school admin with RLS compliance:', dbPayload);
 
-        const { data, error } = await supabaseClient
+        const { data, error } = await supabase
             .from('School_Admin')
             .insert([dbPayload])
             .select();
@@ -89,7 +80,7 @@ async function submitSchoolAdmin(adminData) {
 // Function to check if email already exists
 async function checkEmailExists(email) {
     try {
-        const { data, error } = await supabaseClient
+        const { data, error } = await supabase
             .from('School_Admin')
             .select('admin_id')
             .eq('email', email) // Corrected from personal_email to email
@@ -112,7 +103,7 @@ async function updateSchoolAdmin(adminId, adminData) {
     try {
         console.log('Updating school admin data:', adminId, adminData);
 
-        const { data, error } = await supabaseClient
+        const { data, error } = await supabase
             .from('School_Admin')
             .update(adminData)
             .eq('admin_id', adminId)
@@ -146,7 +137,7 @@ async function deleteSchoolAdmin(adminId) {
     try {
         console.log('Deleting school admin:', adminId);
 
-        const { error } = await supabaseClient
+        const { error } = await supabase
             .from('School_Admin')
             .delete()
             .eq('admin_id', adminId);

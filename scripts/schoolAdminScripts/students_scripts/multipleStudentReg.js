@@ -12,6 +12,23 @@ const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
 export async function uploadAndProcessExcel(file) {
   try {
+    // Get current authenticated user (school admin) to get school_id
+    const { data: { user: adminUser }, error: adminError } = await supabaseClient.auth.getUser();
+    
+    if (adminError || !adminUser) {
+      console.error("Error getting authenticated admin:", adminError?.message);
+      return { success: false, error: "Admin authentication required" };
+    }
+
+    // Get school_id from admin's metadata
+    const schoolId = adminUser.user_metadata?.school_id;
+    if (!schoolId) {
+      console.error("Admin missing school_id in metadata");
+      return { success: false, error: "Admin school association not found" };
+    }
+
+    console.log("Processing students for school_id:", schoolId);
+
     const data = await file.arrayBuffer();
     const workbook = XLSX.read(data);
     const sheetName = workbook.SheetNames[0];
@@ -93,7 +110,8 @@ export async function uploadAndProcessExcel(file) {
               gender: studentData.gender,
               admission_date: formatExcelDate(studentData.admission_date),
               profile_picture: studentData.profile_picture,
-              class_id: class_id // Will be null if class not found
+              class_id: class_id, // Will be null if class not found
+              school_id: schoolId, // CRITICAL: Use school_id from authenticated admin
             },
           ]);
 

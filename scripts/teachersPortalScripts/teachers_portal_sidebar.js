@@ -110,7 +110,7 @@ import { supabase } from '../config.js';
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async () => {
                 await supabase.auth.signOut();
-                window.location.href = '../../index.html';
+                window.location.href = '../../landing_page/html/login.html';
             });
         }
     });
