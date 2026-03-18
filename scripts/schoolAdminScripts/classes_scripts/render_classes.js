@@ -38,9 +38,13 @@ function renderClasses(dataToRender) {
         const viewBtn = card.querySelector(".viewBtn");
         const deleteBtn = card.querySelector(".deleteBtn");
 
-        if (editBtn) editBtn.onclick = () => window.openEditClassModal(elem.class_id);
-        if (viewBtn) viewBtn.onclick = () => window.openViewClassModal(elem.class_id);
+        // Set data-id for view button
+        if (viewBtn) {
+            viewBtn.setAttribute('data-id', elem.class_id);
+        }
 
+        if (editBtn) editBtn.onclick = () => window.openEditClassModal(elem.class_id);
+        // Remove old onclick for viewBtn - global event delegation will handle it
         if (deleteBtn) {
             deleteBtn.onclick = () => handleDeleteClass(elem);
             if ((elem._studentCount ?? 0) > 0) {

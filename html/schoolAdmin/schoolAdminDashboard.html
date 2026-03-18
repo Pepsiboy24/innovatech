@@ -166,15 +166,184 @@
             color: #667eea;
         }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .checklist-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .setup-header {
-                padding: 16px;
-            }
+        /* Roadmap Layout Styles */
+        .roadmap-layout-wrapper {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+        }
+        
+        .roadmap-sidebar {
+            flex: 0 0 300px;
+            background: white;
+            border-radius: 16px;
+            padding: 32px 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .roadmap-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        
+        .roadmap-title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .progress-percentage {
+            font-size: 16px;
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .roadmap-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        .roadmap-step {
+            display: flex;
+            gap: 15px;
+            padding: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .roadmap-step:hover {
+            background: #f8fafc;
+        }
+        
+        .node-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .step-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            border: 2px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+        
+        .roadmap-step.completed .step-circle {
+            background: #10b981;
+            border-color: #10b981;
+        }
+        
+        .roadmap-step.active .step-circle {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+        }
+        
+        .roadmap-step.pending .step-circle {
+            background: #f3f4f6;
+            border-color: #e5e7eb;
+        }
+        
+        .step-number {
+            font-size: 14px;
+            font-weight: 600;
+            color: #6b7280;
+            transition: color 0.3s ease;
+        }
+        
+        .roadmap-step.completed .step-number {
+            color: white;
+        }
+        
+        .roadmap-step.active .step-number {
+            color: #667eea;
+        }
+        
+        .step-checkmark {
+            font-size: 14px;
+            color: white;
+            position: absolute;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s ease;
+        }
+        
+        .roadmap-step.completed .step-checkmark {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .roadmap-step.completed .step-number {
+            opacity: 0;
+            transform: scale(0);
+        }
+        
+        .step-line {
+            width: 2px;
+            background: #e2e8f0;
+            flex-grow: 1;
+            margin-left: auto;
+            margin-right: auto;
+            min-height: 24px;
+        }
+        
+        .roadmap-step.completed .step-line {
+            background: #10b981;
+        }
+        
+        .roadmap-step.active .step-line {
+            background: linear-gradient(to bottom, #667eea 0%, rgba(102, 126, 234, 0.1) 100%);
+        }
+        
+        .roadmap-step:last-child .step-line {
+            display: none;
+        }
+        
+        .step-text {
+            flex: 1;
+            padding-top: 4px;
+        }
+        
+        .step-title {
+            margin: 0 0 4px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            transition: color 0.3s ease;
+        }
+        
+        .roadmap-step.active .step-title {
+            color: #667eea;
+        }
+        
+        .roadmap-step.pending .step-title {
+            color: #9ca3af;
+        }
+        
+        .step-desc {
+            margin: 0;
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+        
+        .roadmap-step.pending .step-desc {
+            color: #d1d5db;
+        }
+        
+        .roadmap-content-area {
+            flex: 1;
         }
     </style>
 </head>
@@ -205,98 +374,160 @@
 
             <!-- Setup Checklist (shown when school has no data) -->
             <div id="setupChecklist" style="display: none;">
-                <div class="setup-header">
-                    <h2 class="page-title">Welcome to EduHub!</h2>
-                    <p class="page-subtitle">Let's get your school set up in just a few steps</p>
+                <div class="roadmap-layout-wrapper" style="display: flex; gap: 40px; align-items: flex-start;">
+                    <!-- Left Sidebar: Vertical Roadmap -->
+                    <aside class="roadmap-sidebar" style="flex: 0 0 300px;">
+                        <div class="roadmap-header">
+                            <h3 class="roadmap-title">Setup Progress</h3>
+                            <div class="progress-percentage" id="progressPercentage">0%</div>
+                        </div>
+                        
+                        <div class="roadmap-steps">
+                            <div class="roadmap-step" data-step="profile" onclick="showStepCard('profile')">
+                                <div class="node-container">
+                                    <div class="step-circle">
+                                        <span class="step-number">1</span>
+                                        <i class="fas fa-check step-checkmark" style="display: none;"></i>
+                                    </div>
+                                    <div class="step-line"></div>
+                                </div>
+                                <div class="step-text">
+                                    <h4 class="step-title">School Identity</h4>
+                                    <p class="step-desc">Customize your school profile</p>
+                                </div>
+                            </div>
+                            
+                            <div class="roadmap-step" data-step="classes" onclick="showStepCard('classes')">
+                                <div class="node-container">
+                                    <div class="step-circle">
+                                        <span class="step-number">2</span>
+                                        <i class="fas fa-check step-checkmark" style="display: none;"></i>
+                                    </div>
+                                    <div class="step-line"></div>
+                                </div>
+                                <div class="step-text">
+                                    <h4 class="step-title">Academic Structure</h4>
+                                    <p class="step-desc">Create classes and subjects</p>
+                                </div>
+                            </div>
+                            
+                            <div class="roadmap-step" data-step="teachers" onclick="showStepCard('teachers')">
+                                <div class="node-container">
+                                    <div class="step-circle">
+                                        <span class="step-number">3</span>
+                                        <i class="fas fa-check step-checkmark" style="display: none;"></i>
+                                    </div>
+                                    <div class="step-line"></div>
+                                </div>
+                                <div class="step-text">
+                                    <h4 class="step-title">Teaching Staff</h4>
+                                    <p class="step-desc">Register your teachers</p>
+                                </div>
+                            </div>
+                            
+                            <div class="roadmap-step" data-step="students" onclick="showStepCard('students')">
+                                <div class="node-container">
+                                    <div class="step-circle">
+                                        <span class="step-number">4</span>
+                                        <i class="fas fa-check step-checkmark" style="display: none;"></i>
+                                    </div>
+                                    <div class="step-line"></div>
+                                </div>
+                                <div class="step-text">
+                                    <h4 class="step-title">Student Enrollment</h4>
+                                    <p class="step-desc">Add students to classes</p>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
                     
-                    <div class="progress-container">
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="setupProgress" style="width: 0%"></div>
+                    <!-- Right Content: Task Cards -->
+                    <main class="roadmap-content-area" style="flex: 1;">
+                        <div class="setup-header">
+                            <h2 class="page-title">Welcome to EduHub!</h2>
+                            <p class="page-subtitle">Let's get your school set up in just a few steps</p>
                         </div>
-                        <div class="progress-text">
-                            <span id="progressPercentage">Setup Progress: 0%</span>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="checklist-grid">
-                    <div class="checklist-card" data-step="profile">
-                        <div class="card-icon">
-                            <i class="fas fa-user-circle"></i>
-                        </div>
-                        <div class="card-content">
-                            <h3>Customize Profile</h3>
-                            <p>Add your school logo and complete address information</p>
-                            <div class="card-status" id="profile-status">
-                                <i class="fas fa-circle incomplete"></i>
-                                <span>Incomplete</span>
+                        <div class="checklist-grid">
+                            <div class="checklist-card" data-step="profile" id="profile-card" style="display: block;">
+                                <div class="card-icon">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                                <div class="card-content">
+                                    <h3>Customize Profile</h3>
+                                    <p>Add your school logo and complete address information</p>
+                                    <div class="card-status" id="profile-status">
+                                        <i class="fas fa-circle incomplete"></i>
+                                        <span>Incomplete</span>
+                                    </div>
+                                    <button class="card-btn" onclick="window.location.href='settings.html'">
+                                        <i class="fas fa-arrow-right"></i>
+                                        Go to Settings
+                                    </button>
+                                </div>
                             </div>
-                            <button class="card-btn" onclick="window.location.href='settings.html'">
-                                <i class="fas fa-arrow-right"></i>
-                                Go to Settings
+
+                            <div class="checklist-card" data-step="classes" id="classes-card" style="display: none;">
+                                <div class="card-icon">
+                                    <i class="fas fa-chalkboard"></i>
+                                </div>
+                                <div class="card-content">
+                                    <h3>Add Classes</h3>
+                                    <p>Define your school levels and create class structures</p>
+                                    <div class="card-status" id="classes-status">
+                                        <i class="fas fa-circle incomplete"></i>
+                                        <span>Incomplete</span>
+                                    </div>
+                                    <button class="card-btn" onclick="window.location.href='classes.html'">
+                                        <i class="fas fa-arrow-right"></i>
+                                        Manage Classes
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="checklist-card" data-step="teachers" id="teachers-card" style="display: none;">
+                                <div class="card-icon">
+                                    <i class="fas fa-chalkboard-teacher"></i>
+                                </div>
+                                <div class="card-content">
+                                    <h3>Register Teachers</h3>
+                                    <p>Add your first staff members and assign their roles</p>
+                                    <div class="card-status" id="teachers-status">
+                                        <i class="fas fa-circle incomplete"></i>
+                                        <span>Incomplete</span>
+                                    </div>
+                                    <button class="card-btn" onclick="window.location.href='teachers.html'">
+                                        <i class="fas fa-arrow-right"></i>
+                                        Add Teachers
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="checklist-card" data-step="students" id="students-card" style="display: none;">
+                                <div class="card-icon">
+                                    <i class="fas fa-user-graduate"></i>
+                                </div>
+                                <div class="card-content">
+                                    <h3>Enroll Students</h3>
+                                    <p>Add students to their respective classes and start managing</p>
+                                    <div class="card-status" id="students-status">
+                                        <i class="fas fa-circle incomplete"></i>
+                                        <span>Incomplete</span>
+                                    </div>
+                                    <button class="card-btn" onclick="window.location.href='students.html'">
+                                        <i class="fas fa-arrow-right"></i>
+                                        Add Students
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setup-actions">
+                            <button class="skip-setup-btn" onclick="skipSetup()">
+                                Skip Setup <i class="fas fa-arrow-right"></i>
                             </button>
                         </div>
-                    </div>
-
-                    <div class="checklist-card" data-step="classes">
-                        <div class="card-icon">
-                            <i class="fas fa-chalkboard"></i>
-                        </div>
-                        <div class="card-content">
-                            <h3>Add Classes</h3>
-                            <p>Define your school levels and create class structures</p>
-                            <div class="card-status" id="classes-status">
-                                <i class="fas fa-circle incomplete"></i>
-                                <span>Incomplete</span>
-                            </div>
-                            <button class="card-btn" onclick="window.location.href='classes.html'">
-                                <i class="fas fa-arrow-right"></i>
-                                Manage Classes
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="checklist-card" data-step="teachers">
-                        <div class="card-icon">
-                            <i class="fas fa-chalkboard-teacher"></i>
-                        </div>
-                        <div class="card-content">
-                            <h3>Register Teachers</h3>
-                            <p>Add your first staff members and assign their roles</p>
-                            <div class="card-status" id="teachers-status">
-                                <i class="fas fa-circle incomplete"></i>
-                                <span>Incomplete</span>
-                            </div>
-                            <button class="card-btn" onclick="window.location.href='teachers.html'">
-                                <i class="fas fa-arrow-right"></i>
-                                Add Teachers
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="checklist-card" data-step="students">
-                        <div class="card-icon">
-                            <i class="fas fa-user-graduate"></i>
-                        </div>
-                        <div class="card-content">
-                            <h3>Enroll Students</h3>
-                            <p>Add students to their respective classes and start managing</p>
-                            <div class="card-status" id="students-status">
-                                <i class="fas fa-circle incomplete"></i>
-                                <span>Incomplete</span>
-                            </div>
-                            <button class="card-btn" onclick="window.location.href='students.html'">
-                                <i class="fas fa-arrow-right"></i>
-                                Add Students
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="setup-actions">
-                    <button class="skip-setup-btn" onclick="skipSetup()">
-                        Skip Setup <i class="fas fa-arrow-right"></i>
-                    </button>
+                    </main>
                 </div>
             </div>
 
@@ -449,39 +680,85 @@
             const totalSteps = Object.keys(setupData).length;
             const progressPercentage = Math.round((completedSteps / totalSteps) * 100);
             
-            // Update progress bar
-            const progressBar = document.getElementById('setupProgress');
-            const progressText = document.getElementById('progressPercentage');
-            
-            if (progressBar) {
-                progressBar.style.width = `${progressPercentage}%`;
+            // Update progress percentage in sidebar
+            const sidebarProgressText = document.querySelector('.progress-percentage');
+            if (sidebarProgressText) {
+                sidebarProgressText.textContent = `${progressPercentage}%`;
             }
             
-            if (progressText) {
-                progressText.textContent = `Setup Progress: ${progressPercentage}%`;
+            // Update roadmap step states
+            Object.keys(setupData).forEach(step => {
+                const roadmapStep = document.querySelector(`.roadmap-steps [data-step="${step}"]`);
+                
+                if (roadmapStep) {
+                    // Clear all states first
+                    roadmapStep.classList.remove('active', 'completed', 'pending');
+                    
+                    if (setupData[step]) {
+                        roadmapStep.classList.add('completed');
+                        // Show checkmark, hide number
+                        const stepNumber = roadmapStep.querySelector('.step-number');
+                        const stepCheckmark = roadmapStep.querySelector('.step-checkmark');
+                        if (stepNumber) stepNumber.style.display = 'none';
+                        if (stepCheckmark) stepCheckmark.style.display = 'block';
+                    } else {
+                        roadmapStep.classList.add('pending');
+                        // Show number, hide checkmark
+                        const stepNumber = roadmapStep.querySelector('.step-number');
+                        const stepCheckmark = roadmapStep.querySelector('.step-checkmark');
+                        if (stepNumber) stepNumber.style.display = 'block';
+                        if (stepCheckmark) stepCheckmark.style.display = 'none';
+                    }
+                }
+            });
+            
+            // Set active step (first incomplete step)
+            const nextIncompleteStep = Object.keys(setupData).find(step => !setupData[step]);
+            if (nextIncompleteStep) {
+                const activeRoadmapStep = document.querySelector(`.roadmap-steps [data-step="${nextIncompleteStep}"]`);
+                if (activeRoadmapStep) {
+                    activeRoadmapStep.classList.remove('pending');
+                    activeRoadmapStep.classList.add('active');
+                }
             }
             
             // Update card statuses
             Object.keys(setupData).forEach(step => {
-                const card = document.querySelector(`[data-step="${step}"]`);
                 const status = document.getElementById(`${step}-status`);
                 
-                if (card && status) {
+                if (status) {
                     if (setupData[step]) {
-                        card.classList.add('completed');
                         status.innerHTML = '<i class="fas fa-check-circle completed"></i><span>Completed</span>';
                     } else {
-                        card.classList.remove('completed');
                         status.innerHTML = '<i class="fas fa-circle incomplete"></i><span>Incomplete</span>';
                     }
                 }
             });
+            
+            // Wizard Visibility Logic: Only show the active step's card
+            const activeStep = Object.keys(setupData).find(step => !setupData[step]) || 'profile';
+            showStepCard(activeStep);
             
             // Check if setup is complete
             if (progressPercentage === 100) {
                 setTimeout(() => {
                     completeSetup();
                 }, 1000);
+            }
+        }
+
+        // Function to show specific step card and hide others
+        function showStepCard(stepName) {
+            // Hide all cards first
+            const allCards = document.querySelectorAll('.checklist-card');
+            allCards.forEach(card => {
+                card.style.display = 'none';
+            });
+            
+            // Show selected card
+            const selectedCard = document.getElementById(`${stepName}-card`);
+            if (selectedCard) {
+                selectedCard.style.display = 'block';
             }
         }
 

@@ -60,7 +60,9 @@ document.addEventListener('DOMContentLoaded', async function () {
                 <td>
                     <div class="class-badge">${className}</div>
                 </td>
-                <td><a href="#" class="action-btn">View</a></td>
+                <td>
+                    <button class='view-btn' data-type='subject' data-id='${assignment.subject_id}'>View</button>
+                </td>
             `;
 
             tbody.appendChild(row);

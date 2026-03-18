@@ -22,8 +22,8 @@ serve(async (req) => {
   if (req.method !== 'POST') {
     return new Response(
       JSON.stringify({ error: 'Method not allowed' }),
-      { 
-        status: 405, 
+      {
+        status: 405,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
@@ -35,11 +35,11 @@ serve(async (req) => {
     // Validate required fields
     if (!studentId || !studentName || !schoolId) {
       return new Response(
-        JSON.stringify({ 
-          error: 'Missing required fields: studentId, studentName, schoolId' 
+        JSON.stringify({
+          error: 'Missing required fields: studentId, studentName, schoolId'
         }),
-        { 
-          status: 400, 
+        {
+          status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
@@ -59,12 +59,12 @@ serve(async (req) => {
 
     if (schoolError || !school) {
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: 'School not found or missing Monnify configuration',
-          details: schoolError?.message 
+          details: schoolError?.message
         }),
-        { 
-          status: 400, 
+        {
+          status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
@@ -81,12 +81,12 @@ serve(async (req) => {
 
     if (!accountData.success) {
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: 'Failed to create student virtual account',
-          details: accountData.error 
+          details: accountData.error
         }),
-        { 
-          status: 500, 
+        {
+          status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
@@ -121,8 +121,8 @@ serve(async (req) => {
         bankCode: accountData.bankCode,
         message: 'Student virtual account created successfully'
       }),
-      { 
-        status: 200, 
+      {
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
@@ -130,12 +130,12 @@ serve(async (req) => {
   } catch (error) {
     console.error('Edge function error:', error)
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: 'Internal server error',
-        message: error.message 
+        message: error.message
       }),
-      { 
-        status: 500, 
+      {
+        status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
@@ -167,23 +167,23 @@ async function createStudentReservedAccount(data: {
         contractCode: data.contractCode,
         getAllAvailableBanks: false,
         preferredBanks: ['035', // Wema Bank
-                          '011', // First Bank
-                          '058', // GTBank
-                          '033', // United Bank for Africa
-                          '023', // Citibank
-                          '050', // Ecobank
-                          '070', // Fidelity Bank
-                          '076', // Unity Bank
-                          '101', // Providus Bank
-                          '214', // FCMB
-                          '301', // Jaiz Bank
-                          '221', // Stanbic IBTC
-                          '082', // Polaris Bank
-                          '032', // Union Bank
-                          '072', // Zenith Bank
-                          '057', // Standard Chartered
-                          '215', // Keystone Bank
-                          '221'] // Heritage Bank
+          '011', // First Bank
+          '058', // GTBank
+          '033', // United Bank for Africa
+          '023', // Citibank
+          '050', // Ecobank
+          '070', // Fidelity Bank
+          '076', // Unity Bank
+          '101', // Providus Bank
+          '214', // FCMB
+          '301', // Jaiz Bank
+          '221', // Stanbic IBTC
+          '082', // Polaris Bank
+          '032', // Union Bank
+          '072', // Zenith Bank
+          '057', // Standard Chartered
+          '215', // Keystone Bank
+          '221'] // Heritage Bank
       })
     })
 
@@ -196,7 +196,7 @@ async function createStudentReservedAccount(data: {
     }
 
     const responseData = await response.json()
-    
+
     if (!responseData.requestSuccessful) {
       return {
         success: false,

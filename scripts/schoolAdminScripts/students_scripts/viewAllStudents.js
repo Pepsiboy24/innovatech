@@ -158,7 +158,7 @@ function renderStudents(students, classMap = {}) {
                     </div>
                 </td>
                 <td style="display:flex; gap:6px; align-items:center;">
-                    <a href="#" class="action-btn" data-student-id="${student.student_id}">View</a>
+                    <button class='view-btn' data-type='student' data-id='${student.student_id}'>View</button>
                     <button
                         class="action-btn"
                         style="background:#ede7f6; color:#6200ea; border:none; cursor:pointer; padding:4px 10px; border-radius:6px; font-size:12px; font-weight:600;"

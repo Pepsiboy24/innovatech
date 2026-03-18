@@ -22,8 +22,8 @@ serve(async (req) => {
   if (req.method !== 'POST') {
     return new Response(
       JSON.stringify({ error: 'Method not allowed' }),
-      { 
-        status: 405, 
+      {
+        status: 405,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
@@ -35,11 +35,11 @@ serve(async (req) => {
     // Validate required fields
     if (!schoolName || !schoolId || !bankName || !accountNumber) {
       return new Response(
-        JSON.stringify({ 
-          error: 'Missing required fields: schoolName, schoolId, bankName, accountNumber' 
+        JSON.stringify({
+          error: 'Missing required fields: schoolName, schoolId, bankName, accountNumber'
         }),
-        { 
-          status: 400, 
+        {
+          status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
@@ -57,12 +57,12 @@ serve(async (req) => {
 
     if (!subAccountData.success) {
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: 'Failed to create Monnify sub-account',
-          details: subAccountData.error 
+          details: subAccountData.error
         }),
-        { 
-          status: 500, 
+        {
+          status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
@@ -96,8 +96,8 @@ serve(async (req) => {
         contractCode: subAccountData.contractCode,
         message: 'Monnify sub-account created successfully'
       }),
-      { 
-        status: 200, 
+      {
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
@@ -105,12 +105,12 @@ serve(async (req) => {
   } catch (error) {
     console.error('Edge function error:', error)
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: 'Internal server error',
-        message: error.message 
+        message: error.message
       }),
-      { 
-        status: 500, 
+      {
+        status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
@@ -154,7 +154,7 @@ async function createMonnifySubAccount(data: {
     }
 
     const reservedData = await reservedResponse.json()
-    
+
     if (!reservedData.requestSuccessful) {
       return {
         success: false,
@@ -185,7 +185,7 @@ async function createMonnifySubAccount(data: {
     }
 
     const activateData = await activateResponse.json()
-    
+
     if (!activateData.requestSuccessful) {
       return {
         success: false,

@@ -234,7 +234,7 @@ function renderTeachers(teachers, classMap = {}) {
                     </div>
                 </td>
                 <td>
-                    <a href="#" class="action-btn" data-teacher-id="${teacher.id}">View</a>
+                    <button class='view-btn' data-type='teacher' data-id='${teacher.id}'>View</button>
                 </td>
             </tr>
         `;

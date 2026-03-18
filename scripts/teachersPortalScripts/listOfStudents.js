@@ -239,7 +239,7 @@ async function renderStudents(students) {
                     </div>
                 </td>
                 <td data-label="Action">
-                    <a href="#" class="view-all-btn">View Details</a>
+                    <button class='view-btn' data-type='student' data-id='${student.student_id}'>View</button>
                 </td>
             </tr>
         `;
