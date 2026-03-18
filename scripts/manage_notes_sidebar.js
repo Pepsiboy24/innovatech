@@ -1,16 +1,11 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const SUPABASE_URL = 'https://dzotwozhcxzkxtunmqth.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE';
-
-const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+import { supabase } from '../config.js';
 
 export async function initializeSidebar() {
     const sidebarContainer = document.querySelector('[data-sideBar]');
     if (!sidebarContainer) return;
 
     // 1. Get User Session
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
         console.warn('Sidebar: Unauthorized. Redirecting to login...');
@@ -24,8 +19,8 @@ export async function initializeSidebar() {
     let userRole = null;
 
     const [adminCheck, teacherCheck] = await Promise.all([
-        supabaseClient.from('School_Admin').select('admin_id').eq('email', user.email).maybeSingle(),
-        supabaseClient.from('Teachers').select('teacher_id').eq('teacher_id', user.id).maybeSingle()
+        supabase.from('School_Admin').select('admin_id').eq('email', user.email).maybeSingle(),
+        supabase.from('Teachers').select('teacher_id').eq('teacher_id', user.id).maybeSingle()
     ]);
 
     if (adminCheck.data) {
@@ -203,7 +198,7 @@ export async function initializeSidebar() {
         logoutBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             try {
-                await supabaseClient.auth.signOut();
+                await supabase.auth.signOut();
             } catch (error) {
                 console.error("Logout Error:", error);
             }

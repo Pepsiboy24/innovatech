@@ -1,6 +1,5 @@
 // multipleStudentReg.js
-import { supabaseClient } from './supabase_client.js';
-
+import { supabase } from '../../config.js';
 
 // --- Global Cache for Classes (Prevents constant DB lookups) ---
 let _allClassesCache = null;
@@ -13,7 +12,7 @@ const delay = (ms) => new Promise(res => setTimeout(res, ms));
 export async function uploadAndProcessExcel(file) {
   try {
     // Get current authenticated user (school admin) to get school_id
-    const { data: { user: adminUser }, error: adminError } = await supabaseClient.auth.getUser();
+    const { data: { user: adminUser }, error: adminError } = await supabase.auth.getUser();
     
     if (adminError || !adminUser) {
       console.error("Error getting authenticated admin:", adminError?.message);
@@ -74,7 +73,7 @@ export async function uploadAndProcessExcel(file) {
         const {
           data: { user },
           error: authError,
-        } = await supabaseClient.auth.signUp({
+        } = await supabase.auth.signUp({
           email: studentData.email,
           password: password, // Hardcoded default password
         });
@@ -135,7 +134,7 @@ export async function uploadAndProcessExcel(file) {
             // If they didn't provide an email, auto-generate one to satisfy auth requirement
             const pEmail = studentData.parent_email || `parent_${studentData.parent_phone}@eduhub.com`;
 
-            const { data: { user: parentUser }, error: parentAuthError } = await supabaseClient.auth.signUp({
+            const { data: { user: parentUser }, error: parentAuthError } = await supabase.auth.signUp({
               email: pEmail,
               password: '123456',
             });

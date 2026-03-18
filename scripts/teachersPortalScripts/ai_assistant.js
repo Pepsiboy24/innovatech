@@ -9,7 +9,7 @@
  *   Get one free at: https://aistudio.google.com/app/apikey
  */
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { supabase } from '../../config.js';
 
 /* ── Config ──────────────────────────────────────────────────────── */
 const SUPABASE_URL = 'https://dzotwozhcxzkxtunmqth.supabase.co';

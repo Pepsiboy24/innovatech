@@ -1,17 +1,18 @@
-import { supabaseClient } from './supabase_client.js';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
+import { supabase } from '../../config.js';
 
 // Create a dedicated auth client for signing up new users without overwriting the current session
-const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-    detectSessionInUrl: false
+const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+const authClient = createClient(
+  "https://dzotwozhcxzkxtunmqth.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE",
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+      detectSessionInUrl: false
+    }
   }
-});
+);
 
 // Store student data temporarily after signup
 export async function registerNewStudent(
@@ -27,7 +28,7 @@ export async function registerNewStudent(
 ) {
   try {
     // Get current authenticated user (school admin) to get school_id
-    const { data: { user: adminUser }, error: adminError } = await supabaseClient.auth.getUser();
+    const { data: { user: adminUser }, error: adminError } = await supabase.auth.getUser();
     
     if (adminError || !adminUser) {
       console.error("Error getting authenticated admin:", adminError?.message);
@@ -108,7 +109,7 @@ export async function registerNewStudent(
     // --- STEP D: Create Monnify Virtual Account ---
     try {
       if (schoolId) {
-        const { data: virtualAccountData, error: virtualAccountError } = await supabaseClient.functions.invoke('create-student-virtual-account', {
+        const { data: virtualAccountData, error: virtualAccountError } = await supabase.functions.invoke('create-student-virtual-account', {
           body: {
             studentId: studentUser.id,
             studentName: fullName,

@@ -412,9 +412,8 @@ body {
 .viewBtn {
     background-color: var(--primary-light);
     color: var(--primary);
-    border: none;
+    border: 1px solid var(--primary-light);
 }
-
 .viewBtn:hover {
     background-color: var(--primary);
     color: var(--white);

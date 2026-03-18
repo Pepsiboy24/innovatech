@@ -1,10 +1,10 @@
-import { supabaseClient } from './supabase_client.js';
+import { supabase } from '../config.js';
 
 // Register new teacher function
 export async function registerNewTeacher(formData) {
   try {
     // Get current authenticated user (school admin)
-    const { data: { user: adminUser }, error: adminError } = await supabaseClient.auth.getUser();
+    const { data: { user: adminUser }, error: adminError } = await supabase.auth.getUser();
     
     if (adminError || !adminUser) {
       console.error("Error getting authenticated admin:", adminError?.message);
@@ -13,7 +13,7 @@ export async function registerNewTeacher(formData) {
 
     // Get admin's school_id from School_Admin table
     console.log("🔍 Looking up admin data for email:", adminUser.email);
-    const { data: adminData, error: adminDataError } = await supabaseClient
+    const { data: adminData, error: adminDataError } = await supabase
       .from('School_Admin')
       .select('school_id')
       .eq('email', adminUser.email)
@@ -29,7 +29,7 @@ export async function registerNewTeacher(formData) {
     console.log("✅ Admin school_id found:", adminData?.school_id);
 
     // Step 1: Create auth user for the teacher
-    const { data: { user }, error: authError } = await supabaseClient.auth.signUp({
+    const { data: { user }, error: authError } = await supabase.auth.signUp({
       email: formData.personalEmail,
       password: '123456', // Hardcoded default password
       options: {

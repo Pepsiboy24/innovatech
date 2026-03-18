@@ -303,7 +303,7 @@ body {
 
 .student-row {
     border-bottom: 1px solid var(--bg-light);
-    transition: background 0.2s;
+    transition: 0.2s;
 }
 
 .student-row:hover {
@@ -319,7 +319,24 @@ body {
     vertical-align: middle;
     font-size: 14px;
 }
-
+.student-row td:last-child {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-start;
+}
+action-btn-square {
+    width: 35px;
+    height: 35px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
 .student-info {
     display: flex;
     align-items: center;
@@ -409,7 +426,37 @@ body {
     background: var(--primary);
     color: var(--white);
 }
+.view-btn {
+    width: auto; /* Change from 35px to auto to fit text */
+    min-width: 60px;
+    height: 35px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid var(--primary-light);
+    background-color: var(--primary-light);
+    color: var(--primary);
+    padding: 0 12px; /* Add padding for the text */
+    font-size: 13px;
+    font-weight: 600;
+}
 
+/* .view-btn::before {
+    content: "\f06e";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    text-indent: 0;
+    position: absolute;
+} */
+
+/* Hover State */
+.view-btn:hover {
+    background-color: var(--primary);
+    color: var(--white);
+}
 /* POPUP STYLES */
 .popup {
     position: fixed;

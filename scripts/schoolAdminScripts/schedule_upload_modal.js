@@ -151,11 +151,7 @@ async function doUpload(file, helpers) {
     helpers.startProgress(validRows.length);
 
     // Import Supabase client for direct insert
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-    const sb = createClient(
-        'https://dzotwozhcxzkxtunmqth.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE'
-    );
+    const { supabase } = await import('../config.js');
 
     let succeeded = 0, failed = 0;
     const errors = [];
