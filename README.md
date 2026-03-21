@@ -1,204 +1,177 @@
-# InnovaTech: Comprehensive School Management System
+# Supabase CLI
 
----
+[![Coverage Status](https://coveralls.io/repos/github/supabase/cli/badge.svg?branch=develop)](https://coveralls.io/github/supabase/cli?branch=develop) [![Bitbucket Pipelines](https://img.shields.io/bitbucket/pipelines/supabase-cli/setup-cli/master?style=flat-square&label=Bitbucket%20Canary)](https://bitbucket.org/supabase-cli/setup-cli/pipelines) [![Gitlab Pipeline Status](https://img.shields.io/gitlab/pipeline-status/sweatybridge%2Fsetup-cli?label=Gitlab%20Canary)
+](https://gitlab.com/sweatybridge/setup-cli/-/pipelines)
 
-## What is InnovaTech?
+[Supabase](https://supabase.io) is an open source Firebase alternative. We're building the features of Firebase using enterprise-grade open source tools.
 
-**InnovaTech** is a modern, web-based School Management System designed to streamline educational administration and enhance the learning experience for students, teachers, and parents. Built with a focus on user-friendly interfaces and comprehensive functionality, EduHub provides:
+This repository contains all the functionality for Supabase CLI.
 
-- **Multi-Role Dashboards** – Dedicated portals for students, teachers, parents, and school administrators.
-- **Real-Time Analytics** – Track attendance, performance, and school metrics.
-- **Interactive Learning Tools** – Study materials, schedules, and AI-powered study assistance.
-- **Secure Authentication** – Role-based access with secure login for all users.
-- **Responsive Design** – Accessible on desktop and mobile devices.
+- [x] Running Supabase locally
+- [x] Managing database migrations
+- [x] Creating and deploying Supabase Functions
+- [x] Generating types directly from your database schema
+- [x] Making authenticated HTTP requests to [Management API](https://supabase.com/docs/reference/api/introduction)
 
-> Education management isn't complicated.  
-> We simplifies school operations and empowers everyone with data-driven insights.
+## Getting started
 
----
+### Install the CLI
 
-## Tech Stack & Tools
-
-| Tool / Technology       | Purpose                                                                 |
-|-------------------------|-------------------------------------------------------------------------|
-| **HTML5**              | Structure and markup for all pages.                                     |
-| **CSS3**               | Styling and responsive design across portals.                           |
-| **JavaScript (ES6+)**  | Interactive functionality, DOM manipulation, and dynamic content.       |
-| **Font Awesome**       | Icons for navigation and UI elements.                                   |
-| **Supabase**           | Backend for authentication, data storage, and real-time updates.        |
-| **Chart.js**           | Data visualization for analytics and reports.                           |
-| **Local Storage**      | Client-side data persistence for user preferences.                      |
-
----
-
-## Key Features
-
-|  Feature                    | Description                                                                 |
-|-------------------------------|-----------------------------------------------------------------------------|
-| **Student Portal**           | Dashboard with class schedules, study materials, leaderboard, and social feed. |
-| **Teacher Portal**           | Attendance tracking, student lists, and teaching resources.                 |
-| **Parent Portal**            | Child's results, payment management, and communication with teachers.       |
-| **Admin Dashboard**          | School-wide analytics, student/teacher management, and scheduling.          |
-| **Secure Login**             | Role-based authentication for students, teachers, admins, and parents.      |
-| **Responsive UI**            | Optimized for desktop, tablet, and mobile devices.                          |
-| **Real-Time Updates**        | Live data synchronization using Supabase.                                   |
-| **AI Study Buddy**           | Integrated AI assistant for student queries and learning support.           |
-
----
-
-##  Project Structure
-
-```plaintext
-innovatech/
-├── index.html                 # Main login page
-├── assets/                    # Static assets (images, docs)
-│   ├── Placeholder.txt
-│   └── Readme.MD              # Placeholder README
-├── html/                      # Portal pages
-│   ├── signup.html            # Registration page
-│   ├── studentsPortal/        # Student-specific pages
-│   │   ├── studentPortal.html # Student dashboard
-│   │   ├── schedule.html      # Class schedule
-│   │   └── studyMaterials.html # Learning resources
-│   ├── teachersPortal/        # Teacher-specific pages
-│   │   ├── teachersPortal.html # Teacher dashboard
-│   │   ├── attendance.html    # Attendance management
-│   │   └── listOfStudents.html # Student roster
-│   ├── parentsPortal/         # Parent-specific pages
-│   │   ├── parentsPortal.html # Parent dashboard
-│   │   ├── childsResult.html  # Child's academic results
-│   │   └── payments.html      # Fee payments
-│   └── schoolAdmin/           # Admin-specific pages
-│       ├── schoolAdminDashboard.html # Admin dashboard
-│       ├── students.html      # Student management
-│       ├── teachers.html      # Teacher management
-│       ├── schedule.html      # School scheduling
-│       └── timeTable.html     # Timetable management
-├── styles/                    # CSS stylesheets
-│   ├── navbarStyles.css       # Navigation styles
-│   ├── studentsPortalStyles/  # Student portal styles
-│   ├── teachersPortalStyles/  # Teacher portal styles
-│   ├── parentsPortalStyles/   # Parent portal styles
-│   └── schoolAdminStyles/     # Admin portal styles
-├── scripts/                   # JavaScript files
-│   ├── config.js              # Configuration settings
-│   ├── font-awesome.js        # Font Awesome integration
-│   ├── graph.js               # Chart and graph utilities
-│   ├── side.js                # Sidebar functionality
-│   ├── sideBar.js             # Additional sidebar scripts
-│   ├── studentProfileAchivement.js # Student achievements
-│   ├── parentsPortalScripts/  # Parent portal scripts
-│   ├── schoolAdminScripts/    # Admin portal scripts
-│   └── teachersPortalScripts/ # Teacher portal scripts
-└── trash/                     # Deprecated or backup files
-    ├── chart.js
-    └── chart2.js
-```
-
----
-
-## 🛠️ Local Dev Setup
-
-1. **Clone the repository**
+Available via [NPM](https://www.npmjs.com) as dev dependency. To install:
 
 ```bash
-git clone <github.com/pepsiboy24/innovatech.git>
-cd innovatech
+npm i supabase --save-dev
 ```
 
-2. **Open in browser**
+When installing with yarn 4, you need to disable experimental fetch with the following nodejs config.
 
-Since this is a frontend-only project, simply open `index.html` in your web browser:
+```
+NODE_OPTIONS=--no-experimental-fetch yarn add supabase
+```
+
+> **Note**
+For Bun versions below v1.0.17, you must add `supabase` as a [trusted dependency](https://bun.sh/guides/install/trusted) before running `bun add -D supabase`.
+
+<details>
+  <summary><b>macOS</b></summary>
+
+  Available via [Homebrew](https://brew.sh). To install:
+
+  ```sh
+  brew install supabase/tap/supabase
+  ```
+
+  To install the beta release channel:
+  
+  ```sh
+  brew install supabase/tap/supabase-beta
+  brew link --overwrite supabase-beta
+  ```
+  
+  To upgrade:
+
+  ```sh
+  brew upgrade supabase
+  ```
+</details>
+
+<details>
+  <summary><b>Windows</b></summary>
+
+  Available via [Scoop](https://scoop.sh). To install:
+
+  ```powershell
+  scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
+  scoop install supabase
+  ```
+
+  To upgrade:
+
+  ```powershell
+  scoop update supabase
+  ```
+</details>
+
+<details>
+  <summary><b>Linux</b></summary>
+
+  Available via [Homebrew](https://brew.sh) and Linux packages.
+
+  #### via Homebrew
+
+  To install:
+
+  ```sh
+  brew install supabase/tap/supabase
+  ```
+
+  To upgrade:
+
+  ```sh
+  brew upgrade supabase
+  ```
+
+  #### via Linux packages
+
+  Linux packages are provided in [Releases](https://github.com/supabase/cli/releases). To install, download the `.apk`/`.deb`/`.rpm`/`.pkg.tar.zst` file depending on your package manager and run the respective commands.
+
+  ```sh
+  sudo apk add --allow-untrusted <...>.apk
+  ```
+
+  ```sh
+  sudo dpkg -i <...>.deb
+  ```
+
+  ```sh
+  sudo rpm -i <...>.rpm
+  ```
+
+  ```sh
+  sudo pacman -U <...>.pkg.tar.zst
+  ```
+</details>
+
+<details>
+  <summary><b>Other Platforms</b></summary>
+
+  You can also install the CLI via [go modules](https://go.dev/ref/mod#go-install) without the help of package managers.
+
+  ```sh
+  go install github.com/supabase/cli@latest
+  ```
+
+  Add a symlink to the binary in `$PATH` for easier access:
+
+  ```sh
+  ln -s "$(go env GOPATH)/bin/cli" /usr/bin/supabase
+  ```
+
+  This works on other non-standard Linux distros.
+</details>
+
+<details>
+  <summary><b>Community Maintained Packages</b></summary>
+
+  Available via [pkgx](https://pkgx.sh/). Package script [here](https://github.com/pkgxdev/pantry/blob/main/projects/supabase.com/cli/package.yml).
+  To install in your working directory:
+
+  ```bash
+  pkgx install supabase
+  ```
+
+  Available via [Nixpkgs](https://nixos.org/). Package script [here](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/supabase-cli/default.nix).
+</details>
+
+### Run the CLI
 
 ```bash
-# On Windows
-start index.html
-
-# Or manually open index.html in your preferred browser
+supabase bootstrap
 ```
 
-3. **For development with a local server** (optional, for better testing)
-
-Install a simple HTTP server:
+Or using npx:
 
 ```bash
-# Using Python (if installed)
-python -m http.server 5500
-
-# Or using Node.js
-npx http-server
+npx supabase bootstrap
 ```
 
-Then navigate to `http://localhost:5500` in your browser.
+The bootstrap command will guide you through the process of setting up a Supabase project using one of the [starter](https://github.com/supabase-community/supabase-samples/blob/main/samples.json) templates.
 
-4. **Configure Supabase** (for backend features)
+## Docs
 
-- Create a Supabase project at [supabase.com](https://supabase.com)
-- Update `scripts/config.js` with your Supabase URL and API key
+Command & config reference can be found [here](https://supabase.com/docs/reference/cli/about).
 
----
+## Breaking changes
 
-##  Testing
+We follow semantic versioning for changes that directly impact CLI commands, flags, and configurations.
 
-To test the application:
+However, due to dependencies on other service images, we cannot guarantee that schema migrations, seed.sql, and generated types will always work for the same CLI major version. If you need such guarantees, we encourage you to pin a specific version of CLI in package.json.
 
-1. Open `index.html` in a web browser
-2. Test login functionality (currently simulated)
-3. Navigate through different portals
-4. Verify responsive design on various screen sizes
+## Developing
 
-For automated testing (if implemented):
+To run from source:
 
-```bash
-# Placeholder for future test commands
-npm test
+```sh
+# Go >= 1.22
+go run . help
 ```
-
----
-
-##  Deployment
-
-This project can be deployed to any static hosting service:
-
-- **Netlify**: Drag and drop the project folder or connect via Git
-- **GitHub Pages**: Enable Pages in repository settings
-- **Vercel**: Import the project and deploy
-
-Ensure all file paths are relative for proper asset loading.
-
----
-
-##  Contribution
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/new-feature`)
-3. Commit your changes (`git commit -am 'Add new feature'`)
-4. Push to the branch (`git push origin feature/new-feature`)
-5. Create a Pull Request
-<<<<<<< HEAD
-6. We will respond in a jiffy.
-=======
-6. We will respond in a jiffy...
->>>>>>> Collins
-
----
-
-##  Contact
-
-- Project:  InnovaTech 
-- Repository: [InnovaTech](https://github.com/Pepsiboy24/innovatech)
-- Issues: [Here](https://github.com/Pepsiboy24/innovatech/issues)
-
----
-
-## Final Words
-
-InnovaTech represents the future of school management – efficient, accessible, and student-centered. By providing intuitive tools for all stakeholders, we aim to enhance educational outcomes and streamline administrative processes.
-
-Let's build better schools.
-
----
-
-**Built with ❤️ for Education**
-
-[![Static Badge](https://img.shields.io/badge/Frontend-HTML%2FCSS%2FJS-blue)](https://github.com)

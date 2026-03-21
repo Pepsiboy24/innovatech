@@ -1,217 +1,198 @@
+import { openUploadModal } from '../../../scripts/upload_modal_ui.js';
+
 document.addEventListener('DOMContentLoaded', function () {
-    // Locate the upload button in your UI
-    const uploadBtn = document.querySelector('.action-card .action-icon.add-multiple')?.parentElement;
-
-    if (uploadBtn) {
-        uploadBtn.addEventListener('click', function () {
-            createUploadModal();
-        });
-    }
-
-    // --- Modal Creation Logic ---
-    function createUploadModal() {
-        // Remove existing modal if any
-        const existingModal = document.querySelector('.upload-modal');
-        if (existingModal) existingModal.remove();
-
-        const modal = document.createElement('div');
-        modal.className = 'upload-modal';
-        modal.innerHTML = `
-            <div class="upload-modal-content">
-                <div class="upload-modal-header">
-                    <h2>Upload Subjects Excel Sheet</h2>
-                    <button class="close-modal" onclick="closeUploadModal()">&times;</button>
-                </div>
-                <div class="upload-modal-body">
-                    <p>Please upload an Excel file with columns: <strong>Subject Name, Type</strong> (Core/Elective)</p>
-                    <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="display: none;">
-                    <div id="dragDropArea">
-                        <i class="fa-solid fa-cloud-arrow-up" style="font-size: 48px; color: #6200ea; margin-bottom: 16px;"></i>
-                        <h3>Drag & Drop or Click to Upload</h3>
-                        <p>Supported formats: .xlsx, .xls</p>
-                    </div>
-                    <button id="uploadBtn" class="btn btn-primary" style="display: none;">Upload Subjects</button>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-        injectStyles(); // Helper to add CSS
-
-        // Event Listeners for Drag/Drop
-        const dragDropArea = document.getElementById('dragDropArea');
-        const fileInput = document.getElementById('excelFileInput');
-        const uploadBtnAction = document.getElementById('uploadBtn');
-
-        dragDropArea.addEventListener('click', () => fileInput.click());
-
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) handleFileUpload(file);
-        });
-
-        dragDropArea.addEventListener('dragover', (e) => {
+    const uploadBtns = document.querySelectorAll('.add-multiple');
+    
+    uploadBtns.forEach(btn => {
+        // If it's inside a button, attach to parent, else attach to itself
+        const target = btn.closest('button') || btn;
+        target.addEventListener('click', function (e) {
             e.preventDefault();
-            dragDropArea.style.borderColor = '#6200ea';
-            dragDropArea.style.backgroundColor = '#ede7f6';
+            openSubjectsExcelUpload();
         });
+        
+        if (!btn.closest('button')) {
+            target.style.cursor = 'pointer';
+        }
+    });
+});
 
-        dragDropArea.addEventListener('dragleave', () => {
-            dragDropArea.style.borderColor = '#e2e8f0';
-            dragDropArea.style.backgroundColor = '#f8fafc';
-        });
+const HINT_HTML = `
+<strong style="color:#93c5fd;">Required:</strong>
+<code style="color:#a5f3fc;">Subject Name</code>,
+<code style="color:#a5f3fc;">Type</code> (Core / Elective)
+<br>
+<span style="color:#64748b;">
+  Each row creates one subject. Duplicate subject names in the database will be skipped automatically.
+</span>`;
 
-        dragDropArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dragDropArea.style.borderColor = '#e2e8f0';
-            dragDropArea.style.backgroundColor = '#f8fafc';
-            const file = e.dataTransfer.files[0];
-            if (file) handleFileUpload(file);
-        });
+const COLUMNS = [
+    { key: 'Subject Name', label: 'Subject Name', required: true },
+    { key: 'Type', label: 'Type', required: true },
+];
 
-        uploadBtnAction.addEventListener('click', async () => {
-            const file = fileInput.files[0] || (e.dataTransfer ? e.dataTransfer.files[0] : null);
-            // Re-grab file from input just to be safe
-            if (fileInput.files[0]) {
-                await processExcelFile(fileInput.files[0]);
+function downloadTemplate() {
+    if (typeof XLSX === 'undefined') { showToast('Excel library not loaded.', 'error'); return; }
+    const ws = XLSX.utils.aoa_to_sheet([
+        ['Subject Name', 'Type'],
+        ['Mathematics', 'Core'],
+        ['Further Math', 'Elective'],
+    ]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Subjects');
+    XLSX.writeFile(wb, 'subjects_template.xlsx');
+}
+
+async function processFile(file, helpers) {
+    if (typeof XLSX === 'undefined') { showToast('Excel library not loaded.', 'error'); return; }
+    const data = await file.arrayBuffer();
+    const wb = XLSX.read(data, { type: 'array' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const raw = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
+    if (!raw.length) { showToast('File is empty.', 'warning'); return; }
+
+    const rows = raw.map((r, i) => {
+        const errors = [];
+        const name = (r['Subject Name'] || r['subject name'] || r['Name'] || r['name'] || r['Subject_Name'] || '').toString().trim();
+        const type = (r['Type'] || r['type'] || r['Subject Type'] || r['subject type'] || r['Subject_Type'] || '').toString().trim();
+        
+        if (!name) errors.push('Missing Subject Name');
+        if (!type) errors.push('Missing Type (Core/Elective)');
+        if (type && !['core', 'elective'].includes(type.toLowerCase())) errors.push('Type must be Core or Elective');
+        
+        return { ...r, 'Subject Name': name, 'Type': type, __index: i, __errors: errors };
+    });
+
+    helpers._rows = rows;
+    helpers._file = file;
+    helpers.showPreview(rows, COLUMNS);
+    const valid = rows.filter(r => !r.__errors.length).length;
+    helpers.setUploadEnabled(valid > 0);
+    if (valid === 0) showToast('No valid rows found.', 'warning');
+    else showToast(`${valid} subject${valid !== 1 ? 's' : ''} ready to upload.`, 'success', 3500);
+}
+
+async function doUpload(file, helpers) {
+    const validRows = (helpers._rows || []).filter(r => !r.__errors.length);
+    const validCount = validRows.length;
+    if (validCount === 0) return;
+
+    // Use standard window.confirm if showConfirm is not available globally
+    const showConfirmFn = window.showConfirm || window.confirm;
+    const confirmed = await window.showConfirm(
+        `Upload ${validCount} subject${validCount !== 1 ? 's' : ''}?`,
+        'Confirm Bulk Upload'
+    );
+    if (!confirmed) return;
+
+    helpers.startProgress(validCount);
+
+    try {
+        // 1. Process Excel Data (Clean & Remove internal duplicates)
+        const excelSubjectsMap = new Map();
+
+        validRows.forEach(row => {
+            const name = row['Subject Name'];
+            const type = row['Type'];
+
+            const cleanName = name;
+            const cleanKey = cleanName.toLowerCase();
+
+            // Only add if we haven't seen this name in the file yet
+            if (!excelSubjectsMap.has(cleanKey)) {
+                excelSubjectsMap.set(cleanKey, {
+                    subject_name: cleanName,
+                    is_core: type.toLowerCase() === 'core'
+                });
             }
         });
-    }
 
-    // --- UI Update on File Select ---
-    function handleFileUpload(file) {
-        const uploadBtn = document.getElementById('uploadBtn');
-        const dragDropArea = document.getElementById('dragDropArea');
+        // Get school_id from Auth Metadata (Required for RLS)
+        const { data: { user }, error: userError } = await window.supabase.auth.getUser();
+        const schoolId = user?.user_metadata?.school_id;
 
-        dragDropArea.innerHTML = `
-            <i class="fa-solid fa-file-excel" style="font-size: 48px; color: #217346; margin-bottom: 16px;"></i>
-            <h3>${file.name}</h3>
-            <p>File selected. Click Upload to proceed.</p>
-        `;
-        uploadBtn.style.display = 'block';
-    }
+        if (userError || !schoolId) {
+            throw new Error('School context not found. Please log in again.');
+        }
 
-    // --- CORE LOGIC: Process File & Check Duplicates ---
-    async function processExcelFile(file) {
-        const uploadBtn = document.getElementById('uploadBtn');
-        uploadBtn.textContent = "Processing...";
-        uploadBtn.disabled = true;
+        // 2. Fetch ALL Existing Subjects from Database for this school
+        helpers.tickProgress(0, validCount, "Checking for existing duplicate subjects...");
+        const { data: existingDbSubjects, error: fetchError } = await window.supabase
+            .from('Subjects')
+            .select('subject_name')
+            .eq('school_id', schoolId);
 
-        try {
-            const data = await file.arrayBuffer();
-            const workbook = XLSX.read(data);
-            const sheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[sheetName];
-            const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        if (fetchError) throw fetchError;
 
-            // 1. Process Excel Data (Clean & Remove internal duplicates)
-            const excelSubjectsMap = new Map();
+        // Create a Set of existing names for fast lookup
+        const existingNamesSet = new Set(existingDbSubjects.map(s => s.subject_name.toLowerCase()));
 
-            jsonData.forEach(row => {
-                const name = row['Subject Name'] || row['subject name'] || row['Name'] || row['name'];
-                const type = row['Type'] || row['type'] || row['Subject Type'] || row['subject type'];
+        // 3. Filter: Keep only items NOT in the database
+        const newSubjectsToInsert = [];
+        let duplicatesCount = 0;
 
-                if (name && type) {
-                    const cleanName = name.trim();
-                    const cleanKey = cleanName.toLowerCase();
-
-                    // Only add if we haven't seen this name in the file yet
-                    if (!excelSubjectsMap.has(cleanKey)) {
-                        excelSubjectsMap.set(cleanKey, {
-                            subject_name: cleanName,
-                            is_core: type.toLowerCase() === 'core'
-                        });
-                    }
-                }
-            });
-
-            if (excelSubjectsMap.size === 0) {
-                showToast('No valid subjects found in file. Please check column names.', 'warning');
-                uploadBtn.textContent = "Upload Subjects";
-                uploadBtn.disabled = false;
-                return;
-            }
-
-            // 2. Fetch ALL Existing Subjects from Database
-            const { data: existingDbSubjects, error: fetchError } = await window.supabase
-                .from('Subjects')
-                .select('subject_name');
-
-            if (fetchError) throw fetchError;
-
-            // Create a Set of existing names for fast lookup
-            const existingNamesSet = new Set(existingDbSubjects.map(s => s.subject_name.toLowerCase()));
-
-            // 3. Filter: Keep only items NOT in the database
-            const newSubjectsToInsert = [];
-            let duplicatesCount = 0;
-
-            for (const [key, subjectObj] of excelSubjectsMap) {
-                if (existingNamesSet.has(key)) {
-                    duplicatesCount++;
-                } else {
-                    newSubjectsToInsert.push(subjectObj);
-                }
-            }
-
-            // 4. Handle Insert
-            if (newSubjectsToInsert.length === 0) {
-                showToast(`All ${excelSubjectsMap.size} subjects in the file already exist in the database.`, "info");
-                closeUploadModal();
-                return;
-            }
-
-            const { data: insertedData, error } = await window.supabase
-                .from('Subjects')
-                .insert(newSubjectsToInsert);
-
-            if (error) {
-                console.error('Error inserting subjects:', error);
-                showToast('Failed to upload subjects. Please check the Excel file format.', 'error');
+        for (const [key, subjectObj] of excelSubjectsMap) {
+            if (existingNamesSet.has(key)) {
+                duplicatesCount++;
             } else {
-                console.log('Subjects uploaded successfully:', insertedData);
-
-                let message = `${newSubjectsToInsert.length} new subjects added!`;
-                if (duplicatesCount > 0) {
-                    message += `\n(${duplicatesCount} duplicates were skipped)`;
-                }
-                showToast(message, 'info');
-                closeUploadModal();
-            }
-
-        } catch (err) {
-            console.error('Error processing Excel file:', err);
-            showToast('Error processing the file. Ensure it is a valid Excel file.', 'error');
-        } finally {
-            // Reset button state if modal is still open
-            const btn = document.getElementById('uploadBtn');
-            if (btn) {
-                btn.textContent = "Upload Subjects";
-                btn.disabled = false;
+                // Inject school_id
+                subjectObj.school_id = schoolId;
+                newSubjectsToInsert.push(subjectObj);
             }
         }
-    }
 
-    // --- Helper: Inject CSS ---
-    function injectStyles() {
-        if (document.getElementById('upload-modal-styles')) return;
-        const style = document.createElement('style');
-        style.id = 'upload-modal-styles';
-        style.textContent = `
-            .upload-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 10001; backdrop-filter: blur(4px); }
-            .upload-modal-content { background: white; padding: 32px; border-radius: 16px; max-width: 500px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
-            .upload-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-            .close-modal { background: none; border: none; font-size: 24px; cursor: pointer; color: #64748b; }
-            #dragDropArea { border: 2px dashed #e2e8f0; border-radius: 12px; padding: 40px; text-align: center; margin: 20px 0; background: #f8fafc; cursor: pointer; transition: all 0.2s; }
-            .btn-primary { background-color: #6200ea; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; width: 100%; font-size: 16px; }
-            .btn-primary:disabled { background-color: #a5a5a5; cursor: not-allowed; }
-        `;
-        document.head.appendChild(style);
-    }
+        // 4. Handle Insert
+        if (newSubjectsToInsert.length === 0) {
+            helpers.finishProgress(`<div style="color:#fcd34d;">All ${excelSubjectsMap.size} subjects in the file already exist in the database.</div>`);
+            helpers.showFooterDone();
+            showToast(`All ${excelSubjectsMap.size} subjects in the file already exist.`, "info");
+            return;
+        }
 
-    // Expose close function globally
-    window.closeUploadModal = function () {
-        const modal = document.querySelector('.upload-modal');
-        if (modal) modal.remove();
-    };
-});
+        helpers.tickProgress(Math.floor(validCount / 2), validCount, `Inserting ${newSubjectsToInsert.length} non-duplicate subjects...`);
+        
+        const { error } = await window.supabase
+            .from('Subjects')
+            .insert(newSubjectsToInsert);
+
+        if (error) {
+            throw error;
+        }
+
+        let message = `${newSubjectsToInsert.length} new subjects added!`;
+        if (duplicatesCount > 0) {
+            message += `<br>(${duplicatesCount} duplicates were skipped)`;
+        }
+        
+        helpers.finishProgress(`<div style="color:#22c55e;">${message}</div>`);
+        helpers.showFooterDone();
+        
+        showToast(`${newSubjectsToInsert.length} new subjects added!`, 'success');
+        
+        // Allow a moment for the toast then reload the page to show latest subjects
+        setTimeout(() => {
+            window.location.reload();
+        }, 2000);
+
+    } catch (e) {
+        console.error('Upload Error:', e);
+        helpers.finishProgress(`<div style="color:#fca5a5;">Upload error: ${e.message}</div>`);
+        helpers.showFooterDone();
+        showToast('Upload error: ' + e.message, 'error');
+    }
+}
+
+function openSubjectsExcelUpload() {
+    if (typeof XLSX === 'undefined') { showToast('Excel library not loaded. Refresh and try again.', 'error'); return; }
+    openUploadModal({
+        title: 'Bulk Upload Subjects',
+        icon: 'fa-book-open',
+        accept: '.xlsx,.xls',
+        hintHtml: HINT_HTML,
+        templateFn: downloadTemplate,
+        confirmLabel: 'Upload Subjects',
+        onFile: processFile,
+        onConfirm: doUpload,
+    });
+}

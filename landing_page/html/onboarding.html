@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,8 +40,13 @@
         }
 
         @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
         }
 
         .onboarding-header {
@@ -191,8 +197,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .error-message {
@@ -414,17 +425,26 @@
         }
     </style>
 </head>
-<body>
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; z-index: 9999;">
-        <div style="text-align: center; color: white;">
-            <div style="width: 40px; height: 40px; border: 4px solid rgba(255, 255, 255, 0.3); border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
-            <p style="font-size: 18px; font-weight: 500;">Verifying authentication...</p>
-        </div>
-        <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
-    </div>
 
-    <div class="onboarding-container" style="display: none;">
+<body>
+    <div id="loadingOverlay"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+        <div style="text-align: center; color: white;">
+            <div
+                style="width: 40px; height: 40px; border: 4px solid rgba(255, 255, 255, 0.3); border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;">
+            </div>
+            <p id="loadingText" style="font-size: 18px; font-weight: 500;">Verifying authentication...</p>
+        </div>
+    </div>
+    <style>
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
+    <div class="onboarding-container" id="mainContainer" style="display: none;">
         <div class="onboarding-card">
             <div class="onboarding-header">
                 <h1>Welcome to EduHub</h1>
@@ -450,160 +470,7 @@
                 </div>
             </div>
 
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
-            </div>
-
-            <div class="error-message" id="errorMessage"></div>
-            <div class="success-message" id="successMessage"></div>
-
             <form id="onboardingForm">
-                <!-- School Information Section -->
-                <div class="form-section" id="schoolInfoSection">
-                    <h3><i class="fas fa-school"></i> School Information</h3>
-                    
-                    <div class="form-group">
-                        <label for="schoolName">School Name *</label>
-                        <input type="text" id="schoolName" name="schoolName" 
-                               placeholder="Enter your school name">
-                    </div>
-
-                    <div class="form-group">
-    <label for="tierSelect">Choose Your Plan *</label>
-    <div class="tier-selector">
-        <div class="tier-option" data-tier="1" onclick="selectTier(1)">
-            <div class="tier-header">
-                <h4>Tier 1</h4>
-                <span class="tier-price">Admin Core</span>
-            </div>
-            <ul class="tier-features">
-                <li><i class="fas fa-check"></i> Basic School Management</li>
-                <li><i class="fas fa-check"></i> Teacher Administration</li>
-                <li><i class="fas fa-check"></i> Class Management</li>
-                <li><i class="fas fa-times"></i> Student Portal</li>
-                <li><i class="fas fa-times"></i> Parent Access</li>
-            </ul>
-        </div>
-        <div class="tier-option" data-tier="2" onclick="selectTier(2)">
-            <div class="tier-header">
-                <h4>Tier 2</h4>
-                <span class="tier-price">Student Engagement</span>
-            </div>
-            <ul class="tier-features">
-                <li><i class="fas fa-check"></i> Everything in Tier 1</li>
-                <li><i class="fas fa-check"></i> Student Dashboard</li>
-                <li><i class="fas fa-check"></i> CBT Exams & Materials</li>
-                <li><i class="fas fa-check"></i> Student Portals</li>
-                <li><i class="fas fa-times"></i> Parent Access</li>
-            </ul>
-        </div>
-        <div class="tier-option" data-tier="3" onclick="selectTier(3)">
-            <div class="tier-header">
-                <h4>Tier 3</h4>
-                <span class="tier-price">Full Connect</span>
-            </div>
-            <ul class="tier-features">
-                <li><i class="fas fa-check"></i> Everything in Tier 2</li>
-                <li><i class="fas fa-check"></i> Parent Portal</li>
-                <li><i class="fas fa-check"></i> AI Assistants</li>
-                <li><i class="fas fa-check"></i> Parent Communication</li>
-                <li><i class="fas fa-check"></i> Advanced Analytics</li>
-            </ul>
-        </div>
-    </div>
-    <input type="hidden" id="tierSelect" name="tier" value="1" required>
-</div>
-
-                    <div class="form-group">
-                        <label for="schoolLogo">School Logo</label>
-                        <div class="file-upload" onclick="document.getElementById('schoolLogo').click()">
-                            <input type="file" id="schoolLogo" name="schoolLogo" 
-                                   accept="image/*" onchange="previewLogo(event)">
-                            <div class="file-upload-icon">
-                                <i class="fas fa-cloud-upload-alt"></i>
-                            </div>
-                            <div class="file-upload-text">
-                                Click to upload school logo<br>
-                                <small>PNG, JPG up to 5MB</small>
-                            </div>
-                        </div>
-                        <div class="file-preview" id="logoPreview"></div>
-                    </div>
-                </div>
-
-                <!-- Academic Setup Section -->
-                <div class="form-section" id="academicSetupSection" style="display: none;">
-                    <h3><i class="fas fa-graduation-cap"></i> Academic Configuration</h3>
-                    
-                    <div class="academic-grid">
-                        <div class="academic-field">
-                            <label for="academicSession">Current Academic Session *</label>
-                            <input type="text" id="academicSession" name="academicSession" 
-                                   placeholder="e.g., 2025/2026" required>
-                        </div>
-
-                        <div class="academic-field">
-                            <label for="currentTerm">Current Term *</label>
-                            <select id="currentTerm" name="currentTerm" required>
-                                <option value="">Select Term</option>
-                                <option value="First">First Term</option>
-                                <option value="Second">Second Term</option>
-                                <option value="Third">Third Term</option>
-                            </select>
-                        </div>
-
-                        <div class="academic-field">
-                            <label for="nextTermStartDate">Next Term Start Date *</label>
-                            <input type="date" id="nextTermStartDate" name="nextTermStartDate" required>
-                        </div>
-
-                        <div class="academic-field">
-                            <label for="schoolAddress">School Address</label>
-                            <input type="text" id="schoolAddress" name="schoolAddress" 
-                                   placeholder="Enter school address">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Bank Information Section -->
-                <div class="form-section" id="bankInfoSection" style="display: none;">
-                    <h3><i class="fas fa-university"></i> Bank Information</h3>
-                    
-                    <div class="form-group">
-                        <label for="bankName">Bank Name *</label>
-                        <input type="text" id="bankName" name="bankName" 
-                               placeholder="Enter bank name">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="accountNumber">Account Number *</label>
-                        <input type="text" id="accountNumber" name="accountNumber" 
-                               placeholder="Enter account number">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="bankCode">Bank Code (Optional)</label>
-                        <input type="text" id="bankCode" name="bankCode" 
-                               placeholder="Enter bank code if available">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="subAccountCode">Sub-account Code (Optional)</label>
-                        <input type="text" id="subAccountCode" name="subAccountCode" 
-                               placeholder="Enter sub-account code if available">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="commissionRate">Commission Rate (%)</label>
-                        <input type="number" id="commissionRate" name="commissionRate" 
-                               value="1.5" min="0" max="100" step="0.1">
-                    </div>
-                </div>
-
-                <button type="submit" class="submit-btn" id="submitBtn">
-                    <div class="loading-spinner" id="loadingSpinner"></div>
-                    <span id="btnText">Continue</span>
-                </button>
             </form>
         </div>
     </div>
@@ -611,38 +478,38 @@
     <script type="module" src="../scripts/onboarding.js"></script>
 
     <script>
+        // FAIL-SAFE: If the page stays on "Verifying" for too long, redirect to login
+        setTimeout(() => {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay && overlay.style.display !== 'none') {
+                console.warn("Auth verification timed out. Redirecting to login.");
+                window.location.href = '../html/login.html?error=timeout';
+            }
+        }, 5000); // 5 seconds max
+
         // Tier selection functionality
-        function selectTier(tier) {
-            // Remove selected class from all options
+        window.selectTier = function (tier) {
             document.querySelectorAll('.tier-option').forEach(option => {
                 option.classList.remove('selected');
             });
-            
-            // Add selected class to clicked option
-            document.querySelector(`[data-tier="${tier}"]`).classList.add('selected');
-            
-            // Update hidden input value
+            const selected = document.querySelector(`[data-tier="${tier}"]`);
+            if (selected) selected.classList.add('selected');
             document.getElementById('tierSelect').value = tier;
         }
 
-        // Initialize tier selection
-        document.addEventListener('DOMContentLoaded', function() {
-            selectTier(1); // Select Tier 1 by default
-        });
-
         // Logo preview function
-        function previewLogo(event) {
+        window.previewLogo = function (event) {
             const file = event.target.files[0];
             const preview = document.getElementById('logoPreview');
-            
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.innerHTML = `<img src="${e.target.result}" alt="School Logo Preview">`;
+                reader.onload = function (e) {
+                    preview.innerHTML = `<img src="${e.target.result}" alt="Logo Preview" style="max-width:100px; margin-top:10px;">`;
                 };
                 reader.readAsDataURL(file);
             }
         }
     </script>
 </body>
+
 </html>

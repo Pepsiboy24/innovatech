@@ -299,7 +299,7 @@
     </div>
 
     <script type="module">
-        import { supabase } from '../scripts/config.js';
+        import { supabase } from '../../scripts/config.js';
 
         class SchoolSignupStep2 {
             constructor() {
@@ -394,9 +394,9 @@
 
                     this.showSuccess('Account created successfully! Proceeding to school setup...');
 
-                    // Redirect to step 3 after a short delay
+                    // Redirect to academic setup step after a short delay
                     setTimeout(() => {
-                        window.location.href = 'signup_step3.html';
+                        window.location.href = 'signup_step2b_academic.html';
                     }, 2000);
 
                 } catch (error) {

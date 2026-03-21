@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Step 4: Final Confirmation - EduHub</title>
     <link rel="stylesheet" href="../styles/auth.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .confirmation-container {
             min-height: 100vh;
@@ -40,8 +42,13 @@
         }
 
         @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
         }
 
         .success-icon {
@@ -142,10 +149,6 @@
             margin-bottom: 8px;
         }
 
-        .credential-item:last-child {
-            margin-bottom: 0;
-        }
-
         .credential-label {
             font-size: 14px;
             color: #64748b;
@@ -165,59 +168,73 @@
             justify-content: center;
         }
 
-        .btn-primary, .btn-secondary {
+        .btn-primary {
             padding: 14px 28px;
             border-radius: 10px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            border: none;
-            font-size: 16px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
         }
 
         .btn-secondary {
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
             background: transparent;
             color: #667eea;
             border: 2px solid #667eea;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .btn-secondary:hover {
-            background: #667eea;
-            color: white;
-        }
-
-        .loading-spinner {
+        .loading-overlay {
             display: none;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #ffffff;
-            border-top: 2px solid transparent;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 1000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-right: 10px;
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
+
 <body>
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p style="margin-top: 15px; font-weight: 600; color: #667eea;">Finalizing account...</p>
+    </div>
+
     <div class="confirmation-container">
         <div class="confirmation-card">
             <div class="success-icon">
@@ -234,19 +251,19 @@
                 <div class="summary-grid">
                     <div class="summary-item">
                         <div class="summary-label">School Name</div>
-                        <div class="summary-value" id="summarySchoolName">Loading...</div>
+                        <div class="summary-value" id="summarySchoolName">Not Set</div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-label">Admin Email</div>
-                        <div class="summary-value" id="summaryEmail">Loading...</div>
+                        <div class="summary-value" id="summaryEmail">Not Set</div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-label">Plan Tier</div>
-                        <div class="summary-value" id="summaryTier">Loading...</div>
+                        <div class="summary-value" id="summaryTier">Tier 1</div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-label">Academic Session</div>
-                        <div class="summary-value" id="summarySession">Loading...</div>
+                        <div class="summary-value" id="summarySession">Not Set</div>
                     </div>
                 </div>
             </div>
@@ -256,22 +273,19 @@
                 <div class="credentials">
                     <div class="credential-item">
                         <span class="credential-label">Email:</span>
-                        <span class="credential-value" id="loginEmail">Loading...</span>
+                        <span class="credential-value" id="loginEmail">Not Set</span>
                     </div>
                     <div class="credential-item">
                         <span class="credential-label">Password:</span>
                         <span class="credential-value">123456</span>
                     </div>
                 </div>
-                <p style="font-size: 12px; color: #64748b; margin-top: 12px;">
-                    <strong>Important:</strong> Please save these credentials and change your password after first login.
-                </p>
             </div>
 
             <div class="action-buttons">
                 <button class="btn-primary" onclick="signupConfirmation.proceedToLogin()">
                     <i class="fas fa-sign-in-alt"></i>
-                    Login to Dashboard
+                    Go to Login
                 </button>
                 <button class="btn-secondary" onclick="window.print()">
                     <i class="fas fa-print"></i>
@@ -281,7 +295,17 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+        // Define same credentials as other steps
+        const SUPABASE_URL = 'https://dzotwozhcxzkxtunmqth.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE';
+
+        const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: { storageKey: 'sb-onboarding-temp', persistSession: true }
+        });
+
         class SignupConfirmation {
             constructor() {
                 this.init();
@@ -292,51 +316,52 @@
             }
 
             loadSummaryData() {
-                // Load data from sessionStorage
                 const schoolName = sessionStorage.getItem('schoolName');
                 const workEmail = sessionStorage.getItem('workEmail');
                 const selectedTier = sessionStorage.getItem('selectedTier') || '1';
                 const academicSession = sessionStorage.getItem('academicSession');
 
-                // Update summary display
-                if (schoolName) {
-                    document.getElementById('summarySchoolName').textContent = schoolName;
+                if (schoolName) document.getElementById('summarySchoolName').textContent = schoolName;
+                if (workEmail) {
+                    document.getElementById('summaryEmail').textContent = workEmail;
                     document.getElementById('loginEmail').textContent = workEmail;
                 }
 
-                if (workEmail) {
-                    document.getElementById('summaryEmail').textContent = workEmail;
-                }
-
-                if (selectedTier) {
-                    const tierNames = {
-                        '1': 'Tier 1 - Admin Core',
-                        '2': 'Tier 2 - Student Engagement',
-                        '3': 'Tier 3 - Full Connect'
-                    };
-                    document.getElementById('summaryTier').textContent = tierNames[selectedTier];
-                }
-
-                if (academicSession) {
-                    document.getElementById('summarySession').textContent = academicSession;
-                }
+                const tierNames = {
+                    '1': 'Tier 1 - Admin Core',
+                    '2': 'Tier 2 - Student Engagement',
+                    '3': 'Tier 3 - Full Connect'
+                };
+                document.getElementById('summaryTier').textContent = tierNames[selectedTier];
+                if (academicSession) document.getElementById('summarySession').textContent = academicSession;
             }
 
-            proceedToLogin() {
-                // Clear all sessionStorage data
-                sessionStorage.clear();
-                
-                // Redirect to main login page
-                window.location.href = '../html/login.html';
+            async proceedToLogin() {
+                document.getElementById('loadingOverlay').style.display = 'flex';
+
+                try {
+                    // 1. Force kill the temporary session so Login page starts fresh
+                    await authClient.auth.signOut();
+
+                    // 2. Clear all local traces
+                    sessionStorage.clear();
+                    localStorage.clear();
+
+                    console.log("Cleanup complete. Redirecting...");
+
+                    // 3. Move to login
+                    window.location.href = '../html/login.html?status=onboarding_complete';
+                } catch (err) {
+                    console.error("Logout error:", err);
+                    window.location.href = '../html/login.html';
+                }
             }
         }
 
-        // Initialize confirmation page
-        let signupConfirmation;
-
         document.addEventListener('DOMContentLoaded', () => {
-            signupConfirmation = new SignupConfirmation();
+            window.signupConfirmation = new SignupConfirmation();
         });
     </script>
 </body>
+
 </html>

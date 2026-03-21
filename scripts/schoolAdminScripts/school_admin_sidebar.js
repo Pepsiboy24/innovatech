@@ -21,19 +21,18 @@ import { hasFeatureAccess, getCurrentUserTier } from '../tierAccess.js';
         return '../shared/';  // from schoolAdmin → go up one, into shared
     }
 
-    // Fetch school branding data
+    // Fetch school branding data with AbortError handling
     async function getSchoolBranding() {
         try {
-            const { supabase } = await import('../../scripts/config.js');
             const { data: { user } } = await supabase.auth.getUser();
             if (!user || !user.user_metadata?.school_id) {
                 console.warn('No school_id found in user metadata');
                 return { school_name: 'EduHubAdmin', school_logo_url: null };
             }
-if (user) {
-        console.log("Current User Tier:", user.user_metadata.tier);
-        console.log("Full User Metadata:", user.user_metadata);
-    }
+            
+            console.log("Current User Tier:", user.user_metadata.tier);
+            console.log("Full User Metadata:", user.user_metadata);
+            
             const schoolId = user.user_metadata.school_id;
             const { data: school, error } = await supabase
                 .from('Schools')
@@ -41,19 +40,35 @@ if (user) {
                 .eq('school_id', schoolId)
                 .single();
 
-            if (error) {
-                console.error('Error fetching school data:', error);
-                return { school_name: 'EduHubAdmin', school_logo_url: null };
-            }
-
+            if (error) throw error;
             return school || { school_name: 'EduHubAdmin', school_logo_url: null };
+            
         } catch (error) {
-            console.error('Error getting school branding:', error);
+            // Handle AbortError specifically
+            if (error.name === 'AbortError') {
+                console.warn('Request aborted, retrying once...');
+                await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
+                return getSchoolBranding(); // Retry once
+            }
+            
+            console.error('Error fetching school branding:', error);
             return { school_name: 'EduHubAdmin', school_logo_url: null };
         }
     }
 
-    function buildSidebar(branding = { school_name: 'EduHubAdmin', school_logo_url: null }) {
+    // Initialize sidebar after main content loads
+    async function initializeSidebar() {
+        // Wait a bit to let main page content initialize first
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        const branding = await getSchoolBranding();
+        renderSidebar(branding);
+    }
+
+    // Initialize sidebar branding after main content loads
+    initializeSidebar();
+
+    function renderSidebar(branding = { school_name: 'EduHubAdmin', school_logo_url: null }) {
         const a = adminPrefix();
         const sh = sharedPrefix();
 
@@ -166,7 +181,7 @@ if (user) {
         const branding = await getSchoolBranding();
         
         // Build sidebar with dynamic branding
-        sidebarElement.innerHTML = buildSidebar(branding);
+        sidebarElement.innerHTML = renderSidebar(branding);
 
         // Apply tier-based filtering to navigation items - FIXED for School Admins
         const userTier = await getCurrentUserTier();
@@ -234,9 +249,6 @@ if (user) {
             logoutBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
                 try {
-                    // Dynamically import config.js to get the initialized supabase client 
-                    // (paths are relative to the HTML file: html/schoolAdmin/page.html -> ../../scripts/config.js)
-                    const { supabase } = await import('../../scripts/config.js');
                     await supabase.auth.signOut();
                 } catch (error) {
                     console.error("Logout Error:", error);
@@ -245,4 +257,7 @@ if (user) {
             });
         }
     });
+
+    // Initialize sidebar branding after main content loads
+    initializeSidebar();
 })();

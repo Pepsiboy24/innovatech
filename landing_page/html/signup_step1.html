@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,8 +40,13 @@
         }
 
         @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
         }
 
         .step-header {
@@ -113,7 +119,8 @@
             font-size: 14px;
         }
 
-        .form-group input {
+        .form-group input,
+        .form-group select {
             width: 100%;
             padding: 12px 16px;
             border: 2px solid #e5e7eb;
@@ -121,13 +128,34 @@
             font-size: 15px;
             transition: all 0.3s ease;
             background: #f9fafb;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
         }
 
-        .form-group input:focus {
+        .form-group input {
+            background-image: none;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
             outline: none;
             border-color: #667eea;
             background: white;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group select:focus {
+            background-color: white;
+        }
+
+        .field-hint {
+            display: block;
+            margin-top: 5px;
+            font-size: 12px;
+            color: #9ca3af;
         }
 
         .submit-btn {
@@ -215,11 +243,17 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="signup-container">
         <div class="signup-card">
@@ -247,14 +281,33 @@
             <form id="step1Form">
                 <div class="form-group">
                     <label for="schoolName">School Name *</label>
-                    <input type="text" id="schoolName" name="schoolName" 
-                           placeholder="Enter your school name" required>
+                    <input type="text" id="schoolName" name="schoolName" placeholder="Enter your school name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="schoolType">School Type *</label>
+                    <select id="schoolType" name="schoolType" required>
+                        <option value="" disabled selected>Select school type</option>
+                        <option value="Creche">Creche</option>
+                        <option value="Primary">Primary</option>
+                        <option value="Secondary">Secondary</option>
+                        <option value="Mixed">Mixed (Multiple Levels)</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
                     <label for="workEmail">Work Email *</label>
-                    <input type="email" id="workEmail" name="workEmail" 
-                           placeholder="admin@yourschool.com" required>
+                    <input type="email" id="workEmail" name="workEmail" placeholder="admin@yourschool.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="schoolWebsite">
+                        School Website
+                        <span
+                            style="font-size:11px;font-weight:400;color:#9ca3af;margin-left:6px;background:#f3f4f6;padding:2px 8px;border-radius:99px;">(Optional)</span>
+                    </label>
+                    <input type="url" id="schoolWebsite" name="schoolWebsite" placeholder="e.g. www.yourschool.com">
+                    <span class="field-hint">You can add or update this later from your school settings.</span>
                 </div>
 
                 <button type="submit" class="submit-btn" id="submitBtn">
@@ -272,7 +325,7 @@
     </div>
 
     <script type="module">
-        import { supabase } from '../scripts/config.js';
+        import { supabase } from '../../scripts/config.js';
 
         class SchoolSignupStep1 {
             constructor() {
@@ -305,10 +358,17 @@
 
                 const schoolName = document.getElementById('schoolName').value.trim();
                 const workEmail = document.getElementById('workEmail').value.trim();
+                const schoolType = document.getElementById('schoolType').value;
+                const schoolWebsite = document.getElementById('schoolWebsite').value.trim();
 
                 // Validation
                 if (!schoolName || schoolName.length < 3) {
                     this.showError('Please enter a valid school name (minimum 3 characters)');
+                    return;
+                }
+
+                if (!schoolType) {
+                    this.showError('Please select a school type');
                     return;
                 }
 
@@ -320,6 +380,8 @@
                 // Store in sessionStorage
                 sessionStorage.setItem('schoolName', schoolName);
                 sessionStorage.setItem('workEmail', workEmail);
+                sessionStorage.setItem('schoolType', schoolType);
+                if (schoolWebsite) sessionStorage.setItem('schoolWebsite', schoolWebsite);
                 sessionStorage.setItem('selectedTier', sessionStorage.getItem('selectedTier') || '1');
 
                 this.showSuccess('School information saved! Proceeding to next step...');
@@ -338,22 +400,22 @@
             showError(message) {
                 const errorEl = document.getElementById('errorMessage');
                 const successEl = document.getElementById('successMessage');
-                
+
                 errorEl.textContent = message;
                 errorEl.style.display = 'block';
                 successEl.style.display = 'none';
-                
+
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
 
             showSuccess(message) {
                 const errorEl = document.getElementById('errorMessage');
                 const successEl = document.getElementById('successMessage');
-                
+
                 successEl.textContent = message;
                 successEl.style.display = 'block';
                 errorEl.style.display = 'none';
-                
+
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
@@ -364,4 +426,5 @@
         });
     </script>
 </body>
+
 </html>

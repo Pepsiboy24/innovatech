@@ -1,9 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+import { supabase } from '../../config.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log("Timetable Wizard Loaded");
@@ -15,18 +10,59 @@ document.addEventListener('DOMContentLoaded', () => {
 // 1. Populate Class Dropdown
 async function fetchClasses() {
     const classSelect = document.getElementById('classSelect');
+    if (!classSelect) {
+        console.error("Class select element not found");
+        return;
+    }
+
     try {
-        const { data, error } = await supabase.from('Classes').select('class_id, class_name, section');
+        // Get school_id for RLS compliance
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        const schoolId = user?.user_metadata?.school_id;
+
+        if (userError || !schoolId) {
+            throw new Error('Authentication error. Please log in again.');
+        }
+
+        console.log("Fetching classes for school:", schoolId);
+
+        const { data, error } = await supabase
+            .from('Classes')
+            .select('class_id, class_name, section')
+            .eq('school_id', schoolId) // ✅ RLS compliance
+            .order('class_name');
+
         if (error) throw error;
+
+        console.log("Classes fetched:", data);
+
+        // Clear existing options
+        classSelect.innerHTML = '<option value="">Select a class...</option>';
+
+        if (!data || data.length === 0) {
+            const option = document.createElement('option');
+            option.value = "";
+            option.textContent = "No classes available";
+            option.disabled = true;
+            classSelect.appendChild(option);
+            return;
+        }
 
         data.forEach(cls => {
             const option = document.createElement('option');
             option.value = cls.class_id;
-            option.textContent = `${cls.class_name} ${cls.section}`;
+            option.textContent = `${cls.class_name} ${cls.section || ''}`.trim();
             classSelect.appendChild(option);
         });
+
+        console.log("Classes populated successfully");
+
     } catch (err) {
         console.error("Error fetching classes:", err);
+        showToast('Failed to load classes. Please try again.', 'error');
+        
+        // Show error state in dropdown
+        classSelect.innerHTML = '<option value="">Error loading classes</option>';
     }
 }
 
@@ -75,10 +111,19 @@ async function checkForEditMode() {
 async function loadClassConfig(classId) {
     console.log(`Checking config for class ${classId}...`);
     try {
+        // Get school_id for RLS compliance
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        const schoolId = user?.user_metadata?.school_id;
+
+        if (userError || !schoolId) {
+            throw new Error('Authentication error. Please log in again.');
+        }
+
         const { data, error } = await supabase
             .from('schedule_configs')
             .select('*')
             .eq('class_id', classId)
+            .eq('school_id', schoolId) // ✅ RLS compliance
             .maybeSingle();
 
         if (error) {
@@ -272,6 +317,14 @@ async function handleSaveConfig(e) {
     btn.disabled = true;
 
     try {
+        // Get school_id for RLS compliance
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        const schoolId = user?.user_metadata?.school_id;
+
+        if (userError || !schoolId) {
+            throw new Error('Authentication error. Please log in again.');
+        }
+
         const classId = document.getElementById('classSelect').value;
         const startTime = document.getElementById('startTime').value;
         const periodDuration = parseInt(document.getElementById('periodDuration').value);
@@ -294,11 +347,22 @@ async function handleSaveConfig(e) {
             period_duration: periodDuration,
             periods_per_day: calc.periodsPerDay,
             active_days: activeDays,
-            break_times: breaks
+            break_times: breaks,
+            school_id: schoolId // ✅ CRITICAL: Add school_id for RLS compliance
         };
 
-        const { data: existingConfig } = await supabase.from('schedule_configs').select('*').eq('class_id', classId).maybeSingle();
-        const { data: existingEntries } = await supabase.from('timetable_entries').select('*').eq('class_id', classId);
+        const { data: existingConfig } = await supabase
+            .from('schedule_configs')
+            .select('*')
+            .eq('class_id', classId)
+            .eq('school_id', schoolId) // ✅ RLS compliance
+            .maybeSingle();
+            
+        const { data: existingEntries } = await supabase
+            .from('timetable_entries')
+            .select('*')
+            .eq('class_id', classId)
+            .eq('school_id', schoolId); // ✅ RLS compliance
 
         let performMigration = false;
 
@@ -313,7 +377,11 @@ async function handleSaveConfig(e) {
                 if (confirmShift) {
                     performMigration = true;
                 } else {
-                    await supabase.from('timetable_entries').delete().eq('class_id', classId);
+                    await supabase
+                        .from('timetable_entries')
+                        .delete()
+                        .eq('class_id', classId)
+                        .eq('school_id', schoolId); // ✅ RLS compliance
                 }
             }
         }
@@ -321,7 +389,11 @@ async function handleSaveConfig(e) {
         // SAVE CONFIG (Using Option 1: check existence then Update or Insert)
         let saveError;
         if (existingConfig) {
-            const { error } = await supabase.from('schedule_configs').update(newConfig).eq('class_id', classId);
+            const { error } = await supabase
+                .from('schedule_configs')
+                .update(newConfig)
+                .eq('class_id', classId)
+                .eq('school_id', schoolId); // ✅ RLS compliance
             saveError = error;
         } else {
             const { error } = await supabase.from('schedule_configs').insert(newConfig);
@@ -357,11 +429,23 @@ async function handleSaveConfig(e) {
             }
 
             if (updates.length > 0) {
-                const { error: updateErr } = await supabase.from('timetable_entries').upsert(updates);
+                // Add school_id to updates for RLS compliance
+                const updatesWithSchool = updates.map(update => ({
+                    ...update,
+                    school_id: schoolId
+                }));
+                
+                const { error: updateErr } = await supabase.from('timetable_entries').upsert(updatesWithSchool);
                 if (updateErr) console.error("Migration update failed", updateErr);
             }
+
             if (idsToDelete.length > 0) {
-                await supabase.from('timetable_entries').delete().in('id', idsToDelete);
+                const { error: deleteErr } = await supabase
+                    .from('timetable_entries')
+                    .delete()
+                    .in('id', idsToDelete)
+                    .eq('school_id', schoolId); // ✅ RLS compliance
+                if (deleteErr) console.error("Migration delete failed", deleteErr);
             }
         }
 

@@ -483,6 +483,102 @@ body {
     color: var(--text-gray);
 }
 
+/* Tab Navigation */
+.cp-tabs {
+    display: flex;
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    gap: 0;
+}
+
+.tab-btn {
+    padding: 12px 20px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--text-gray);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+}
+
+.tab-btn:hover {
+    color: var(--primary);
+    background: rgba(98, 0, 234, 0.05);
+}
+
+.tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    background: rgba(98, 0, 234, 0.05);
+}
+
+.tab-btn i {
+    font-size: 16px;
+}
+
+/* Assignments Table */
+.assignments-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 28px;
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+}
+
+.assignments-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+.assignments-table {
+    background: var(--white);
+    margin: 0 28px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.assignments-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.assignments-table th {
+    background: var(--bg-light);
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-dark);
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+}
+
+.assignments-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    color: var(--text-dark);
+}
+
+.assignments-table tr:hover {
+    background: var(--bg-light);
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
 .btn-add-topic {
     padding: 9px 18px;
     background: var(--primary);

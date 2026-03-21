@@ -275,6 +275,8 @@ class SchoolOnboarding {
             const fullName = sessionStorage.getItem('fullName');
             const phoneNumber = sessionStorage.getItem('phoneNumber');
             const gender = sessionStorage.getItem('gender');
+            const schoolType = sessionStorage.getItem('schoolType');
+            const schoolWebsite = sessionStorage.getItem('schoolWebsite') || null;
 
             // Validation
             if (!bankName || !accountNumber || accountNumber.length < 8) {
@@ -317,6 +319,8 @@ class SchoolOnboarding {
                     current_term: this.formData.currentTerm,
                     next_term_start_date: this.formData.nextTermStartDate,
                     tier: this.formData.tier,
+                    school_type: schoolType || null,
+                    website: schoolWebsite,
                     is_active: true,
                     created_at: new Date().toISOString()
                 }])

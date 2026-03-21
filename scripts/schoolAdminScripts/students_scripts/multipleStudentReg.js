@@ -1,45 +1,51 @@
-// multipleStudentReg.js
-import { supabase } from '../../config.js';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+import { supabase } from '../../config.js'; // Your main Admin client
 
-// --- Global Cache for Classes (Prevents constant DB lookups) ---
+/**
+ * 1. ISOLATED AUTH CLIENT
+ * This client is created with persistSession: false.
+ * It is used ONLY for the signUp calls so it doesn't log you out.
+ */
+const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
+
+const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false,
+    detectSessionInUrl: false
+  }
+});
+
+// --- Global Cache ---
 let _allClassesCache = null;
-
-// --- Helper: Delay to prevent Rate Limiting ---
 const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
-// --- 1. Excel Processing Logic ---
-
+/**
+ * 2. MAIN PROCESSING FUNCTION
+ */
 export async function uploadAndProcessExcel(file) {
   try {
-    // Get current authenticated user (school admin) to get school_id
+    // Get Admin school_id from the MAIN client (Your persistent login)
     const { data: { user: adminUser }, error: adminError } = await supabase.auth.getUser();
-    
+
     if (adminError || !adminUser) {
-      console.error("Error getting authenticated admin:", adminError?.message);
-      return { success: false, error: "Admin authentication required" };
+      return [{ success: false, error: "Admin session expired. Please log in again." }];
     }
 
-    // Get school_id from admin's metadata
     const schoolId = adminUser.user_metadata?.school_id;
-    if (!schoolId) {
-      console.error("Admin missing school_id in metadata");
-      return { success: false, error: "Admin school association not found" };
-    }
+    if (!schoolId) return [{ success: false, error: "School ID not found in Admin metadata." }];
 
-    console.log("Processing students for school_id:", schoolId);
-
+    // Read Excel
     const data = await file.arrayBuffer();
     const workbook = XLSX.read(data);
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
-    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+    const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
 
     const results = [];
 
-    // Loop through rows
     for (const row of jsonData) {
-      // Add Delay to stop 429 Errors
-      await delay(1500);
+      // 800ms delay to keep Supabase Auth happy
+      await delay(800);
 
       const studentData = {
         full_name: row['Full Name'] || row['full_name'] || row['Name'],
@@ -47,144 +53,56 @@ export async function uploadAndProcessExcel(file) {
         date_of_birth: row['Date of Birth'] || row['date_of_birth'] || row['DOB'],
         gender: row['Gender'] || row['gender'],
         admission_date: row['Admission Date'] || row['admission_date'] || new Date().toISOString().split('T')[0],
-        profile_picture: "https://placehold.co/150x150/e8e8e8/363636?text=Profile",
         class_input: row['Classes'] || row['classes'] || row['Class'],
-        parent_name: row['Parent Name'] || row['parent_name'] || row['Parent Full Name'] || row['Parent'],
-        parent_email: row['Parent Email'] || row['parent_email'],
-        parent_phone: row['Parent Phone'] || row['parent_phone'] || row['Parent Phone Number'],
-        relationship: row['Relationship'] || row['relationship'] || 'Guardian'
+        parent_name: row['Parent Name'] || row['parent_name'],
+        parent_phone: row['Parent Phone'] || row['parent_phone']
       };
 
-      if (!studentData.full_name || !studentData.email) {
-        results.push({ success: false, error: 'Missing Name or Email', data: studentData });
-        continue;
-      }
-
-      const password = "123456"; // Hardcoded default password
-      let class_id = null;
+      if (!studentData.full_name || !studentData.email) continue;
 
       try {
-        // Handle Class/Section lookup using the NEW Robust Function
-        if (studentData.class_input) {
-          class_id = await getExistingClassId(studentData.class_input);
-        }
+        const class_id = await getExistingClassId(studentData.class_input);
 
-        // 1. Create Auth User
-        const {
-          data: { user },
-          error: authError,
-        } = await supabase.auth.signUp({
+        // --- STEP A: SIGN UP (Using Isolated authClient) ---
+        // This will NOT update LocalStorage or cookies.
+        const { data: authData, error: authError } = await authClient.auth.signUp({
           email: studentData.email,
-          password: password, // Hardcoded default password
+          password: "123456", // Default password
+          options: {
+            data: {
+              role: 'student',
+              school_id: schoolId
+            }
+          }
         });
 
-        // Add small delay to prevent "Too Many Requests" from Supabase
-        await new Promise(resolve => setTimeout(resolve, 100));
-
         if (authError) {
-          // Check if email already exists and skip with logging
-          if (authError.message.includes('already registered') ||
-            authError.message.includes('User already registered') ||
-            authError.message.includes('duplicate')) {
-            console.log(`Skip: Email already exists - ${studentData.email}`);
-            results.push({
-              success: false,
-              error: 'Skip: Email already exists',
-              data: studentData,
-              skipped: true
-            });
+          if (authError.message.includes('already registered')) {
+            results.push({ success: false, error: 'Email exists', skipped: true, data: studentData });
             continue;
           }
-          throw new Error("Auth: " + authError.message);
+          throw authError;
         }
 
-        // 2. Insert Profile into 'Students' Table
-        const { error: insertError } = await supabaseClient
+        // --- STEP B: INSERT PROFILE (Using Main supabase client) ---
+        // 'supabase' is still authenticated as the Admin.
+        const { error: insertError } = await supabase
           .from("Students")
-          .insert([
-            {
-              student_id: user.id,
-              full_name: studentData.full_name,
-              date_of_birth: formatExcelDate(studentData.date_of_birth),
-              gender: studentData.gender,
-              admission_date: formatExcelDate(studentData.admission_date),
-              profile_picture: studentData.profile_picture,
-              class_id: class_id, // Will be null if class not found
-              school_id: schoolId, // CRITICAL: Use school_id from authenticated admin
-            },
-          ]);
+          .insert([{
+            student_id: authData.user.id,
+            full_name: studentData.full_name,
+            gender: studentData.gender,
+            date_of_birth: formatExcelDate(studentData.date_of_birth),
+            admission_date: formatExcelDate(studentData.admission_date),
+            school_id: schoolId,
+            class_id: class_id,
+            profile_picture: "https://placehold.co/150x150?text=Profile"
+          }]);
 
-        if (insertError) throw new Error("DB: " + insertError.message);
+        if (insertError) throw insertError;
 
-        // --- STEP B & C: Parent Auth & Link ---
-        if (studentData.parent_name && studentData.parent_phone) {
-          let finalParentId = null;
-
-          // Look up existing parent by phone
-          const { data: existingParent, error: lookupError } = await supabaseClient
-            .from("Parents")
-            .select("parent_id")
-            .eq("phone_number", studentData.parent_phone)
-            .maybeSingle();
-
-          if (existingParent && !lookupError) {
-            finalParentId = existingParent.parent_id;
-          } else {
-            // Need to create new parent
-            // If they didn't provide an email, auto-generate one to satisfy auth requirement
-            const pEmail = studentData.parent_email || `parent_${studentData.parent_phone}@eduhub.com`;
-
-            const { data: { user: parentUser }, error: parentAuthError } = await supabase.auth.signUp({
-              email: pEmail,
-              password: '123456',
-            });
-
-            if (parentAuthError) {
-              // If email exists, we might need a fallback or log it. Proceeding with caution.
-              if (!parentAuthError.message.includes('already registered')) {
-                throw new Error("Parent Auth: " + parentAuthError.message);
-              }
-              console.warn(`Parent email ${pEmail} already registered, could not create parent auth.`);
-            }
-
-            const authUserId = parentUser ? parentUser.id : null;
-
-            const { data: newParentData, error: parentInsertError } = await supabaseClient
-              .from("Parents")
-              .insert([
-                {
-                  user_id: authUserId,
-                  full_name: studentData.parent_name,
-                  email: pEmail,
-                  phone_number: studentData.parent_phone,
-                  address: studentData.parent_address || null,
-                  occupation: studentData.parent_occupation || null
-                }
-              ])
-              .select("parent_id")
-              .single();
-
-            if (parentInsertError) throw new Error("Parent DB: " + parentInsertError.message);
-            finalParentId = newParentData.parent_id;
-          }
-
-          // Establish Link
-          if (finalParentId) {
-            const { error: linkError } = await supabaseClient
-              .from("Parent_Student_Links")
-              .insert([
-                {
-                  parent_id: finalParentId,
-                  student_id: user.id,
-                  relationship: studentData.relationship
-                }
-              ]);
-            if (linkError) throw new Error("Link DB: " + linkError.message);
-          }
-        }
-
-        console.log(`✅ Successfully registered: ${studentData.email} (ID: ${user.id})`);
-        results.push({ success: true, data: studentData, userId: user.id });
+        console.log(`✅ Success: ${studentData.email}`);
+        results.push({ success: true, data: studentData });
 
       } catch (err) {
         console.error("Row Error:", err.message);
@@ -193,61 +111,26 @@ export async function uploadAndProcessExcel(file) {
     }
     return results;
   } catch (error) {
-    console.error('File Error:', error);
+    console.error('Fatal Upload Error:', error);
     throw error;
   }
 }
 
-// --- 2. Helper Functions ---
-
 /**
- * THE ULTIMATE FIX: Fetch & Match
- * Fetches all classes once, strips spaces, and finds the matching ID.
+ * 3. HELPERS
  */
 async function getExistingClassId(rawString) {
   if (!rawString) return null;
-
-  // 1. Load Cache if empty (Only happens once per file upload)
   if (!_allClassesCache) {
-    console.log("🔄 Fetching all classes from DB...");
-    const { data, error } = await supabaseClient
-      .from('Classes')
-      .select('class_id, class_name, section');
-
-    if (error) {
-      console.error("DB Error fetching classes:", error.message);
-      return null;
-    }
-    _allClassesCache = data;
+    const { data } = await supabase.from('Classes').select('class_id, class_name, section');
+    _allClassesCache = data || [];
   }
-
-  // 2. Normalize Input: "JSS 1 - A" -> "JSS1A"
-  // Removes all spaces, hyphens, and makes uppercase
   const inputClean = rawString.toUpperCase().replace(/[^A-Z0-9]/g, '');
-
-  console.log(`🔎 Searching match for: "${rawString}" (Normalized: ${inputClean})`);
-
-  // 3. Find Match in Cache
-  const match = _allClassesCache.find(dbClass => {
-    // Normalize DB Data: "JSS 1" + "A" -> "JSS1A"
-    const dbName = (dbClass.class_name || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-    const dbSection = (dbClass.section || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-
-    // Compare
-    return (dbName + dbSection) === inputClean;
+  const match = _allClassesCache.find(c => {
+    const dbFull = (c.class_name + (c.section || '')).toUpperCase().replace(/[^A-Z0-9]/g, '');
+    return dbFull === inputClean;
   });
-
-  if (match) {
-    console.log(`✅ MATCH FOUND! Class: "${match.class_name} ${match.section}" (ID: ${match.class_id})`);
-    return match.class_id;
-  } else {
-    console.warn(`❌ No match found for "${rawString}". Check your spellings.`);
-    return null;
-  }
-}
-
-function generatePassword() {
-  return Math.random().toString(36).slice(-10) + "!";
+  return match ? match.class_id : null;
 }
 
 function formatExcelDate(dateVal) {
@@ -258,78 +141,4 @@ function formatExcelDate(dateVal) {
     return date.toISOString().split('T')[0];
   }
   return dateVal;
-}
-
-function displayResults(results) {
-  const successCount = results.filter(r => r.success).length;
-  const failureCount = results.filter(r => !r.success && !r.skipped).length;
-  const skippedCount = results.filter(r => r.skipped).length;
-
-  let message = `Process Complete!\n✅ Successfully Registered: ${successCount}\n`;
-  if (skippedCount > 0) {
-    message += `⏭️ Skipped (Email Exists): ${skippedCount}\n`;
-  }
-  if (failureCount > 0) {
-    message += `❌ Failed: ${failureCount}`;
-  }
-
-  // Log skipped emails for admin reference
-  const skippedStudents = results.filter(r => r.skipped);
-  if (skippedStudents.length > 0) {
-    console.log('=== SKIPPED STUDENTS (Email Already Exists) ===');
-    skippedStudents.forEach(student => {
-      console.log(`- ${student.data.email} (${student.data.full_name})`);
-    });
-  }
-
-  showToast(message, 'info');
-  document.querySelector('.upload-modal')?.remove();
-
-  if (typeof window.refreshStudentList === 'function') {
-    console.log("🔄 Refreshing student table...");
-    window.refreshStudentList();
-  }
-}
-
-// --- 3. UI Generation ---
-
-export function createDragDropArea() {
-  const container = document.createElement('div');
-  container.className = 'drag-drop-container';
-  container.innerHTML = `
-    <div class="drag-drop-box" id="dropZone" style="border: 2px dashed #ccc; padding: 20px; text-align: center; cursor: pointer;">
-      <i class="fa-solid fa-cloud-arrow-up"></i>
-      <h3>Drag & Drop Excel File</h3>
-      <p>Supported: .xlsx, .xls, .csv</p>
-      <button type="button" class="btn-browse">Browse Files</button>
-      <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" style="display: none;">
-      <div id="uploadStatus"></div>
-    </div>
-  `;
-
-  const dropZone = container.querySelector('#dropZone');
-  const fileInput = container.querySelector('#excelFileInput');
-  const statusDiv = container.querySelector('#uploadStatus');
-
-  dropZone.addEventListener('click', () => fileInput.click());
-  fileInput.addEventListener('change', (e) => handleFile(e.target.files[0], statusDiv));
-
-  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.background = '#f0f0f0'; });
-  dropZone.addEventListener('dragleave', () => { dropZone.style.background = 'transparent'; });
-  dropZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    handleFile(e.dataTransfer.files[0], statusDiv);
-  });
-
-  return container;
-}
-
-async function handleFile(file, statusDiv) {
-  statusDiv.innerHTML = "Processing... (This may take a moment per student)";
-  try {
-    const results = await uploadAndProcessExcel(file);
-    displayResults(results);
-  } catch (error) {
-    statusDiv.innerHTML = `<span style="color:red;">Error: ${error.message}</span>`;
-  }
 }

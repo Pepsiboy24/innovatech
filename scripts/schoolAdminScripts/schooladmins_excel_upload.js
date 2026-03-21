@@ -8,7 +8,11 @@
  * Flow: open modal → pick file → preview parsed rows → confirm → loop signUp + DB insert
  * Exposes:  window.openAdminExcelUpload()
  */
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { supabase } from '../config.js';
+
+const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
 
 const VALID_ROLES = ['School Admin', 'Super Admin', 'Editor'];
 const DEFAULT_ROLE = 'School Admin';
@@ -218,7 +222,13 @@ function renderPreview(rows) {
 
 // ── Upload loop ──────────────────────────────────────────────────────────────
 async function uploadAdmins(validRows) {
-    const tempClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const tempClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+            detectSessionInUrl: false
+        }
+    });
     const progressBar = document.getElementById('aeProgressBar');
     const progressLabel = document.getElementById('aeProgressLabel');
     const progressPct = document.getElementById('aeProgressPct');
@@ -253,7 +263,7 @@ async function uploadAdmins(validRows) {
             if (!authData.user) throw new Error('Auth signup returned no user');
 
             // 2. Insert into School_Admin
-            const { error: dbErr } = await supabaseClient
+            const { error: dbErr } = await supabase
                 .from('School_Admin')
                 .insert([{
                     admin_id: authData.user.id,

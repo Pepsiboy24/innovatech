@@ -194,6 +194,101 @@
                 margin-top: 4px;
             }
         }
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            /* Management panel full-width when stacked */
+            .management-section {
+                width: 100% !important;
+                flex-shrink: 1;
+            }
+            .management-card {
+                position: static;
+            }
+
+            /* Calendar header wraps */
+            .calendar-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+            .nav-buttons {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            .month-year {
+                font-size: 1rem;
+                min-width: unset;
+            }
+
+            /* Table cells stay readable when scrolled */
+            .academic-calendar-table th,
+            .academic-calendar-table td {
+                white-space: nowrap;
+                padding: 10px 12px;
+                font-size: 0.8rem;
+            }
+
+            /* Modal form single column */
+            #addEventForm {
+                grid-template-columns: 1fr;
+            }
+            #addEventForm .form-group.full-width {
+                grid-column: 1;
+            }
+            .modal-actions {
+                flex-direction: column-reverse;
+                gap: 0.5rem;
+            }
+            .modal-actions button {
+                width: 100%;
+            }
+
+            /* Management header stacks */
+            .management-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+            .add-event-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .calendar-h2 {
+                font-size: 1.25rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .calendar-card,
+            .management-card {
+                padding: 1rem 0.75rem;
+            }
+            .nav-btn {
+                padding: 0.375rem 0.5rem;
+                font-size: 0.75rem;
+            }
+            .calendar-h2 {
+                font-size: 1.1rem;
+            }
+        }
+        .calendar-section {
+            min-width: 0;
+            max-width: 100%;
+        }
+
+        .calendar-card {
+            max-width: 100%;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
     </style>
 </head>
 
@@ -202,7 +297,7 @@
     <div class="sidebar" data-sideBar></div>
 
     <!-- Main Content -->
-    <div class="main">
+    <div class="main-content">
         <div class="header">
             <div class="header-left">
                 <div class="icon mobile-menu-btn" data-sideBarOpen><i class="fa fa-bars"></i></div>
@@ -240,6 +335,7 @@
                             <span id="monthYear" class="month-year"></span>
                         </div>
                     </div>
+                    <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
                     <table class="academic-calendar-table">
                         <thead>
                             <tr>
@@ -254,6 +350,7 @@
                             <!-- Events will be populated here -->
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
 

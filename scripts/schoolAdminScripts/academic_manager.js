@@ -1,6 +1,6 @@
 // academic_manager.js
 // Unified Academic Manager for School Admin Portal
-import { supabase } from '../config.js';
+import { supabase } from '/scripts/config.js';
 
 // ─── State ────────────────────────────────────────────────────────────────────
 let allSubjects = [];
@@ -8,6 +8,8 @@ let selectedSubject = null; // { subject_id, subject_name, is_core }
 let pendingDeleteSubject = null; // for confirmation dialog
 let pendingDeleteTopic = null;   // for confirmation dialog
 let editingTopicId = null;       // when editing an existing topic
+let currentTab = 'curriculum';    // 'curriculum' or 'assignments'
+let allAllocations = [];          // Store subject allocations
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -19,6 +21,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('subjectSearch').addEventListener('input', (e) => {
         renderSubjectList(e.target.value.trim().toLowerCase());
     });
+
+    // Allocation form submission
+    document.getElementById('allocationForm').addEventListener('submit', handleAllocationSubmit);
 });
 
 // ─── Sidebar toggle (mobile) ─────────────────────────────────────────────────
@@ -32,31 +37,41 @@ function setupSidebar() {
 
 // ─── Load all subjects ────────────────────────────────────────────────────────
 async function loadSubjects() {
-    const { data, error } = await supabase
-        .from('Subjects')
-        .select('subject_id, subject_name, is_core')
-        .order('subject_name');
-
-    if (error) {
-        console.error('Error loading subjects:', error);
-        return;
-    }
-
-    allSubjects = data || [];
-    document.getElementById('subjectCount').textContent = allSubjects.length;
-    renderSubjectList('');
-
-    // Re-select the previously selected subject if still present
-    if (selectedSubject) {
-        const found = allSubjects.find(s => s.subject_id === selectedSubject.subject_id);
-        if (found) {
-            selectedSubject = found;
-            renderSubjectList(document.getElementById('subjectSearch').value.trim().toLowerCase());
-            loadCurriculum(found);
-        } else {
-            selectedSubject = null;
-            showEmptyState();
+    try {
+        // Ensure session is active
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError || !user) {
+            console.error('No active session:', userError);
+            showToast('Session expired. Please log in again.', 'error');
+            return;
         }
+
+        const schoolId = user?.user_metadata?.school_id;
+        if (!schoolId) {
+            console.error('School ID not found in user metadata');
+            showToast('Authentication error. Please log in again.', 'error');
+            return;
+        }
+
+        const { data, error } = await supabase
+            .from('Subjects')
+            .select('subject_id, subject_name, is_core')
+            .eq('school_id', schoolId) // CRITICAL: Add school_id filter for RLS
+            .order('subject_name');
+
+        if (error) {
+            console.error('Error loading subjects:', error);
+            showToast('Failed to load subjects: ' + error.message, 'error');
+            return;
+        }
+
+        allSubjects = data || [];
+        document.getElementById('subjectCount').textContent = allSubjects.length;
+        renderSubjectList('');
+    } catch (err) {
+        console.error('Unexpected error in loadSubjects:', err);
+        showToast('Failed to load subjects. Please try again.', 'error');
     }
 }
 
@@ -133,26 +148,59 @@ async function loadCurriculum(subject) {
     const content = document.getElementById('cpContent');
     content.innerHTML = `<div class="spinner-wrap"><div class="spinner"></div></div>`;
 
-    const { data, error } = await supabase
-        .from('Curriculum')
-        .select('*')
-        .eq('subject_id', subject.subject_id)
-        .order('week', { ascending: true });
+    try {
+        // Ensure session is active and get school_id
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError || !user) {
+            console.error('No active session:', userError);
+            showToast('Session expired. Please log in again.', 'error');
+            content.innerHTML = `<div class="cp-error">Session expired. Please log in again.</div>`;
+            return;
+        }
 
-    if (error) {
-        content.innerHTML = `
-            <div class="cp-error">
-                <i class="fa-solid fa-circle-exclamation"></i>
-                Failed to load curriculum: ${error.message}
-            </div>`;
-        return;
+        const schoolId = user?.user_metadata?.school_id;
+        if (!schoolId) {
+            console.error('School ID not found in user metadata');
+            showToast('Authentication error. Please log in again.', 'error');
+            content.innerHTML = `<div class="cp-error">Authentication error. Please log in again.</div>`;
+            return;
+        }
+
+        const { data, error } = await supabase
+            .from('Curriculum')
+            .select('*')
+            .eq('subject_id', subject.subject_id)
+            .eq('school_id', schoolId) // CRITICAL: Add school_id filter for RLS
+            .order('week', { ascending: true });
+
+        if (error) {
+            content.innerHTML = `
+                <div class="cp-error">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    Failed to load curriculum: ${error.message}
+                </div>`;
+            return;
+        }
+
+        const topics = data || [];
+        document.getElementById('cpTopicCount').textContent =
+            topics.length === 0 ? 'No topics yet' :
+                topics.length === 1 ? '1 topic' : `${topics.length} topics`;
+
+        // Render topics
+        renderTopics(topics);
+
+    } catch (err) {
+        console.error('Unexpected error in loadCurriculum:', err);
+        content.innerHTML = `<div class="cp-error">Failed to load curriculum. Please try again.</div>`;
     }
+}
 
-    const topics = data || [];
-    document.getElementById('cpTopicCount').textContent =
-        topics.length === 0 ? 'No topics yet' :
-            topics.length === 1 ? '1 topic' : `${topics.length} topics`;
-
+// ─── Render topics list ────────────────────────────────────────────────────────
+function renderTopics(topics) {
+    const content = document.getElementById('cpContent');
+    
     if (topics.length === 0) {
         content.innerHTML = `
             <div class="cp-no-topics">
@@ -162,9 +210,11 @@ async function loadCurriculum(subject) {
         return;
     }
 
-    content.innerHTML = `<div class="topics-list">
-        ${topics.map(t => renderTopicCard(t)).join('')}
-    </div>`;
+    content.innerHTML = `
+        <div class="topics-list">
+            ${topics.map(t => renderTopicCard(t)).join('')}
+        </div>
+    `;
 }
 
 // ─── Render a single topic card ───────────────────────────────────────────────
@@ -232,19 +282,52 @@ window.openAddSubjectModal = function () {
 
 document.getElementById('addSubjectForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    // 1. Get Form Data (Using the IDs from your actual HTML)
     const name = document.getElementById('asName').value.trim();
     const isCore = document.querySelector('input[name="asType"]:checked')?.value === 'core';
-    if (!name) return;
+    
+    if (!name) {
+        showToast('Please enter a subject name', 'warning');
+        return;
+    }
 
     const btn = document.getElementById('addSubjectBtn');
-    btn.disabled = true; btn.textContent = 'Saving…';
+    btn.disabled = true; 
+    btn.textContent = 'Saving...';
 
-    const { error } = await supabase.from('Subjects').insert([{ subject_name: name, is_core: isCore }]);
-    btn.disabled = false; btn.textContent = 'Add Subject';
+    try {
+        // 2. Get School ID from Auth Metadata (Required for RLS)
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        const schoolId = user?.user_metadata?.school_id;
 
-    if (error) { showToast('Error: ' + error.message, 'error'); return; }
-    closeModal('addSubjectModal');
-    await loadSubjects();
+        if (userError || !schoolId) {
+            throw new Error('School context not found. Please log in again.');
+        }
+
+        // 3. Insert into Supabase with school_id
+        const { error: insertError } = await supabase.from('Subjects').insert([
+            { 
+                subject_name: name, 
+                is_core: isCore,
+                school_id: schoolId 
+            }
+        ]);
+
+        if (insertError) throw insertError;
+
+        // 4. Success Handlers
+        showToast('Subject added successfully', 'success');
+        closeModal('addSubjectModal');
+        document.getElementById('addSubjectForm').reset();
+        await loadSubjects(); // Refresh the list
+
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Add Subject';
+    }
 });
 
 // ─── EDIT SUBJECT ─────────────────────────────────────────────────────────────
@@ -288,12 +371,41 @@ document.getElementById('confirmDeleteSubjectBtn').addEventListener('click', asy
     const btn = document.getElementById('confirmDeleteSubjectBtn');
     btn.disabled = true; btn.textContent = 'Deleting…';
 
-    // Delete curriculum entries first, then the subject
-    await supabase.from('Curriculum').delete().eq('subject_id', pendingDeleteSubject.subject_id);
-    const { error } = await supabase.from('Subjects').delete().eq('subject_id', pendingDeleteSubject.subject_id);
+    try {
+        // Get school_id for RLS compliance
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        const schoolId = user?.user_metadata?.school_id;
 
-    btn.disabled = false; btn.textContent = 'Yes, Delete';
-    if (error) { showToast('Error: ' + error.message, 'error'); return; }
+        if (userError || !schoolId) {
+            throw new Error('Authentication error. Please log in again.');
+        }
+
+        // Delete curriculum entries with school_id filter
+        const { error: curriculumError } = await supabase
+            .from('Curriculum')
+            .delete()
+            .eq('subject_id', pendingDeleteSubject.subject_id)
+            .eq('school_id', schoolId); // CRITICAL: Add school_id filter for RLS
+
+        if (curriculumError) {
+            console.error('Error deleting curriculum:', curriculumError);
+            // Continue with subject deletion even if curriculum deletion fails
+        }
+
+        const { error } = await supabase.from('Subjects').delete().eq('subject_id', pendingDeleteSubject.subject_id);
+
+        if (error) { 
+            showToast('Error: ' + error.message, 'error'); 
+            return; 
+        }
+
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+        return;
+    }
+
+    btn.disabled = false; 
+    btn.textContent = 'Yes, Delete';
 
     if (selectedSubject && selectedSubject.subject_id === pendingDeleteSubject.subject_id) {
         selectedSubject = null;
@@ -338,22 +450,48 @@ document.getElementById('topicForm').addEventListener('submit', async (e) => {
     const btn = document.getElementById('topicSaveBtn');
     btn.disabled = true; btn.textContent = 'Saving…';
 
-    let error;
-    if (editingTopicId) {
-        ({ error } = await supabase.from('Curriculum')
-            .update({ topic_name: name, week, description, status })
-            .eq('curriculum_id', editingTopicId));
-    } else {
-        ({ error } = await supabase.from('Curriculum')
-            .insert([{ subject_id: selectedSubject.subject_id, topic_name: name, week, description, status }]));
+    try {
+        // Get school_id for RLS compliance
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        const schoolId = user?.user_metadata?.school_id;
+
+        if (userError || !schoolId) {
+            throw new Error('Authentication error. Please log in again.');
+        }
+
+        let error;
+        if (editingTopicId) {
+            ({ error } = await supabase.from('Curriculum')
+                .update({ topic_name: name, week, description, status })
+                .eq('curriculum_id', editingTopicId)
+                .eq('school_id', schoolId)); // CRITICAL: Add school_id filter for RLS
+        } else {
+            ({ error } = await supabase.from('Curriculum')
+                .insert([{ 
+                    subject_id: selectedSubject.subject_id, 
+                    topic_name: name, 
+                    week, 
+                    description, 
+                    status,
+                    school_id: schoolId // CRITICAL: Add school_id for RLS
+                }]));
+        }
+
+        if (error) throw error;
+
+        // Success
+        showToast(`Topic ${editingTopicId ? 'updated' : 'added'} successfully`, 'success');
+        closeModal('topicModal');
+        document.getElementById('topicForm').reset();
+        editingTopicId = null;
+        await loadCurriculum(selectedSubject);
+
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = editingTopicId ? 'Save Changes' : 'Add Topic';
     }
-
-    btn.disabled = false;
-    btn.textContent = editingTopicId ? 'Save Changes' : 'Add Topic';
-
-    if (error) { showToast('Error: ' + error.message, 'error'); return; }
-    closeModal('topicModal');
-    await loadCurriculum(selectedSubject);
 });
 
 // ─── DELETE TOPIC ─────────────────────────────────────────────────────────────
@@ -368,14 +506,306 @@ document.getElementById('confirmDeleteTopicBtn').addEventListener('click', async
     const btn = document.getElementById('confirmDeleteTopicBtn');
     btn.disabled = true; btn.textContent = 'Deleting…';
 
-    const { error } = await supabase.from('Curriculum').delete().eq('curriculum_id', pendingDeleteTopic);
-    btn.disabled = false; btn.textContent = 'Yes, Delete';
+    try {
+        // Get school_id for RLS compliance
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        const schoolId = user?.user_metadata?.school_id;
 
-    if (error) { showToast('Error: ' + error.message, 'error'); return; }
-    pendingDeleteTopic = null;
-    closeModal('deleteTopicModal');
-    if (selectedSubject) await loadCurriculum(selectedSubject);
+        if (userError || !schoolId) {
+            throw new Error('Authentication error. Please log in again.');
+        }
+
+        const { error } = await supabase.from('Curriculum')
+            .delete()
+            .eq('curriculum_id', pendingDeleteTopic)
+            .eq('school_id', schoolId); // CRITICAL: Add school_id filter for RLS
+
+        if (error) throw error;
+
+        // Success
+        showToast('Topic deleted successfully', 'success');
+        pendingDeleteTopic = null;
+        closeModal('deleteTopicModal');
+        await loadCurriculum(selectedSubject);
+
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Yes, Delete';
+    }
 });
+
+// ─── Tab Management ─────────────────────────────────────────────────────────
+window.switchTab = function(tabName) {
+    currentTab = tabName;
+    
+    // Update tab button states
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    
+    // Load appropriate content
+    if (selectedSubject) {
+        if (tabName === 'curriculum') {
+            loadCurriculum(selectedSubject);
+        } else if (tabName === 'assignments') {
+            loadAssignments(selectedSubject);
+        }
+    }
+};
+
+// ─── Assignment Functions ─────────────────────────────────────────────────────
+async function loadAssignments(subject) {
+    try {
+        // Ensure session is active and get school_id
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        const schoolId = user?.user_metadata?.school_id;
+
+        if (userError || !schoolId) {
+            throw new Error('Authentication error. Please log in again.');
+        }
+
+        const content = document.getElementById('cpContent');
+        content.innerHTML = `<div class="spinner-wrap"><div class="spinner"></div></div>`;
+
+        const { data: allocations, error } = await supabase
+            .from('Subject_Allocations')
+            .select(`
+                *,
+                Classes(class_name, section),
+                Teachers(first_name, last_name)
+            `)
+            .eq('subject_id', subject.subject_id)
+            .eq('school_id', schoolId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        allAllocations = allocations || [];
+        renderAssignmentsTable(allAllocations);
+
+    } catch (err) {
+        console.error('Error loading assignments:', err);
+        const content = document.getElementById('cpContent');
+        content.innerHTML = `<div class="cp-error">Failed to load assignments. Please try again.</div>`;
+    }
+}
+
+function renderAssignmentsTable(allocations) {
+    const content = document.getElementById('cpContent');
+    
+    if (allocations.length === 0) {
+        content.innerHTML = `
+            <div class="cp-no-topics">
+                <i class="fa-solid fa-chalkboard-teacher"></i>
+                <p>No class assignments yet for this subject.<br>Click <strong>Assign to Class</strong> to get started.</p>
+                <button class="btn-primary" onclick="openAllocationModal()">
+                    <i class="fa-solid fa-plus"></i> Assign to Class
+                </button>
+            </div>`;
+        return;
+    }
+
+    content.innerHTML = `
+        <div class="assignments-header">
+            <h3>Class Assignments</h3>
+            <button class="btn-primary" onclick="openAllocationModal()">
+                <i class="fa-solid fa-plus"></i> Assign to Class
+            </button>
+        </div>
+        <div class="assignments-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Class</th>
+                        <th>Teacher</th>
+                        <th>Academic Year</th>
+                        <th>Term</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${allocations.map(allocation => `
+                        <tr>
+                            <td>${allocation.Classes?.class_name || 'N/A'} ${allocation.Classes?.section || ''}</td>
+                            <td>${allocation.Teachers?.first_name || 'N/A'} ${allocation.Teachers?.last_name || ''}</td>
+                            <td>${allocation.academic_year || 'N/A'}</td>
+                            <td>${allocation.term || 'N/A'}</td>
+                            <td>
+                                <button class="btn-danger btn-sm" onclick="removeAllocation('${allocation.allocation_id}')">
+                                    <i class="fa-solid fa-trash"></i> Remove
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+window.openAllocationModal = function() {
+    if (!selectedSubject) {
+        showToast('Please select a subject first', 'warning');
+        return;
+    }
+    
+    document.getElementById('allocationForm').reset();
+    populateAllocationDropdowns();
+    openModal('allocationModal');
+};
+
+async function populateAllocationDropdowns() {
+    try {
+        // Get school_id
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        const schoolId = user?.user_metadata?.school_id;
+
+        if (userError || !schoolId) {
+            throw new Error('Authentication error. Please log in again.');
+        }
+
+        // Populate classes dropdown
+        const { data: classes, error: classesError } = await supabase
+            .from('Classes')
+            .select('class_id, class_name, section')
+            .eq('school_id', schoolId)
+            .order('class_name');
+
+        if (classesError) throw classesError;
+
+        const classSelect = document.getElementById('allocationClass');
+        classSelect.innerHTML = '<option value="">Select a class...</option>' +
+            (classes || []).map(cls => `
+                <option value="${cls.class_id}">
+                    ${cls.class_name} ${cls.section || ''}
+                </option>
+            `).join('');
+
+        // Populate teachers dropdown
+        const { data: teachers, error: teachersError } = await supabase
+            .from('Teachers')
+            .select('teacher_id, first_name, last_name')
+            .eq('school_id', schoolId)
+            .order('first_name');
+
+        if (teachersError) throw teachersError;
+
+        const teacherSelect = document.getElementById('allocationTeacher');
+        teacherSelect.innerHTML = '<option value="">Select a teacher...</option>' +
+            (teachers || []).map(teacher => `
+                <option value="${teacher.teacher_id}">
+                    ${teacher.first_name} ${teacher.last_name}
+                </option>
+            `).join('');
+
+    } catch (err) {
+        console.error('Error populating dropdowns:', err);
+        showToast('Failed to load classes and teachers', 'error');
+    }
+}
+
+async function handleAllocationSubmit(e) {
+    e.preventDefault();
+    
+    const formData = {
+        classId: parseInt(document.getElementById('allocationClass').value),
+        teacherId: document.getElementById('allocationTeacher').value,
+        academicYear: document.getElementById('allocationAcademicYear').value.trim(),
+        term: document.getElementById('allocationTerm').value
+    };
+
+    // Validate form
+    if (!formData.classId || !formData.teacherId) {
+        showToast('Please select both class and teacher', 'error');
+        return;
+    }
+
+    const btn = document.getElementById('saveAllocationBtn');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    try {
+        // Get school_id for RLS compliance
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        const schoolId = user?.user_metadata?.school_id;
+
+        if (userError || !schoolId) {
+            throw new Error('Authentication error. Please log in again.');
+        }
+
+        // Check if allocation already exists
+        const { data: existing, error: checkError } = await supabase
+            .from('Subject_Allocations')
+            .select('allocation_id')
+            .eq('subject_id', selectedSubject.subject_id)
+            .eq('class_id', formData.classId)
+            .eq('school_id', schoolId)
+            .single();
+
+        if (existing) {
+            showToast('This subject is already assigned to this class', 'warning');
+            return;
+        }
+
+        // Insert allocation
+        const { error: insertError } = await supabase
+            .from('Subject_Allocations')
+            .insert([{
+                subject_id: selectedSubject.subject_id,
+                class_id: formData.classId,
+                teacher_id: formData.teacherId,
+                school_id: schoolId,
+                academic_year: formData.academicYear,
+                term: formData.term,
+                created_by: user?.email || 'system'
+            }]);
+
+        if (insertError) throw insertError;
+
+        // Success
+        showToast('Assignment saved successfully', 'success');
+        closeModal('allocationModal');
+        await loadAssignments(selectedSubject);
+
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save Assignment';
+    }
+}
+
+window.removeAllocation = async function(allocationId) {
+    if (!confirm('Are you sure you want to remove this assignment?')) {
+        return;
+    }
+
+    try {
+        // Get school_id for RLS compliance
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        const schoolId = user?.user_metadata?.school_id;
+
+        if (userError || !schoolId) {
+            throw new Error('Authentication error. Please log in again.');
+        }
+
+        const { error } = await supabase
+            .from('Subject_Allocations')
+            .delete()
+            .eq('allocation_id', allocationId)
+            .eq('school_id', schoolId);
+
+        if (error) throw error;
+
+        showToast('Assignment removed successfully', 'success');
+        await loadAssignments(selectedSubject);
+
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+    }
+};
 
 // ─── Expose close helpers to HTML ─────────────────────────────────────────────
 window.closeModal = closeModal;

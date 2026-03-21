@@ -8,14 +8,90 @@
     
     <title>Subjects Management - EduHubAdmin</title>
     <link rel="stylesheet" href="../../styles/schoolAdminStyles/subjects.css?v=1.1">
+    <link rel="stylesheet" href="../../styles/schoolAdminStyles/subject-allocation.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=1.1">
     <script src="../../scripts/ui_feedback.js"></script>
     <script type="module" src="../../scripts/schoolAdminScripts/school_admin_sidebar.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script type="module" src="../../scripts/schoolAdminScripts/subjects_scripts/subjectAllocationManager.js"></script>
+    <script type="module" src="../../scripts/schoolAdminScripts/subjects_scripts/single_subject_upload.js"></script>
+    <script type="module" src="../../scripts/schoolAdminScripts/subjects_scripts/allocationFormHandler.js"></script>
+    <script type="module" src="../../scripts/schoolAdminScripts/subjects_scripts/excel_subject_upload.js"></script>
+    <script type="module" src="../../scripts/schoolAdminScripts/subjects_scripts/display_subects.js"></script>
 </head>
 
 <body>
-    <!-- Popup -->
+    <!-- Subject Allocation Section -->
+<div class="allocation-section">
+    <div class="section-header">
+        <h2><i class="fas fa-tasks"></i> Subject Allocation</h2>
+        <p>Allocate subjects to classes and teachers</p>
+    </div>
+    
+    <div class="allocation-form-container">
+        <form id="allocationForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="allocationSubject">Subject *</label>
+                    <select id="allocationSubject" required>
+                        <option value="">Select Subject</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="allocationClass">Class *</label>
+                    <select id="allocationClass" required>
+                        <option value="">Select Class</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="allocationTeacher">Teacher *</label>
+                    <select id="allocationTeacher" required>
+                        <option value="">Select Teacher</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" id="clearAllocationBtn">
+                    <i class="fas fa-times"></i> Clear
+                </button>
+                <button type="submit" class="btn-primary" id="allocateBtn">
+                    <i class="fas fa-check"></i> Allocate Subject
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Allocations Table -->
+<div class="allocations-section">
+    <div class="section-header">
+        <h2><i class="fas fa-list"></i> Current Allocations</h2>
+        <p>View and manage subject allocations</p>
+    </div>
+    
+    <div class="table-container">
+        <table class="allocations-table">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Class</th>
+                    <th>Teacher</th>
+                    <th>Type</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="allocationsTableBody">
+                <!-- Allocations will be populated here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Popup -->
     <div class="popup" id="registrationPopup">
         <div class="containment">
             <div class="popup-header">

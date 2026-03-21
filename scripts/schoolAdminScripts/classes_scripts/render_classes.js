@@ -1,7 +1,36 @@
 import { supabase } from '../../config.js';
 
+/**
+ * Helper: Smart Level Naming
+ * Automatically translates "JSS1" to "Junior Secondary School 1"
+ * optimized for Nigerian school naming conventions.
+ */
+function getFullLevelName(className) {
+    if (!className) return "General Category";
+
+    const name = className.toUpperCase().trim();
+
+    if (name.startsWith('JSS')) {
+        return name.replace('JSS', 'Junior Secondary School ');
+    }
+    if (name.startsWith('SS')) {
+        return name.replace('SS', 'Senior Secondary School ');
+    }
+    if (name.startsWith('PRI')) {
+        return name.replace('PRI', 'Primary School ');
+    }
+    if (name.startsWith('NUR')) {
+        return name.replace('NUR', 'Nursery ');
+    }
+    if (name.startsWith('BASIC')) {
+        return name.replace('BASIC', 'Basic Education ');
+    }
+
+    return "Secondary School Level"; // Default fallback
+}
+
 // --- State Management ---
-window.allClassesData = []; // Changed to window property for global access
+window.allClassesData = [];
 
 // --- DOM Elements ---
 const template = document.querySelector("[data-template]");
@@ -13,7 +42,7 @@ function renderClasses(dataToRender) {
     container.innerHTML = "";
 
     if (dataToRender.length === 0) {
-        container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666;">No classes found.</p>';
+        container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666; padding: 40px;">No classes found.</p>';
         return;
     }
 
@@ -25,30 +54,38 @@ function renderClasses(dataToRender) {
         const teacherNameEl = card.querySelector("[data-teacher-name]");
         const studentNoEl = card.querySelector("[data-student-no]");
 
+        // Target the subtitle <p> tag. If you add data-level to your HTML, use that selector.
+        const levelNameEl = card.querySelector("[data-level]") || card.querySelector("p");
+
         const teacherFirstName = elem.Teachers?.first_name || "Unassigned";
         const teacherLastName = elem.Teachers?.last_name || "";
 
+        // Set dynamic content
         classNameEl.textContent = elem.class_name;
         classSectionEl.textContent = elem.section ? ` - ${elem.section}` : "";
+
+        // Apply the Smart Parsing logic here
+        if (levelNameEl) {
+            levelNameEl.textContent = getFullLevelName(elem.class_name);
+        }
+
         teacherNameEl.textContent = `${teacherFirstName} ${teacherLastName}`;
         studentNoEl.textContent = elem._studentCount ?? 0;
 
-        // --- Attach Click Events ---
+        // --- Attach Actions ---
         const editBtn = card.querySelector(".editBtn");
         const viewBtn = card.querySelector(".viewBtn");
         const deleteBtn = card.querySelector(".deleteBtn");
 
-        // Set data-id for view button
-        if (viewBtn) {
-            viewBtn.setAttribute('data-id', elem.class_id);
-        }
-
+        if (viewBtn) viewBtn.setAttribute('data-id', elem.class_id);
         if (editBtn) editBtn.onclick = () => window.openEditClassModal(elem.class_id);
-        // Remove old onclick for viewBtn - global event delegation will handle it
+
         if (deleteBtn) {
             deleteBtn.onclick = () => handleDeleteClass(elem);
+            // Visual lock if students exist
             if ((elem._studentCount ?? 0) > 0) {
                 deleteBtn.classList.add('deleteBtn--locked');
+                deleteBtn.title = "Cannot delete class with active students";
             }
         }
 
@@ -60,14 +97,12 @@ function renderClasses(dataToRender) {
 async function handleDeleteClass(elem) {
     const studentCount = elem._studentCount ?? 0;
 
-    // Block deletion if students are enrolled
     if (studentCount > 0) {
-        showToast(`Cannot delete "${elem.class_name}". It has ${studentCount} active student${studentCount > 1 ? 's' : ''}. Please reassign students first.`, "warning");
+        showToast(`Cannot delete "${elem.class_name}". It has ${studentCount} active students.`, "warning");
         return;
     }
 
-    // Confirm before deleting
-    const confirmed = await window.showConfirm(`Are you sure you want to delete "${elem.class_name}${elem.section ? ' - ' + elem.section : ''}"? This cannot be undone.`, "Delete Class");
+    const confirmed = await window.showConfirm(`Are you sure you want to delete "${elem.class_name}${elem.section ? ' - ' + elem.section : ''}"?`, "Delete Class");
     if (!confirmed) return;
 
     try {
@@ -77,9 +112,7 @@ async function handleDeleteClass(elem) {
             .eq("class_id", elem.class_id);
 
         if (error) throw error;
-
-        // Refresh the grid immediately without a full page reload
-        await loadClasses();
+        await loadClasses(); // Refresh data
 
     } catch (error) {
         console.error("Delete error:", error);
@@ -87,33 +120,27 @@ async function handleDeleteClass(elem) {
     }
 }
 
-// --- 3. Function to Fetch Data ---
+// --- 3. Data Fetching ---
 async function loadClasses() {
     try {
-        container.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">Loading classes...</p>';
+        container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 20px;">Loading classes...</p>';
 
-        // Fetch classes and student list in parallel
         const [classesResult, studentsResult] = await Promise.all([
-            supabase
-                .from("Classes")
-                .select("*, Teachers(first_name, last_name)"),
-            supabase
-                .from("Students")
-                .select("class_id")
+            supabase.from("Classes").select("*, Teachers(first_name, last_name)"),
+            supabase.from("Students").select("class_id")
         ]);
 
         if (classesResult.error) throw classesResult.error;
         if (studentsResult.error) throw studentsResult.error;
 
-        // Build a count map: { class_id -> count }
+        // Map students to classes for counts
         const countMap = {};
-        (studentsResult.data || []).forEach(student => {
-            if (student.class_id != null) {
-                countMap[student.class_id] = (countMap[student.class_id] || 0) + 1;
+        (studentsResult.data || []).forEach(s => {
+            if (s.class_id != null) {
+                countMap[s.class_id] = (countMap[s.class_id] || 0) + 1;
             }
         });
 
-        // Attach the count to each class object
         const classes = (classesResult.data || []).map(cls => ({
             ...cls,
             _studentCount: countMap[cls.class_id] ?? 0
@@ -123,21 +150,22 @@ async function loadClasses() {
         renderClasses(window.allClassesData);
 
     } catch (error) {
-        console.error("Error loading classes:", error);
-        container.innerHTML = '<p style="color: red; text-align: center;">Failed to load classes.</p>';
+        console.error("Load error:", error);
+        container.innerHTML = '<p style="color: red; text-align: center; padding: 20px;">Failed to load classes.</p>';
     }
 }
 
-// --- 4. Search Logic ---
+// --- 4. Search Implementation ---
 if (searchInput) {
     searchInput.addEventListener("input", (e) => {
         const searchTerm = e.target.value.toLowerCase().trim();
-        const filteredClasses = window.allClassesData.filter(item => {
-            const fullName = `${item.class_name || ""} ${item.section || ""}`.toLowerCase();
-            return fullName.includes(searchTerm);
+        const filtered = window.allClassesData.filter(item => {
+            const matchString = `${item.class_name} ${item.section}`.toLowerCase();
+            return matchString.includes(searchTerm);
         });
-        renderClasses(filteredClasses);
+        renderClasses(filtered);
     });
 }
 
+// Initialize
 loadClasses();

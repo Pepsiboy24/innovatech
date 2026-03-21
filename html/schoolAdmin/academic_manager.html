@@ -63,9 +63,17 @@
                 </div>
 
                 <div class="sp-footer">
-                    <button class="btn-add-subject" onclick="openAddSubjectModal()">
+                    <button class="btn-add-subject" onclick="openAddSubjectModal()" style="margin-bottom: 20px;">
                         <i class="fa-solid fa-plus"></i>
                         Add New Subject
+                    </button>
+                    <button class="btn-add-subject"
+                        style="width: 100%; background: #0f172a; border: 1px solid #334155;">
+                        <div class="action-icon add-multiple"
+                            style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                            <i class="fa-solid fa-file-excel" style="color: #22c55e;"></i>
+                            <span>Upload Excel Sheet</span>
+                        </div>
                     </button>
                 </div>
             </div><!-- /subjects-panel -->
@@ -93,6 +101,18 @@
                         <button class="btn-add-topic" onclick="openAddTopicModal()">
                             <i class="fa-solid fa-plus"></i>
                             Add Topic
+                        </button>
+                    </div>
+
+                    <!-- Tab Navigation -->
+                    <div class="cp-tabs">
+                        <button class="tab-btn active" data-tab="curriculum" onclick="switchTab('curriculum')">
+                            <i class="fa-solid fa-book"></i>
+                            Curriculum
+                        </button>
+                        <button class="tab-btn" data-tab="assignments" onclick="switchTab('assignments')">
+                            <i class="fa-solid fa-chalkboard-teacher"></i>
+                            Class Assignments
                         </button>
                     </div>
 
@@ -137,6 +157,13 @@
                 <div class="modal-footer">
                     <button type="button" class="btn-cancel" onclick="closeModal('addSubjectModal')">Cancel</button>
                     <button type="submit" class="btn-primary" id="addSubjectBtn">Add Subject</button>
+                    <div class="action-icon add-multiple">
+                        <i class="fa-solid fa-file-excel"></i>
+                    </div>
+                    <div class="action-info">
+                        <h3>Upload Excel</h3>
+                        <p>Bulk register subjects</p>
+                    </div>
                 </div>
             </form>
         </div>
@@ -257,11 +284,58 @@
         </div>
     </div>
 
+    <!-- ══════════════════════════════════════════════════════
+         MODAL: Assign Subject to Class
+    ═══════════════════════════════════════════════════════ -->
+    <div class="modal-overlay" id="allocationModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">Assign Subject to Class</span>
+                <button class="modal-close" onclick="closeModal('allocationModal')"><i class="fa fa-times"></i></button>
+            </div>
+            <form id="allocationForm">
+                <div class="form-group">
+                    <label for="allocationClass">Class <span style="color:var(--danger)">*</span></label>
+                    <select id="allocationClass" required>
+                        <option value="">Select a class...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="allocationTeacher">Teacher <span style="color:var(--danger)">*</span></label>
+                    <select id="allocationTeacher" required>
+                        <option value="">Select a teacher...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="allocationAcademicYear">Academic Year</label>
+                    <input type="text" id="allocationAcademicYear" placeholder="e.g. 2024/2025">
+                </div>
+                <div class="form-group">
+                    <label for="allocationTerm">Term</label>
+                    <select id="allocationTerm">
+                        <option value="">Select term...</option>
+                        <option value="First Term">First Term</option>
+                        <option value="Second Term">Second Term</option>
+                        <option value="Third Term">Third Term</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closeModal('allocationModal')">Cancel</button>
+                    <button type="submit" class="btn-primary" id="saveAllocationBtn">Save Assignment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 
     <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="../../scripts/font-awesome.js"></script>
     <script src="../../scripts/sideBar.js"></script>
     <script type="module" src="../../scripts/schoolAdminScripts/academic_manager.js"></script>
+    <!-- <script type="module" src="../../scripts/schoolAdminScripts/academic_manager.js"></script> -->
+
+    <script type="module" src="../../scripts/schoolAdminScripts/subjects_scripts/excel_subject_upload.js"></script>
 
 </body>
 

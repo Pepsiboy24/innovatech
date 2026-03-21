@@ -594,7 +594,6 @@
         window.saveTimetableChanges = async () => {
             const classId = document.getElementById('editClassId').value;
             const startTime = document.getElementById('editStartTime').value;
-            const endTime = document.getElementById('editEndTime').value;
             const duration = document.getElementById('editPeriodDuration').value;
 
             // Collect selected days
@@ -606,7 +605,6 @@
                     .from('schedule_configs')
                     .update({
                         start_time: startTime,
-                        end_time: endTime,
                         period_duration: parseInt(duration),
                         active_days: selectedDays // Ensure this column exists in your DB
                     })
