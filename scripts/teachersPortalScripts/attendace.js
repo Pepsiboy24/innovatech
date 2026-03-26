@@ -367,6 +367,12 @@ async function initializeAttendanceModule() {
     const teacherId = await checkTeacherLogin();
     if (!teacherId) return;
 
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.user_metadata?.school_id) {
+        console.warn('Strict Guard: No school_id found. Execution blocked.');
+        return;
+    }
+
     // Fetch and populate classes
     const classes = await fetchTeacherClasses(teacherId);
     if (classes.length === 0) {

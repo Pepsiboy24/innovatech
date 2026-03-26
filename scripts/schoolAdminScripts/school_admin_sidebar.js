@@ -22,9 +22,11 @@ import { hasFeatureAccess, getCurrentUserTier } from '../tierAccess.js';
     }
 
     // Fetch school branding data with AbortError handling
-    async function getSchoolBranding() {
+    async function getSchoolBranding(retries = 3) {
         try {
-            const { data: { user } } = await supabase.auth.getUser();
+            const { data: { user }, error: authError } = await supabase.auth.getUser();
+            if (authError) throw authError;
+
             if (!user || !user.user_metadata?.school_id) {
                 console.warn('No school_id found in user metadata');
                 return { school_name: 'EduHubAdmin', school_logo_url: null };
@@ -44,29 +46,18 @@ import { hasFeatureAccess, getCurrentUserTier } from '../tierAccess.js';
             return school || { school_name: 'EduHubAdmin', school_logo_url: null };
             
         } catch (error) {
-            // Handle AbortError specifically
-            if (error.name === 'AbortError') {
-                console.warn('Request aborted, retrying once...');
-                await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
-                return getSchoolBranding(); // Retry once
+            const isLockError = error.name === 'AbortError' || (error.message && error.message.toLowerCase().includes('lock'));
+            
+            if (isLockError && retries > 0) {
+                console.warn(`Auth lock collision in sidebar, retrying... (${retries} left)`);
+                await new Promise(resolve => setTimeout(resolve, Math.random() * 400 + 200));
+                return getSchoolBranding(retries - 1);
             }
             
             console.error('Error fetching school branding:', error);
             return { school_name: 'EduHubAdmin', school_logo_url: null };
         }
     }
-
-    // Initialize sidebar after main content loads
-    async function initializeSidebar() {
-        // Wait a bit to let main page content initialize first
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        const branding = await getSchoolBranding();
-        renderSidebar(branding);
-    }
-
-    // Initialize sidebar branding after main content loads
-    initializeSidebar();
 
     function renderSidebar(branding = { school_name: 'EduHubAdmin', school_logo_url: null }) {
         const a = adminPrefix();
@@ -258,6 +249,4 @@ import { hasFeatureAccess, getCurrentUserTier } from '../tierAccess.js';
         }
     });
 
-    // Initialize sidebar branding after main content loads
-    initializeSidebar();
 })();

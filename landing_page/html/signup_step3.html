@@ -289,7 +289,7 @@
         const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
             auth: {
                 storageKey: 'sb-onboarding-temp',
-                persistSession: true,
+                persistSession: false,
                 autoRefreshToken: false
             }
         });
@@ -383,6 +383,16 @@
 
                     await authClient.from('Classes').insert(classRows);
                 }
+
+                // Sync the school_id and tier metadata before redirecting
+                const { error: metadataErr } = await authClient.auth.updateUser({
+                    data: {
+                        school_id: school.school_id,
+                        tier: tier
+                    }
+                });
+
+                if (metadataErr) throw metadataErr;
 
                 // 6. Redirect to Dashboard
                 alert("Deployment Successful! Taking you to your dashboard.");

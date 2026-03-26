@@ -12,6 +12,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     async function initializeAllocationForm() {
         try {
+            const { data: { user } } = await window.supabase.auth.getUser();
+            if (!user?.user_metadata?.school_id) {
+                console.warn('Strict Guard: No school_id found. Execution blocked.');
+                return;
+            }
+
             await allocationManager.initialize();
             
             // Setup form submission

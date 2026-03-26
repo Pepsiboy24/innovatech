@@ -253,10 +253,11 @@
             text-decoration: underline;
         }
 
-        .level-grid {
+        .level-selection-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 8px;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            padding: 15px;
         }
 
         .level-chip {
@@ -318,6 +319,13 @@
             padding: 14px 18px;
             margin-bottom: 20px;
             min-height: 52px;
+        }
+
+        @media (max-width: 600px) {
+            .group-card {
+                width: 100%;
+                margin-bottom: 20px;
+            }
         }
 
         .pool-label {
@@ -645,6 +653,10 @@
             border-radius: 14px;
             padding: 18px 20px;
             margin-bottom: 24px;
+            position: sticky;
+            bottom: 0;
+            z-index: 1000;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
         }
 
         .preview-title {
@@ -829,7 +841,7 @@
                     <p class="level-section-label" style="margin-bottom:0;">Nursery / Early Years</p>
                     <button type="button" class="select-all-btn" data-target="grid-early">Select All</button>
                 </div>
-                <div class="level-grid" id="grid-early">
+                <div class="level-selection-grid" id="grid-early">
                     <div class="level-chip"><input type="checkbox" id="lv_creche" value="Creche"><label
                             for="lv_creche">Creche</label></div>
                     <div class="level-chip"><input type="checkbox" id="lv_pg" value="Playgroup"><label
@@ -850,7 +862,7 @@
                     <p class="level-section-label" style="margin-bottom:0;">Primary</p>
                     <button type="button" class="select-all-btn" data-target="grid-primary">Select All</button>
                 </div>
-                <div class="level-grid" id="grid-primary">
+                <div class="level-selection-grid" id="grid-primary">
                     <div class="level-chip"><input type="checkbox" id="lv_p1" value="Primary 1"><label
                             for="lv_p1">Primary 1</label></div>
                     <div class="level-chip"><input type="checkbox" id="lv_p2" value="Primary 2"><label
@@ -869,9 +881,9 @@
             <div class="level-section">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                     <p class="level-section-label" style="margin-bottom:0;">Junior Secondary (JSS)</p>
-                    <button type="button" class="select-all-btn" data-target="grid-jss">Select All</button>
+                    <button type="button" class="select-all-btn" data-target="grid-jss">Select All Junior</button>
                 </div>
-                <div class="level-grid" id="grid-jss">
+                <div class="level-selection-grid" id="grid-jss">
                     <div class="level-chip"><input type="checkbox" id="lv_jss1" value="JSS 1"><label for="lv_jss1">JSS
                             1</label></div>
                     <div class="level-chip"><input type="checkbox" id="lv_jss2" value="JSS 2"><label for="lv_jss2">JSS
@@ -884,9 +896,9 @@
             <div class="level-section" style="margin-bottom:18px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                     <p class="level-section-label" style="margin-bottom:0;">Senior Secondary (SS)</p>
-                    <button type="button" class="select-all-btn" data-target="grid-ss">Select All</button>
+                    <button type="button" class="select-all-btn" data-target="grid-ss">Select All Senior</button>
                 </div>
-                <div class="level-grid" id="grid-ss">
+                <div class="level-selection-grid" id="grid-ss">
                     <div class="level-chip"><input type="checkbox" id="lv_ss1" value="SS 1"><label for="lv_ss1">SS
                             1</label></div>
                     <div class="level-chip"><input type="checkbox" id="lv_ss2" value="SS 2"><label for="lv_ss2">SS
@@ -1535,6 +1547,18 @@
                 document.querySelectorAll('.group-name-input')[1].value = 'Senior Classes';
                 state.groups[0].name = 'Junior Classes';
                 state.groups[1].name = 'Senior Classes';
+
+                if (schoolType === 'Secondary') {
+                    // Pre-select JSS1-SS3
+                    ['JSS 1', 'JSS 2', 'JSS 3', 'SS 1', 'SS 2', 'SS 3'].forEach(lvl => {
+                        const cb = document.querySelector(`.level-chip input[value="${lvl}"]`);
+                        if (cb) cb.checked = true;
+                    });
+                    
+                    // Pre-fill arms based on school type
+                    if (state.groups[0]._tagInput) state.groups[0]._tagInput.setTags(['A', 'B', 'C']);
+                    if (state.groups[1]._tagInput) state.groups[1]._tagInput.setTags(['Science', 'Arts']);
+                }
             }
 
             updatePreview();

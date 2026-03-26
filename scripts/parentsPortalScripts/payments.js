@@ -16,6 +16,11 @@ async function initializePayments() {
         // Get current student info
         await getCurrentStudentInfo();
         
+        if (!currentSchoolId) {
+            console.warn('Strict Guard: No school_id found. Execution blocked.');
+            return;
+        }
+
         // Load payment items
         await loadPaymentItems();
         

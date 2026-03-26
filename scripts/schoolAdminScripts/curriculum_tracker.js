@@ -11,6 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function initializeApp() {
     try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user?.user_metadata?.school_id) {
+            console.warn('Strict Guard: No school_id found. Execution blocked.');
+            return;
+        }
         await fetchTeachers();
         renderTeacherCards();
         setupEventListeners();

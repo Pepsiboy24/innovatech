@@ -140,13 +140,17 @@ import { hasFeatureAccess, getCurrentUserTier, TIERS } from './tierAccess.js';
 })();
 
 function redirectToLogin() {
-    console.log('Redirecting to login...');
+    console.warn('Strict Guard: Redirecting to login...');
+    if (document.body) document.body.style.display = 'none';
     window.location.href = '../../landing_page/html/login.html';
+    if (window.stop) window.stop();
 }
 
 function redirectToOnboarding() {
-    console.log('Redirecting to onboarding...');
+    console.warn('Strict Guard: Redirecting to onboarding...');
+    if (document.body) document.body.style.display = 'none';
     window.location.href = '../../landing_page/html/onboarding.html';
+    if (window.stop) window.stop();
 }
 
 function showAccessDeniedModal(message, redirectUrl) {

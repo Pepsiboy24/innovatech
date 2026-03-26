@@ -11,8 +11,42 @@ const monthYearSpan = document.getElementById('monthYear');
 const searchInput = document.querySelector('.search-input'); // Header search bar
 
 // --- 1. Fetching Data ---
+async function fetchCurrentSchoolSession(retries = 3) {
+    try {
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError) throw authError;
+        
+        if (!user || !user.user_metadata?.school_id) return null;
+
+        const { data, error } = await supabase
+            .from('Schools')
+            .select('current_session')
+            .eq('school_id', user.user_metadata.school_id)
+            .single();
+
+        if (error) {
+            console.error("Error fetching school session:", error);
+            return null;
+        }
+        return data?.current_session;
+    } catch (error) {
+        const isLockError = error.name === 'AbortError' || (error.message && error.message.toLowerCase().includes('lock'));
+        
+        if (isLockError && retries > 0) {
+            console.warn(`Auth lock collision in calendar, retrying... (${retries} left)`);
+            await new Promise(resolve => setTimeout(resolve, Math.random() * 400 + 200));
+            return fetchCurrentSchoolSession(retries - 1);
+        }
+        
+        console.error("Failed to fetch current school session:", error);
+        return null;
+    }
+}
+
 async function fetchEvents() {
     try {
+        const currentSchoolSession = await fetchCurrentSchoolSession();
+
         // We select academic_session too so we can group them
         const { data, error } = await supabase
             .from('academic_events')
@@ -22,7 +56,7 @@ async function fetchEvents() {
         if (error) throw error;
 
         allEvents = data;
-        processSessions(data);
+        processSessions(data, currentSchoolSession);
         renderCurrentSession();
     } catch (error) {
         console.error("Error fetching events from DB:", error);
@@ -30,15 +64,22 @@ async function fetchEvents() {
 }
 
 // --- 2. Data Processing ---
-function processSessions(data) {
+function processSessions(data, currentSchoolSession) {
     // 1. Extract unique session names (e.g., "2023/2024", "2024/2025")
     const sessions = data.map(event => event.academic_session).filter(Boolean);
+    if (currentSchoolSession) {
+        sessions.push(currentSchoolSession);
+    }
     uniqueSessions = [...new Set(sessions)].sort(); // Sort alphabetically/numerically
     window.uniqueSessions = uniqueSessions; // Export for event_manager.js
 
-    // 2. Default to the last session (most recent) if we have data
+    // 2. Default to the current school session if it exists, else the last session (most recent)
     if (uniqueSessions.length > 0) {
-        currentSessionIndex = uniqueSessions.length - 1;
+        if (currentSchoolSession && uniqueSessions.includes(currentSchoolSession)) {
+            currentSessionIndex = uniqueSessions.indexOf(currentSchoolSession);
+        } else {
+            currentSessionIndex = uniqueSessions.length - 1;
+        }
     }
 }
 

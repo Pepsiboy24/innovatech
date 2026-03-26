@@ -7,105 +7,111 @@ document.addEventListener('DOMContentLoaded', function () {
     const fileNameDisplay = document.getElementById('fileNameDisplay');
     const uploadZone = document.querySelector('.upload-zone');
 
-    // Link the visible button to the hidden input
-    browseButton.addEventListener('click', function () {
-        fileInput.click();
-    });
+    if (browseButton) browseButton.addEventListener('click', () => fileInput.click());
 
-    // Display the selected file name and process upload
-    fileInput.addEventListener('change', function () {
-        if (fileInput.files.length > 0) {
-            const file = fileInput.files[0];
-            fileNameDisplay.textContent = `Selected: ${file.name}`;
-            processFile(file);
-        } else {
-            fileNameDisplay.textContent = '';
-        }
-    });
+    if (fileInput) {
+        fileInput.addEventListener('change', function () {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                if (fileNameDisplay) fileNameDisplay.textContent = `Selected: ${file.name}`;
+                processFile(file);
+            }
+        });
+    }
 
-    // Drag and drop functionality
-    uploadZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadZone.classList.add('drag-active');
-    });
-
-    uploadZone.addEventListener('dragleave', () => {
-        uploadZone.classList.remove('drag-active');
-    });
-
-    uploadZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadZone.classList.remove('drag-active');
-        fileInput.files = e.dataTransfer.files;
-        fileInput.dispatchEvent(new Event('change'));
-    });
+    // Drag & Drop
+    if (uploadZone) {
+        uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('drag-active'); });
+        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-active'));
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('drag-active');
+            if (fileInput) { fileInput.files = e.dataTransfer.files; fileInput.dispatchEvent(new Event('change')); }
+        });
+    }
 
     async function processFile(file) {
         const fileType = file.name.split('.').pop().toLowerCase();
         let events = [];
 
-        // --- FIX STARTS HERE ---
-        // 1. Get the current Session Name from the UI (e.g. "2025/2026")
+        // 1. Get current Session Info from UI
         const monthYearEl = document.getElementById('monthYear');
-        let currentSession = monthYearEl.dataset.sessionName;
-
-        // Fallback for older states
-        if (!currentSession) {
+        let currentSession = monthYearEl ? monthYearEl.dataset.sessionName : null;
+        if (!currentSession && monthYearEl) {
             currentSession = monthYearEl.textContent.replace(' Academic Session', '').trim();
         }
 
-        // Safety check: if the title is empty or generic, ask the user
-        if (!currentSession || currentSession.includes('No Academic')) {
-            currentSession = prompt("Please enter the Academic Session for these events (e.g., 2025/2026):");
-            if (!currentSession) {
-                showToast("Upload cancelled. Session name is required.", "warning");
-                return;
-            }
-        }
-        // --- FIX ENDS HERE ---
-
         try {
-            if (fileType === 'csv') {
-                events = await parseCSV(file);
-            } else if (fileType === 'xlsx') {
-                events = await parseXLSX(file);
-            } else if (fileType === 'ics') {
-                events = await parseICS(file);
-            } else {
-                throw new Error('Unsupported file type. Please upload .csv, .xlsx, or .ics files.');
+            // --- THE ANTI-GRAVITY AUTH PULSE ---
+            // This forces the browser to get a fresh JWT token containing your school_id
+            const { data: { session }, error: refreshError } = await supabase.auth.refreshSession();
+
+            if (refreshError || !session) {
+                throw new Error("Security token expired. Please log out and log back in to verify your school identity.");
             }
 
-            if (events.length === 0) {
-                showToast('No events found in the file.', 'warning');
+            const schoolId = session.user.user_metadata.school_id;
+            if (!schoolId) {
+                throw new Error("Your account is not linked to a school UUID. Please re-run onboarding.");
+            }
+
+            // 2. Parse based on type
+            if (fileType === 'csv') events = await parseCSV(file);
+            else if (fileType === 'xlsx') events = await parseXLSX(file);
+            else if (fileType === 'ics') events = await parseICS(file);
+
+            if (!events || events.length === 0) {
+                showToast('No valid events found in the file.', 'warning');
                 return;
             }
 
-            // 2. Inject the session name into every event
-            const eventsWithSession = events.map(event => ({
-                ...event,
-                academic_session: currentSession // Force this session name
-            }));
+            // 3. THE SMART TRANSLATOR: Maps Template Headers -> Database Columns
+            // We force-inject the schoolId and the currentSession into every row
+            const finalizedEvents = events.map((event, index) => {
+                // Defensive check for Row 1/2 failures
+                const activityName = event.Title || event.activity_event || event.activity;
+                if (!activityName) console.warn(`Row ${index + 1} is missing a Title.`);
 
-            // Insert events into Supabase
-            const { data, error } = await supabase
+                return {
+                    activity_event: activityName || "Unnamed Event",
+                    start_date: event['Start Date'] || event.start_date,
+                    end_date: event['End Date'] || event.end_date || null,
+                    term_period: event['Term Period'] || event.term_period || 'First Term',
+                    remarks: event.Description || event.remarks || '',
+                    academic_session: currentSession,
+                    school_id: schoolId // This MUST match the UUID in the DB policy
+                };
+            });
+
+            console.log("Pushing translated data to Supabase:", finalizedEvents);
+
+            // 4. Secure Insert
+            const { error: insertError } = await supabase
                 .from('academic_events')
-                .insert(eventsWithSession); // Insert the modified array
+                .insert(finalizedEvents, { count: 'minimal' });
 
-            if (error) throw error;
+            if (insertError) throw insertError;
 
-            showToast(`Successfully uploaded ${eventsWithSession.length} events to ${currentSession}!`, "success");
+            showToast(`✅ Successfully uploaded ${finalizedEvents.length} events!`, "success");
             fileInput.value = '';
-            fileNameDisplay.textContent = '';
+            if (fileNameDisplay) fileNameDisplay.textContent = '';
 
-            // Refresh the table
-            if (window.refreshAcademicTable) {
-                window.refreshAcademicTable();
-            }
+            if (window.refreshAcademicTable) await window.refreshAcademicTable();
 
         } catch (error) {
-            console.error('Error processing file:', error);
-            showToast('Failed to upload file: ' + error.message, 'error');
+            console.error('Anti-Gravity Mission Failure:', error);
+            showToast('Upload blocked: ' + error.message, 'error');
         }
+    }
+
+    // Helper: Excel Date Parser
+    function excelDateToJSDate(serial) {
+        if (!serial) return null;
+        if (typeof serial === 'string') {
+            const d = new Date(serial);
+            return isNaN(d) ? null : d.toISOString().split('T')[0];
+        }
+        return new Date(Math.floor(serial - 25569) * 86400 * 1000).toISOString().split('T')[0];
     }
 
     async function parseCSV(file) {
@@ -119,16 +125,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 for (let i = 1; i < lines.length; i++) {
                     const values = lines[i].split(',');
-                    // Basic check to ensure row isn't empty
                     if (values.length > 1) {
                         const event = {};
                         headers.forEach((header, index) => {
-                            // Handle potential undefined values
                             const value = values[index] ? values[index].trim() : null;
                             const field = mapHeaderToField(header);
 
-                            if (header.includes('date')) {
-                                event[field] = value ? new Date(value).toISOString().split('T')[0] : null;
+                            if (header.includes('date') && value) {
+                                // Simple fallback parsing for date
+                                try {
+                                    event[field] = new Date(value).toISOString().split('T')[0];
+                                } catch (e) {
+                                    event[field] = value;
+                                }
                             } else {
                                 event[field] = value || null;
                             }
@@ -211,7 +220,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     });
 
-                    // Removed the hardcoded session here because we inject it in processFile now
                     if (event.activity_event && event.start_date) {
                         event.term_period = 'Holiday';
                         events.push(event);
@@ -235,43 +243,29 @@ document.addEventListener('DOMContentLoaded', function () {
     function mapHeaderToField(header) {
         const mapping = {
             'academic session': 'academic_session',
-            'session': 'academic_session', // Added 'session'
+            'session': 'academic_session',
+            'term period': 'term_period', 
             'term': 'term_period',
-            'term_period': 'term_period',
-            'period': 'term_period', // Added 'period'
+            'period': 'term_period',
+            'title': 'activity_event', 
             'activity': 'activity_event',
             'activity_event': 'activity_event',
             'event': 'activity_event',
             'start date': 'start_date',
             'start_date': 'start_date',
-            'start': 'start_date', // Added 'start'
+            'start': 'start_date',
             'end date': 'end_date',
             'end_date': 'end_date',
-            'end': 'end_date', // Added 'end'
+            'end': 'end_date',
             'duration': 'duration',
+            'description': 'remarks', 
             'remarks': 'remarks',
-            'note': 'remarks' // Added 'note'
+            'note': 'remarks'
         };
-        // Check exact match first, then partial match
         if (mapping[header]) return mapping[header];
-
-        // Fallback: Loop keys to find includes
         for (const key in mapping) {
             if (header.includes(key)) return mapping[key];
         }
-
         return header;
-    }
-
-    function excelDateToJSDate(serial) {
-        if (!serial) return null;
-        if (typeof serial === 'string') {
-            const parsed = new Date(serial);
-            return isNaN(parsed) ? null : parsed.toISOString().split('T')[0];
-        }
-        const utc_days = Math.floor(serial - 25569);
-        const utc_value = utc_days * 86400;
-        const date_info = new Date(utc_value * 1000);
-        return date_info.toISOString().split('T')[0];
     }
 });

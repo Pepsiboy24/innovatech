@@ -95,10 +95,26 @@ async function processFile(file, helpers) {
         // Normalize keys for common header variations
         const lower = {};
         Object.keys(r).forEach(k => lower[k.toLowerCase().trim()] = r[k]);
+        
+        let startDateValue = lower['start date'] || lower['start'] || lower['date'] || '';
+        let endDateValue = lower['end date'] || lower['end'] || '';
+
+        if (typeof startDateValue === 'number') {
+            startDateValue = new Date(Math.floor(startDateValue - 25569) * 86400 * 1000).toISOString().split('T')[0];
+        } else if (startDateValue && !isNaN(Date.parse(startDateValue))) {
+            startDateValue = new Date(startDateValue).toISOString().split('T')[0];
+        }
+        
+        if (typeof endDateValue === 'number') {
+            endDateValue = new Date(Math.floor(endDateValue - 25569) * 86400 * 1000).toISOString().split('T')[0];
+        } else if (endDateValue && !isNaN(Date.parse(endDateValue))) {
+            endDateValue = new Date(endDateValue).toISOString().split('T')[0];
+        }
+
         const row = {
             'Title': (lower['title'] || lower['event'] || lower['event name'] || '').toString().trim(),
-            'Start Date': (lower['start date'] || lower['start'] || lower['date'] || '').toString().trim(),
-            'End Date': (lower['end date'] || lower['end'] || '').toString().trim(),
+            'Start Date': startDateValue.toString().trim(),
+            'End Date': endDateValue.toString().trim(),
             'Term Period': (lower['term period'] || lower['term'] || '').toString().trim(),
             'Description': (lower['description'] || lower['desc'] || '').toString().trim(),
             __index: i,
@@ -153,6 +169,36 @@ async function doUpload(file, helpers) {
     // Import Supabase client for direct insert
     const { supabase } = await import('../config.js');
 
+    let schoolId;
+    try {
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) throw new Error("Auth failed. Please log in.");
+        schoolId = user.user_metadata.school_id;
+        if (!schoolId) throw new Error("No school ID linked to account.");
+    } catch(e) {
+        showToast(e.message, "error");
+        helpers.finishProgress('Upload blocked: Authentication failed.');
+        helpers.showFooterDone();
+        return;
+    }
+
+    const monthYearEl = document.getElementById('monthYear');
+    let currentSession = monthYearEl ? monthYearEl.dataset.sessionName : null;
+    if (!currentSession && monthYearEl) {
+        let textMatch = monthYearEl.textContent.replace(' Academic Session', '').trim();
+        if (textMatch !== "No Academic Sessions Found") currentSession = textMatch;
+    }
+    
+    if (!currentSession) {
+        currentSession = prompt("Please enter the Academic Session for these events (e.g., 2024/2025):");
+        if (!currentSession) {
+            helpers.finishProgress('Upload blocked: Session required.');
+            helpers.showFooterDone();
+            showToast('Session name is required.', 'warning');
+            return;
+        }
+    }
+
     let succeeded = 0, failed = 0;
     const errors = [];
 
@@ -160,12 +206,14 @@ async function doUpload(file, helpers) {
         const row = validRows[i];
         helpers.tickProgress(i, validRows.length, `Uploading ${i + 1} of ${validRows.length}: ${row['Title']}`);
         try {
-            const { error } = await sb.from('academic_events').insert([{
+            const { error } = await supabase.from('academic_events').insert([{
                 activity_event: row['Title'],
                 start_date: row['Start Date'] || null,
                 end_date: row['End Date'] || null,
-                term_period: row['Term Period'] || null,
+                term_period: row['Term Period'] || 'First Term',
                 remarks: row['Description'] || null,
+                school_id: schoolId,
+                academic_session: currentSession
             }]);
             if (error) throw new Error(error.message);
             succeeded++;

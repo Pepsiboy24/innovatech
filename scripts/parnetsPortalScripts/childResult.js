@@ -30,6 +30,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function initializeChildSwitcher(user) {
+  if (!user?.user_metadata?.school_id) {
+    console.warn('Strict Guard: No school_id found. Execution blocked.');
+    return;
+  }
+
   // 1. Find the Parent Record associated with the Auth UID
   const { data: parentRecord, error: parentError } = await supabase
     .from('Parents')

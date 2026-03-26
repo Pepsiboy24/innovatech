@@ -19,6 +19,10 @@ async function initializeSettings() {
         }
 
         // Setup event listeners
+        if (!currentSchoolId) {
+            console.warn('Strict Guard: No school_id found. Execution blocked.');
+            return;
+        }
         setupEventListeners();
         
         // Load current school settings

@@ -1,4 +1,4 @@
-import { supabase } from '../config.js';
+import { supabase } from './config.js';
 
 export async function initializeSidebar() {
     const sidebarContainer = document.querySelector('[data-sideBar]');
@@ -122,7 +122,10 @@ export async function initializeSidebar() {
             { title: 'Academic Manager', icon: 'fa-book-open', path: '/html/schoolAdmin/academic_manager.html' },
             { title: 'Schedule', icon: 'fa-calendar', path: '/html/schoolAdmin/schedule.html' },
             { title: 'Time Table', icon: 'fa-clock', path: '/html/schoolAdmin/timeTable.html' },
-            { title: 'Manage Notes', icon: 'fa-file-lines', path: '/html/shared/manage_notes.html' }
+            { title: 'School Settings', icon: 'fa-cog', path: '/html/schoolAdmin/settings.html' },
+            { title: 'Payment Config', icon: 'fa-credit-card', path: '/html/schoolAdmin/payments_config.html' },
+            { title: 'Manage Notes', icon: 'fa-file-lines', path: '/html/shared/manage_notes.html' },
+            { title: 'Parent Portal', icon: 'fa-users', path: '/html/schoolAdmin/parent_portal.html' }
         ];
 
         sidebarContainer.innerHTML = `

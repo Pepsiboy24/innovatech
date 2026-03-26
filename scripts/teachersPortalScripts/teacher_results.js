@@ -18,6 +18,12 @@ async function initializeUploadResults() {
         currentTeacherId = await checkTeacherLogin();
         if (!currentTeacherId) return;
 
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user?.user_metadata?.school_id) {
+            console.warn('Strict Guard: No school_id found. Execution blocked.');
+            return;
+        }
+
         // 2. Fetch Teacher's Classes (only classes assigned to this teacher)
         const classes = await fetchTeacherClasses(currentTeacherId);
         populateClassDropdown(classes);
