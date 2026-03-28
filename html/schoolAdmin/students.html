@@ -254,10 +254,19 @@
         <div class="students-section">
             <div class="section-header">
                 <h2 class="section-title">Students List</h2>
-                <div class="filter-tabs">
-                    <div class="filter-tab active">All</div>
-                    <div class="filter-tab">Primary</div>
-                    <div class="filter-tab">Secondary</div>
+                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <select id="statusFilter"
+                        style="padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; font-weight:600; color:#1e293b; background:#fff; outline:none; cursor:pointer;">
+                        <option value="active">Active Students</option>
+                        <option value="graduated">Alumni / Graduated</option>
+                        <option value="withdrawn">Withdrawn</option>
+                        <option value="expelled">Expelled</option>
+                    </select>
+                    <div class="filter-tabs">
+                        <div class="filter-tab active">All</div>
+                        <div class="filter-tab">Primary</div>
+                        <div class="filter-tab">Secondary</div>
+                    </div>
                 </div>
             </div>
 
@@ -269,12 +278,58 @@
                             <th>Age</th>
                             <th>Class</th>
                             <th>Attendance</th>
+                            <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Change Overlay -->
+    <div id="statusChangeOverlay"
+        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); z-index:10002;">
+    </div>
+
+    <!-- Status Change Modal -->
+    <div id="statusChangeModal"
+        style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:10003; width:90%; max-width:440px;">
+        <div style="background:#fff; border-radius:16px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); border:1px solid #e2e8f0; overflow:hidden;">
+            <div style="background:#d97706; padding:20px 24px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h2 style="color:#fff; font-size:18px; font-weight:700; margin:0;">Update Student Status</h2>
+                    <p style="color:rgba(255,255,255,0.85); font-size:13px; margin:2px 0 0;">Change enrollment status</p>
+                </div>
+                <button onclick="window.closeStatusModal()"
+                    style="background:rgba(255,255,255,0.2); border:none; width:32px; height:32px; border-radius:50%; cursor:pointer; color:#fff; font-size:16px; display:flex; align-items:center; justify-content:center;">&times;</button>
+            </div>
+            <div style="padding:24px;">
+                <div style="margin-bottom:16px;">
+                    <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">New Enrollment Status</label>
+                    <select id="newStatusSelect"
+                        style="width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; outline:none; color:#1e293b; background:#fff;">
+                        <option value="active">Active</option>
+                        <option value="graduated">Alumni / Graduated</option>
+                        <option value="withdrawn">Withdrawn</option>
+                        <option value="expelled">Expelled</option>
+                    </select>
+                </div>
+                <div id="statusReasonGroup" style="display:none; margin-bottom:16px;">
+                    <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">
+                        Reason <span style="color:#dc2626;">*</span>
+                    </label>
+                    <textarea id="statusReasonInput" rows="3" placeholder="Provide a reason for this status change..."
+                        style="width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; outline:none; color:#1e293b; resize:vertical; box-sizing:border-box;"></textarea>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:10px; padding:16px 24px; border-top:1px solid #e2e8f0; background:#f8fafc;">
+                <button onclick="window.closeStatusModal()"
+                    style="padding:10px 20px; border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc; font-size:14px; font-weight:600; cursor:pointer; color:#1e293b;">Cancel</button>
+                <button id="statusSubmitBtn" onclick="window.submitStatusChange()"
+                    style="padding:10px 20px; border:none; border-radius:8px; background:#d97706; color:#fff; font-size:14px; font-weight:600; cursor:pointer;">Save Changes</button>
             </div>
         </div>
     </div>

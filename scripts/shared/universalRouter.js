@@ -12,13 +12,13 @@ class UniversalRouter {
             // Try multiple possible paths to ensure modal loads regardless of script location
             const possiblePaths = [
                 '../html/shared/details_modal.html',
-                '../../html/shared/details_modal.html', 
+                '../../html/shared/details_modal.html',
                 '../../../html/shared/details_modal.html',
                 '/html/shared/details_modal.html'
             ];
-            
+
             let modalLoaded = false;
-            
+
             for (const path of possiblePaths) {
                 try {
                     const response = await fetch(path);
@@ -37,7 +37,7 @@ class UniversalRouter {
                     continue;
                 }
             }
-            
+
             if (!modalLoaded) {
                 console.error('Failed to load details modal from all attempted paths');
             }
@@ -85,7 +85,7 @@ class UniversalRouter {
                 tabs.forEach(t => t.classList.remove('active'));
                 // Remove active from all contents
                 document.querySelectorAll('.universal-modal-content-area').forEach(c => c.classList.remove('active'));
-                
+
                 // Add active to clicked
                 e.target.classList.add('active');
                 const targetId = e.target.getAttribute('data-target');
@@ -116,9 +116,9 @@ class UniversalRouter {
             console.error('Modal not loaded - cannot show details');
             return;
         }
-        
+
         this.openModal();
-        
+
         try {
             const { data: authData } = await supabase.auth.getUser();
             const school_id = authData?.user?.user_metadata?.school_id;
@@ -128,7 +128,7 @@ class UniversalRouter {
             }
 
             let data;
-            
+
             switch (type) {
                 case 'student':
                     data = await this.fetchStudentData(id, school_id);
@@ -169,7 +169,7 @@ class UniversalRouter {
         if (existingModal) {
             existingModal.remove();
         }
-        
+
         // Re-initialize to load modal
         await this.init();
         return this.isModalLoaded();
@@ -179,7 +179,7 @@ class UniversalRouter {
         const nameEl = document.getElementById('umName');
         const roleEl = document.getElementById('umRole');
         const overviewEl = document.getElementById('um-overview');
-        
+
         if (nameEl) nameEl.textContent = title;
         if (roleEl) roleEl.textContent = 'Error';
         if (overviewEl) {
@@ -201,37 +201,41 @@ class UniversalRouter {
                 )
             `)
             .eq('student_id', id);
-            
+
         if (school_id) query = query.eq('school_id', school_id);
-        
+
         // Add limit and ordering to Grades via foreign table notation, although JS client handles it best when separated sometimes.
         // Doing simple query first, if Grades fails ordering we can adjust
         const { data: student, error } = await query.single();
-            
+
         if (error) throw error;
-        
+
         // Sorting grades locally since Supabase deeply nested limits/orders can be tricky
         if (student && student.Grades) {
             student.Grades.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
             student.Grades = student.Grades.slice(0, 5);
         }
-        
+
         return student;
     }
 
     async fetchTeacherData(id, school_id) {
-        // Teachers JOIN Subjects
+        // Teachers JOIN Subjects and operational records
         let query = supabase
             .from('Teachers')
             .select(`
                 *,
-                Subjects (*)
+                Subjects (*),
+                school_employment (*),
+                qualifications (*),
+                work_experience (*),
+                emergency_contact (*)
             `)
             .eq('teacher_id', id);
-            
-        if (school_id) query = query.eq('school_id', school_id);    
+
+        if (school_id) query = query.eq('school_id', school_id);
         const { data: teacher, error } = await query.single();
-            
+
         if (error) throw error;
         return teacher;
     }
@@ -245,10 +249,10 @@ class UniversalRouter {
                 Students (*)
             `)
             .eq('class_id', id);
-        
+
         if (school_id) query = query.eq('school_id', school_id);
         const { data: classData, error } = await query.single();
-            
+
         if (error) throw error;
         return classData;
     }
@@ -263,10 +267,10 @@ class UniversalRouter {
                 Teachers (*)
             `)
             .eq('subject_id', id);
-            
+
         if (school_id) query = query.eq('school_id', school_id);
         const { data: subject, error } = await query.single();
-            
+
         if (error) throw error;
         return subject;
     }
@@ -278,10 +282,10 @@ class UniversalRouter {
         const contactsEl = document.getElementById('um-contacts');
         const academicEl = document.getElementById('um-academic');
         const adminEl = document.getElementById('um-administrative');
-        
+
         if (nameEl) nameEl.textContent = data.full_name || 'Student';
         if (roleEl) roleEl.textContent = 'Student';
-        
+
         let parentsHTML = '';
         if (data.Parent_Student_Links && data.Parent_Student_Links.length > 0) {
             parentsHTML = data.Parent_Student_Links.map(link => {
@@ -340,10 +344,20 @@ class UniversalRouter {
         const academicEl = document.getElementById('um-academic');
         const contactsEl = document.getElementById('um-contacts');
         const adminEl = document.getElementById('um-administrative');
-        
-        if (nameEl) nameEl.textContent = data.full_name || 'Teacher';
-        if (roleEl) roleEl.textContent = 'Teacher';
-        
+
+        const fullName = [data.first_name, data.last_name].filter(Boolean).join(' ') || 'Teacher';
+        if (nameEl) nameEl.textContent = fullName;
+
+        // Display email immediately alongside the Role in the Header so it is never "missing"
+        const teacherEmail = data.email || 'No email provided';
+        if (roleEl) roleEl.innerHTML = `Teacher <span style="margin-left: 10px; opacity: 0.85; font-size: 0.9em;"><i class="fa fa-envelope"></i> ${teacherEmail}</span>`;
+
+        // Safely extract relationships arrays/objects
+        const emp = Array.isArray(data.school_employment) ? data.school_employment[0] : (data.school_employment || {});
+        const qual = Array.isArray(data.qualifications) ? data.qualifications[0] : (data.qualifications || {});
+        const exp = Array.isArray(data.work_experience) ? data.work_experience[0] : (data.work_experience || {});
+        const ec = Array.isArray(data.emergency_contact) ? data.emergency_contact[0] : (data.emergency_contact || {});
+
         let subjectsHTML = '';
         if (data.Subjects && data.Subjects.length > 0) {
             subjectsHTML = data.Subjects.map(s => `<span class="universal-modal-role" style="background:#e0e7ff; color:#4f46e5; margin:3px;">${s.subject_name}</span>`).join('');
@@ -352,29 +366,65 @@ class UniversalRouter {
         if (overviewEl) {
             overviewEl.innerHTML = `
                 <div class="um-grid">
+                    <div class="um-data-card"><div class="um-label">Email Address</div><div class="um-value" style="word-break: break-all;">${teacherEmail}</div></div>
                     <div class="um-data-card"><div class="um-label">TRCN Number</div><div class="um-value">${data.trcn_reg_number || 'N/A'}</div></div>
-                    <div class="um-data-card"><div class="um-label">Qualification</div><div class="um-value">${data.highest_degree || data.qualification || 'N/A'}</div></div>
+                    <div class="um-data-card"><div class="um-label">Date of Birth</div><div class="um-value">${data.date_of_birth || 'Not Provided'}</div></div>
+                    <div class="um-data-card"><div class="um-label">Gender</div><div class="um-value">${data.gender || 'Not Provided'}</div></div>
+                    <div class="um-data-card"><div class="um-label">Marital Status</div><div class="um-value">${data.marital_status || 'Not Provided'}</div></div>
                 </div>
             `;
         }
         if (academicEl) {
             academicEl.innerHTML = `
+                <h3>Qualifications</h3>
+                <div class="um-grid" style="margin-bottom: 20px;">
+                    <div class="um-data-card"><div class="um-label">Highest Degree</div><div class="um-value">${qual?.certificate_name || 'N/A'}</div></div>
+                    <div class="um-data-card"><div class="um-label">Field of Study</div><div class="um-value">${qual?.feild_of_study || 'N/A'}</div></div>
+                    <div class="um-data-card"><div class="um-label">Institution</div><div class="um-value">${qual?.school_name || 'N/A'} (${qual?.graduation_year || ''})</div></div>
+                </div>
+
+                <h3>Employment Details</h3>
+                <div class="um-grid" style="margin-bottom: 20px;">
+                    <div class="um-data-card"><div class="um-label">Job Title</div><div class="um-value">${emp?.job_title || 'N/A'}</div></div>
+                    <div class="um-data-card"><div class="um-label">Contract Type</div><div class="um-value">${emp?.contract_type ? emp.contract_type.replace(/_/g, ' ') : 'N/A'}</div></div>
+                    <div class="um-data-card"><div class="um-label">Start Date</div><div class="um-value">${emp?.start_date || 'N/A'}</div></div>
+                    <div class="um-data-card"><div class="um-label">Salary</div><div class="um-value">${emp?.salary ? '$' + emp.salary.toLocaleString() : 'N/A'}</div></div>
+                </div>
+                
+                <h3>Experience</h3>
+                <div class="um-grid" style="margin-bottom: 20px;">
+                    <div class="um-data-card"><div class="um-label">Total Experience</div><div class="um-value">${exp?.total_experience || 'N/A'}</div></div>
+                    <div class="um-data-card"><div class="um-label">Previous School</div><div class="um-value">${exp?.school_name || 'N/A'}</div></div>
+                    <div class="um-data-card"><div class="um-label">Previous Position</div><div class="um-value">${exp?.position_held || 'N/A'} (${exp?.duration || ''})</div></div>
+                </div>
+
                 <h3>Assigned Workload (Subjects)</h3>
                 <div style="margin-top:10px;">${subjectsHTML || '<p>No subjects assigned.</p>'}</div>
             `;
         }
         if (contactsEl) {
             contactsEl.innerHTML = `
-                <div class="um-grid">
+                <div class="um-grid" style="margin-bottom: 20px;">
                     <div class="um-data-card"><div class="um-label">Phone</div><div class="um-value">${data.phone_number || 'N/A'}</div></div>
                     <div class="um-data-card"><div class="um-label">Email</div><div class="um-value">${data.email || 'N/A'}</div></div>
+                </div>
+                
+                <h3>Address</h3>
+                <p style="margin-bottom: 20px; font-size: 0.95rem; color: #4b5563;">${data.address || 'Not Provided'}</p>
+
+                <h3>Emergency Contact</h3>
+                <div class="um-grid">
+                    <div class="um-data-card"><div class="um-label">Name</div><div class="um-value">${ec?.name || 'N/A'} (${ec?.relationship || 'N/A'})</div></div>
+                    <div class="um-data-card"><div class="um-label">Phone</div><div class="um-value">${ec?.phone_number || 'N/A'}</div></div>
+                    <div class="um-data-card"><div class="um-label">Address</div><div class="um-value">${ec?.address || 'N/A'}</div></div>
                 </div>
             `;
         }
         if (adminEl) {
             adminEl.innerHTML = `
                 <div class="um-grid">
-                    <div class="um-data-card"><div class="um-label">Joined On</div><div class="um-value">${data.date_hired || 'N/A'}</div></div>
+                    <div class="um-data-card"><div class="um-label">Date Hired</div><div class="um-value">${data.date_hired || 'N/A'}</div></div>
+                    <div class="um-data-card"><div class="um-label">Profile Created</div><div class="um-value">${data.created_at ? new Date(data.created_at).toLocaleString() : 'N/A'}</div></div>
                 </div>
             `;
         }
@@ -387,7 +437,7 @@ class UniversalRouter {
         const academicEl = document.getElementById('um-academic');
         const contactsEl = document.getElementById('um-contacts');
         const adminEl = document.getElementById('um-administrative');
-        
+
         if (nameEl) nameEl.textContent = `${data.class_name || 'Class Details'}`;
         if (roleEl) roleEl.textContent = 'Class';
 
@@ -424,7 +474,7 @@ class UniversalRouter {
         const academicEl = document.getElementById('um-academic');
         const contactsEl = document.getElementById('um-contacts');
         const adminEl = document.getElementById('um-administrative');
-        
+
         if (nameEl) nameEl.textContent = `${data.subject_name || 'Subject'}`;
         if (roleEl) roleEl.textContent = 'Subject';
 

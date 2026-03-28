@@ -78,6 +78,7 @@ async function handleCsvUpload(event) {
           .from('Teachers')
           .select('teacher_id')
           .ilike('first_name', classData.teacher_name)
+          .eq('employment_status', 'active')  // Only match active teachers
           .limit(1);
 
         if (teacherError) throw teacherError;

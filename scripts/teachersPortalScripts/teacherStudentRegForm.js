@@ -1,411 +1,155 @@
-import { registerNewStudent } from "../../scripts/schoolAdminScripts/students_scripts/singleStudentRegScript.js";
-import { supabase as supabaseClient } from "../config.js";
-import { checkTeacherLogin } from "../teacherUtils.js";
+import { supabase } from '../../config.js';
 
-// --- 1. Supabase Configuration ---
-if (!supabaseClient) {
-  console.error("Supabase client not loaded. Make sure the CDN script is in your HTML.");
-}
+// Dedicated client for background signups (prevents Admin session logout)
+const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+const authClient = createClient(
+  "https://dzotwozhcxzkxtunmqth.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE",
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+      detectSessionInUrl: false
+    }
+  }
+);
 
-// --- 3. Populate Teacher's Classes ---
-let teacherClasses = [];
+/**
+ * registerNewStudent
+ * -------------------
+ * Logic:
+ * 1. Validates Admin identity.
+ * 2. Creates Student Auth & Profile.
+ * 3. Handles Parent creation (or retrieves existing parent for siblings).
+ * 4. Links Parent to Student.
+ * 5. Triggers Monnify Virtual Account creation.
+ */
+export async function registerNewStudent(
+  fullName, email, password, dateOfBirth, admissionDate, profilePicUrl, classId, gender, parentInfo = null
+) {
+  try {
+    // 1. IDENTITY GUARD: Fetch admin's school_id
+    const { data: { user: adminUser }, error: adminError } = await supabase.auth.getUser();
+    if (adminError || !adminUser) return { success: false, error: "Admin authentication required" };
 
-async function populateTeacherClasses(teacherId) {
-    try {
-        const [formClassesRes, subjectClassesRes] = await Promise.all([
-            supabaseClient
-                .from('Classes')
-                .select('class_id, class_name, section')
-                .eq('teacher_id', teacherId),
-            supabaseClient
-                .from('Class_Subjects')
-                .select(`
-                    class_id,
-                    Classes!inner(class_name, section)
-                `)
-                .eq('teacher_id', teacherId)
-        ]);
+    const schoolId = adminUser.user_metadata?.school_id;
+    if (!schoolId) return { success: false, error: "Admin school identity missing." };
 
-        const classSelect = document.getElementById("classSelect");
-        if (!classSelect) return;
+    // 2. DATA PREP: Handle optional emails and default passwords
+    const studentEmail = email || `${fullName.toLowerCase().replace(/\s+/g, '.')}@ischool.com`;
+    const studentPassword = password || '123456';
 
-        if (formClassesRes.error && subjectClassesRes.error) {
-            window.showToast?.('Error fetching teacher classes.', 'error');
-            classSelect.innerHTML = '<option value="">Error loading classes</option>';
-            return;
+    // 3. STUDENT AUTH: Tag with school_id for RLS policy compliance
+    const { data: studentAuth, error: authError } = await authClient.auth.signUp({
+      email: studentEmail,
+      password: studentPassword,
+      options: {
+        data: {
+          user_type: 'student',
+          school_id: schoolId
         }
+      }
+    });
+    if (authError) throw authError;
 
-        const uniqueClasses = [];
-        const seen = new Set();
-        
-        (formClassesRes.data || []).forEach(record => {
-            if (!seen.has(record.class_id)) {
-                seen.add(record.class_id);
-                uniqueClasses.push({
-                    class_id: record.class_id,
-                    class_name: record.class_name,
-                    section: record.section
-                });
+    // 4. STUDENT PROFILE: Insert into Students table
+    const { error: studentInsertError } = await supabase
+      .from("Students")
+      .insert([{
+        student_id: studentAuth.user.id,
+        full_name: fullName,
+        date_of_birth: dateOfBirth,
+        gender: gender,
+        admission_date: admissionDate,
+        profile_picture: profilePicUrl,
+        class_id: classId,
+        school_id: schoolId,
+        enrollment_status: 'active'
+      }]);
+    if (studentInsertError) throw studentInsertError;
+
+    // 5. PARENT WORKFLOW
+    if (parentInfo) {
+      let finalParentId = parentInfo.linkedParentId;
+
+      if (!finalParentId) {
+        // Create Parent Auth (Fixes 403 Forbidden via school_id metadata)
+        const { data: parentAuth, error: pAuthError } = await authClient.auth.signUp({
+          email: parentInfo.parentEmail,
+          password: '123456',
+          options: {
+            data: {
+              user_type: 'parent',
+              school_id: schoolId
             }
+          }
         });
 
-        (subjectClassesRes.data || []).forEach(record => {
-            if (!seen.has(record.class_id)) {
-                seen.add(record.class_id);
-                uniqueClasses.push({
-                    class_id: record.class_id,
-                    class_name: record.Classes?.class_name,
-                    section: record.Classes?.section
-                });
+        if (pAuthError) {
+          // Handle Siblings: If email exists, find the existing profile
+          if (pAuthError.message.includes("already registered") || pAuthError.status === 422) {
+            const { data: existingParent } = await supabase
+              .from('Parents')
+              .select('parent_id')
+              .eq('email', parentInfo.parentEmail)
+              .single();
+
+            if (existingParent) {
+              finalParentId = existingParent.parent_id;
+            } else {
+              throw new Error("Parent email exists but profile could not be found.");
             }
-        });
-
-        teacherClasses = uniqueClasses;
-
-        if (teacherClasses.length === 0) {
-            classSelect.innerHTML = '<option value="">No classes assigned</option>';
-            classSelect.disabled = true;
-            document.getElementById("nextBtn").disabled = true;
-            window.showToast?.('No classes assigned to this account.', 'warning');
-            return;
-        }
-
-        classSelect.innerHTML = '<option value="">Select a class</option>';
-        teacherClasses.forEach(c => {
-            const option = document.createElement("option");
-            option.value = c.class_id;
-            option.textContent = `${c.class_name} ${c.section || ''}`.trim();
-            classSelect.appendChild(option);
-        });
-        classSelect.disabled = false;
-        document.getElementById("nextBtn").disabled = false;
-
-    } catch (err) {
-        window.showToast?.('Unexpected error fetching classes.', 'error');
-    }
-}
-
-// --- 4. Existing Form Logic ---
-let currentStep = 1;
-const totalSteps = 3;
-const previousBtn = document.getElementById("prevBtn");
-const nextBtns = document.getElementById("nextBtn");
-const submitBtns = document.getElementById("submitBtn");
-
-function updateProgress() {
-  const progressFill = document.getElementById("progressFill");
-  const percentage = (currentStep / totalSteps) * 100;
-  progressFill.style.width = percentage + "%";
-}
-
-function updateStepIndicators() {
-  for (let i = 1; i <= totalSteps; i++) {
-    const indicator = document.getElementById("indicator" + i);
-    const circle = indicator.querySelector(".step-circle");
-
-    if (i < currentStep) {
-      indicator.className = "step-indicator completed";
-      circle.innerHTML = "✓";
-    } else if (i === currentStep) {
-      indicator.className = "step-indicator active";
-      circle.innerHTML = i;
-    } else {
-      indicator.className = "step-indicator";
-      circle.innerHTML = i;
-    }
-  }
-}
-
-function showStep(step) {
-  // Hide all steps
-  const steps = document.querySelectorAll(".step");
-  steps.forEach((s) => s.classList.remove("active"));
-
-  // Show current step
-  document.getElementById("step" + step).classList.add("active");
-
-  // Update buttons
-  const prevBtn = document.getElementById("prevBtn");
-  const nextBtn = document.getElementById("nextBtn");
-  const submitBtn = document.getElementById("submitBtn");
-
-  if (step === 1) {
-    prevBtn.style.display = "none";
-    nextBtn.style.display = "block";
-    submitBtn.style.display = "none";
-  } else if (step === totalSteps) {
-    prevBtn.style.display = "block";
-    nextBtn.style.display = "none";
-    submitBtn.style.display = "block";
-  } else {
-    prevBtn.style.display = "block";
-    nextBtn.style.display = "block";
-    submitBtn.style.display = "none";
-  }
-
-  updateProgress();
-  updateStepIndicators();
-}
-
-// --- UPDATED VALIDATION LOGIC ---
-function validateStep(step) {
-  let isValid = true;
-
-  // Get "Today" with time stripped out for accurate date comparison
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  if (step === 1) {
-    const fullName = document.getElementById("fullName");
-    const email = document.getElementById("email");
-    const dateOfBirth = document.getElementById("dateOfBirth");
-    const gender = document.querySelector('input[name="gender"]:checked');
-
-    // Name Validation
-    if (!fullName.value.trim()) {
-      showError("fullNameError"); // Ensure you have <div id="fullNameError"> in HTML
-      isValid = false;
-    } else {
-      hideError("fullNameError");
-    }
-
-    // Email Validation
-    if (!email.value.trim() || !email.validity.valid) {
-      showError("emailError");
-      isValid = false;
-    } else {
-      hideError("emailError");
-    }
-
-    // Date of Birth Validation (Check Future)
-    const dobError = document.getElementById("dobError");
-    if (!dateOfBirth.value) {
-      if(dobError) dobError.textContent = "Date of Birth is required";
-      showError("dobError");
-      isValid = false;
-    } else {
-      const dobDate = new Date(dateOfBirth.value);
-      if (dobDate > today) {
-         if(dobError) dobError.textContent = "Date of birth cannot be in the future";
-         showError("dobError");
-         isValid = false;
-      } else {
-        hideError("dobError");
-      }
-    }
-
-    // Gender Validation
-    if (!gender) {
-      showError("genderError");
-      isValid = false;
-    } else {
-      hideError("genderError");
-    }
-  }
-
-  if (step === 2) {
-    const admissionDate = document.getElementById("admissionDate");
-    const classSelect = document.getElementById("classSelect");
-
-    // Class Validation
-    if (classSelect) {
-      if (!classSelect.value) {
-        showError("classSelectError");
-        isValid = false;
-      } else {
-        hideError("classSelectError");
-      }
-    }
-
-    // Admission Date Validation (Check Past)
-    const admitError = document.getElementById("admissionDateError");
-    if (!admissionDate.value) {
-      if(admitError) admitError.textContent = "Admission Date is required";
-      showError("admissionDateError");
-      isValid = false;
-    } else {
-      const admitDate = new Date(admissionDate.value);
-      // Check if admission date is strictly before today
-      if (admitDate < today) {
-        if(admitError) admitError.textContent = "Admission date cannot be in the past";
-        showError("admissionDateError");
-        isValid = false;
-      } else {
-        hideError("admissionDateError");
-      }
-    }
-  }
-
-  return isValid;
-}
-
-nextBtns.addEventListener("click", () => {
-  changeStep(1);
-});
-
-previousBtn.addEventListener("click", () => {
-  changeStep(-1);
-});
-
-function showError(errorId) {
-  const el = document.getElementById(errorId);
-  if (el) el.style.display = "block";
-}
-
-function hideError(errorId) {
-  // UPDATED: Uncommented this line so errors actually disappear
-  const el = document.getElementById(errorId);
-  if (el) el.style.display = "none";
-}
-
-function changeStep(direction) {
-  if (direction === 1 && !validateStep(currentStep)) {
-    return;
-  }
-
-  if (direction === 1 && currentStep === 2) {
-    populateReview();
-  }
-
-  const newStep = currentStep + direction;
-  if (newStep >= 1 && newStep <= totalSteps) {
-    currentStep = newStep;
-    showStep(currentStep);
-  }
-}
-
-async function populateReview() {
-  const formData = new FormData(document.getElementById("registrationForm"));
-  const reviewContent = document.getElementById("reviewContent");
-
-  const fullName = formData.get("fullName");
-  const email = formData.get("email");
-  const dateOfBirth = formData.get("dateOfBirth");
-  const gender = formData.get("gender");
-  const admissionDate = formData.get("admissionDate");
-
-  // Get teacher's class for display safely from dropdown
-  let classDisplay = "N/A";
-  const classSelect = document.getElementById("classSelect");
-  if (classSelect && classSelect.options[classSelect.selectedIndex]) {
-    const selectedText = classSelect.options[classSelect.selectedIndex].text;
-    if (classSelect.value) { // Ensure a real value is selected
-      classDisplay = selectedText;
-    }
-  }
-
-  reviewContent.innerHTML = `
-                <h3 style="margin-bottom: 16px; color: #1e293b;">Personal Information</h3>
-                <p><strong>Full Name:</strong> ${fullName}</p>
-                <p><strong>Email:</strong> ${email}</p>
-                <p><strong>Date of Birth:</strong> ${new Date(
-                  dateOfBirth
-                ).toLocaleDateString()}</p>
-                <p><strong>Gender:</strong> ${
-                  gender.charAt(0).toUpperCase() + gender.slice(1)
-                }</p>
-
-                <h3 style="margin: 24px 0 16px; color: #1e293b;">Academic Details</h3>
-                <p><strong>Class:</strong> ${classDisplay}</p>
-                <p><strong>Admission Date:</strong> ${new Date(
-                  admissionDate
-                ).toLocaleDateString()}</p>
-            `;
-
-  return {
-    fullName,
-    email,
-    dateOfBirth,
-    gender,
-    admissionDate,
-  };
-}
-
-const resetBtn = document.querySelector("[data-resetBtn]")
-if (resetBtn) {
-    resetBtn.addEventListener("click", resetForm)
-}
-
-function resetForm() {
-  document.getElementById("registrationForm").reset();
-  currentStep = 1;
-  showStep(currentStep);
-  document.getElementById("successStep").classList.remove("active");
-  // Show buttons again
-  document.querySelector(".buttons").style.display = "block";
-  // Reset date default
-  document.getElementById("admissionDate").valueAsDate = new Date();
-}
-
-// --- 5. Initialize Form ---
-document.addEventListener('DOMContentLoaded', async () => {
-  // Set default admission date to today
-  document.getElementById("admissionDate").valueAsDate = new Date();
-
-  // Initialize Steps
-  showStep(currentStep);
-
-  const loginInfo = await checkTeacherLogin();
-  if (loginInfo && loginInfo.teacherId) {
-      await populateTeacherClasses(loginInfo.teacherId);
-  }
-});
-
-// --- 6. Form Submission ---
-document
-  .getElementById("registrationForm")
-  .addEventListener("submit", async function (e) {
-    e.preventDefault();
-
-    if (validateStep(currentStep)) {
-      const loginInfo = await checkTeacherLogin();
-      if (!loginInfo || !loginInfo.teacherId) return;
-
-      const classSelect = document.getElementById("classSelect");
-      const selectedClassId = classSelect ? classSelect.value : null;
-
-      if (!selectedClassId) {
-        window.showToast?.('Please select a class first.', 'error');
-        return;
-      }
-
-      const fullName = document.getElementById("fullName").value;
-      const email = document.getElementById("email").value;
-      const dateOfBirth = document.getElementById("dateOfBirth").value;
-      const admissionDate = document.getElementById("admissionDate").value;
-
-      // Get the selected gender
-      const gender = document.querySelector('input[name="gender"]:checked').value;
-
-      const profilePicUrl = "https://placehold.co/150x150/e8e8e8/363636?text=Profile";
-
-      // Pass the teacher's class_id to your registration function
-      const registrationResult = await registerNewStudent(
-          fullName,
-          email,
-          "123456",
-          dateOfBirth,
-          admissionDate,
-          profilePicUrl,
-          selectedClassId,
-          gender
-      );
-
-      if (registrationResult) {
-        document.getElementById("step3").classList.remove("active");
-        document.getElementById("successStep").classList.add("active");
-        document.querySelector(".buttons").style.display = "none";
-        
-        window.showToast?.('Student registered successfully!', 'success');
-
-        // Refresh the student list
-        if (typeof window.loadAllTeacherStudents === 'function') {
-            window.loadAllTeacherStudents();
+          } else throw pAuthError;
         } else {
-            window.location.reload();
+          // New Parent Profile insertion (Authorized by the SQL Policy we created)
+          const { data: newParent, error: pInsertError } = await supabase
+            .from("Parents")
+            .insert([{
+              user_id: parentAuth.user.id,
+              full_name: parentInfo.parentFullName,
+              email: parentInfo.parentEmail,
+              phone_number: parentInfo.parentPhone,
+              address: parentInfo.parentAddress || null,
+              school_id: schoolId
+            }])
+            .select("parent_id")
+            .single();
+
+          if (pInsertError) throw pInsertError;
+          finalParentId = newParent.parent_id;
         }
-      } else {
-        window.showToast?.("Registration failed. Please try again.", "error");
       }
+
+      // Junction Link: Connect Parent to the new Student
+      const { error: linkError } = await supabase
+        .from("Parent_Student_Links")
+        .insert([{
+          parent_id: finalParentId,
+          student_id: studentAuth.user.id,
+          relationship: parentInfo.relationship || 'Guardian'
+        }]);
+
+      if (linkError) console.warn("Link established error (Student still created):", linkError.message);
     }
-  });
+
+    // 6. VIRTUAL ACCOUNT: Invoke Monnify generation (non-blocking)
+    try {
+      await supabase.functions.invoke('create-student-virtual-account', {
+        body: {
+          studentId: studentAuth.user.id,
+          studentName: fullName,
+          schoolId: schoolId,
+          parentEmail: parentInfo?.parentEmail || null
+        }
+      });
+    } catch (vErr) {
+      console.warn("Virtual account request failure:", vErr.message);
+    }
+
+    return { success: true };
+
+  } catch (err) {
+    console.error("CRITICAL REGISTRATION FAILURE:", err.message);
+    return { success: false, error: err.message };
+  }
+}

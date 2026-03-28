@@ -105,7 +105,8 @@ async function fetchStudentsFromClass(classId) {
             .from('Students')
             .select('*')
             .eq('class_id', classId)
-            .eq('school_id', userSchoolId) // Filter by current school
+            .eq('school_id', userSchoolId)         // Filter by current school
+            .eq('enrollment_status', 'active')     // Only active students in attendance
             .order('full_name', { ascending: true });
 
         if (error) {

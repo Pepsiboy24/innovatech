@@ -67,6 +67,7 @@ class SubjectAllocationManager {
                 .from('Teachers')
                 .select('teacher_id, first_name, last_name')
                 .eq('school_id', this.schoolId)
+                .eq('employment_status', 'active')  // Only offer active teachers for allocation
                 .order('first_name');
 
             if (teachersError) throw teachersError;

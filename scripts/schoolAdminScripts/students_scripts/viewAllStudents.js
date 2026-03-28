@@ -7,13 +7,15 @@ let _migrationCurrentClassId = null;
 let _allClasses = []; // cached for migration dropdown
 let _countMap = {};   // class_id → student count (for capacity warning)
 
-// --- 1. Fetch Students ---
-async function fetchStudents() {
+// --- Status change state ---
+let _statusChangeStudentId = null;
+
+// --- 1. Fetch Students (filtered by enrollment_status) ---
+async function fetchStudents(enrollmentStatus = 'active') {
     try {
-        // Get current user's school_id from metadata
         const { data: { user } } = await supabaseClient.auth.getUser();
         const userSchoolId = user?.user_metadata?.school_id;
-        
+
         if (!userSchoolId) {
             console.error('User missing school_id in metadata');
             return [];
@@ -22,7 +24,8 @@ async function fetchStudents() {
         const { data, error } = await supabaseClient
             .from('Students')
             .select('*')
-            .eq('school_id', userSchoolId) // Filter by current school
+            .eq('school_id', userSchoolId)
+            .eq('enrollment_status', enrollmentStatus)
             .order('created_at', { ascending: false });
 
         if (error) {
@@ -39,10 +42,9 @@ async function fetchStudents() {
 // --- 2. Fetch Classes (To match ID) ---
 async function fetchClasses() {
     try {
-        // Get current user's school_id from metadata
         const { data: { user } } = await supabaseClient.auth.getUser();
         const userSchoolId = user?.user_metadata?.school_id;
-        
+
         if (!userSchoolId) {
             console.error('User missing school_id in metadata');
             return [];
@@ -51,7 +53,7 @@ async function fetchClasses() {
         const { data, error } = await supabaseClient
             .from('Classes')
             .select('class_id, class_name, section')
-            .eq('school_id', userSchoolId) // Filter by current school
+            .eq('school_id', userSchoolId);
 
         if (error) {
             console.error('Error fetching classes:', error);
@@ -80,6 +82,18 @@ function calculateAge(dateOfBirth) {
 function getInitials(fullName) {
     if (!fullName) return '??';
     return fullName.split(' ').map(n => n.charAt(0).toUpperCase()).slice(0, 2).join('');
+}
+
+// --- Status badge helper ---
+function getStatusBadge(status) {
+    const map = {
+        active:    { label: 'Active',     bg: '#dcfce7', color: '#16a34a' },
+        graduated: { label: 'Graduated',  bg: '#dbeafe', color: '#1d4ed8' },
+        withdrawn: { label: 'Withdrawn',  bg: '#fef9c3', color: '#ca8a04' },
+        expelled:  { label: 'Expelled',   bg: '#fee2e2', color: '#dc2626' },
+    };
+    const s = map[status] || { label: status || 'Unknown', bg: '#f1f5f9', color: '#64748b' };
+    return `<span style="background:${s.bg}; color:${s.color}; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600;">${s.label}</span>`;
 }
 
 // --- 3. Filter Functions ---
@@ -114,15 +128,11 @@ function renderStudents(students, classMap = {}) {
     tbody.innerHTML = '';
 
     if (students.length === 0) {
-        // Check if this is a new school by checking if there are any classes
         checkAndShowSetupWizard();
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:2rem;">
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:2rem;">
             <div style="max-width: 400px; margin: 0 auto;">
                 <h3 style="color: #6b7280; margin-bottom: 1rem;">No students found</h3>
-                <p style="color: #9ca3af; margin-bottom: 1rem;">Start by adding your first students to the system.</p>
-                <button onclick="showStudentRegistration()" style="background: #3b82f6; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer;">
-                    Add First Student
-                </button>
+                <p style="color: #9ca3af; margin-bottom: 1rem;">No students match the current filter.</p>
             </div>
         </td></tr>`;
         return;
@@ -133,6 +143,7 @@ function renderStudents(students, classMap = {}) {
         const initials = getInitials(student.full_name);
         const classDisplayText = classMap[student.class_id] || 'Not Assigned';
         const attendancePercent = 85; // Placeholder
+        const safeName = (student.full_name || '').replace(/'/g, "\\'");
 
         const row = `
             <tr class="student-row">
@@ -157,13 +168,20 @@ function renderStudents(students, classMap = {}) {
                         <span class="attendance-percent">${attendancePercent}%</span>
                     </div>
                 </td>
-                <td style="display:flex; gap:6px; align-items:center;">
+                <td>${getStatusBadge(student.enrollment_status)}</td>
+                <td style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
                     <button class='view-btn' data-type='student' data-id='${student.student_id}'>View</button>
                     <button
                         class="action-btn"
                         style="background:#ede7f6; color:#6200ea; border:none; cursor:pointer; padding:4px 10px; border-radius:6px; font-size:12px; font-weight:600;"
-                        onclick="window.openMigrationModal('${student.student_id}', ${student.class_id ?? 'null'}, '${(student.full_name || '').replace(/'/g, "\\'")}')">
+                        onclick="window.openMigrationModal('${student.student_id}', ${student.class_id ?? 'null'}, '${safeName}')">
                         &#8644; Change Class
+                    </button>
+                    <button
+                        class="action-btn"
+                        style="background:#fef3c7; color:#d97706; border:none; cursor:pointer; padding:4px 10px; border-radius:6px; font-size:12px; font-weight:600;"
+                        onclick="window.openStatusModal('${student.student_id}', '${student.enrollment_status || 'active'}')">
+                        <i class="fas fa-user-edit"></i> Update Status
                     </button>
                 </td>
             </tr>
@@ -185,11 +203,10 @@ window.openMigrationModal = function (studentId, currentClassId, studentName) {
     if (nameEl) nameEl.textContent = studentName || '';
     if (warning) warning.style.display = 'none';
 
-    // Populate dropdown — exclude current class
     if (select) {
         select.innerHTML = '<option value="">Select a class...</option>';
         _allClasses.forEach(cls => {
-            if (cls.class_id == currentClassId) return; // exclude current
+            if (cls.class_id == currentClassId) return;
             const label = `${cls.class_name}${cls.section ? ' - ' + cls.section : ''}`;
             const opt = document.createElement('option');
             opt.value = cls.class_id;
@@ -197,7 +214,6 @@ window.openMigrationModal = function (studentId, currentClassId, studentName) {
             select.appendChild(opt);
         });
 
-        // Capacity warning on change
         select.onchange = () => {
             const selectedId = parseInt(select.value);
             if (!selectedId || !warning) return;
@@ -239,7 +255,6 @@ async function executeMigration() {
         if (error) throw error;
 
         window.closeMigrationModal();
-        // Refresh the list
         if (window.refreshStudentList) await window.refreshStudentList();
 
     } catch (err) {
@@ -250,19 +265,111 @@ async function executeMigration() {
     }
 }
 
+// --- 6. Status Change Modal Logic ---
+
+window.openStatusModal = function (studentId, currentStatus) {
+    _statusChangeStudentId = studentId;
+
+    const modal = document.getElementById('statusChangeModal');
+    const overlay = document.getElementById('statusChangeOverlay');
+    const statusSelect = document.getElementById('newStatusSelect');
+    const reasonGroup = document.getElementById('statusReasonGroup');
+
+    if (statusSelect) {
+        statusSelect.value = currentStatus || 'active';
+        // Show/hide reason based on initial value
+        toggleReasonField(statusSelect.value);
+    }
+
+    const reasonInput = document.getElementById('statusReasonInput');
+    if (reasonInput) reasonInput.value = '';
+
+    if (reasonGroup) reasonGroup.style.display = 'none';
+    if (modal) modal.style.display = 'block';
+    if (overlay) overlay.style.display = 'block';
+};
+
+window.closeStatusModal = function () {
+    const modal = document.getElementById('statusChangeModal');
+    const overlay = document.getElementById('statusChangeOverlay');
+    if (modal) modal.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    _statusChangeStudentId = null;
+};
+
+function toggleReasonField(status) {
+    const reasonGroup = document.getElementById('statusReasonGroup');
+    if (!reasonGroup) return;
+    const requiresReason = status === 'withdrawn' || status === 'expelled';
+    reasonGroup.style.display = requiresReason ? 'block' : 'none';
+
+    const reasonInput = document.getElementById('statusReasonInput');
+    if (reasonInput) reasonInput.required = requiresReason;
+}
+
+window.submitStatusChange = async function () {
+    if (!_statusChangeStudentId) return;
+
+    const statusSelect = document.getElementById('newStatusSelect');
+    const reasonInput = document.getElementById('statusReasonInput');
+    const submitBtn = document.getElementById('statusSubmitBtn');
+
+    const selectedStatus = statusSelect?.value;
+    const enteredReason = reasonInput?.value?.trim();
+
+    if (!selectedStatus) {
+        showToast('Please select a status.', 'warning');
+        return;
+    }
+
+    const requiresReason = selectedStatus === 'withdrawn' || selectedStatus === 'expelled';
+    if (requiresReason && !enteredReason) {
+        showToast('A reason is required for withdrawn or expelled status.', 'warning');
+        return;
+    }
+
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Saving...'; }
+
+    try {
+        const { error } = await supabaseClient
+            .from('Students')
+            .update({
+                enrollment_status: selectedStatus,
+                status_reason: enteredReason || null,
+                status_changed_at: new Date().toISOString(),
+            })
+            .eq('student_id', _statusChangeStudentId);
+
+        if (error) throw error;
+
+        showToast(`Student status updated to "${selectedStatus}" successfully.`, 'success');
+        window.closeStatusModal();
+        if (window.refreshStudentList) await window.refreshStudentList();
+
+    } catch (err) {
+        console.error('Status update error:', err);
+        showToast('Failed to update status: ' + err.message, 'error');
+    } finally {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Save Changes'; }
+    }
+};
+
 // --- Initialize ---
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('Loading students...');
-    let allStudents = await fetchStudents();
+
+    const statusFilter = document.getElementById('statusFilter');
+    let currentStatusFilter = statusFilter?.value || 'active';
+
+    let allStudents = await fetchStudents(currentStatusFilter);
     let classes = await fetchClasses();
-    _allClasses = classes; // cache for migration modal
+    _allClasses = classes;
 
     let classMap = {};
     classes.forEach(cls => {
         classMap[cls.class_id] = `${cls.class_name} ${cls.section || ''}`.trim();
     });
 
-    // Build student count map for capacity warnings
     allStudents.forEach(s => {
         if (s.class_id != null) {
             _countMap[s.class_id] = (_countMap[s.class_id] || 0) + 1;
@@ -280,7 +387,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     applyFilters();
-    console.log(`Loaded ${allStudents.length} students`);
+    console.log(`Loaded ${allStudents.length} students with status: ${currentStatusFilter}`);
+
+    // Status filter dropdown — re-fetch from DB on change
+    if (statusFilter) {
+        statusFilter.addEventListener('change', async function () {
+            currentStatusFilter = this.value;
+            allStudents = await fetchStudents(currentStatusFilter);
+            _countMap = {};
+            allStudents.forEach(s => {
+                if (s.class_id != null) _countMap[s.class_id] = (_countMap[s.class_id] || 0) + 1;
+            });
+            applyFilters();
+        });
+    }
 
     // Search
     const searchInput = document.querySelector('.search-input');
@@ -291,7 +411,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Filter tabs
+    // Grade filter tabs
     const filterTabs = document.querySelectorAll('.filter-tab');
     filterTabs.forEach(tab => {
         tab.addEventListener('click', function () {
@@ -306,38 +426,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     const confirmBtn = document.getElementById('migrationConfirmBtn');
     if (confirmBtn) confirmBtn.addEventListener('click', executeMigration);
 
-    // Overlay click to close
-    const overlay = document.getElementById('migrationOverlay');
-    if (overlay) overlay.addEventListener('click', window.closeMigrationModal);
-});
+    // Migration overlay click to close
+    const migrationOverlay = document.getElementById('migrationOverlay');
+    if (migrationOverlay) migrationOverlay.addEventListener('click', window.closeMigrationModal);
 
-window.refreshStudentList = async () => {
-    const allStudents = await fetchStudents();
-    const classes = await fetchClasses();
-    _allClasses = classes;
-    _countMap = {};
-    allStudents.forEach(s => {
-        if (s.class_id != null) _countMap[s.class_id] = (_countMap[s.class_id] || 0) + 1;
-    });
-    const classMap = {};
-    classes.forEach(cls => {
-        classMap[cls.class_id] = `${cls.class_name} ${cls.section || ''}`.trim();
-    });
-    renderStudents(allStudents, classMap);
-};
+    // Status change modal — reason toggle
+    const newStatusSelect = document.getElementById('newStatusSelect');
+    if (newStatusSelect) {
+        newStatusSelect.addEventListener('change', function () {
+            toggleReasonField(this.value);
+        });
+    }
+
+    // Status overlay click to close
+    const statusOverlay = document.getElementById('statusChangeOverlay');
+    if (statusOverlay) statusOverlay.addEventListener('click', window.closeStatusModal);
+
+    // Global refresh — re-fetches with current status filter
+    window.refreshStudentList = async () => {
+        currentStatusFilter = document.getElementById('statusFilter')?.value || 'active';
+        allStudents = await fetchStudents(currentStatusFilter);
+        classes = await fetchClasses();
+        _allClasses = classes;
+        _countMap = {};
+        allStudents.forEach(s => {
+            if (s.class_id != null) _countMap[s.class_id] = (_countMap[s.class_id] || 0) + 1;
+        });
+        classes.forEach(cls => {
+            classMap[cls.class_id] = `${cls.class_name} ${cls.section || ''}`.trim();
+        });
+        applyFilters();
+    };
+});
 
 export { fetchStudents };
 
 // Helper functions for empty state handling
 async function checkAndShowSetupWizard() {
     try {
-        // Get current user's school_id from metadata
         const { data: { user } } = await supabaseClient.auth.getUser();
         const userSchoolId = user?.user_metadata?.school_id;
-        
         if (!userSchoolId) return;
 
-        // Check if there are any classes or teachers
         const { count: classCount } = await supabaseClient
             .from('Classes')
             .select('*', { count: 'exact', head: true })
@@ -348,7 +478,6 @@ async function checkAndShowSetupWizard() {
             .select('*', { count: 'exact', head: true })
             .eq('school_id', userSchoolId);
 
-        // If no classes and no teachers, this is likely a new school
         if (classCount === 0 && teacherCount === 0) {
             console.log('New school detected - showing setup wizard');
             showSetupWizard();
@@ -359,10 +488,8 @@ async function checkAndShowSetupWizard() {
 }
 
 function showSetupWizard() {
-    // Hide standard dashboard and show setup checklist
     const setupChecklist = document.getElementById('setupChecklist');
     const standardDashboard = document.getElementById('standardDashboard');
-    
     if (setupChecklist && standardDashboard) {
         setupChecklist.style.display = 'block';
         standardDashboard.style.display = 'none';
@@ -371,14 +498,10 @@ function showSetupWizard() {
 }
 
 function showStudentRegistration() {
-    // Navigate to student registration or show registration modal
     console.log('Opening student registration...');
-    // You can implement this based on your UI flow
-    // For example: window.location.href = 'student-registration.html';
     alert('Student registration feature coming soon!');
 }
 
-// Make functions globally available
 window.checkAndShowSetupWizard = checkAndShowSetupWizard;
 window.showSetupWizard = showSetupWizard;
 window.showStudentRegistration = showStudentRegistration;

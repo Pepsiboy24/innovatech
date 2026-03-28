@@ -20,7 +20,7 @@ const resultMessage = document.getElementById('resultMessage');
 async function loadData() {
     const [classesRes, studentsRes] = await Promise.all([
         supabase.from('Classes').select('class_id, class_name, section').order('class_name'),
-        supabase.from('Students').select('class_id')
+        supabase.from('Students').select('class_id').eq('enrollment_status', 'active')
     ]);
 
     if (classesRes.error) { console.error(classesRes.error); return; }

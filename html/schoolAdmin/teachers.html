@@ -735,6 +735,7 @@
                             <th>Experience</th>
                             <th>Class/Grade</th>
                             <th>Attendance</th>
+                            <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -744,6 +745,96 @@
             </div>
         </div>
     </div>
+    <!-- ── Offboard shared backdrop ─────────────────────────────── -->
+    <div id="offboardOverlay"
+        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); backdrop-filter:blur(4px); z-index:10010;">
+    </div>
+
+    <!-- ── Path A: Hand-off Wizard (teacher has active load) ────── -->
+    <div id="offboardWizardModal"
+        style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:10011; width:92%; max-width:500px;">
+        <div style="background:#fff; border-radius:16px; box-shadow:0 20px 40px rgba(0,0,0,0.15); overflow:hidden;">
+            <!-- Header -->
+            <div style="background:#dc2626; padding:20px 24px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h2 style="color:#fff; font-size:18px; font-weight:700; margin:0;">Teacher Hand-off Wizard</h2>
+                    <p id="wizardTeacherName" style="color:rgba(255,255,255,0.85); font-size:13px; margin:3px 0 0;"></p>
+                </div>
+                <button onclick="window.closeOffboardWizard()"
+                    style="background:rgba(255,255,255,0.2); border:none; width:32px; height:32px; border-radius:50%; cursor:pointer; color:#fff; font-size:18px; display:flex; align-items:center; justify-content:center;">&times;</button>
+            </div>
+            <!-- Active load summary -->
+            <div style="padding:20px 24px 0;">
+                <p style="font-size:13px; font-weight:600; color:#374151; margin-bottom:8px;">⚠️ Active Assignments to Reassign</p>
+                <div id="wizardLoadSummary"
+                    style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:12px; font-size:13px; color:#374151; max-height:140px; overflow-y:auto;">
+                </div>
+            </div>
+            <!-- Controls -->
+            <div style="padding:20px 24px;">
+                <div style="margin-bottom:14px;">
+                    <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">Successor Teacher <span style="color:#dc2626;">*</span></label>
+                    <select id="wizardSuccessorSelect"
+                        style="width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; outline:none; background:#fff;">
+                        <option value="">Select successor teacher...</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">Departure Reason <span style="color:#dc2626;">*</span></label>
+                    <select id="wizardStatusSelect"
+                        style="width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; outline:none; background:#fff;">
+                        <option value="">Select status...</option>
+                        <option value="resigned">Resigned</option>
+                        <option value="terminated">Terminated</option>
+                    </select>
+                </div>
+            </div>
+            <!-- Footer -->
+            <div style="display:flex; justify-content:flex-end; gap:10px; padding:16px 24px; border-top:1px solid #e2e8f0; background:#f8fafc;">
+                <button onclick="window.closeOffboardWizard()"
+                    style="padding:10px 20px; border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc; font-size:14px; font-weight:600; cursor:pointer; color:#1e293b;">Cancel</button>
+                <button id="wizardConfirmBtn" onclick="window.confirmWizardOffboard()"
+                    style="padding:10px 20px; border:none; border-radius:8px; background:#dc2626; color:#fff; font-size:14px; font-weight:600; cursor:pointer;">Confirm Offboarding</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Path B: Quick Deactivate (no active load) ─────────────── -->
+    <div id="quickDeactivateModal"
+        style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:10011; width:92%; max-width:420px;">
+        <div style="background:#fff; border-radius:16px; box-shadow:0 20px 40px rgba(0,0,0,0.15); overflow:hidden;">
+            <!-- Header -->
+            <div style="background:#d97706; padding:20px 24px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h2 style="color:#fff; font-size:18px; font-weight:700; margin:0;">Archive Teacher</h2>
+                    <p style="color:rgba(255,255,255,0.85); font-size:13px; margin:3px 0 0;">No active assignments found</p>
+                </div>
+                <button onclick="window.closeQuickDeactivate()"
+                    style="background:rgba(255,255,255,0.2); border:none; width:32px; height:32px; border-radius:50%; cursor:pointer; color:#fff; font-size:18px; display:flex; align-items:center; justify-content:center;">&times;</button>
+            </div>
+            <!-- Body -->
+            <div style="padding:24px;">
+                <p style="font-size:14px; color:#374151; margin-bottom:18px;">
+                    <strong id="quickDeactivateName"></strong> has no active class assignments.
+                    Select a status and archive immediately.
+                </p>
+                <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">Departure Reason</label>
+                <select id="quickStatusSelect"
+                    style="width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; outline:none; background:#fff;">
+                    <option value="resigned">Resigned</option>
+                    <option value="terminated">Terminated</option>
+                </select>
+            </div>
+            <!-- Footer -->
+            <div style="display:flex; justify-content:flex-end; gap:10px; padding:16px 24px; border-top:1px solid #e2e8f0; background:#f8fafc;">
+                <button onclick="window.closeQuickDeactivate()"
+                    style="padding:10px 20px; border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc; font-size:14px; font-weight:600; cursor:pointer; color:#1e293b;">Cancel</button>
+                <button id="quickConfirmBtn" onclick="window.confirmQuickDeactivate()"
+                    style="padding:10px 20px; border:none; border-radius:8px; background:#d97706; color:#fff; font-size:14px; font-weight:600; cursor:pointer;">Archive Now</button>
+            </div>
+        </div>
+    </div>
+
     <script src="../../scripts/font-awesome.js"></script>
     <!-- <script src="../../scripts/side.js"></script> -->
     <!-- <script src="../../scripts/schoolAdminScripts/popup.js"></script> -->

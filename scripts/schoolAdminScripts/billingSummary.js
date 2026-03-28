@@ -28,7 +28,7 @@ class BillingSummary {
                 .from('Students')
                 .select('student_id, full_name, created_at')
                 .eq('school_id', userSchoolId)
-                .eq('enrollment_status', 'ENROLLED')
+                .eq('enrollment_status', 'active')   // Match the actual status values ('active' not 'ENROLLED')
                 .order('created_at', { ascending: false });
 
             if (enrollmentError) {

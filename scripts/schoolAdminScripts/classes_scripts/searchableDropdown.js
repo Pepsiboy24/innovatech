@@ -38,7 +38,8 @@ document.addEventListener('DOMContentLoaded', function () {
         .from('Teachers')
         .select('first_name')
         .ilike('first_name', `%${searchTerm}%`)
-        .limit(10); // Good practice to limit results
+        .eq('employment_status', 'active')  // Only search active teachers
+        .limit(10);
 
       if (error) throw error;
 

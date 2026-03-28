@@ -20,7 +20,8 @@ async function fetchAdminStats() {
         const { count: studentCount, error: studentError } = await supabase
             .from('Students')
             .select('*', { count: 'exact', head: true })
-            .eq('school_id', schoolId); // RLS: Only count students from this school
+            .eq('school_id', schoolId)           // RLS: Only count students from this school
+            .eq('enrollment_status', 'active');  // Only count currently enrolled students
 
         if (studentError) {
             console.error('Error fetching students count:', studentError);
@@ -32,7 +33,8 @@ async function fetchAdminStats() {
         const { count: teacherCount, error: teacherError } = await supabase
             .from('Teachers')
             .select('*', { count: 'exact', head: true })
-            .eq('school_id', schoolId); // RLS: Only count teachers from this school
+            .eq('school_id', schoolId)            // RLS: Only count teachers from this school
+            .eq('employment_status', 'active');  // Only count actively employed teachers
 
         if (teacherError) {
             console.error('Error fetching teachers count:', teacherError);

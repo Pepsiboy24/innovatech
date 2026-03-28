@@ -31,7 +31,8 @@ async function fetchTotalStudentsCount(classIds) {
         const { count, error } = await supabase
             .from('Students')
             .select('*', { count: 'exact', head: true })
-            .in('class_id', classIds);
+            .in('class_id', classIds)
+            .eq('enrollment_status', 'active'); // Only count active students
 
         if (error) {
             console.error('Error fetching total students count:', error);
@@ -51,6 +52,7 @@ async function fetchStudentsFromClass(classId, limit = 5) {
             .from('Students')
             .select('student_id, full_name, date_of_birth, class_id')
             .eq('class_id', classId)
+            .eq('enrollment_status', 'active')  // Only show active students in dashboard list
             .limit(limit);
 
         if (error) {
@@ -77,7 +79,8 @@ async function fetchAverageGrade(classIds) {
         const { data: students, error: studentsError } = await supabase
             .from('Students')
             .select('student_id')
-            .in('class_id', classIds);
+            .in('class_id', classIds)
+            .eq('enrollment_status', 'active'); // Only average grades of active students
 
         if (studentsError || !students || students.length === 0) return null;
 

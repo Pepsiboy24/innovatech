@@ -130,7 +130,8 @@ async function fetchAllStudentsFromTeacherClasses(classes) {
                 student_subject(subject_id)
             `)
             .in('class_id', classIds)
-            .eq('school_id', userSchoolId) // CRITICAL: Filter by current school
+            .eq('school_id', userSchoolId)         // CRITICAL: Filter by current school
+            .eq('enrollment_status', 'active')     // Only show active students in teacher's list
             .order('full_name', { ascending: true });
 
         if (error) {

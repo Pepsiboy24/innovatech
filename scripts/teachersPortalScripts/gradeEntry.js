@@ -95,6 +95,7 @@ async function fetchStudents(classId) {
             .from('Students')
             .select('student_id, full_name, profile_picture')
             .eq('class_id', classId)
+            .eq('enrollment_status', 'active')  // Only grade active students
             .order('full_name', { ascending: true });
 
         if (error) {
