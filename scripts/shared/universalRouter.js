@@ -12,13 +12,13 @@ class UniversalRouter {
             // Try multiple possible paths to ensure modal loads regardless of script location
             const possiblePaths = [
                 '../html/shared/details_modal.html',
-                '../../html/shared/details_modal.html',
+                '../../html/shared/details_modal.html', 
                 '../../../html/shared/details_modal.html',
                 '/html/shared/details_modal.html'
             ];
-
+            
             let modalLoaded = false;
-
+            
             for (const path of possiblePaths) {
                 try {
                     const response = await fetch(path);
@@ -37,7 +37,7 @@ class UniversalRouter {
                     continue;
                 }
             }
-
+            
             if (!modalLoaded) {
                 console.error('Failed to load details modal from all attempted paths');
             }
@@ -85,7 +85,7 @@ class UniversalRouter {
                 tabs.forEach(t => t.classList.remove('active'));
                 // Remove active from all contents
                 document.querySelectorAll('.universal-modal-content-area').forEach(c => c.classList.remove('active'));
-
+                
                 // Add active to clicked
                 e.target.classList.add('active');
                 const targetId = e.target.getAttribute('data-target');
@@ -116,9 +116,9 @@ class UniversalRouter {
             console.error('Modal not loaded - cannot show details');
             return;
         }
-
+        
         this.openModal();
-
+        
         try {
             const { data: authData } = await supabase.auth.getUser();
             const school_id = authData?.user?.user_metadata?.school_id;
@@ -128,7 +128,7 @@ class UniversalRouter {
             }
 
             let data;
-
+            
             switch (type) {
                 case 'student':
                     data = await this.fetchStudentData(id, school_id);
@@ -169,7 +169,7 @@ class UniversalRouter {
         if (existingModal) {
             existingModal.remove();
         }
-
+        
         // Re-initialize to load modal
         await this.init();
         return this.isModalLoaded();
@@ -179,7 +179,7 @@ class UniversalRouter {
         const nameEl = document.getElementById('umName');
         const roleEl = document.getElementById('umRole');
         const overviewEl = document.getElementById('um-overview');
-
+        
         if (nameEl) nameEl.textContent = title;
         if (roleEl) roleEl.textContent = 'Error';
         if (overviewEl) {
@@ -201,21 +201,21 @@ class UniversalRouter {
                 )
             `)
             .eq('student_id', id);
-
+            
         if (school_id) query = query.eq('school_id', school_id);
-
+        
         // Add limit and ordering to Grades via foreign table notation, although JS client handles it best when separated sometimes.
         // Doing simple query first, if Grades fails ordering we can adjust
         const { data: student, error } = await query.single();
-
+            
         if (error) throw error;
-
+        
         // Sorting grades locally since Supabase deeply nested limits/orders can be tricky
         if (student && student.Grades) {
             student.Grades.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
             student.Grades = student.Grades.slice(0, 5);
         }
-
+        
         return student;
     }
 
@@ -232,10 +232,10 @@ class UniversalRouter {
                 emergency_contact (*)
             `)
             .eq('teacher_id', id);
-
-        if (school_id) query = query.eq('school_id', school_id);
+            
+        if (school_id) query = query.eq('school_id', school_id);    
         const { data: teacher, error } = await query.single();
-
+            
         if (error) throw error;
         return teacher;
     }
@@ -249,10 +249,10 @@ class UniversalRouter {
                 Students (*)
             `)
             .eq('class_id', id);
-
+        
         if (school_id) query = query.eq('school_id', school_id);
         const { data: classData, error } = await query.single();
-
+            
         if (error) throw error;
         return classData;
     }
@@ -267,10 +267,10 @@ class UniversalRouter {
                 Teachers (*)
             `)
             .eq('subject_id', id);
-
+            
         if (school_id) query = query.eq('school_id', school_id);
         const { data: subject, error } = await query.single();
-
+            
         if (error) throw error;
         return subject;
     }
@@ -282,10 +282,10 @@ class UniversalRouter {
         const contactsEl = document.getElementById('um-contacts');
         const academicEl = document.getElementById('um-academic');
         const adminEl = document.getElementById('um-administrative');
-
+        
         if (nameEl) nameEl.textContent = data.full_name || 'Student';
         if (roleEl) roleEl.textContent = 'Student';
-
+        
         let parentsHTML = '';
         if (data.Parent_Student_Links && data.Parent_Student_Links.length > 0) {
             parentsHTML = data.Parent_Student_Links.map(link => {
@@ -344,14 +344,14 @@ class UniversalRouter {
         const academicEl = document.getElementById('um-academic');
         const contactsEl = document.getElementById('um-contacts');
         const adminEl = document.getElementById('um-administrative');
-
+        
         const fullName = [data.first_name, data.last_name].filter(Boolean).join(' ') || 'Teacher';
         if (nameEl) nameEl.textContent = fullName;
-
+        
         // Display email immediately alongside the Role in the Header so it is never "missing"
         const teacherEmail = data.email || 'No email provided';
         if (roleEl) roleEl.innerHTML = `Teacher <span style="margin-left: 10px; opacity: 0.85; font-size: 0.9em;"><i class="fa fa-envelope"></i> ${teacherEmail}</span>`;
-
+        
         // Safely extract relationships arrays/objects
         const emp = Array.isArray(data.school_employment) ? data.school_employment[0] : (data.school_employment || {});
         const qual = Array.isArray(data.qualifications) ? data.qualifications[0] : (data.qualifications || {});
@@ -437,7 +437,7 @@ class UniversalRouter {
         const academicEl = document.getElementById('um-academic');
         const contactsEl = document.getElementById('um-contacts');
         const adminEl = document.getElementById('um-administrative');
-
+        
         if (nameEl) nameEl.textContent = `${data.class_name || 'Class Details'}`;
         if (roleEl) roleEl.textContent = 'Class';
 
@@ -474,7 +474,7 @@ class UniversalRouter {
         const academicEl = document.getElementById('um-academic');
         const contactsEl = document.getElementById('um-contacts');
         const adminEl = document.getElementById('um-administrative');
-
+        
         if (nameEl) nameEl.textContent = `${data.subject_name || 'Subject'}`;
         if (roleEl) roleEl.textContent = 'Subject';
 

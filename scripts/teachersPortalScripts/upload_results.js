@@ -1,14 +1,14 @@
-
 // upload_results.js
 // Result upload logic for teachers portal with upsert functionality and Excel import
 
 import { supabase } from '../config.js';
 import { checkTeacherLogin } from '../teacherUtils.js';
+import { openUploadModal } from '../upload_modal_ui.js';
 
-
-// Global variables
+// ─── State ────────────────────────────────────────────────────────────────────
 let currentClassStudents = [];
 let currentTeacherId = null;
+let currentSchoolId = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     initializeUploadResults();
@@ -16,372 +16,344 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function initializeUploadResults() {
     try {
-        // 1. Verify Teacher Login (uses shared auth guard)
+        // 1. Verify Teacher Login
         const authResult = await checkTeacherLogin();
         if (!authResult) return;
         currentTeacherId = authResult.teacherId;
 
+        // 2. Fetch school_id from metadata (Crucial for RLS)
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user?.user_metadata?.school_id) {
-            console.warn('Strict Guard: No school_id found. Execution blocked.');
+        currentSchoolId = user?.user_metadata?.school_id;
+
+        if (!currentSchoolId) {
+            alert("Critical Error: School identity not found. Please re-login.");
             return;
         }
 
-        // 2. Fetch Teacher's Classes
+        // 3. Fetch Initial Data
         const classes = await fetchTeacherClasses(currentTeacherId);
         populateClassDropdown(classes);
-
-        // 3. Setup Event Listeners
+        fetchAcademicSessions(); // Load years and terms dynamically
         setupEventListeners();
+        applyGradingSettings();
 
     } catch (error) {
         console.error('Error initializing upload results:', error);
     }
 }
 
-// --- Auth & Initial Data Fetching ---
+// ─── Data Fetching ────────────────────────────────────────────────────────────
 
 async function fetchTeacherClasses(teacherId) {
-    try {
-        const { data, error } = await supabase
-            .from('Classes')
-            .select('class_id, class_name, section')
-            .eq('teacher_id', teacherId);
+    const { data, error } = await supabase
+        .from('Classes')
+        .select('class_id, class_name, section')
+        .eq('teacher_id', teacherId);
 
-        if (error) {
-            console.error('Error fetching teacher classes:', error);
-            return [];
-        }
-        return data || [];
-    } catch (err) {
-        return [];
-    }
+    return error ? [] : (data || []);
 }
 
 async function fetchClassSubjects(classId) {
-    try {
-        const { data, error } = await supabase
-            .from('Class_Subjects')
-            .select(`
-                subject_id,
-                Subjects (
-                    subject_name,
-                    subject_id
-                )
-            `)
-            .eq('class_id', classId)
-            .eq('teacher_id', currentTeacherId);
+    const { data, error } = await supabase
+        .from('Subject_Allocations')
+        .select(`subject_id, Subjects (subject_name)`)
+        .eq('class_id', classId)
+        .eq('teacher_id', currentTeacherId);
 
-        if (error) {
-            console.error('Error fetching class subjects:', error);
-            return [];
+    return error ? [] : data.map(item => ({
+        subject_id: item.subject_id,
+        subject_name: item.Subjects?.subject_name
+    }));
+}
+
+async function fetchAcademicSessions() {
+    const { data, error } = await supabase
+        .from('Academic_Sessions')
+        .select('*')
+        .eq('school_id', currentSchoolId)
+        .order('created_at', { ascending: false });
+
+    if (!error && data) {
+        const sessionSelect = document.getElementById('academicSessionSelect');
+        const termSelect = document.getElementById('termSelect');
+
+        const uniqueYears = [...new Set(data.map(s => s.academic_year))];
+        sessionSelect.innerHTML = uniqueYears.map(y => `<option value="${y}">${y}</option>`).join('');
+
+        const current = data.find(s => s.is_current);
+        if (current) {
+            sessionSelect.value = current.academic_year;
+            termSelect.value = current.term;
         }
-
-        return data.map(item => item.Subjects);
-
-    } catch (err) {
-        console.error('Unexpected error fetching class subjects:', err);
-        return [];
     }
 }
-
-// --- UI Population ---
-
-function populateClassDropdown(classes) {
-    const classSelect = document.getElementById('classSelect');
-    if (!classSelect) return;
-
-    classSelect.innerHTML = '<option value="">Select Class</option>';
-    classes.forEach(cls => {
-        const option = document.createElement('option');
-        option.value = cls.class_id;
-        option.textContent = `${cls.class_name} ${cls.section}`;
-        classSelect.appendChild(option);
-    });
-}
-
-function populateSubjectDropdown(subjects) {
-    const subjectSelect = document.getElementById('subjectSelect');
-    if (!subjectSelect) return;
-
-    subjectSelect.innerHTML = '<option value="">Select Subject</option>';
-    subjects.forEach(sub => {
-        const option = document.createElement('option');
-        option.value = sub.subject_id;
-        option.textContent = sub.subject_name;
-        subjectSelect.appendChild(option);
-    });
-}
-
-// --- Event Listeners ---
-
-function setupEventListeners() {
-    const classSelect = document.getElementById('classSelect');
-    const subjectSelect = document.getElementById('subjectSelect');
-    const excelInput = document.getElementById('excelUpload');
-    const resultsForm = document.getElementById('resultsForm');
-
-    // Class Change -> Fetch Subjects & Clear Table
-    if (classSelect) {
-        classSelect.addEventListener('change', async (e) => {
-            const classId = e.target.value;
-            updateStudentTable([]); // Clear table
-
-            if (classId) {
-                const subjects = await fetchClassSubjects(classId);
-                populateSubjectDropdown(subjects);
-            } else {
-                populateSubjectDropdown([]);
-            }
-        });
-    }
-
-    // Subject Change -> Fetch Students
-    if (subjectSelect) {
-        subjectSelect.addEventListener('change', async (e) => {
-            const subjectId = e.target.value;
-            const classId = classSelect.value;
-
-            if (classId && subjectId) {
-                console.log(classId)
-                await fetchStudentsInClass(classId);
-            } else {
-                updateStudentTable([]);
-            }
-        });
-    }
-
-    // Excel Upload
-    if (excelInput) {
-        excelInput.addEventListener('change', handleExcelUpload);
-    }
-
-    // Form Submit
-    if (resultsForm) {
-        resultsForm.addEventListener('submit', handleSaveResults);
-    }
-}
-
-// --- Core Logic ---
 
 async function fetchStudentsInClass(classId) {
-    try {
-        console.log("Fetching students for class ID:", classId); // Debugging line
+    const { data: students, error } = await supabase
+        .from('Students')
+        .select('student_id, full_name')
+        .eq('class_id', classId)
+        .eq('school_id', currentSchoolId)
+        .eq('enrollment_status', 'active')
+        .order('full_name', { ascending: true });
 
-        const { data: students, error } = await supabase
-            .from('Students')
-            .select('student_id, full_name') // Only select what you need
-            .eq('class_id', classId) // Remove parseInt() if your class_id is a UUID
-            .order('full_name', { ascending: true });
-
-        if (error) {
-            console.error('Supabase Error:', error.message);
-            throw error;
-        }
-
-        console.log("Students found:", students);
-        currentClassStudents = students || [];
-        updateStudentTable(currentClassStudents);
-
-    } catch (error) {
-        updateStudentTable([]);
-        alert("Error loading students: " + error.message);
-    }
+    currentClassStudents = students || [];
+    updateStudentTable(currentClassStudents);
 }
+
+// ─── UI Rendering ─────────────────────────────────────────────────────────────
 
 function updateStudentTable(students) {
     const tableBody = document.getElementById('studentTableBody');
     if (!tableBody) return;
 
     if (students.length === 0) {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="4" style="text-align: center; padding: 20px; color: #64748b;">
-                    No students found or selected.
-                </td>
-            </tr>
-        `;
+        tableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 20px;">No students found.</td></tr>`;
         return;
     }
 
     tableBody.innerHTML = students.map(student => `
         <tr data-student-id="${student.student_id}">
-            <td data-label="Name">${student.full_name}</td>
-            <td data-label="ID">${student.student_id}</td>
-            <td data-label="Score">
-                <input type="number" 
-                       class="score-input" 
-                       data-student-id="${student.student_id}"
-                       min="0" 
-                       step="0.1"
-                       placeholder="Score">
-            </td>
-            <td data-label="Comment">
-                <input type="text" 
-                       class="comment-input" 
-                       data-student-id="${student.student_id}"
-                       placeholder="Optional comment">
-            </td>
+            <td>${student.full_name}</td>
+            <td><small>${student.student_id}</small></td>
+            <td><input type="number" class="score-input" data-student-id="${student.student_id}" step="0.1" placeholder="0.0"></td>
+            <td><input type="text" class="comment-input" data-student-id="${student.student_id}" placeholder="Optional"></td>
         </tr>
     `).join('');
 }
 
-// --- Excel Import Logic ---
+// ─── Excel Template & Import ──────────────────────────────────────────────────
 
-async function handleExcelUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
+function downloadResultsTemplate() {
     if (currentClassStudents.length === 0) {
-        alert('Please fetch students (select Class & Subject) first before importing scores.');
-        event.target.value = '';
+        alert('Please select a Class and Subject first.');
         return;
     }
 
-    const reader = new FileReader();
+    const session = document.getElementById('academicSessionSelect')?.value || "N/A";
+    const term = document.getElementById('termSelect')?.value || "N/A";
+    const subjectSelect = document.getElementById('subjectSelect');
+    const subjectName = subjectSelect.options[subjectSelect.selectedIndex]?.text || "Subject";
 
-    reader.onload = function (e) {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
+    // Headers: Full Name, Score, Comment, System_ID
+    const rows = [
+        ['OFFICIAL RESULTS TEMPLATE'],
+        [`Subject: ${subjectName}`, `Session: ${session}`, `Term: ${term}`],
+        [''], // Spacer
+        ['Full Name', 'Score', 'Comment', 'System_ID']
+    ];
 
-        // Assume first sheet
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
+    currentClassStudents.forEach(student => {
+        rows.push([student.full_name, '', '', student.student_id]);
+    });
 
-        // Convert to JSON
-        // Expected columns: ID, Name, Score
-        // We will try to map loosely
-        const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+    const ws = XLSX.utils.aoa_to_sheet(rows);
 
-        // Basic validation: Check if we have at least some data
-        if (json.length < 2) {
-            alert('File appears to be empty or missing headers.');
-            return;
-        }
+    // Hide the D column (System_ID) so teachers don't touch it
+    ws['!cols'] = [{ wch: 30 }, { wch: 10 }, { wch: 30 }, { hidden: true }];
 
-        // Identify columns (simple heuristic or fixed index)
-        // Let's assume: 
-        // Column 0: ID
-        // Column 1: Name
-        // Column 2: Score
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Results');
+    XLSX.writeFile(wb, `${subjectName}_Results_Template.xlsx`);
+}
+function openResultsUploadModal() {
+    if (currentClassStudents.length === 0) {
+        alert('Please fetch students first (select Class & Subject) before importing scores.');
+        return;
+    }
 
-        let matchCount = 0;
+    openUploadModal({
+        title: 'Import Results',
+        icon: 'fa-upload',
+        accept: '.xlsx,.xls',
 
-        // Skip header row (index 0)
-        for (let i = 1; i < json.length; i++) {
-            const row = json[i];
-            if (!row || row.length === 0) continue;
+        // ─── ADDED THESE TWO PROPERTIES ───
+        templateFn: () => downloadResultsTemplate(),
+        hintHtml: `
+            <div style="font-size: 13px; line-height: 1.6;">
+                <p>1. <strong>Download</strong> the pre-filled template for this class.</p>
+                <p>2. Enter scores in the <strong>Score</strong> column.</p>
+                <p>3. <strong>Upload</strong> the file to auto-fill the results table.</p>
+            </div>
+        `,
 
-            const excelId = row[0]; // ID
-            const excelScore = row[2]; // Score
+        onFile: async (file, helpers) => {
+            try {
+                const rows = await readXlsxFile(file);
+                if (!rows || rows.length < 2) return helpers.showError('File is empty.');
 
-            // Find input for this student
-            // We use loose comparison for ID in case of string/number diffs
-            const scoreInput = document.querySelector(`.score-input[data-student-id="${excelId}"]`);
+                // 1. Get the Max Score from the main UI to compare against
+                const maxScore = parseFloat(document.getElementById('maxScoreInput').value) || 100;
 
-            if (scoreInput) {
-                scoreInput.value = excelScore;
-                matchCount++;
+                let headerRowIndex = rows.findIndex(row =>
+                    row.some(cell => cell?.toString().toLowerCase().includes('system_id'))
+                );
+
+                if (headerRowIndex === -1) {
+                    helpers.showError('Invalid template format. Please use the downloaded file.');
+                    return;
+                }
+
+                const headers = rows[headerRowIndex].map(h => h?.toString().toLowerCase().trim());
+                const idIdx = headers.indexOf('system_id');
+                const scoreIdx = headers.indexOf('score');
+                const nameIdx = headers.indexOf('full name');
+                const commentIdx = headers.indexOf('comment');
+
+                const previewData = [];
+                let hasError = false; // Safety switch
+
+                for (let i = headerRowIndex + 1; i < rows.length; i++) {
+                    const row = rows[i];
+                    if (!row[idIdx]) continue;
+
+                    const rawScore = row[scoreIdx];
+                    const parsedScore = parseFloat(rawScore);
+                    let rowError = null;
+
+                    // 2. THE CHECK: Validate score against maxScore
+                    if (!isNaN(parsedScore) && parsedScore > maxScore) {
+                        rowError = `Exceeds max (${maxScore})`;
+                        hasError = true;
+                    }
+
+                    previewData.push({
+                        id: row[idIdx].toString().trim(),
+                        name: row[nameIdx] || 'Unknown Student',
+                        score: rawScore, // Keep raw value for display
+                        comment: commentIdx !== -1 ? row[commentIdx] : '',
+                        error: rowError // Pass the error to the preview helper
+                    });
+                }
+
+                // 3. Show preview table
+                // Note: If your UI helper supports it, you can add 'error' to the columns
+                helpers.showPreview(previewData, [
+                    { key: 'name', label: 'Student' },
+                    { key: 'score', label: 'Score' }
+                ]);
+
+                helpers._processedRows = previewData;
+
+                // 4. BLOCK UPLOAD if there are errors
+                if (hasError) {
+                    helpers.showError(`Some scores exceed the maximum allowed (${maxScore}). Please fix your Excel file.`);
+                    helpers.setUploadEnabled(false);
+                } else {
+                    helpers.setUploadEnabled(previewData.length > 0);
+                }
+
+            } catch (err) {
+                helpers.showError('Error parsing Excel file.');
+            }
+        },
+        onConfirm: async (file, helpers) => {
+            let matchCount = 0;
+
+            helpers._processedRows.forEach(row => {
+                const scoreInput = document.querySelector(`.score-input[data-student-id="${row.id}"]`);
+                const commentInput = document.querySelector(`.comment-input[data-student-id="${row.id}"]`);
+
+                if (scoreInput) {
+                    scoreInput.value = row.score || '';
+                    matchCount++;
+                }
+                if (commentInput) {
+                    commentInput.value = row.comment || '';
+                }
+            });
+
+            helpers.close();
+
+            if (matchCount > 0) {
+                alert(`Successfully matched and filled scores for ${matchCount} students. Don't forget to click "Save Results"!`);
+            } else {
+                alert("Match Failed: The student IDs in the file don't match the current class.");
             }
         }
-
-        alert(`Imported scores for ${matchCount} students.`);
-        event.target.value = ''; // Reset file input
-    };
-
-    reader.readAsArrayBuffer(file);
+    });
 }
-
-// --- Submit Logic ---
+// ─── Save Results (The "Invisible" School ID injection) ────────────────────────
 
 async function handleSaveResults(e) {
     e.preventDefault();
+    const btn = e.submitter;
+    btn.disabled = true;
 
     try {
         const classId = document.getElementById('classSelect').value;
         const subjectId = document.getElementById('subjectSelect').value;
         const term = document.getElementById('termSelect').value;
-        const academicSession = document.getElementById('academicSessionSelect').value;
-        const assessmentType = document.getElementById('assessmentTypeSelect').value;
+        const session = document.getElementById('academicSessionSelect').value;
+        const type = document.getElementById('assessmentTypeSelect').value;
         const maxScore = parseFloat(document.getElementById('maxScoreInput').value);
 
-        // Validation
-        if (!classId || !subjectId || !term || !academicSession || !assessmentType || !maxScore) {
-            alert('Please fill in all required fields.');
-            return;
-        }
-
         const scores = [];
-        const scoreInputs = document.querySelectorAll('.score-input');
-
-        scoreInputs.forEach(input => {
-            const val = input.value;
-            if (val !== '') {
-                const score = parseFloat(val);
-                const studentId = input.dataset.studentId;
-                const commentInput = document.querySelector(`.comment-input[data-student-id="${studentId}"]`);
-                const comment = commentInput ? commentInput.value.trim() : '';
-
-                // Validate against max score
-                if (score > maxScore) {
-                    input.style.borderColor = 'red';
-                    // We could alert here, or just continue and let backend/validation fail.
-                    // Let's alert briefly? Or just cap it?
-                    // Ideally we should stop.
-                }
-
+        document.querySelectorAll('.score-input').forEach(input => {
+            if (input.value !== '') {
+                const sId = input.dataset.studentId;
                 scores.push({
-                    student_id: studentId,
+                    student_id: sId,
                     subject_id: subjectId,
-                    class_id: classId, // Often redundant if normalized, but good for safety
+                    class_id: classId,
                     term: term,
-                    academic_session: academicSession,
-                    assessment_type: assessmentType,
-                    score: score,
+                    academic_session: session,
+                    assessment_type: type,
+                    score: parseFloat(input.value),
                     max_score: maxScore,
-                    comment: comment,
-                    teacher_id: currentTeacherId
+                    comment: document.querySelector(`.comment-input[data-student-id="${sId}"]`)?.value.trim() || '',
+                    teacher_id: currentTeacherId,
+                    school_id: currentSchoolId // CRITICAL: Required for RLS
                 });
             }
         });
 
-        if (scores.length === 0) {
-            alert('No scores entered.');
-            return;
-        }
+        if (scores.length === 0) throw new Error("No scores entered.");
 
-        if (confirm(`Are you sure you want to submit ${scores.length} results?`)) {
-            // Upsert Logic
-            const { data, error } = await supabase
-                .from('Grades')
-                .upsert(scores, {
-                    onConflict: 'student_id,subject_id,term,academic_session,assessment_type',
-                    ignoreDuplicates: false
-                })
-                .select();
+        const { error } = await supabase.from('Grades').upsert(scores, {
+            onConflict: 'student_id,subject_id,term,academic_session,assessment_type'
+        });
 
-            if (error) throw error;
+        if (error) throw error;
+        alert('Results successfully saved/updated!');
 
-            alert('Results saved successfully!');
-            // Optional: clear inputs?
-            // document.getElementById('resultsForm').reset(); 
-            // We probably want to keep them visible for confirmation, maybe just clear file input
-        }
-
-    } catch (error) {
-        console.error('Error saving results:', error);
-        alert('Failed to save results. Please check console for details.');
+    } catch (err) {
+        alert(err.message);
+    } finally {
+        btn.disabled = false;
     }
 }
 
-// --- Grading Settings Logic (Read-Only) ---
+// ─── Event Listeners & Helpers ────────────────────────────────────────────────
+
+function setupEventListeners() {
+    document.getElementById('classSelect').addEventListener('change', async (e) => {
+        const subjects = await fetchClassSubjects(e.target.value);
+        populateSubjectDropdown(subjects);
+        updateStudentTable([]);
+    });
+
+    document.getElementById('subjectSelect').addEventListener('change', (e) => {
+        if (e.target.value) fetchStudentsInClass(document.getElementById('classSelect').value);
+    });
+
+    document.getElementById('importExcelBtn').addEventListener('click', openResultsUploadModal);
+    document.getElementById('resultsForm').addEventListener('submit', handleSaveResults);
+}
+
+function populateClassDropdown(classes) {
+    const el = document.getElementById('classSelect');
+    el.innerHTML = '<option value="">Select Class</option>' +
+        classes.map(c => `<option value="${c.class_id}">${c.class_name} ${c.section}</option>`).join('');
+}
+
+function populateSubjectDropdown(subjects) {
+    const el = document.getElementById('subjectSelect');
+    el.innerHTML = '<option value="">Select Subject</option>' +
+        subjects.map(s => `<option value="${s.subject_id}">${s.subject_name}</option>`).join('');
+}
 
 function applyGradingSettings() {
-    const defaultMaxScore = localStorage.getItem('grade_settings_max_score');
-
-    // Auto-fill Max Score on main form if not already set (or if we want to enforce default)
-    const mainMaxScoreInput = document.getElementById('maxScoreInput');
-    if (mainMaxScoreInput && defaultMaxScore) {
-        mainMaxScoreInput.value = defaultMaxScore;
-    }
+    const max = localStorage.getItem('grade_settings_max_score');
+    if (max) document.getElementById('maxScoreInput').value = max;
 }

@@ -1,4 +1,5 @@
 import { supabase } from '../config.js';
+import { openUploadModal } from '../upload_modal_ui.js';
 
 let currentTeacherId = null;
 
@@ -43,15 +44,32 @@ async function checkTeacherLogin() {
 async function fetchTeacherClasses(teacherId) {
     try {
         const { data, error } = await supabase
-            .from('Classes')
-            .select('class_id, class_name, section')
+            .from('Subject_Allocations')
+            .select(`
+                class_id,
+                Classes (
+                    class_id,
+                    class_name,
+                    section
+                )
+            `)
             .eq('teacher_id', teacherId);
 
         if (error) {
             console.error('Error fetching teacher classes:', error);
             return [];
         }
-        return data || [];
+
+        if (!data || data.length === 0) return [];
+
+        const uniqueClasses = new Map();
+        data.forEach(item => {
+            if (item.Classes) {
+                uniqueClasses.set(item.Classes.class_id, item.Classes);
+            }
+        });
+
+        return Array.from(uniqueClasses.values());
     } catch (err) {
         console.error('Unexpected error fetching teacher classes:', err);
         return [];
@@ -62,7 +80,7 @@ async function fetchTeacherClasses(teacherId) {
 async function fetchClassSubjects(classId, teacherId) {
     try {
         const { data, error } = await supabase
-            .from('Class_Subjects')
+            .from('Subject_Allocations')
             .select(`
                 subject_id,
                 Subjects (
@@ -79,7 +97,7 @@ async function fetchClassSubjects(classId, teacherId) {
         }
 
         // Flatten the structure
-        return data.map(item => item.Subjects);
+        return data.map(item => item.Subjects).filter(Boolean);
 
     } catch (err) {
         console.error('Unexpected error fetching class subjects:', err);
@@ -205,83 +223,144 @@ async function toggleTopicStatus(id, currentStatus) {
     }
 }
 
-// Handle File Upload
-async function handleFileUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+// Download Template
+function downloadCurriculumTemplate() {
+    if (typeof XLSX === 'undefined') {
+        alert('Excel library not loaded.');
+        return;
+    }
+    const ws = XLSX.utils.aoa_to_sheet([
+        ['Week', 'Topic', 'Sub Topic'],
+        ['1', 'Introduction to Algebra', 'Basic definitions and concepts'],
+        ['2', 'Linear Equations', 'Solving one-step equations']
+    ]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Scheme of Work');
+    XLSX.writeFile(wb, 'scheme_of_work_template.xlsx');
+}
 
-    const classId = document.getElementById('classSelect').value;
-    const subjectId = document.getElementById('subjectSelect').value;
-
-    if (!classId || !subjectId) {
-        alert('Please select a Class and Subject first.');
-        event.target.value = ''; // Reset input
+// Open Upload Modal
+function openCurriculumUploadModal(classId, subjectId) {
+    if (typeof readXlsxFile === 'undefined') {
+        alert('Excel library not loaded. Refresh and try again.');
         return;
     }
 
-    try {
-        const rows = await readXlsxFile(file);
+    openUploadModal({
+        title: 'Upload Scheme of Work',
+        icon: 'fa-book-open',
+        accept: '.xlsx,.xls',
+        templateFn: downloadCurriculumTemplate,
+        hintHtml: `
+            <strong style="color:#93c5fd;">Required:</strong>
+            <code style="color:#a5f3fc;">Week</code>,
+            <code style="color:#a5f3fc;">Topic</code>
+            &nbsp;·&nbsp;
+            <strong style="color:#93c5fd;">Optional:</strong>
+            <code style="color:#a5f3fc;">Sub Topic</code>
+        `,
+        confirmLabel: 'Upload Scheme',
+        onFile: async (file, helpers) => {
+            try {
+                const rows = await readXlsxFile(file);
+                if (!rows || rows.length < 2) {
+                    alert('File is empty or missing data.');
+                    helpers.setUploadEnabled(false);
+                    return;
+                }
 
-        // Expected format: [Header Row, Data Rows...]
-        // Header: Week, Topic, Description (optional)
+                const header = rows[0].map(h => (h || '').toString().toLowerCase());
+                const weekIdx = header.findIndex(h => h.includes('week'));
+                const topicIdx = header.findIndex(h => h.includes('topic'));
+                const subTopicIdx = header.findIndex(h => h.includes('sub_topic') || h.includes('subtopic'));
 
-        // Simple validation of header
-        const header = rows[0].map(h => h.toLowerCase());
-        const weekIdx = header.findIndex(h => h.includes('week'));
-        const topicIdx = header.findIndex(h => h.includes('topic'));
-        const subTopicIdx = header.findIndex(h => h.includes('sub_topic') || h.includes('subtopic'));
+                if (weekIdx === -1 || topicIdx === -1) {
+                    alert('Invalid Excel format. Please ensure headers "Week" and "Topic" exist.');
+                    helpers.setUploadEnabled(false);
+                    return;
+                }
 
-        if (weekIdx === -1 || topicIdx === -1) {
-            alert('Invalid Excel format. Please ensure headers "Week" and "Topic" exist.');
-            return;
-        }
+                const previewRows = [];
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i];
+                    if (row.length === 0) continue;
 
-        const curriculumData = [];
-        for (let i = 1; i < rows.length; i++) {
-            const row = rows[i];
-            if (row.length === 0) continue;
+                    const week = row[weekIdx];
+                    const topic = row[topicIdx];
 
-            const week = row[weekIdx];
-            const topic = row[topicIdx];
-            const sub_topic = subTopicIdx !== -1 ? row[subTopicIdx] : '';
+                    if (week && topic) {
+                        previewRows.push({
+                            Week: week.toString(),
+                            Topic: topic.toString(),
+                            SubTopic: subTopicIdx !== -1 && row[subTopicIdx] ? row[subTopicIdx].toString() : '',
+                            __errors: []
+                        });
+                    }
+                }
 
-            if (week && topic) {
-                curriculumData.push({
-                    class_id: parseInt(classId),
-                    subject_id: subjectId,
+                helpers._rows = previewRows;
+                helpers._classId = classId;
+                helpers._subjectId = subjectId;
+
+                helpers.showPreview(previewRows, [
+                    { key: 'Week', label: 'Week' },
+                    { key: 'Topic', label: 'Topic' },
+                    { key: 'SubTopic', label: 'Sub Topic' }
+                ]);
+
+                if (previewRows.length === 0) {
+                    alert('No valid topics found in the file.');
+                }
+                helpers.setUploadEnabled(previewRows.length > 0);
+
+            } catch (err) {
+                console.error('Error parsing file:', err);
+                alert('Failed to parse Excel file.');
+                helpers.setUploadEnabled(false);
+            }
+        },
+        onConfirm: async (file, helpers) => {
+            try {
+                // 1. Get school_id from teacher's session
+                const { data: { user } } = await supabase.auth.getUser();
+                const schoolId = user?.user_metadata?.school_id;
+
+                if (!schoolId) throw new Error("School identity not found. Please re-login.");
+
+                const curriculumData = helpers._rows.map(r => ({
+                    class_id: parseInt(helpers._classId),
+                    subject_id: helpers._subjectId,
                     teacher_id: currentTeacherId,
-                    week: week.toString(),
-                    topic: topic.toString(),
-                    sub_topic: sub_topic ? sub_topic.toString() : '',
+                    school_id: schoolId, // <--- CRITICAL: Add this line
+                    week: r.Week,
+                    topic: r.Topic,
+                    sub_topic: r.SubTopic,
                     status: 'Pending',
                     progress: 0
-                });
+                }));
+
+                helpers.startProgress(curriculumData.length);
+
+                const { error } = await supabase
+                    .from('Curriculum')
+                    .insert(curriculumData);
+
+                if (error) throw error;
+
+                helpers.finishProgress(`<div style="color:#86efac;margin-top:8px;">Successfully imported ${curriculumData.length} topics!</div>`);
+                helpers.showFooterDone();
+
+                // Refresh table
+                const data = await fetchCurriculum(helpers._classId, helpers._subjectId);
+                renderCurriculumTable(data);
+
+            } catch (err) {
+                console.error('Error uploading file:', err);
+                helpers.finishProgress(`<div style="color:#fca5a5;margin-top:8px;">Upload failed: ${err.message || 'Unknown error'}</div>`);
+                helpers.showFooterDone();
             }
         }
-
-        if (curriculumData.length === 0) {
-            alert('No valid data found in the file.');
-            return;
-        }
-
-        const { error } = await supabase
-            .from('Curriculum')
-            .insert(curriculumData);
-
-        if (error) throw error;
-
-        alert(`Successfully imported ${curriculumData.length} topics!`);
-
-        // Refresh table
-        const data = await fetchCurriculum(classId, subjectId);
-        renderCurriculumTable(data);
-
-    } catch (err) {
-        console.error('Error uploading file:', err);
-        alert('Failed to upload file. Please ensure it is a valid Excel file.');
-    } finally {
-        event.target.value = ''; // Reset input
-    }
+    });
 }
 
 // Initialize
@@ -349,11 +428,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Handle File Upload Button
-    if (uploadBtn && fileInput) {
+    if (uploadBtn) {
         uploadBtn.addEventListener('click', () => {
-            fileInput.click();
+            const classId = classSelect.value;
+            const subjectId = subjectSelect.value;
+            if (!classId || !subjectId) {
+                alert('Please select a Class and Subject first.');
+                return;
+            }
+            openCurriculumUploadModal(classId, subjectId);
         });
-
-        fileInput.addEventListener('change', handleFileUpload);
     }
 });

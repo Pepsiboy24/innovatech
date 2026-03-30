@@ -8,6 +8,7 @@
     <title>Scheme of Work — TeachSmart</title>
     <link rel="stylesheet" href="../../styles/teachersPortalStyles/sidebar.css?v=1.1">
     <link rel="stylesheet" href="../../styles/teachersPortalStyles/tp-shared.css?v=1.1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=1.1">
 </head>
 
 <body>
@@ -49,7 +50,6 @@
                     <select id="subjectSelect" class="tp-select">
                         <option value="">Select Subject</option>
                     </select>
-                    <input type="file" id="curriculumUpload" accept=".xlsx" style="display: none;">
                     <button id="uploadBtn" class="tp-btn tp-btn-primary">
                         <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -82,6 +82,7 @@
 
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://unpkg.com/read-excel-file@5.x/bundle/read-excel-file.min.js"></script>
     <script type="module" src="../../scripts/teachersPortalScripts/curriculum.js"></script>
     <script src="../../scripts/teachersPortalScripts/teachers_portal_sidebar.js" type="module"></script>
@@ -97,11 +98,6 @@
             document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
             window.addEventListener('resize', () => { if (window.innerWidth > 768) close(); });
         })();
-
-        /* Trigger file input from upload button */
-        document.getElementById('uploadBtn').addEventListener('click', () => {
-            document.getElementById('curriculumUpload').click();
-        });
     </script>
 
     <style>

@@ -89,8 +89,6 @@ async function loadSubjectsAndClasses() {
 // ── When teacher picks a class, load its subjects via Class_Subjects
 classSelect.addEventListener('change', async () => {
     const classId = classSelect.value;
-
-    // Reset subject dropdown
     subjectSelect.innerHTML = '<option value="">Loading subjects…</option>';
     subjectSelect.disabled = true;
 
@@ -99,34 +97,40 @@ classSelect.addEventListener('change', async () => {
         return;
     }
 
-    // Fetch subjects assigned to this class (and teacher) via Class_Subjects join
+    // ── FIXED QUERY ──
+    // We fetch from Subject_Allocations where this teacher is assigned to this class
     const { data, error } = await supabaseClient
-        .from('Class_Subjects')
-        .select('subject_id, Subjects(subject_id, subject_name)')
+        .from('Subject_Allocations')
+        .select(`
+            subject_id, 
+            Subjects!inner (
+                subject_id, 
+                subject_name
+            )
+        `)
         .eq('class_id', classId)
         .eq('teacher_id', currentTeacherId);
 
     if (error) {
-        console.error('Error loading subjects:', error.message);
+        console.error('Error:', error.message);
         subjectSelect.innerHTML = '<option value="">Error loading subjects</option>';
-        subjectSelect.disabled = false;
         return;
     }
 
     if (!data || data.length === 0) {
-        subjectSelect.innerHTML = '<option value="">No subjects for this class</option>';
-        subjectSelect.disabled = false;
+        subjectSelect.innerHTML = '<option value="">No subjects assigned to you for this class</option>';
         return;
     }
 
+    // Populate dropdown
     subjectSelect.innerHTML = '<option value="">Select a Subject</option>';
     data.forEach(row => {
-        const subject = row.Subjects;
-        if (!subject) return;
-        const opt = document.createElement('option');
-        opt.value = subject.subject_id;
-        opt.textContent = subject.subject_name;
-        subjectSelect.appendChild(opt);
+        if (row.Subjects) {
+            const opt = document.createElement('option');
+            opt.value = row.Subjects.subject_id;
+            opt.textContent = row.Subjects.subject_name;
+            subjectSelect.appendChild(opt);
+        }
     });
     subjectSelect.disabled = false;
 });

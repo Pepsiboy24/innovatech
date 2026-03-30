@@ -199,9 +199,8 @@ async function fetchStudentsInClass(classId) {
 
         const { data: students, error } = await supabase
             .from('Students')
-            .select('student_id, full_name')
-            .eq('class_id', classId)
-            .eq('enrollment_status', 'active')  // Only score active students
+            .select('student_id, full_name') // Only select what you need
+            .eq('class_id', classId) // Remove parseInt() if your class_id is a UUID
             .order('full_name', { ascending: true });
 
         if (error) {

@@ -2,9 +2,9 @@
 <html lang="en">
 
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
     <meta charset="UTF-8">
-    
+
     <title>Upload Results (Legacy) — TeachSmart</title>
     <link rel="stylesheet" href="../../styles/teachersPortalStyles/sidebar.css?v=1.1">
     <link rel="stylesheet" href="../../styles/teachersPortalStyles/tp-shared.css?v=1.1">
@@ -77,7 +77,6 @@
 
                     <div style="flex-grow:1;"></div>
 
-                    <input type="file" id="excelUpload" accept=".xlsx, .xls, .csv" style="display:none;">
                     <button type="button" id="importExcelBtn" class="tp-btn tp-btn-secondary">
                         <svg style="width:15px;height:15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -119,6 +118,7 @@
 
     <!-- Scripts -->
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://unpkg.com/read-excel-file@5.x/bundle/read-excel-file.min.js"></script>
     <script type="module" src="../../scripts/teachersPortalScripts/upload_results.js"></script>
     <script src="../../scripts/teachersPortalScripts/teachers_portal_sidebar.js" type="module"></script>
     <script>
@@ -131,11 +131,6 @@
             if (btn) btn.addEventListener('click', () => sidebar.classList.contains('active') ? close() : open());
             overlay.addEventListener('click', close);
             document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
-            window.addEventListener('resize', () => { if (window.innerWidth > 768) close(); });
-
-            document.getElementById('importExcelBtn').addEventListener('click', () => {
-                document.getElementById('excelUpload').click();
-            });
         })();
     </script>
 </body>

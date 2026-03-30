@@ -125,9 +125,22 @@ async function loadClasses() {
     try {
         container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 20px;">Loading classes...</p>';
 
+        // Get school_id from the logged-in admin's JWT metadata
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user?.user_metadata?.school_id) {
+            container.innerHTML = '<p style="color: red; text-align: center; padding: 20px;">Authentication error — could not determine your school.</p>';
+            console.error('Missing school_id in user metadata:', userError);
+            return;
+        }
+        const schoolId = user.user_metadata.school_id;
+
         const [classesResult, studentsResult] = await Promise.all([
-            supabase.from("Classes").select("*, Teachers(first_name, last_name)"),
-            supabase.from("Students").select("class_id")
+            supabase.from("Classes")
+                .select("*, Teachers(first_name, last_name)")
+                .eq("school_id", schoolId),          // ← only this school's classes
+            supabase.from("Students")
+                .select("class_id")
+                .eq("school_id", schoolId)            // ← only this school's students (for counts)
         ]);
 
         if (classesResult.error) throw classesResult.error;

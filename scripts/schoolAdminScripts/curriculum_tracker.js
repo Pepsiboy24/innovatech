@@ -27,14 +27,9 @@ async function initializeApp() {
 
 async function fetchTeachers() {
     try {
-        const { data: { user } } = await supabase.auth.getUser();
-        const schoolId = user?.user_metadata?.school_id;
-
         const { data: teachers, error } = await supabase
             .from('Teachers')
             .select('teacher_id, first_name, last_name, email, profile_picture')
-            .eq('school_id', schoolId)          // Scope to this school
-            .eq('employment_status', 'active')  // Only show active teachers in curriculum tracker
             .order('first_name');
 
         if (error) throw error;
