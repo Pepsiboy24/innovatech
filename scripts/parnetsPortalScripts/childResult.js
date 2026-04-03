@@ -19,8 +19,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const user = session.user;
 
-    // 2. Start the switcher logic with the verified user object
-    await initializeChildSwitcher(user);
+    // 2. Start the logic with the verified user object
+    await initChildDashboard(user);
 
   } catch (err) {
     console.error("Initialization error:", err.message);
@@ -29,87 +29,29 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
-async function initializeChildSwitcher(user) {
+async function initChildDashboard(user) {
   if (!user?.user_metadata?.school_id) {
     console.warn('Strict Guard: No school_id found. Execution blocked.');
     return;
   }
 
-  // 1. Find the Parent Record associated with the Auth UID
-  const { data: parentRecord, error: parentError } = await supabase
-    .from('Parents')
-    .select('parent_id, full_name')
-    .eq('user_id', user.id)
-    .maybeSingle();
-
-  if (parentError || !parentRecord) {
-    console.error("Parent profile not found in database.");
-    return;
+  // Get active child ID from global switcher state
+  let activeId = localStorage.getItem('active_child_id') || localStorage.getItem('student_id');
+  
+  if (!activeId) {
+      // Fallback: Fetch first child just to be entirely safe if sidebar hasn't finished
+      const { data: parentRecord } = await supabase.from('Parents').select('parent_id').eq('user_id', user.id).single();
+      if (parentRecord) {
+          const { data: links } = await supabase.from('Parent_Student_Links').select('Students(student_id)').eq('parent_id', parentRecord.parent_id).limit(1);
+          if (links && links.length > 0) activeId = links[0].Students.student_id;
+      }
   }
 
-  // Update Sidebar UI with Parent Info
-  const parentNameEl = document.querySelector('.user-details h4');
-  const avatarEl = document.querySelector('.user-avatar');
-  if (parentNameEl) parentNameEl.textContent = parentRecord.full_name;
-  if (avatarEl && parentRecord.full_name) {
-    avatarEl.textContent = parentRecord.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  if (activeId) {
+      localStorage.setItem('active_child_id', activeId);
+      localStorage.setItem('student_id', activeId);
+      await fetchChildGrades(activeId);
   }
-
-  // 2. Fetch ALL linked children with their Class and Section details
-  const { data: links, error: linkError } = await supabase
-    .from('Parent_Student_Links')
-    .select(`
-            relationship,
-            Students (
-                student_id, 
-                full_name,
-                Classes (class_name, section)
-            )
-        `)
-    .eq('parent_id', parentRecord.parent_id);
-
-  const selector = document.getElementById('childSelector');
-  if (linkError || !links || links.length === 0) {
-    if (selector) selector.innerHTML = '<option disabled>No children linked</option>';
-    return;
-  }
-
-  // 3. Populate the Dropdown with Name and Class info
-  selector.innerHTML = '';
-  links.forEach((link, index) => {
-    const student = link.Students;
-    const className = student.Classes
-      ? `${student.Classes.class_name} ${student.Classes.section}`
-      : 'Unassigned Class';
-
-    const option = document.createElement('option');
-    option.value = student.student_id;
-    option.textContent = `${student.full_name} (${className})`;
-
-    if (index === 0) option.selected = true;
-    selector.appendChild(option);
-  });
-
-  // 4. Handle Switching Event
-  selector.addEventListener('change', async (e) => {
-    const selectedId = e.target.value;
-    await updateDashboardForChild(selectedId, links);
-  });
-
-  // Initial Dashboard Load for the first child in the list
-  await updateDashboardForChild(selector.value, links);
-}
-
-async function updateDashboardForChild(childId, links) {
-  // Update relationship text (e.g., "Father of Alex")
-  const selectedLink = links.find(l => l.Students.student_id === childId);
-  const childNameEl = document.querySelector('.user-details p');
-  if (childNameEl && selectedLink) {
-    childNameEl.textContent = `${selectedLink.relationship} of ${selectedLink.Students.full_name}`;
-  }
-
-  // Trigger the data fetching functions for the specific child
-  await fetchChildGrades(childId);
 }
 
 async function fetchChildGrades(childId) {

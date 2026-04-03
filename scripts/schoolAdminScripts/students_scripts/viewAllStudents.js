@@ -11,6 +11,7 @@ let _countMap = {};   // class_id → student count (for capacity warning)
 let _statusChangeStudentId = null;
 
 // --- 1. Fetch Students (filtered by enrollment_status) ---
+// --- 1. Fetch Students (Updated with Parent/Guardian Join) ---
 async function fetchStudents(enrollmentStatus = 'active') {
     try {
         const { data: { user } } = await supabaseClient.auth.getUser();
@@ -21,9 +22,20 @@ async function fetchStudents(enrollmentStatus = 'active') {
             return [];
         }
 
+        // Updated Select: Pulls linked Parents data through the junction table
         const { data, error } = await supabaseClient
             .from('Students')
-            .select('*')
+            .select(`
+                *,
+                Parent_Student_Links (
+                    Parents (
+                        full_name,
+                        phone_number,
+                        email,
+                        address
+                    )
+                )
+            `)
             .eq('school_id', userSchoolId)
             .eq('enrollment_status', enrollmentStatus)
             .order('created_at', { ascending: false });
@@ -32,7 +44,19 @@ async function fetchStudents(enrollmentStatus = 'active') {
             console.error('Error fetching students:', error);
             return [];
         }
-        return data || [];
+
+        // Map the data: Extract parent info into flat "guardian" fields for the Details Modal
+        return (data || []).map(student => {
+            const parent = student.Parent_Student_Links?.[0]?.Parents;
+            return {
+                ...student,
+                guardian_name: parent?.full_name || 'Not Assigned',
+                guardian_phone: parent?.phone_number || 'N/A',
+                guardian_email: parent?.email || 'N/A',
+                guardian_address: parent?.address || student.address || 'N/A'
+            };
+        });
+
     } catch (err) {
         console.error('Unexpected error:', err);
         return [];
@@ -87,10 +111,10 @@ function getInitials(fullName) {
 // --- Status badge helper ---
 function getStatusBadge(status) {
     const map = {
-        active:    { label: 'Active',     bg: '#dcfce7', color: '#16a34a' },
-        graduated: { label: 'Graduated',  bg: '#dbeafe', color: '#1d4ed8' },
-        withdrawn: { label: 'Withdrawn',  bg: '#fef9c3', color: '#ca8a04' },
-        expelled:  { label: 'Expelled',   bg: '#fee2e2', color: '#dc2626' },
+        active: { label: 'Active', bg: '#dcfce7', color: '#16a34a' },
+        graduated: { label: 'Graduated', bg: '#dbeafe', color: '#1d4ed8' },
+        withdrawn: { label: 'Withdrawn', bg: '#fef9c3', color: '#ca8a04' },
+        expelled: { label: 'Expelled', bg: '#fee2e2', color: '#dc2626' },
     };
     const s = map[status] || { label: status || 'Unknown', bg: '#f1f5f9', color: '#64748b' };
     return `<span style="background:${s.bg}; color:${s.color}; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600;">${s.label}</span>`;

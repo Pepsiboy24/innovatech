@@ -1,106 +1,97 @@
-import { supabase } from '../../../config.js';
+import { supabase } from '../../config.js';
+import * as XLSX from 'https://cdn.sheetjs.com/xlsx-latest/package/xlsx.mjs';
+import { openUploadModal } from '../../upload_modal_ui.js';
 
 // Supabase configuration
 const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
-import * as XLSX from 'https://cdn.sheetjs.com/xlsx-latest/package/xlsx.mjs';
 
 const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-export function initExcelUpload() {
-    addExcelUploadButton();
+const HINT_HTML = `
+<strong style="color:#93c5fd;">Required:</strong> A timetable grid with Days as headers.<br>
+<span style="color:#64748b;">
+  Note: Excel rows must match your Period Count (Setup). Breaks in Excel are ignored; the system uses your Config.
+</span>`;
+
+const COLUMNS = [
+    { key: 'day_of_week', label: 'Day' },
+    { key: 'start_time', label: 'Time' },
+    { key: 'subject', label: 'Subject' }
+];
+
+function downloadTemplate() {
+    const ws = XLSX.utils.aoa_to_sheet([
+        ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+        ['Mathematics', 'English', 'Science', 'Mathematics', 'English'],
+        ['Break', 'Break', 'Break', 'Break', 'Break'],
+        ['History', 'Geography', 'Art', 'History', 'Geography']
+    ]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Timetable');
+    XLSX.writeFile(wb, 'timetable_template.xlsx');
 }
 
-function addExcelUploadButton() {
-    let container = document.querySelector('.wizard-actions') || document.querySelector('.toolbar');
-    let insertBeforeElement = document.getElementById('saveTimetableBtn');
-    if (!container) return;
-    if (document.getElementById('excelUploadBtn')) return;
-
-    const excelBtn = document.createElement('button');
-    excelBtn.type = 'button';
-    excelBtn.className = 'btn btn-primary';
-    excelBtn.id = 'excelUploadBtn';
-    excelBtn.innerHTML = '<i class="fa-solid fa-file-excel"></i> Upload Excel';
-    excelBtn.style.cssText = 'background-color: #107c41; border-color: #107c41; color: white; margin-right: 10px;';
-
-    excelBtn.onclick = openExcelUploadModal;
-
-    if (insertBeforeElement && container.contains(insertBeforeElement)) {
-        container.insertBefore(excelBtn, insertBeforeElement);
-    } else {
-        container.appendChild(excelBtn);
-    }
-}
-
-function openExcelUploadModal() {
-    const modal = document.createElement('div');
-    modal.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;`;
-    modal.innerHTML = `
-        <div style="background: white; padding: 32px; border-radius: 12px; width: 500px;">
-            <h3>Upload Excel</h3>
-            <p style="margin-bottom:15px; font-size:13px; color:#666;">
-                <b>Note:</b> Excel rows must match your Period Count.<br>
-                Breaks in Excel are ignored; the system uses your Config.
-            </p>
-            <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="width:100%; margin-bottom:15px;">
-            <div id="uploadProgress" style="display:none; margin-bottom:15px;">Processing...</div>
-            <div style="text-align:right;">
-                <button class="btn btn-secondary" onclick="closeExcelModal()">Cancel</button>
-                <button class="btn btn-primary" style="background:#107c41;" onclick="processExcelUpload()">Preview</button>
-            </div>
-        </div>`;
-    document.body.appendChild(modal);
-    window.closeExcelModal = () => document.body.removeChild(modal);
-    window.processExcelUpload = () => processExcelUpload();
-}
-
-async function processExcelUpload() {
-    const fileInput = document.getElementById('excelFileInput');
-    const urlParams = new URLSearchParams(window.location.search);
-    let classId = urlParams.get('classId');
-    if (!classId) classId = prompt("Enter Class ID:");
-
-    if (!fileInput.files.length) { showToast('Please select an Excel file first.', 'warning'); return; }
-
-    const progressDiv = document.getElementById('uploadProgress');
-    progressDiv.style.display = 'block';
-
-    try {
-        const file = fileInput.files[0];
-        const data = await readFileAsArrayBuffer(file);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: '' });
-
-        // Process data
-        const processed = await processExcelData(jsonData, classId);
-
-        if (processed.errors.length > 0) {
-            // Join errors with newlines for alert
-            const errorMsg = `Found ${processed.errors.length} issues:\n- ${processed.errors.slice(0, 5).join('\n- ')}\n${processed.errors.length > 5 ? '...and more.' : ''}\n\nDo you want to continue anyway?`;
-
-            if (!await window.showConfirm(errorMsg, 'Format Warning')) {
-                progressDiv.style.display = 'none';
-                return;
+window.openTimetableExcelUpload = function() {
+    if (typeof XLSX === 'undefined') { showToast('Excel library not loaded. Refresh and try again.', 'error'); return; }
+    
+    openUploadModal({
+        title: 'Upload Timetable Excel',
+        icon: 'fa-calendar-days',
+        accept: '.xlsx,.xls',
+        hintHtml: HINT_HTML,
+        templateFn: downloadTemplate,
+        confirmLabel: 'Apply Schedule',
+        onFile: async (file, helpers) => {
+            const urlParams = new URLSearchParams(window.location.search);
+            let classId = urlParams.get('classId');
+            if (!classId) { showToast("Class ID not found.", "error"); return; }
+            
+            const data = await readFileAsArrayBuffer(file);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: '' });
+            
+            const processed = await processExcelData(jsonData, classId);
+            
+            const validRows = processed.entries.map((e, i) => ({
+                __index: i,
+                __errors: [],
+                day_of_week: e.day_of_week,
+                start_time: e.start_time,
+                subject: e.subject_name || 'Unknown'
+            }));
+            
+            const errRows = processed.errors.map((err, i) => ({
+                __index: validRows.length + i,
+                __errors: [err],
+                day_of_week: '-',
+                start_time: '-',
+                subject: '-'
+            }));
+            
+            const allRows = [...validRows, ...errRows];
+            helpers._processedEntries = processed.entries;
+            
+            helpers.showPreview(allRows, COLUMNS);
+            helpers.setUploadEnabled(processed.entries.length > 0);
+            
+            if (processed.errors.length > 0) {
+                showToast(`Found ${processed.errors.length} issues in Excel.`, 'warning', 4000);
+            } else {
+                showToast(`Ready! ${processed.entries.length} classes parsed.`, 'success', 3000);
+            }
+        },
+        onConfirm: async (file, helpers) => {
+            if (window.previewUploadedData) {
+                window.previewUploadedData(helpers._processedEntries);
+                helpers.close();
+                showToast('Schedule applied to grid. Click "Save Timetable" to confirm.', 'success');
+            } else {
+                showToast("Error: previewUploadedData function missing in main script.", "error");
             }
         }
-
-        // Pass to main script
-        if (window.previewUploadedData) {
-            window.previewUploadedData(processed.entries);
-            window.closeExcelModal();
-            showToast(`Ready! ${processed.entries.length} classes loaded.`, 'success');
-        } else {
-            showToast("Error: previewUploadedData function missing in main script.", "error");
-        }
-
-    } catch (error) {
-        console.error(error);
-        showToast(error.message, 'error');
-    } finally {
-        if (progressDiv) progressDiv.style.display = 'none';
-    }
-}
+    });
+};
 
 async function processExcelData(jsonData, classId) {
     if (!jsonData.length) throw new Error('Empty file');
@@ -175,6 +166,7 @@ async function processExcelData(jsonData, classId) {
                     entries.push({
                         class_id: parseInt(classId),
                         subject_id: match.subject_id,
+                        subject_name: match.subject_name,
                         day_of_week: col.day,
                         start_time: timeStr + ":00",
                         duration_minutes: parseInt(config.period_duration) || 40,
@@ -242,5 +234,3 @@ function readFileAsArrayBuffer(file) {
         reader.readAsArrayBuffer(file);
     });
 }
-
-document.addEventListener('DOMContentLoaded', initExcelUpload);

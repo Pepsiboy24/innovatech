@@ -17,50 +17,50 @@ let schoolBranding = { school_name: 'EduHub', logo_url: null };
 async function loadSchoolBranding() {
     try {
         // Get current student ID
-        const studentId = localStorage.getItem('student_id') || 
-                         sessionStorage.getItem('student_id') ||
-                         window.currentStudentId;
-        
+        const studentId = localStorage.getItem('student_id') ||
+            sessionStorage.getItem('student_id') ||
+            window.currentStudentId;
+
         if (!studentId) {
             console.log('No student ID found, using default branding');
             return;
         }
-        
+
         // Get student's class and school
         const { data: studentData } = await supabase
             .from('Students')
             .select('class_id')
             .eq('student_id', studentId)
             .single();
-        
+
         if (!studentData) return;
-        
+
         // Get school info
         const { data: classData } = await supabase
             .from('Classes')
             .select('school_id')
             .eq('class_id', studentData.class_id)
             .single();
-        
+
         if (!classData) return;
-        
+
         const { data: schoolData } = await supabase
             .from('Schools')
             .select('school_name, logo_url')
             .eq('school_id', classData.school_id)
             .single();
-        
+
         if (schoolData) {
             schoolBranding = schoolData;
         }
-        
+
     } catch (error) {
         console.error('Error loading school branding:', error);
     }
 }
 
 function getSidebarHTML() {
-    const logoHtml = schoolBranding.logo_url 
+    const logoHtml = schoolBranding.logo_url
         ? `<img src="${schoolBranding.logo_url}" alt="${schoolBranding.school_name}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 0.5rem;">`
         : schoolBranding.school_name.substring(0, 2).toUpperCase();
 
@@ -106,7 +106,7 @@ function getSidebarHTML() {
 async function injectSidebar() {
     // Load school branding first
     await loadSchoolBranding();
-    
+
     const anchor = document.getElementById('sidebarAnchor');
     if (!anchor) {
         console.warn('[Sidebar] No #sidebarAnchor found in HTML.');

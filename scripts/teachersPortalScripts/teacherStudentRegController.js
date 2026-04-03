@@ -233,7 +233,25 @@ function populateReview() {
 
 document.addEventListener('DOMContentLoaded', () => {
     loadTeacherClasses();
-    document.getElementById('nextBtn')?.addEventListener('click', () => goToStep(currentStep + 1));
+    document.getElementById('nextBtn')?.addEventListener('click', () => {
+        const stepEl = document.getElementById(`step${currentStep}`);
+        if (!stepEl) return;
+
+        const requiredElements = stepEl.querySelectorAll('input[required], select[required]');
+        let isValid = true;
+
+        for (const el of requiredElements) {
+            if (!el.checkValidity()) {
+                el.reportValidity();
+                isValid = false;
+                break;
+            }
+        }
+
+        if (isValid) {
+            goToStep(currentStep + 1);
+        }
+    });
     document.getElementById('prevBtn')?.addEventListener('click', () => goToStep(currentStep - 1));
     document.getElementById('searchParentBtn')?.addEventListener('click', searchParentByPhone);
     document.getElementById('registrationForm')?.addEventListener('submit', async (e) => {

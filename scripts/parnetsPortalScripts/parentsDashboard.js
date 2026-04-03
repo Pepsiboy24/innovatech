@@ -33,23 +33,30 @@ async function getLinkedChildId() {
     return null;
   }
 
-  // 3. Find the first child linked to this parent in the Link table
+  // 3. Find all children linked to this parent in the Link table
   const { data: linkData, error: linkError } = await supabase
     .from('Parent_Student_Links')
     .select(`
       relationship,
       Students (student_id, full_name)
     `)
-    .eq('parent_id', parentRecord.parent_id)
-    .limit(1)
-    .single();
+    .eq('parent_id', parentRecord.parent_id);
 
-  if (linkError || !linkData) {
+  if (linkError || !linkData || linkData.length === 0) {
     console.error("No children linked to this parent account.", linkError);
     return null;
   }
 
-  const child = linkData.Students;
+  // Use global active child id, or default to first
+  let activeId = localStorage.getItem('active_child_id') || localStorage.getItem('student_id');
+  if (!activeId) {
+      activeId = linkData[0].Students.student_id;
+      localStorage.setItem('active_child_id', activeId);
+      localStorage.setItem('student_id', activeId);
+  }
+
+  const selectedLink = linkData.find(l => l.Students.student_id === activeId) || linkData[0];
+  const child = selectedLink.Students;
   console.log(`Successfully linked to: ${child.full_name}`);
 
   // Update UI Header
@@ -57,7 +64,7 @@ async function getLinkedChildId() {
   const childNameEl = document.querySelector('.user-details p');
 
   if (parentNameEl) parentNameEl.textContent = parentRecord.full_name;
-  if (childNameEl) childNameEl.textContent = `${linkData.relationship} of ${child.full_name}`;
+  if (childNameEl) childNameEl.textContent = `${selectedLink.relationship} of ${child.full_name}`;
 
   return child.student_id;
 }

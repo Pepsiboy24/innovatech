@@ -152,9 +152,9 @@ import { hasFeatureAccess, getCurrentUserTier } from '../tierAccess.js';
 
                 
                 
-                <a href="${a}parent_portal.html" class="nav-item" data-tier="3">
+                <a href="${a}parents.html" class="nav-item" data-tier="3">
                     <i class="fa-solid fa-users nav-icon"></i>
-                    Parent Portal
+                    Parents
                 </a>
                 
                 <a href="#" id="schoolAdminLogoutBtn" class="nav-item" style="margin-top: auto; border-top: 1px solid var(--border); border-radius: 0; padding-top: 16px;">

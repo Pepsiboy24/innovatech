@@ -4,7 +4,6 @@ import { supabase } from '../../../config.js';
  * Subject Allocation Manager - Clean Subject Management System
  * Prevents duplicate subjects and manages subject-class-teacher relationships
  */
-
 class SubjectAllocationManager {
     constructor() {
         this.schoolId = null;
@@ -18,7 +17,6 @@ class SubjectAllocationManager {
      */
     async initialize() {
         try {
-            // Get school ID from auth
             const { data: userData } = await supabase.auth.getUser();
             this.schoolId = userData.user?.user_metadata?.school_id;
 
@@ -26,9 +24,7 @@ class SubjectAllocationManager {
                 throw new Error('School ID not found in user metadata');
             }
 
-            // Load master data
             await this.loadMasterData();
-            
             console.log('Subject Allocation Manager initialized');
             return true;
         } catch (error) {
@@ -42,7 +38,6 @@ class SubjectAllocationManager {
      */
     async loadMasterData() {
         try {
-            // Load unique subjects
             const { data: subjects, error: subjectsError } = await supabase
                 .from('Subjects')
                 .select('*')
@@ -52,7 +47,6 @@ class SubjectAllocationManager {
             if (subjectsError) throw subjectsError;
             this.subjects = subjects || [];
 
-            // Load classes
             const { data: classes, error: classesError } = await supabase
                 .from('Classes')
                 .select('class_id, class_name, section')
@@ -62,7 +56,6 @@ class SubjectAllocationManager {
             if (classesError) throw classesError;
             this.classes = classes || [];
 
-            // Load teachers
             const { data: teachers, error: teachersError } = await supabase
                 .from('Teachers')
                 .select('teacher_id, first_name, last_name')
@@ -71,8 +64,6 @@ class SubjectAllocationManager {
 
             if (teachersError) throw teachersError;
             this.teachers = teachers || [];
-
-            console.log(`Loaded ${this.subjects.length} subjects, ${this.classes.length} classes, ${this.teachers.length} teachers`);
         } catch (error) {
             console.error('Error loading master data:', error);
             throw error;
@@ -84,7 +75,6 @@ class SubjectAllocationManager {
      */
     async addSubject(subjectData) {
         try {
-            // Check for duplicate subject
             const existingSubject = this.subjects.find(
                 s => s.subject_name.toLowerCase() === subjectData.subjectName.toLowerCase()
             );
@@ -93,7 +83,6 @@ class SubjectAllocationManager {
                 throw new Error(`Subject "${subjectData.subjectName}" already exists`);
             }
 
-            // Insert into Subjects table
             const { data, error } = await supabase
                 .from('Subjects')
                 .insert([{
@@ -108,8 +97,6 @@ class SubjectAllocationManager {
                 .single();
 
             if (error) throw error;
-
-            // Update local cache
             this.subjects.push(data);
 
             return {
@@ -119,43 +106,54 @@ class SubjectAllocationManager {
             };
         } catch (error) {
             console.error('Error adding subject:', error);
-            return {
-                success: false,
-                error: error.message
-            };
+            return { success: false, error: error.message };
         }
     }
 
     /**
      * Allocate subject to class and teacher
+     * LOGICAL FIX: Now populates 'class_subjects' to ensure data appears on student dashboard.
      */
     async allocateSubject(allocationData) {
         try {
             const { subjectId, classId, teacherId } = allocationData;
 
-            // Validate inputs
             if (!subjectId || !classId || !teacherId) {
                 throw new Error('Subject, Class, and Teacher are all required');
             }
 
-            // Check for existing allocation
+            // 1. Check if teacher allocation already exists
             const { data: existingAllocation, error: checkError } = await supabase
                 .from('Subject_Allocations')
                 .select('*')
                 .eq('subject_id', subjectId)
                 .eq('class_id', classId)
                 .eq('teacher_id', teacherId)
-                .single();
+                .maybeSingle();
 
-            if (checkError && checkError.code !== 'PGRST116') {
-                throw checkError;
-            }
-
+            if (checkError) throw checkError;
             if (existingAllocation) {
                 throw new Error('This subject is already allocated to this class and teacher');
             }
 
-            // Create allocation
+            const userEmail = (await supabase.auth.getUser()).data?.user?.email || 'system';
+
+            // 2. LOGICAL LINK: Upsert into 'class_subjects' (the table used by student dashboard)
+            // Using upsert prevents duplicates if multiple teachers are assigned to the same subject/class
+            const { error: junctionError } = await supabase
+                .from('class_subjects')
+                .upsert({
+                    class_id: classId,
+                    subject_id: subjectId,
+                    school_id: this.schoolId
+                }, { onConflict: 'class_id, subject_id' });
+
+            if (junctionError) {
+                console.error('Failed to link subject to class roster:', junctionError);
+                throw new Error('Failed to update class roster. Allocation aborted.');
+            }
+
+            // 3. Create specific Teacher allocation
             const { data, error } = await supabase
                 .from('Subject_Allocations')
                 .insert([{
@@ -166,7 +164,7 @@ class SubjectAllocationManager {
                     academic_year: new Date().getFullYear().toString(),
                     term: 'First Term',
                     created_at: new Date().toISOString(),
-                    created_by: (await supabase.auth.getUser()).data?.user?.email || 'system'
+                    created_by: userEmail
                 }])
                 .select()
                 .single();
@@ -176,14 +174,11 @@ class SubjectAllocationManager {
             return {
                 success: true,
                 allocation: data,
-                message: 'Subject allocated successfully'
+                message: 'Subject allocated and roster updated successfully'
             };
         } catch (error) {
             console.error('Error allocating subject:', error);
-            return {
-                success: false,
-                error: error.message
-            };
+            return { success: false, error: error.message };
         }
     }
 
@@ -201,21 +196,13 @@ class SubjectAllocationManager {
                     Teachers(first_name, last_name)
                 `)
                 .eq('school_id', this.schoolId)
-                .order('Classes(class_name)');
+                .order('created_at', { ascending: false });
 
             if (error) throw error;
-
-            return {
-                success: true,
-                allocations: data || []
-            };
+            return { success: true, allocations: data || [] };
         } catch (error) {
             console.error('Error fetching allocations:', error);
-            return {
-                success: false,
-                error: error.message,
-                allocations: []
-            };
+            return { success: false, error: error.message, allocations: [] };
         }
     }
 
@@ -231,39 +218,22 @@ class SubjectAllocationManager {
 
             if (error) throw error;
 
-            return {
-                success: true,
-                message: 'Allocation removed successfully'
-            };
+            return { success: true, message: 'Allocation removed successfully' };
         } catch (error) {
             console.error('Error removing allocation:', error);
-            return {
-                success: false,
-                error: error.message
-            };
+            return { success: false, error: error.message };
         }
     }
 
-    /**
-     * Generate subject code
-     */
     generateSubjectCode(subjectName) {
-        return subjectName
-            .toUpperCase()
-            .replace(/\s+/g, '_')
-            .substring(0, 8);
+        return subjectName.toUpperCase().replace(/\s+/g, '_').substring(0, 8);
     }
 
-    /**
-     * Populate dropdowns
-     */
     populateDropdowns(subjectSelect, classSelect, teacherSelect) {
-        // Clear existing options
         subjectSelect.innerHTML = '<option value="">Select Subject</option>';
         classSelect.innerHTML = '<option value="">Select Class</option>';
         teacherSelect.innerHTML = '<option value="">Select Teacher</option>';
 
-        // Populate subjects
         this.subjects.forEach(subject => {
             const option = document.createElement('option');
             option.value = subject.subject_id;
@@ -271,15 +241,13 @@ class SubjectAllocationManager {
             subjectSelect.appendChild(option);
         });
 
-        // Populate classes
         this.classes.forEach(cls => {
             const option = document.createElement('option');
             option.value = cls.class_id;
-            option.textContent = `${cls.class_name} ${cls.section}`;
+            option.textContent = `${cls.class_name} ${cls.section || ''}`;
             classSelect.appendChild(option);
         });
 
-        // Populate teachers
         this.teachers.forEach(teacher => {
             const option = document.createElement('option');
             option.value = teacher.teacher_id;
@@ -289,5 +257,4 @@ class SubjectAllocationManager {
     }
 }
 
-// Export for global use
 window.SubjectAllocationManager = SubjectAllocationManager;
