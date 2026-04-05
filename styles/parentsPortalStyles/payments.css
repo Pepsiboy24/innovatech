@@ -337,15 +337,15 @@ body {
         margin-left: 280px;
         padding: 2rem;
     }
-    
+
     .school-info-header {
         padding: 2rem;
     }
-    
+
     .payment-item {
         padding: 1.25rem;
     }
-    
+
     .summary-section {
         padding: 2rem;
     }
@@ -536,7 +536,8 @@ body {
 }
 
 /* Services & Items */
-.services-section {
+.services-section,
+.compulsory-section {
     padding: 24px;
 }
 

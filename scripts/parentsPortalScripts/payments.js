@@ -265,25 +265,68 @@ function updateSummary() {
     }
 }
 
-function proceedToPayment() {
-    if (selectedItems.size === 0) {
-        showError('Please select at least one item.');
+async function proceedToPayment() {
+    // 1. SDK Check
+    if (typeof window.MonnifySDK === 'undefined') {
+        alert("Payment system is loading. Please wait 3 seconds.");
         return;
     }
 
-    const selectedDetails = paymentItems.filter(i => selectedItems.has(i.item_id));
+    if (selectedItems.size === 0) {
+        alert('Please select at least one item.');
+        return;
+    }
 
-    const paymentData = {
-        student_id: currentStudentId,
-        school_id: currentSchoolId,
-        total_amount: totalAmount,
-        items: selectedDetails
-    };
+    try {
+        const { data: school } = await window.supabase
+            .from('Schools')
+            .select('sub_account_code, school_name')
+            .eq('school_id', currentSchoolId)
+            .single();
 
-    sessionStorage.setItem('paymentData', JSON.stringify(paymentData));
+        const { data: { user } } = await window.supabase.auth.getUser();
 
-    // Redirect to your Monnify logic or show checkout
-    alert(`Proceeding to Monnify for ₦${totalAmount.toLocaleString()}`);
+        // 2. Data Formatting
+        const cleanAmount = Number(parseFloat(totalAmount).toFixed(2));
+        const customerName = (user?.user_metadata?.full_name || "Parent User").trim();
+
+        console.log("Starting Monnify with SubAccount:", school?.sub_account_code);
+
+        // 3. Initialize Transaction
+        window.MonnifySDK.initialize({
+            amount: cleanAmount,
+            currency: "NGN",
+            currencyCode: "NGN",    // Send both to be safe
+            customerFullName: customerName,
+            customerName: customerName, // Send both to be safe
+            customerEmail: user?.email || "test@example.com",
+            apiKey: "MK_TEST_R5D350D27T", // USE YOUR ACTUAL MK_TEST KEY
+            contractCode: "8390473251",     // USE YOUR ACTUAL CONTRACT CODE
+            paymentReference: "REF-" + Date.now(),
+            paymentDescription: `${school?.school_name || 'School'} Fees`,
+            isTestMode: true,
+            metadata: {
+                student_id: currentStudentId,
+                school_id: currentSchoolId
+            },
+            // Logic: Only use split if the code is NOT null
+            incomeSplitConfig: (school?.sub_account_code) ? [{
+                subAccountCode: school.sub_account_code,
+                feePercentage: 100,
+                splitPercentage: 100
+            }] : [],
+            onComplete: function (response) {
+                if (response.status === 'SUCCESS') {
+                    window.location.href = "payment_success.html";
+                }
+            },
+            onClose: function (data) {
+                console.log("Modal closed");
+            }
+        });
+    } catch (err) {
+        console.error("Payment Error:", err);
+    }
 }
 
 // --- UTILS & SIDEBAR ---

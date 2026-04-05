@@ -2,9 +2,9 @@
 <html lang="en">
 
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
     <meta charset="UTF-8">
-    
+
     <title>AI Assistant — TeachSmart</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=1.1">
@@ -482,8 +482,14 @@
     <!-- Floating input -->
     <div class="input-bar" id="inputBar">
         <div class="input-inner">
-            <textarea id="chatInput" placeholder="Ask anything…" rows="1" aria-label="Chat input"></textarea>
-            <button class="send-btn" id="sendBtn" title="Send" aria-label="Send message">
+            <input type="file" id="fileUpload" hidden accept="image/*">
+            <button type="button" id="attachBtn" style="background:none; border:none; cursor:pointer;">
+                <i class="fas fa-paperclip"></i>
+            </button>
+
+            <textarea id="chatInput" placeholder="Ask anything…" rows="1"></textarea>
+
+            <button class="send-btn" id="sendBtn">
                 <i class="fas fa-arrow-up"></i>
             </button>
         </div>
