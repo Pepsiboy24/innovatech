@@ -44,7 +44,7 @@ async function checkTeacherLogin() {
         if (error || !user) {
             console.error('No user logged in:', error);
             showToast('Please log in as a teacher to view this page.', 'warning');
-            window.location.href = '../../landing_page/html/login.html';
+            window.location.href = "/public/html/login.html"';
             return null;
         }
 
@@ -59,7 +59,7 @@ async function checkTeacherLogin() {
             console.error('User is not authorized as a teacher:', teacherError);
             showToast('You are not authorized as a teacher.', 'error');
             await supabase.auth.signOut();
-            window.location.href = '../../landing_page/html/login.html';
+            window.location.href = "/public/html/login.html"';
             return null;
         }
 

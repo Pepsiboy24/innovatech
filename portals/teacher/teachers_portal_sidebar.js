@@ -1,7 +1,7 @@
 // teachers_portal_sidebar.js — ES Module
 // Injects the sidebar HTML with dynamic school branding.
 
-import { supabase } from '../config.js';
+import { supabase } from '../../core/config.js';
 
 (async function () {
     function teacherPrefix() {
@@ -110,7 +110,7 @@ import { supabase } from '../config.js';
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async () => {
                 await supabase.auth.signOut();
-                window.location.href = '../../landing_page/html/login.html';
+                window.location.href = "/public/html/login.html";
             });
         }
     });

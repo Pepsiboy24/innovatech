@@ -1,4 +1,4 @@
-import { supabase } from "../../config.js";
+import { supabase } from "../../core/config.js";
 
 // --- State Management ---
 let allEvents = [];          // Stores all raw events from DB

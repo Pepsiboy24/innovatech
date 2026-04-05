@@ -273,7 +273,7 @@
                         // Email confirmation required
                         this.showSuccess('Account created! Please check your email to confirm your account.');
                         setTimeout(() => {
-                            window.location.href = 'login.html?message=email_confirmation';
+                            window.location.href = "/public/html/login.html"?message=email_confirmation';
                         }, 3000);
                     } else if (data.user && data.session) {
                         // Auto-logged in (email confirmation disabled)

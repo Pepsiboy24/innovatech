@@ -1,5 +1,5 @@
 // Supabase setup
-import { supabase } from "../../config.js";
+import { supabase } from "../../core/config.js";
 
 document.addEventListener('DOMContentLoaded', function () {
     const fileInput = document.getElementById('fileInput');

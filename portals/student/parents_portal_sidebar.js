@@ -201,7 +201,7 @@
                 } catch (error) {
                     console.error("Logout Error:", error);
                 }
-                window.location.href = '../../landing_page/html/login.html';
+                window.location.href = "/public/html/login.html"';
             });
         }
 

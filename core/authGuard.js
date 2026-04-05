@@ -31,7 +31,7 @@ import { hasFeatureAccess, getCurrentUserTier, TIERS } from './tierAccess.js';
         }
 
         if (!(await checkRouteAccess(currentPath, userTier))) {
-            showAccessDeniedModal('Your subscription tier does not allow access to this feature.', '../public/login.html');
+            showAccessDeniedModal('Your subscription tier does not allow access to this feature.', '/public/html/login.html');
             return;
         }
 
@@ -86,12 +86,12 @@ import { hasFeatureAccess, getCurrentUserTier, TIERS } from './tierAccess.js';
 
 function redirectToLogin() {
     if (document.body) document.body.style.display = 'none';
-    window.location.href = '../public/login.html';
+    window.location.href = '/public/html/login.html';
 }
 
 function redirectToOnboarding() {
     if (document.body) document.body.style.display = 'none';
-    window.location.href = '../public/onboarding.html';
+    window.location.href = '/public/html/onboarding.html';
 }
 
 function showAccessDeniedModal(message, redirectUrl) {

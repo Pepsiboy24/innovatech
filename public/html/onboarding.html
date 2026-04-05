@@ -483,7 +483,7 @@
             const overlay = document.getElementById('loadingOverlay');
             if (overlay && overlay.style.display !== 'none') {
                 console.warn("Auth verification timed out. Redirecting to login.");
-                window.location.href = '../html/login.html?error=timeout';
+                window.location.href = "/public/html/login.html"?error=timeout';
             }
         }, 5000); // 5 seconds max
 

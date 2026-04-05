@@ -1,4 +1,4 @@
-import { supabase } from "../../config.js";
+import { supabase } from "../../core/config.js";
 
 document.addEventListener('DOMContentLoaded', () => {
     const addEventForm = document.getElementById('addEventForm');
