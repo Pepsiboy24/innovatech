@@ -244,7 +244,7 @@ import { hasFeatureAccess, getCurrentUserTier } from '../../core/tierAccess.js';
                 } catch (error) {
                     console.error("Logout Error:", error);
                 }
-                window.location.href = "/public/html/login.html"';
+                window.location.href = "/public/html/login.html";
             });
         }
     });

@@ -1,6 +1,6 @@
 // academic_manager.js
 // Unified Academic Manager for School Admin Portal
-import { supabase } from '/scripts/config.js';
+import { supabase } from '../../core/config.js';
 
 // ─── State ────────────────────────────────────────────────────────────────────
 let allSubjects = [];
@@ -295,5 +295,4 @@ async function loadCurriculum(subject) {
     document.getElementById('cpEmpty').style.display = 'none';
     document.getElementById('cpDetail').style.display = 'flex';
     document.getElementById('cpSubjectName').textContent = subject.subject_name;
-    // ... rest of original curriculum logic
 }
