@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirect Fixes Test - EduHub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success {
+            color: #22c55e;
+            font-weight: bold;
+        }
+        .error {
+            color: #ef4444;
+            font-weight: bold;
+        }
+        .code {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+        .path-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Redirect & Form Fixes Applied</h1>
+    
+    <div class="test-section">
+        <h2>✅ Form Data Collection Fixed</h2>
+        <div class="path-info">
+            <strong>Before (Issues):</strong>
+            <div class="code error">
+                - Duplicate tier property in schoolData object
+                - selectedTier variable not in scope
+                - Tier not stored in formData consistently
+            </div>
+            <strong>After (Fixed):</strong>
+            <div class="code success">
+                - Single tier property: tier: parseInt(this.formData.tier) || 1
+                - Tier stored in formData: this.formData.tier = document.getElementById('tierSelect').value
+                - Consistent form data collection pattern
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>✅ Redirect Paths Fixed</h2>
+        <div class="path-info">
+            <strong>Before (Inconsistent):</strong>
+            <div class="code error">
+                '../../html/schoolAdmin/schoolAdminDashboard.html' (too many ../)
+                './html/schoolAdmin/schoolAdminDashboard.html' (incorrect relative path)
+            </div>
+            <strong>After (Correct):</strong>
+            <div class="code success">
+                '../html/schoolAdmin/schoolAdminDashboard.html' (correct from landing_page/html/)
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>📁 Directory Structure Context</h2>
+        <div class="path-info">
+            <div class="code">
+                innovatech/
+                ├── landing_page/
+                │   ├── html/
+                │   │   ├── onboarding.html
+                │   │   └── signup.html
+                │   └── core/
+                │       └── onboarding.js
+                └── html/
+                    └── schoolAdmin/
+                        └── schoolAdminDashboard.html
+            </div>
+            <p><strong>Correct path from onboarding.html:</strong> ../html/schoolAdmin/schoolAdminDashboard.html</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Form Validation Flow</h2>
+        <div class="path-info">
+            <div class="code">
+                1. User selects tier from dropdown
+                2. Tier stored in this.formData.tier
+                3. School created with correct tier value
+                4. Admin record created with school_id FK
+                5. User metadata updated
+                6. Redirect to dashboard (correct path)
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🧪 Test Links</h2>
+        <p>
+            <a href="onboarding.html">Test Onboarding Flow</a> | 
+            <a href="signup.html">Test Signup Form</a> | 
+            <a href="test_schema_fixes.html">View Schema Fixes</a>
+        </p>
+    </div>
+</body>
+</html>

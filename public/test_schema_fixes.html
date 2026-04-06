@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schema Fixes Test - EduHub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success {
+            color: #22c55e;
+            font-weight: bold;
+        }
+        .error {
+            color: #ef4444;
+            font-weight: bold;
+        }
+        .code {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+        .schema-ref {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Database Schema Fixes Applied</h1>
+    
+    <div class="test-section">
+        <h2>✅ Schools Table Query Fixed</h2>
+        <div class="schema-ref">
+            <strong>Before (Broken):</strong>
+            <div class="code error">
+                GET /rest/v1/Schools?select=*&admin_id=eq.c6d3aa97-5996-4fdc-89b9-1953207f0fe5
+            </div>
+            <strong>After (Fixed):</strong>
+            <div class="code success">
+                GET /rest/v1/Schools?select=*&eq(school_name,Example School)
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>✅ Schools Table Insert Fixed</h2>
+        <div class="schema-ref">
+            <strong>Before (Broken):</strong>
+            <div class="code error">
+                POST /rest/v1/Schools?columns=...&selected_plan=admin-core
+                <br>❌ 'selected_plan' column doesn't exist in Schools table
+            </div>
+            <strong>After (Fixed):</strong>
+            <div class="code success">
+                POST /rest/v1/Schools?columns=school_name,school_logo_url,bank_name,...&tier=1
+                <br>✅ Only valid columns from Schools table schema
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>📋 Schema References</h2>
+        <div class="schema-ref">
+            <p><strong>Correct Schools Table Columns:</strong></p>
+            <div class="code">
+                school_id (PK, uuid), school_name (varchar), school_logo_url (text), 
+                bank_name (varchar), account_number (varchar), bank_code (varchar), 
+                sub_account_code (varchar), commission_rate (numeric), tier (numeric), 
+                is_active (boolean), created_at (timestamptz)
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Relationship Flow</h2>
+        <div class="schema-ref">
+            <p><strong>Correct Implementation:</strong></p>
+            <div class="code">
+                1. Create Schools record (without admin_id)
+                2. Create School_Admin record (with school_id FK)
+                3. Update user metadata (with school_id and tier)
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🧪 Test Links</h2>
+        <p>
+            <a href="signup.html">Test Signup Form</a> | 
+            <a href="onboarding.html">Test Onboarding Flow</a> | 
+            <a href="test_fixes.html">View All Fixes</a>
+        </p>
+    </div>
+</body>
+</html>
