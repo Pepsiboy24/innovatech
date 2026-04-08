@@ -1,18 +1,27 @@
 import { supabase } from '../../core/config.js';
+import { deleteSchoolAdmin } from './schooladminsFormDB.js'; // FIX #55: was exported but never imported
 
-// Function to fetch all school admins from Supabase
+// FIX #52: Fetch only admins belonging to the current admin's school
 async function fetchSchoolAdmins() {
     try {
+        // Resolve the logged-in admin's school_id from JWT metadata
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user?.user_metadata?.school_id) {
+            console.error('fetchSchoolAdmins: cannot determine school_id', authError);
+            return [];
+        }
+        const schoolId = user.user_metadata.school_id;
+
         const { data, error } = await supabase
             .from('School_Admin')
             .select('*')
-        // .order('created_at', { ascending: false }); // Order by creation date, newest first
+            .eq('school_id', schoolId); // was missing — returned ALL admins from ALL schools
 
         if (error) {
             console.error('Error fetching school admins:', error);
             return [];
         }
-        console.log('Fetched school admins:', data);
+
         return (data || []).map(admin => {
             const nameParts = (admin.full_name || '').split(' ');
             return {
@@ -36,7 +45,6 @@ async function fetchSchoolAdmins() {
     }
 }
 
-// Function to calculate age from date of birth
 function calculateAge(dateOfBirth) {
     if (!dateOfBirth) return 'N/A';
 
@@ -52,21 +60,17 @@ function calculateAge(dateOfBirth) {
     return age;
 }
 
-// Function to get initials for avatar
 function getInitials(firstName, lastName) {
     const firstInitial = firstName ? firstName.charAt(0).toUpperCase() : '?';
     const lastInitial = lastName ? lastName.charAt(0).toUpperCase() : '?';
-
     return firstInitial + lastInitial;
 }
 
-// Function to get full name
 function getFullName(firstName, lastName, middleName) {
     const parts = [firstName, middleName, lastName].filter(Boolean);
     return parts.join(' ') || 'Unknown Admin';
 }
 
-// Function to render school admins in the table
 function renderSchoolAdmins(admins) {
     const tbody = document.querySelector('.students-table tbody');
     if (!tbody) {
@@ -74,7 +78,7 @@ function renderSchoolAdmins(admins) {
         return;
     }
 
-    tbody.innerHTML = ''; // Clear existing rows
+    tbody.innerHTML = '';
 
     if (admins.length === 0) {
         const noDataRow = `
@@ -92,8 +96,6 @@ function renderSchoolAdmins(admins) {
         const age = calculateAge(admin.date_of_birth);
         const fullName = getFullName(admin.first_name, admin.last_name, admin.middle_name);
         const initials = getInitials(admin.first_name, admin.last_name);
-
-        // Default status for school admins
         const status = 'Active';
         const statusClass = status.toLowerCase();
 
@@ -116,7 +118,9 @@ function renderSchoolAdmins(admins) {
                     <div class="status-badge ${statusClass}">${status}</div>
                 </td>
                 <td>
-                    <a href="#" class="action-btn" data-admin-id="${admin.admin_id}">View</a>
+                    <a href="#" class="action-btn view-admin-btn" data-admin-id="${admin.admin_id}">View</a>
+                    <a href="#" class="action-btn delete-admin-btn" data-admin-id="${admin.admin_id}"
+                       style="color: #dc2626; margin-left: 8px;">Delete</a>
                 </td>
             </tr>
         `;
@@ -125,7 +129,6 @@ function renderSchoolAdmins(admins) {
     });
 }
 
-// Function to filter school admins based on search term
 function filterSchoolAdmins(admins, searchTerm) {
     if (!searchTerm) return admins;
 
@@ -141,15 +144,9 @@ function filterSchoolAdmins(admins, searchTerm) {
     });
 }
 
-// Function to filter school admins by status
 function filterSchoolAdminsByStatus(admins, statusFilter) {
     if (statusFilter === 'all') return admins;
-
-    return admins.filter(admin => {
-        // For now, all admins are considered active
-        // In a real implementation, you might have a status field
-        return statusFilter === 'active';
-    });
+    return admins.filter(() => statusFilter === 'active');
 }
 
 // Initialize when DOM is loaded
@@ -173,7 +170,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     applyFilters();
     console.log(`Loaded ${allAdmins.length} school admins`);
 
-    // Set up search functionality
+    // Search
     const searchInput = document.querySelector('.search-input');
     if (searchInput) {
         searchInput.addEventListener('input', function () {
@@ -182,26 +179,64 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Set up filter tabs functionality
+    // Filter tabs
     const filterTabs = document.querySelectorAll('.filter-tab');
     if (filterTabs.length > 0) {
         filterTabs.forEach(tab => {
             tab.addEventListener('click', function () {
-                // Remove active class from all tabs
                 filterTabs.forEach(t => t.classList.remove('active'));
-                // Add active class to clicked tab
                 this.classList.add('active');
-
                 currentStatusFilter = this.textContent.toLowerCase();
                 applyFilters();
             });
         });
     }
+
+    // FIX #55 + #56: Wire up delete buttons with confirmation dialog
+    // Uses event delegation so it works after re-renders
+    const tbody = document.querySelector('.students-table tbody');
+    if (tbody) {
+        tbody.addEventListener('click', async (e) => {
+            const viewBtn = e.target.closest('.view-admin-btn');
+            const deleteBtn = e.target.closest('.delete-admin-btn');
+
+            if (viewBtn) {
+                e.preventDefault();
+                const adminId = viewBtn.dataset.adminId;
+                const admin = allAdmins.find(a => String(a.admin_id) === String(adminId));
+                if (admin) showAdminDetailsPopup(admin);
+            }
+
+            if (deleteBtn) {
+                e.preventDefault();
+                const adminId = deleteBtn.dataset.adminId;
+                const admin = allAdmins.find(a => String(a.admin_id) === String(adminId));
+                if (!admin) return;
+
+                const fullName = getFullName(admin.first_name, admin.last_name, admin.middle_name);
+
+                // FIX #56: Require explicit confirmation before any destructive action
+                const confirmed = window.showConfirm
+                    ? await window.showConfirm(`Permanently delete admin "${fullName}"? This cannot be undone.`, 'Delete Admin')
+                    : confirm(`Permanently delete admin "${fullName}"? This cannot be undone.`);
+
+                if (!confirmed) return;
+
+                const result = await deleteSchoolAdmin(adminId);
+                if (result.success) {
+                    allAdmins = allAdmins.filter(a => String(a.admin_id) !== String(adminId));
+                    applyFilters();
+                    showToast(`Admin "${fullName}" deleted successfully.`, 'success');
+                } else {
+                    showToast(`Failed to delete admin: ${result.error}`, 'error');
+                }
+            }
+        });
+    }
 });
 
-// Function to populate admin details popup
+// Admin details popup helpers
 function populateAdminDetails(admin) {
-    // Basic info
     const fullName = getFullName(admin.first_name, admin.last_name, admin.middle_name);
     const initials = getInitials(admin.first_name, admin.last_name);
     const age = calculateAge(admin.date_of_birth);
@@ -211,7 +246,6 @@ function populateAdminDetails(admin) {
     document.getElementById('adminId').textContent = `Admin ID: #A${admin.admin_id || 'N/A'}`;
     document.getElementById('adminRole').textContent = 'School Administrator';
 
-    // Personal Information
     document.getElementById('detailFirstName').textContent = admin.first_name || 'N/A';
     document.getElementById('detailMiddleName').textContent = admin.middle_name || 'N/A';
     document.getElementById('detailLastName').textContent = admin.last_name || 'N/A';
@@ -219,7 +253,6 @@ function populateAdminDetails(admin) {
     document.getElementById('detailAge').textContent = age;
     document.getElementById('detailGender').textContent = admin.gender ? admin.gender.charAt(0).toUpperCase() + admin.gender.slice(1) : 'N/A';
 
-    // Contact Information
     document.getElementById('detailAddress').textContent = admin.address || 'N/A';
     document.getElementById('detailMobilePhone').textContent = admin.mobile_phone || 'N/A';
     document.getElementById('detailHomePhone').textContent = admin.home_phone || 'N/A';
@@ -228,22 +261,19 @@ function populateAdminDetails(admin) {
     document.getElementById('detailEmergencyPhone').textContent = admin.emergency_contact_phone || 'N/A';
 }
 
-// Function to show admin details popup
 function showAdminDetailsPopup(admin) {
     populateAdminDetails(admin);
     const popup = document.getElementById('adminDetailsPopup');
-    if (popup) {
-        popup.style.display = 'flex';
-    }
+    if (popup) popup.style.display = 'flex';
 }
 
-// Function to hide admin details popup
 function hideAdminDetailsPopup() {
     const popup = document.getElementById('adminDetailsPopup');
-    if (popup) {
-        popup.style.display = 'none';
-    }
+    if (popup) popup.style.display = 'none';
 }
 
-// Export functions for potential use in other modules
-export { fetchSchoolAdmins, renderSchoolAdmins, calculateAge, getInitials, getFullName, filterSchoolAdmins, filterSchoolAdminsByStatus, populateAdminDetails, showAdminDetailsPopup, hideAdminDetailsPopup };
+export {
+    fetchSchoolAdmins, renderSchoolAdmins, calculateAge, getInitials, getFullName,
+    filterSchoolAdmins, filterSchoolAdminsByStatus, populateAdminDetails,
+    showAdminDetailsPopup, hideAdminDetailsPopup
+};

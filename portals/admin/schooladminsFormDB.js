@@ -133,14 +133,29 @@ async function updateSchoolAdmin(adminId, adminData) {
 }
 
 // Function to delete school admin
+// FIX #56: Confirmation must be obtained by the caller (UI layer) before calling this.
+// This function is now correctly imported and used in viewAllSchoolAdmins.js with a
+// confirm dialog. Do NOT call this directly without a preceding confirmation step.
 async function deleteSchoolAdmin(adminId) {
+    if (!adminId) {
+        return { success: false, error: 'No adminId provided' };
+    }
+
     try {
         console.log('Deleting school admin:', adminId);
+
+        // FIX #52: also verify the admin being deleted belongs to the caller's school
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user?.user_metadata?.school_id) {
+            return { success: false, error: 'Cannot verify school identity before deletion' };
+        }
+        const schoolId = user.user_metadata.school_id;
 
         const { error } = await supabase
             .from('School_Admin')
             .delete()
-            .eq('admin_id', adminId);
+            .eq('admin_id', adminId)
+            .eq('school_id', schoolId); // safety: only delete within caller's own school
 
         if (error) {
             console.error('Error deleting school admin:', error);
@@ -151,9 +166,7 @@ async function deleteSchoolAdmin(adminId) {
         }
 
         console.log('School admin deleted successfully');
-        return {
-            success: true
-        };
+        return { success: true };
 
     } catch (err) {
         console.error('Unexpected error deleting school admin:', err);

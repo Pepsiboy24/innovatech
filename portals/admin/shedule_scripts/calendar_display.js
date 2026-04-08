@@ -45,12 +45,21 @@ async function fetchCurrentSchoolSession(retries = 3) {
 
 async function fetchEvents() {
     try {
+        // FIX #53: resolve school_id before querying so each school only sees its own events
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user?.user_metadata?.school_id) {
+            console.error('calendar_display: cannot determine school_id', authError);
+            tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:red;">Authentication error — cannot load calendar.</td></tr>';
+            return;
+        }
+        const schoolId = user.user_metadata.school_id;
+
         const currentSchoolSession = await fetchCurrentSchoolSession();
 
-        // We select academic_session too so we can group them
         const { data, error } = await supabase
             .from('academic_events')
             .select('*')
+            .eq('school_id', schoolId)           // was missing — loaded every school's events
             .order('start_date', { ascending: true });
 
         if (error) throw error;

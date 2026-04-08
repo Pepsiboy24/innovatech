@@ -10,7 +10,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css?v=1.1">
+    <link rel="stylesheet" href="./studentsPortalStyles/studentPortal.css?v=1.1">
     <link rel="stylesheet" href="./studentsPortalStyles/studyMaterials.css?v=1.1">
+    <script type="module" src="./student_sidebar.js"></script>
+    <script type="module" src="../../assets/js-shared/ui-engine.js"></script>
     <!-- Auth Guard: must load before page content renders -->
     <script type="module" src="../../core/authGuard.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -55,14 +58,11 @@
             </section>
 
             <section class="section">
-                <div class="stats-grid">
-                    <!-- <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-book"></i>
-                        </div>
-                        <div class="stat-number" id="textbook-count">0</div>
-                        <div class="stat-label">Textbooks</div>
-                    </div> -->
+                <div class="stats-grid" id="statsGrid">
+                    <div class="skeleton skeleton-card"></div>
+                    <div class="skeleton skeleton-card"></div>
+                </div>
+                <div class="stats-grid" id="statsContent" style="display:none;">
                     <div class="stat-card">
                         <div class="stat-icon">
                             <i class="fas fa-sticky-note"></i>
@@ -81,24 +81,30 @@
             </section>
 
             <section class="section">
-                <div class="materials-grid">
-                    <!-- <div class="material-category textbooks">
-                        <div class="category-header">
-                            <h3 class="category-title">TextBooks</h3>
-                            <p class="category-count"><span class="number" id="textbook-number">0</span> books</p>
-                        </div>
-                        <div class="materials-list" id="textbooks-list">
-                            </div>
-                    </div> -->
-
-                    <div class="material-category notes">
-                        <div class="category-header">
-                            <h3 class="category-title">Notes</h3>
-                            <p class="category-count"><span class="number" id="notes-number">0</span> books</p>
-                        </div>
-                        <div class="materials-list" id="notes-list">
-                        </div>
+                <div class="material-category notes">
+                    <!-- Skeleton will be injected here -->
+                    <div class="category-header skeleton">
+                        <div class="category-title skeleton"></div>
+                        <div class="category-count skeleton"></div>
                     </div>
+                    <div class="materials-list skeleton">
+                        <div class="material-card skeleton"></div>
+                        <div class="material-card skeleton"></div>
+                        <div class="material-card skeleton"></div>
+                        <div class="material-card skeleton"></div>
+                        <div class="material-card skeleton"></div>
+                        <div class="material-card skeleton"></div>
+                    </div>
+                </div>
+                
+                <div class="material-category notes" id="notesContent" style="display:none;">
+                    <div class="category-header">
+                        <h3 class="category-title">Notes</h3>
+                        <p class="category-count"><span class="number" id="notes-number">0</span> books</p>
+                    </div>
+                    <div class="materials-list" id="notes-list">
+                    </div>
+                </div>
 
                     <div class="material-category past-papers coming-soon-card">
                         <div class="category-header">
@@ -410,8 +416,29 @@
                 // Update stats
                 updateStats(notes.length, papers.length);
 
+                // Hide skeletons and show content
+                document.getElementById('statsGrid').style.display = 'none';
+                document.getElementById('statsContent').style.display = 'grid';
+                
+                // Find and hide the skeleton material-category, show the real content
+                const skeletonCategory = document.querySelector('.material-category.notes:not(#notesContent)');
+                const notesContent = document.getElementById('notesContent');
+                
+                if (skeletonCategory) skeletonCategory.style.display = 'none';
+                if (notesContent) notesContent.style.display = 'block';
+
             } catch (error) {
                 console.error('Error loading study materials:', error);
+                // Hide skeletons on error
+                document.getElementById('statsGrid').style.display = 'none';
+                document.getElementById('statsContent').style.display = 'grid';
+                
+                // Find and hide the skeleton material-category, show the real content
+                const skeletonCategory = document.querySelector('.material-category.notes:not(#notesContent)');
+                const notesContent = document.getElementById('notesContent');
+                
+                if (skeletonCategory) skeletonCategory.style.display = 'none';
+                if (notesContent) notesContent.style.display = 'block';
             }
         }
 

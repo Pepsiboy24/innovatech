@@ -3,141 +3,70 @@ import { supabase } from '../../core/config.js';
 class BillingSummary {
     constructor() {
         this.currentTerm = 'First Term 2026';
-        this.ratePerStudent = 2500; // Default rate in Naira
+        this.ratePerStudent = 2500;
+        this.metrics = null;
         this.init();
     }
 
     async init() {
-        await this.loadBillingData();
-        this.updateBillingDisplay();
+        if (window.currentUser) {
+            await this.loadBillingData(window.currentUser);
+        } else {
+            window.addEventListener('auth-ready', async (e) => {
+                await this.loadBillingData(e.detail);
+            }, { once: true });
+        }
     }
 
-    async loadBillingData() {
+    async loadBillingData(user) {
         try {
-            // Get current user's school_id from metadata
-            const { data: { user } } = await supabase.auth.getUser();
-            const userSchoolId = user?.user_metadata?.school_id;
-            
-            if (!userSchoolId) {
-                console.error('User missing school_id in metadata');
-                return;
-            }
+            const schoolId = user?.user_metadata?.school_id;
+            if (!schoolId) return;
 
-            // Fetch current term enrollment data
-            const { data: enrollmentData, error: enrollmentError } = await supabase
+            const { data, error } = await supabase
                 .from('Students')
-                .select('student_id, full_name, created_at')
-                .eq('school_id', userSchoolId)
-                .eq('enrollment_status', 'active')   // Match the actual status values ('active' not 'ENROLLED')
-                .order('created_at', { ascending: false });
+                .select('student_id')
+                .eq('school_id', schoolId)
+                .eq('enrollment_status', 'active');
 
-            if (enrollmentError) {
-                console.error('Error fetching enrollment data:', enrollmentError);
-                return;
-            }
+            if (error) throw error;
 
-            // Calculate billing metrics
-            this.calculateBillingMetrics(enrollmentData || []);
-
+            this.calculateBillingMetrics(data || []);
+            this.updateBillingDisplay();
         } catch (error) {
-            console.error('Error loading billing data:', error);
+            console.error('Billing error:', error);
         }
     }
 
-    calculateBillingMetrics(enrollments) {
-        const activeStudents = enrollments.length;
-        const totalOwed = activeStudents * this.ratePerStudent;
-        
-        // Calculate payment status
-        const paidStudents = enrollments.filter(e => e.payment_status === 'PAID').length;
-        const unpaidStudents = enrollments.filter(e => e.payment_status === 'PENDING').length;
-        const collectionRate = activeStudents > 0 ? Math.round((paidStudents / activeStudents) * 100) : 0;
-
-        // Calculate next due date (30 days from now)
-        const nextDueDate = new Date();
-        nextDueDate.setDate(nextDueDate.getDate() + 30);
-        const dueDateStr = nextDueDate.toLocaleDateString('en-US', { 
-            month: 'short', 
-            day: 'numeric', 
-            year: 'numeric' 
-        });
-
-        // Update DOM elements
-        this.updateBillingDisplay({
-            activeStudents,
-            totalOwed,
-            paidStudents,
-            unpaidStudents,
-            collectionRate,
-            nextDueDate: dueDateStr
-        });
+    calculateBillingMetrics(students) {
+        const count = students.length;
+        this.metrics = {
+            activeStudents: count,
+            totalOwed: count * this.ratePerStudent,
+            paidStudents: 0,
+            unpaidStudents: count,
+            collectionRate: 0,
+            nextDueDate: '2026-05-01'
+        };
     }
 
-    updateBillingDisplay(metrics) {
-        // Update current term
-        const currentTermEl = document.getElementById('current-term');
-        if (currentTermEl) {
-            currentTermEl.textContent = this.currentTerm;
+    updateBillingDisplay() {
+        if (!this.metrics) return; // CRITICAL SAFETY CHECK
+
+        const map = {
+            'active-students-count': this.metrics.activeStudents,
+            'total-owed': `₦${this.metrics.totalOwed.toLocaleString()}`,
+            'paid-students-count': this.metrics.paidStudents,
+            'unpaid-students-count': this.metrics.unpaidStudents,
+            'collection-rate': `${this.metrics.collectionRate}%`,
+            'next-due-date': this.metrics.nextDueDate
+        };
+
+        for (const [id, val] of Object.entries(map)) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = val;
         }
-
-        // Update active students count
-        const activeStudentsEl = document.getElementById('active-students-count');
-        if (activeStudentsEl) {
-            activeStudentsEl.textContent = metrics.activeStudents.toLocaleString();
-        }
-
-        // Update total owed
-        const totalOwedEl = document.getElementById('total-owed');
-        if (totalOwedEl) {
-            totalOwedEl.textContent = `₦${metrics.totalOwed.toLocaleString()}`;
-        }
-
-        // Update payment status
-        const paidStudentsEl = document.getElementById('paid-students-count');
-        if (paidStudentsEl) {
-            paidStudentsEl.textContent = metrics.paidStudents.toLocaleString();
-        }
-
-        const unpaidStudentsEl = document.getElementById('unpaid-students-count');
-        if (unpaidStudentsEl) {
-            unpaidStudentsEl.textContent = metrics.unpaidStudents.toLocaleString();
-        }
-
-        // Update collection rate
-        const collectionRateEl = document.getElementById('collection-rate');
-        if (collectionRateEl) {
-            collectionRateEl.textContent = `${metrics.collectionRate}%`;
-        }
-
-        // Update next due date
-        const nextDueDateEl = document.getElementById('next-due-date');
-        if (nextDueDateEl) {
-            nextDueDateEl.textContent = metrics.nextDueDate;
-        }
-
-        // Update rate per student
-        const rateEl = document.querySelector('.billing-value');
-        if (rateEl && rateEl.textContent.includes('₦')) {
-            rateEl.textContent = `₦${this.ratePerStudent.toLocaleString()}`;
-        }
-    }
-
-    // Method to refresh billing data
-    async refreshBillingData() {
-        await this.loadBillingData();
-    }
-
-    // Method to update rate per student
-    async updateRatePerStudent(newRate) {
-        this.ratePerStudent = newRate;
-        await this.loadBillingData(); // Recalculate with new rate
     }
 }
 
-// Initialize billing summary when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    new BillingSummary();
-});
-
-// Export for external use
-export { BillingSummary };
+document.addEventListener('DOMContentLoaded', () => { new BillingSummary(); });

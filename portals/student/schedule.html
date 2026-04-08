@@ -10,7 +10,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css?v=1.1">
-    <link rel="stylesheet" href="./studentsPortalStyles/schedule.css">
+    <link rel="stylesheet" href="./studentsPortalStyles/studentPortal.css?v=1.1">
+    <link rel="stylesheet" href="./studentsPortalStyles/schedule.css?v=1.1">
+    <script type="module" src="./student_sidebar.js"></script>
+    <script type="module" src="../../assets/js-shared/ui-engine.js"></script>
     <!-- Auth Guard: must load before page content renders -->
     <script type="module" src="../../core/authGuard.js" defer></script>
 </head>
@@ -54,7 +57,17 @@
                 </div>
 
                 <div class="schedule-table-wrapper" id="weeklyScheduleContainer">
-                    <div style="padding: 40px; text-align: center; color: #64748b;">Loading your schedule...</div>
+                    <div class="skeleton skeleton-card"></div>
+                    <div class="skeleton skeleton-card"></div>
+                    <div class="skeleton skeleton-card"></div>
+                    <div class="skeleton skeleton-card"></div>
+                    <div class="skeleton skeleton-card"></div>
+                    <div class="skeleton skeleton-card"></div>
+                    <div class="skeleton skeleton-card"></div>
+                    <div class="skeleton skeleton-card"></div>
+                </div>
+                <div class="schedule-table-wrapper" id="weeklyScheduleContent" style="display:none;">
+                    <!-- Real content will be injected here -->
                 </div>
             </div>
         </main>
@@ -261,6 +274,11 @@
 
                 container.innerHTML = html;
 
+                // Hide skeleton and show content
+                document.getElementById('weeklyScheduleContainer').style.display = 'none';
+                document.getElementById('weeklyScheduleContent').style.display = 'block';
+                document.getElementById('weeklyScheduleContent').innerHTML = html;
+
                 // Build Mobile Day Switcher functionality
                 const switcher = document.getElementById('mobileDaySwitcher');
                 if (switcher) {
@@ -291,7 +309,10 @@
 
             } catch (err) {
                 console.error('Error loading schedule:', err);
-                container.innerHTML = `<div style="padding: 40px; text-align: center; color: #ef4444;">Failed to load schedule.</div>`;
+                // Hide skeleton and show error
+                document.getElementById('weeklyScheduleContainer').style.display = 'none';
+                document.getElementById('weeklyScheduleContent').style.display = 'block';
+                document.getElementById('weeklyScheduleContent').innerHTML = `<div style="padding: 40px; text-align: center; color: #ef4444;">Failed to load schedule.</div>`;
             }
         }
 

@@ -3,6 +3,7 @@
  */
 
 import { supabase } from '../../core/config.js';
+import { showSkeleton, hideSkeleton } from '../../assets/js-shared/ui-engine.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants & Helpers
@@ -72,12 +73,11 @@ function clearFailSafe() {
 document.addEventListener('DOMContentLoaded', async () => {
   startFailSafe();
 
-  try {
-    const student = await initStudentSession();
+  // Initialize skeleton loaders
+  showSkeleton('upcomingClassesGrid', 3, 'card');
+  showSkeleton('subjectsGrid', 6, 'card');
+  showSkeleton('activityFeed', 4, 'list');
 
-    if (!student) {
-      updateSubtitle("Identity check failed.");
-      forceHideAllSkeletons();
       return;
     }
 

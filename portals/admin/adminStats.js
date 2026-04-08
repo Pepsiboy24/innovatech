@@ -1,73 +1,44 @@
-
 import { supabase } from '../../core/config.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    await fetchAdminStats();
+    // Wait for authGuard to provide the user
+    if (window.currentUser) {
+        fetchAdminStats(window.currentUser);
+    } else {
+        window.addEventListener('auth-ready', (e) => fetchAdminStats(e.detail), { once: true });
+    }
 });
 
-async function fetchAdminStats() {
+async function fetchAdminStats(user) {
     try {
-        // Get current user's school_id for RLS compliance
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError || !user || !user.user_metadata?.school_id) {
-            console.error('User authentication error:', userError);
-            return;
-        }
-
+        if (!user || !user.user_metadata?.school_id) return;
         const schoolId = user.user_metadata.school_id;
 
-        // Fetch Students count
-        const { count: studentCount, error: studentError } = await supabase
-            .from('Students')
-            .select('*', { count: 'exact', head: true })
-            .eq('school_id', schoolId)           // RLS: Only count students from this school
-            .eq('enrollment_status', 'active');  // Only count currently enrolled students
+        const [{ count: studentCount }, { count: teacherCount }] = await Promise.all([
+            supabase.from('Students').select('*', { count: 'exact', head: true }).eq('school_id', schoolId).eq('enrollment_status', 'active'),
+            supabase.from('Teachers').select('*', { count: 'exact', head: true }).eq('school_id', schoolId).eq('employment_status', 'active')
+        ]);
 
-        if (studentError) {
-            console.error('Error fetching students count:', studentError);
-        } else {
-            updateStat('total-students-count', studentCount);
-        }
+        updateStat('total-students-count', studentCount || 0);
+        updateStat('total-teachers-count', teacherCount || 0);
 
-        // Fetch Teachers count
-        const { count: teacherCount, error: teacherError } = await supabase
-            .from('Teachers')
-            .select('*', { count: 'exact', head: true })
-            .eq('school_id', schoolId)            // RLS: Only count teachers from this school
-            .eq('employment_status', 'active');  // Only count actively employed teachers
-
-        if (teacherError) {
-            console.error('Error fetching teachers count:', teacherError);
-        } else {
-            updateStat('total-teachers-count', teacherCount);
-        }
-
-        // Check if this is a new school (no data yet)
-        if (studentCount === 0 && teacherCount === 0) {
-            console.log('New school detected - showing setup wizard');
-            showSetupWizard();
-        }
+        if (studentCount === 0 && teacherCount === 0) showSetupWizard();
 
     } catch (err) {
-        console.error('Unexpected error fetching stats:', err);
+        console.error('Stats error:', err);
     }
 }
 
 function showSetupWizard() {
-    // Hide standard dashboard and show setup checklist
-    const setupChecklist = document.getElementById('setupChecklist');
-    const standardDashboard = document.getElementById('standardDashboard');
-    
-    if (setupChecklist && standardDashboard) {
-        setupChecklist.style.display = 'block';
-        standardDashboard.style.display = 'none';
-        console.log('Setup wizard activated for new school');
+    const setup = document.getElementById('setupChecklist');
+    const dash = document.getElementById('standardDashboard');
+    if (setup && dash) {
+        setup.style.display = 'block';
+        dash.style.display = 'none';
     }
 }
 
-function updateStat(elementId, value) {
-    const element = document.getElementById(elementId);
-    if (element) {
-        element.textContent = value.toLocaleString();
-    }
+function updateStat(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val.toLocaleString();
 }

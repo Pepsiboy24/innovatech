@@ -13,6 +13,7 @@ const validationMessage = document.getElementById('validationMessage');
 let assessments = [];
 let currentSession = '';
 let currentTerm = '';
+let currentSchoolId = null; // FIX #51/#57: track school_id in module state
 
 // Default Structure
 const DEFAULT_STRUCTURE = [
@@ -21,16 +22,35 @@ const DEFAULT_STRUCTURE = [
     { name: 'Exam', score: 60 }
 ];
 
+// FIX #51/#57: Helper — resolve the logged-in admin's school_id once per page load
+async function getCurrentSchoolId() {
+    if (currentSchoolId) return currentSchoolId; // cached
+
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user?.user_metadata?.school_id) {
+        console.error('grading_settings: cannot determine school_id', error);
+        return null;
+    }
+    currentSchoolId = user.user_metadata.school_id;
+    return currentSchoolId;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Load Sessions
+    // 1. Resolve school_id before anything else
+    const schoolId = await getCurrentSchoolId();
+    if (!schoolId) {
+        sessionSelect.innerHTML = '<option value="">Authentication error</option>';
+        return;
+    }
+
+    // 2. Load Sessions
     await loadSessions();
 
-    // 2. Set Up Event Listeners
+    // 3. Set Up Event Listeners
     setupEventListeners();
 });
 
 function setupEventListeners() {
-    // Session/Term Change: Reload structure
     sessionSelect.addEventListener('change', (e) => {
         currentSession = e.target.value;
         if (currentSession) loadGradingStructure();
@@ -41,33 +61,34 @@ function setupEventListeners() {
         if (currentSession) loadGradingStructure();
     });
 
-    // Add Assessment
     addAssessmentBtn.addEventListener('click', () => {
         addAssessmentRow('', 0);
         updateStateFromDOM();
     });
 
-    // Save
     saveConfigBtn.addEventListener('click', saveConfiguration);
 }
 
-// --- core Functions ---
+// --- Core Functions ---
 
 async function loadSessions() {
     try {
+        const schoolId = await getCurrentSchoolId();
+        if (!schoolId) throw new Error('No school_id available');
+
+        // FIX #51: filter academic_events by school_id
         const { data, error } = await supabase
             .from('academic_events')
-            .select('academic_session');
+            .select('academic_session')
+            .eq('school_id', schoolId); // was missing — exposed all schools' sessions
 
         if (error) throw error;
 
-        // Extract unique sessions
         const uniqueSessions = [...new Set(data.map(item => item.academic_session).filter(Boolean))].sort().reverse();
 
         sessionSelect.innerHTML = '';
 
         if (uniqueSessions.length === 0) {
-            // Fallback if no sessions exist
             const fallbackSession = new Date().getFullYear() + "/" + (new Date().getFullYear() + 1);
             const opt = document.createElement('option');
             opt.value = fallbackSession;
@@ -81,13 +102,10 @@ async function loadSessions() {
                 opt.textContent = session;
                 sessionSelect.appendChild(opt);
             });
-            currentSession = uniqueSessions[0]; // Default to most recent
+            currentSession = uniqueSessions[0];
         }
 
-        // Initialize Term
         currentTerm = termSelect.value;
-
-        // Load initial structure
         loadGradingStructure();
 
     } catch (err) {
@@ -99,35 +117,33 @@ async function loadSessions() {
 async function loadGradingStructure() {
     if (!currentSession || !currentTerm) return;
 
-    // Show loading state?
     assessmentListIds.innerHTML = '<div style="text-align:center; padding: 20px;">Loading structure...</div>';
     saveConfigBtn.disabled = true;
 
     try {
+        const schoolId = await getCurrentSchoolId();
+        if (!schoolId) throw new Error('No school_id available');
+
+        // FIX #51: filter Grading_Structure by school_id
         const { data, error } = await supabase
             .from('Grading_Structure')
             .select('*')
+            .eq('school_id', schoolId)            // was missing — all schools shared one config
             .eq('academic_session', currentSession)
             .eq('term', currentTerm)
             .order('created_at', { ascending: true });
 
         if (error) throw error;
 
-        assessmentListIds.innerHTML = ''; // Clear loading
+        assessmentListIds.innerHTML = '';
 
         if (data && data.length > 0) {
-            // Use fetched data
-            data.forEach(item => {
-                addAssessmentRow(item.assessment_name, item.max_score);
-            });
+            data.forEach(item => addAssessmentRow(item.assessment_name, item.max_score));
         } else {
-            // Use defaults
-            DEFAULT_STRUCTURE.forEach(item => {
-                addAssessmentRow(item.name, item.score);
-            });
+            DEFAULT_STRUCTURE.forEach(item => addAssessmentRow(item.name, item.score));
         }
 
-        updateStateFromDOM(); // Run validation
+        updateStateFromDOM();
 
     } catch (err) {
         console.error('Error loading structure:', err);
@@ -139,21 +155,18 @@ function addAssessmentRow(name = '', score = 0) {
     const row = document.createElement('div');
     row.className = 'assessment-row';
 
-    // Name Input
     const nameGroup = document.createElement('div');
     nameGroup.innerHTML = `
         <label>Assessment Name</label>
         <input type="text" class="assessment-name form-control" value="${name}" placeholder="e.g. Mid-term">
     `;
 
-    // Score Input
     const scoreGroup = document.createElement('div');
     scoreGroup.innerHTML = `
         <label>Max Score</label>
         <input type="number" class="assessment-score form-control" value="${score}" placeholder="0">
     `;
 
-    // Remove Btn
     const removeBtn = document.createElement('button');
     removeBtn.className = 'remove-btn';
     removeBtn.innerHTML = '<i class="fa fa-trash"></i>';
@@ -166,15 +179,10 @@ function addAssessmentRow(name = '', score = 0) {
     row.appendChild(nameGroup);
     row.appendChild(scoreGroup);
     row.appendChild(removeBtn);
-
     assessmentListIds.appendChild(row);
 
-    // Add input listeners for realtime validation
-    const nameInput = row.querySelector('.assessment-name');
-    const scoreInput = row.querySelector('.assessment-score');
-
-    nameInput.addEventListener('input', updateStateFromDOM);
-    scoreInput.addEventListener('input', updateStateFromDOM);
+    row.querySelector('.assessment-name').addEventListener('input', updateStateFromDOM);
+    row.querySelector('.assessment-score').addEventListener('input', updateStateFromDOM);
 }
 
 function updateStateFromDOM() {
@@ -185,15 +193,12 @@ function updateStateFromDOM() {
     rows.forEach(row => {
         const name = row.querySelector('.assessment-name').value.trim();
         const score = parseInt(row.querySelector('.assessment-score').value) || 0;
-
         assessments.push({ name, score });
         total += score;
     });
 
-    // Update UI
     totalScoreDisplay.textContent = total;
 
-    // Validation Logic
     if (total === 100) {
         totalScoreDisplay.classList.remove('invalid');
         totalScoreDisplay.classList.add('valid');
@@ -201,7 +206,6 @@ function updateStateFromDOM() {
         validationMessage.className = "validation-message success";
         saveConfigBtn.disabled = false;
 
-        // Also check if names are empty
         const emptyNames = assessments.some(a => !a.name);
         if (emptyNames) {
             validationMessage.textContent = "Total is 100, but some assessment names are empty.";
@@ -229,30 +233,35 @@ async function saveConfiguration() {
     saveConfigBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Saving...';
 
     try {
-        // 1. Auth Check
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             showToast("You must be logged in to save configuration.", "error");
             throw new Error("Unauthorized");
         }
 
-        // 2. Delete Existing Records for this Session+Term
+        const schoolId = await getCurrentSchoolId();
+        if (!schoolId) {
+            showToast("Cannot save: school identity could not be verified.", "error");
+            throw new Error("No school_id");
+        }
+
+        // FIX #51: scope delete to this school only
         const { error: deleteError } = await supabase
             .from('Grading_Structure')
             .delete()
+            .eq('school_id', schoolId)            // was missing — deleted ALL schools' configs
             .eq('academic_session', currentSession)
             .eq('term', currentTerm);
 
         if (deleteError) throw deleteError;
 
-        // 3. Insert New Records
-        // Prepare payload
+        // FIX #57: include school_id in every inserted row
         const payload = assessments.map(a => ({
+            school_id: schoolId,                  // was missing from payload entirely
             assessment_name: a.name,
             max_score: a.score,
             term: currentTerm,
             academic_session: currentSession
-            // id and created_at handled by DB defaults
         }));
 
         const { error: insertError } = await supabase
@@ -261,7 +270,6 @@ async function saveConfiguration() {
 
         if (insertError) throw insertError;
 
-        // Success
         showToast("Grading Structure saved successfully!", "success");
 
     } catch (err) {
@@ -270,8 +278,6 @@ async function saveConfiguration() {
     } finally {
         saveConfigBtn.disabled = false;
         saveConfigBtn.innerHTML = '<i class="fa fa-save"></i> Save Configuration';
-
-        // Re-validate to ensure clean state
         updateStateFromDOM();
     }
 }

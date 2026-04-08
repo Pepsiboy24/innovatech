@@ -7,18 +7,16 @@ import { supabase } from '../../core/config.js';
 import { hasFeatureAccess, getCurrentUserTier } from '../../core/tierAccess.js';
 
 (async function () {
-    // Compute relative path from current page to schoolAdmin folder
+    // FIX #54: All admin pages are served from /portals/admin/ — old code checked
+    // for /html/schoolAdmin/ and /html/shared/ paths that don't exist in this app,
+    // causing sharedPrefix() to always return './' (wrong) instead of '../shared/'.
+    // Admin pages: /portals/admin/*.html  |  Shared pages: /portals/shared/*.html
     function adminPrefix() {
-        const path = window.location.pathname;
-        if (path.includes('/html/shared/')) return '../schoolAdmin/';
-        return './';          // default: already in schoolAdmin
+        return './'; // All admin pages live under /portals/admin/
     }
 
-    // Compute path to the shared folder from the current page
     function sharedPrefix() {
-        const path = window.location.pathname;
-        if (path.includes('/html/shared/')) return './';
-        return '../shared/';  // from schoolAdmin → go up one, into shared
+        return '../shared/'; // From /portals/admin/, shared is one level up then /shared/
     }
 
     // Fetch school branding data with AbortError handling

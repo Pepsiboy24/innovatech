@@ -36,6 +36,8 @@ body {
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
     padding: 2rem 0;
     position: fixed;
+    left: 0;
+    top: 0;
     height: 100vh;
     overflow-y: auto;
     z-index: 1000;

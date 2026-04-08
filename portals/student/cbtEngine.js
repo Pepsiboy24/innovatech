@@ -130,43 +130,56 @@ let activeExamType = 'utme'; // Default
 
 function renderLobbySubjects() {
     const grid = document.getElementById('subjectGrid');
+    const content = document.getElementById('subjectContent');
     if (!grid) return;
-    grid.innerHTML = '';
+    
+    try {
+        // Hide skeleton and show content
+        grid.style.display = 'none';
+        content.style.display = 'grid';
+        content.innerHTML = '';
 
-    subjectsMap.forEach(sub => {
-        const card = document.createElement('div');
-        card.className = 'subject-card';
-        card.style.border = '1px solid var(--border-color)';
-        card.style.borderRadius = '12px';
-        card.style.padding = '20px';
-        card.style.display = 'flex';
-        card.style.alignItems = 'center';
-        card.style.gap = '12px';
-        card.style.cursor = 'pointer';
-        card.style.transition = 'all 0.2s';
-        card.style.background = 'var(--background-color)';
-        card.innerHTML = `
-        <i class="fas ${sub.icon}" style="font-size: 24px; color: var(--primary-color); width: 32px; text-align: center;"></i>
-        <span style="font-weight: 600; font-size: 15px;">${sub.name}</span>
-    `;
-        card.addEventListener('click', () => {
-            const timeLimit = activeExamType === 'utme' ? 3600 : 7200; // Mock time limits: JAMB 60m, WAEC 120m
-            const title = `${activeExamType.toUpperCase()} ${sub.name}`;
-            openInstructionModal(title, timeLimit, activeExamType, sub.key);
-        });
+        subjectsMap.forEach(sub => {
+            const card = document.createElement('div');
+            card.className = 'subject-card';
+            card.style.border = '1px solid var(--border-color)';
+            card.style.borderRadius = '12px';
+            card.style.padding = '20px';
+            card.style.display = 'flex';
+            card.style.alignItems = 'center';
+            card.style.gap = '12px';
+            card.style.cursor = 'pointer';
+            card.style.transition = 'all 0.2s';
+            card.style.background = 'var(--background-color)';
+            card.innerHTML = `
+            <i class="fas ${sub.icon}" style="font-size: 24px; color: var(--primary-color); width: 32px; text-align: center;"></i>
+            <span style="font-weight: 600; font-size: 15px;">${sub.name}</span>
+        `;
+            card.addEventListener('click', () => {
+                const timeLimit = activeExamType === 'utme' ? 3600 : 7200; // Mock time limits: JAMB 60m, WAEC 120m
+                const title = `${activeExamType.toUpperCase()} ${sub.name}`;
+                openInstructionModal(title, timeLimit, activeExamType, sub.key);
+            });
 
-        card.addEventListener('mouseover', () => {
-            card.style.borderColor = 'var(--primary-color)';
-            card.style.transform = 'translateY(-2px)';
-            card.style.boxShadow = 'var(--shadow-md)';
+            card.addEventListener('mouseover', () => {
+                card.style.borderColor = 'var(--primary-color)';
+                card.style.transform = 'translateY(-2px)';
+                card.style.boxShadow = 'var(--shadow-md)';
+            });
+            card.addEventListener('mouseout', () => {
+                card.style.borderColor = 'var(--border-color)';
+                card.style.transform = 'none';
+                card.style.boxShadow = 'none';
+            });
+            content.appendChild(card);
         });
-        card.addEventListener('mouseout', () => {
-            card.style.borderColor = 'var(--border-color)';
-            card.style.transform = 'none';
-            card.style.boxShadow = 'none';
-        });
-        grid.appendChild(card);
-    });
+    } catch (error) {
+        console.error('Error rendering lobby subjects:', error);
+        // Hide skeleton and show error
+        grid.style.display = 'none';
+        content.style.display = 'grid';
+        content.innerHTML = `<div style="padding: 40px; text-align: center; color: #ef4444;">Failed to load subjects.</div>`;
+    }
 }
 
 function initLobbyTabs() {

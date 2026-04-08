@@ -12,8 +12,10 @@
     <!-- Admin portal styles (sidebar + layout) -->
     <link rel="stylesheet" href="../../assets/css/schoolAdminStyles/schoolAdminDashboard.css?v=1.1">
     <!-- Teacher portal styles (sidebar + layout) -->
-    <link rel="stylesheet" href="../../assets/css/teachersPortalStyles/teachersPortal.css?v=1.1">
-    <link rel="stylesheet" href="./teachersPortalStyles/sidebar.css?v=1.1">
+    <link rel="stylesheet" href="./studentsPortalStyles/studentPortal.css?v=1.1">
+    <link rel="stylesheet" href="./studentsPortalStyles/manage_notes.css?v=1.1">
+    <script type="module" src="./student_sidebar.js"></script>
+    <script type="module" src="../../assets/js-shared/ui-engine.js"></script>
     <script src="../../assets/js-shared/ui_feedback.js"></script>
     <style>
         /* ── Local overrides ───────────────────────────────────── */
@@ -414,17 +416,9 @@
                 </div>
 
                 <!-- Notes table -->
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Title</th>
-                                <th>Class</th>
-                                <th>Subject</th>
-                                <th>Date Uploaded</th>
-                                <th id="uploaderHeader">Uploaded By</th>
-                                <th>Actions</th>
-                            </tr>
+                <div class="table-wrap" id="notesTableContainer">
+                    <!-- Skeleton will be injected here -->
+                </div>
                         </thead>
                         <tbody id="notesBody">
                             <tr id="loadingRow">

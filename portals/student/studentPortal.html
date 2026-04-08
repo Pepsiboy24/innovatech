@@ -4,16 +4,18 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
     <meta charset="UTF-8">
-
     <title>EduHub - Student Dashboard</title>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css?v=1.1">
-    <link rel="stylesheet" href="./studentsPortalStyles/studentPortal.css?v=1.1">
-    <script type="module" src="./student_sidebar.js"></script>
-    <!-- Auth Guard: must load before page content renders -->
-    <script type="module" src="../../core/authGuard.js" defer></script>
+    
+    <link rel="stylesheet" href="/portals/student/studentsPortalStyles/studentPortal.css?v=1.1">
+
+    <script type="module" src="/assets/js-shared/ui-engine.js"></script>
+    
+    <script type="module" src="/core/authGuard.js" defer></script>
 </head>
 
 <body>
@@ -41,7 +43,7 @@
             </header>
 
             <!-- Stats Grid -->
-            <div class="stats-grid">
+            <div class="stats-grid" id="statsGrid">
                 <div class="stat-card">
                     <div class="stat-icon rank">
                         <i class="fas fa-certificate"></i>
@@ -78,23 +80,19 @@
 
             <!-- Two-column layout -->
             <div class="dashboard-grid">
-
                 <!-- LEFT COLUMN -->
                 <div class="dashboard-col-main">
-
                     <!-- Upcoming Classes Today -->
                     <section class="section">
                         <div class="section-header">
                             <h2 class="section-title">Today's Classes</h2>
                             <a href="./schedule.html" class="view-all-btn">Full Schedule</a>
                         </div>
-                        <!-- Skeleton -->
-                        <div id="upcomingClassesSkeleton" class="classes-grid">
+                        <div class="upcoming-classes-grid" id="upcomingClassesGrid">
                             <div class="skeleton skeleton-card"></div>
                             <div class="skeleton skeleton-card"></div>
                             <div class="skeleton skeleton-card"></div>
                         </div>
-                        <div id="upcomingClassesGrid" class="classes-grid" style="display:none;"></div>
                     </section>
 
                     <!-- My Subjects -->
@@ -137,9 +135,9 @@
         </main>
     </div>
 
+    <script type="module" src="/core/config.js"></script>
     <script type="module" src="./student_sidebar.js"></script>
     <script type="module" src="./studentProfileAchivement.js"></script>
-    <!-- <script type="module" src="../../core/config.js"></script> -->
 </body>
 
 </html>

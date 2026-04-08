@@ -94,6 +94,9 @@ body {
     flex: 1;
     padding: 24px;
     transition: margin-left 0.3s ease;
+    max-width: calc(100% - 250px);
+    width: 100%;
+    overflow-x: hidden;
 }
 
 .main-content.full-width {
@@ -339,12 +342,7 @@ body {
     letter-spacing: 0.5px;
 }
 
-/* Materials Grid */
-.materials-grid {
-    display: grid;
-    gap: 24px;
-}
-
+/* Material Category */
 .material-category {
     background: var(--card-background);
     border-radius: 12px;
@@ -379,6 +377,31 @@ body {
 
 .materials-list {
     padding: 0;
+}
+
+.materials-list.skeleton {
+    padding: 16px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.material-card.skeleton {
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--card-background);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.category-header.skeleton {
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .material-item {
@@ -688,6 +711,8 @@ body {
     .main-content {
         margin-left: 0;
         padding: 16px;
+        max-width: 100%;
+        width: 100%;
         /* Adjust padding for smaller screens */
     }
 

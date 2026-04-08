@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   await fetchRecentGrades(childId);
   await fetchOverallProgress(childId);
+  await fetchReportCards(childId);
+  await fetchMessages(childId);
 });
 
 
@@ -83,8 +85,17 @@ async function fetchRecentGrades(childId) {
     .order('created_at', { ascending: false })
     .limit(5);
 
+  // Hide skeleton and show content
+  const skeletonElement = document.getElementById('recentGradesSkeleton');
+  const contentElement = document.getElementById('recentGradesContainer');
+  if (skeletonElement) skeletonElement.style.display = 'none';
+  if (contentElement) contentElement.style.display = 'block';
+
   if (error) {
     console.error('Error fetching recent grades:', error);
+    if (contentElement) {
+      contentElement.innerHTML = '<p style="text-align:center; color:#ef4444;">Failed to load grades.</p>';
+    }
     return;
   }
 
@@ -115,6 +126,12 @@ async function fetchRecentGrades(childId) {
 let progressChartInstance = null;
 
 async function fetchOverallProgress(childId) {
+  // Hide skeleton and show content
+  const skeletonElement = document.getElementById('progressSkeleton');
+  const contentElement = document.getElementById('progressChartContainer');
+  if (skeletonElement) skeletonElement.style.display = 'none';
+  if (contentElement) contentElement.style.display = 'block';
+
   // Fetch all grades to calculate average per month or term
   const { data: grades, error } = await supabase
     .from('Grades')
@@ -124,6 +141,9 @@ async function fetchOverallProgress(childId) {
 
   if (error) {
     console.error('Error fetching progress:', error);
+    if (contentElement) {
+      contentElement.innerHTML = '<p style="text-align:center; color:#ef4444;">Failed to load progress chart.</p>';
+    }
     return;
   }
 
@@ -223,4 +243,48 @@ function updateChart(labels, data) {
       },
     },
   });
+}
+
+async function fetchReportCards(childId) {
+  // Hide skeleton and show content
+  const skeletonElement = document.getElementById('reportCardsSkeleton');
+  const contentElement = document.getElementById('reportCardsContainer');
+  if (skeletonElement) skeletonElement.style.display = 'none';
+  if (contentElement) contentElement.style.display = 'block';
+
+  // Mock implementation - replace with actual data fetching
+  setTimeout(() => {
+    contentElement.innerHTML = `
+      <div style="padding: 20px; text-align: center; color: #64748b;">
+        <i class="fas fa-file-alt" style="font-size: 2rem; margin-bottom: 16px; color: #10b981;"></i>
+        <h3>Term 1 Report Card</h3>
+        <p>Available for download</p>
+        <button class="test-btn success" style="margin-top: 16px;">
+            <i class="fas fa-download"></i> Download
+        </button>
+      </div>
+    `;
+  }, 1000);
+}
+
+async function fetchMessages(childId) {
+  // Hide skeleton and show content
+  const skeletonElement = document.getElementById('messagesSkeleton');
+  const contentElement = document.getElementById('messagesContainer');
+  if (skeletonElement) skeletonElement.style.display = 'none';
+  if (contentElement) contentElement.style.display = 'block';
+
+  // Mock implementation - replace with actual data fetching
+  setTimeout(() => {
+    contentElement.innerHTML = `
+      <div style="padding: 20px; text-align: center; color: #64748b;">
+        <i class="fas fa-envelope" style="font-size: 2rem; margin-bottom: 16px; color: #f59e0b;"></i>
+        <h3>3 New Messages</h3>
+        <p>From teachers and school administration</p>
+        <button class="test-btn" style="margin-top: 16px;">
+            <i class="fas fa-inbox"></i> View Messages
+        </button>
+      </div>
+    `;
+  }, 1500);
 }
