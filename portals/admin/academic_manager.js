@@ -13,11 +13,23 @@ document.addEventListener('DOMContentLoaded', () => {
     setupModalListeners();
     loadSubjects();
 
-    document.getElementById('subjectSearch').addEventListener('input', (e) => {
-        renderSubjectList(e.target.value.trim().toLowerCase());
-    });
+    // Safety checks for event listeners to prevent "null" errors
+    const searchInput = document.getElementById('subjectSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            renderSubjectList(e.target.value.trim().toLowerCase());
+        });
+    }
 
-    document.getElementById('allocationForm').addEventListener('submit', handleAllocationSubmit);
+    const allocationForm = document.getElementById('allocationForm');
+    if (allocationForm) {
+        allocationForm.addEventListener('submit', handleAllocationSubmit);
+    }
+    
+    const addSubjectForm = document.getElementById('addSubjectForm');
+    if (addSubjectForm) {
+        addSubjectForm.addEventListener('submit', handleAddSubjectSubmit);
+    }
 });
 
 function setupSidebar() {
@@ -27,6 +39,23 @@ function setupSidebar() {
     if (openBtn && sidebar) openBtn.addEventListener('click', () => sidebar.classList.add('show'));
     if (closeBtn && sidebar) closeBtn.addEventListener('click', () => sidebar.classList.remove('show'));
 }
+
+// ─── Global Window Functions (Fixed for onclick access) ──────────────────────
+window.openAddSubjectModal = function() {
+    const form = document.getElementById('addSubjectForm');
+    if (form) form.reset();
+    openModal('addSubjectModal');
+};
+
+window.openEditSubjectModal = function(id) {
+    const subject = allSubjects.find(s => s.subject_id === id);
+    if (!subject) return;
+    document.getElementById('esId').value = subject.subject_id;
+    document.getElementById('esName').value = subject.subject_name;
+    if (subject.is_core) document.getElementById('esCore').checked = true;
+    else document.getElementById('esElective').checked = true;
+    openModal('editSubjectModal');
+};
 
 // ─── Load all subjects ────────────────────────────────────────────────────────
 async function loadSubjects() {
@@ -44,7 +73,8 @@ async function loadSubjects() {
         if (error) throw error;
 
         allSubjects = data || [];
-        document.getElementById('subjectCount').textContent = allSubjects.length;
+        const countEl = document.getElementById('subjectCount');
+        if (countEl) countEl.textContent = allSubjects.length;
         renderSubjectList('');
     } catch (err) {
         console.error('Error in loadSubjects:', err);
@@ -53,6 +83,8 @@ async function loadSubjects() {
 
 function renderSubjectList(filter = '') {
     const container = document.getElementById('subjectsList');
+    if (!container) return;
+
     const filtered = filter
         ? allSubjects.filter(s => s.subject_name.toLowerCase().includes(filter))
         : allSubjects;
@@ -73,8 +105,8 @@ function renderSubjectList(filter = '') {
                 </div>
                 <div class="si-right">
                     <span class="si-badge ${s.is_core ? 'core' : ''}">${s.is_core ? 'Core' : 'Elective'}</span>
-                    <button class="si-action" onclick="event.stopPropagation(); openEditSubjectModal('${s.subject_id}')"><i class="fa-solid fa-pen"></i></button>
-                    <button class="si-action delete" onclick="event.stopPropagation(); confirmDeleteSubject('${s.subject_id}')"><i class="fa-solid fa-trash"></i></button>
+                    <button class="si-action" onclick="event.stopPropagation(); window.openEditSubjectModal('${s.subject_id}')"><i class="fa-solid fa-pen"></i></button>
+                    <button class="si-action delete" onclick="event.stopPropagation(); window.confirmDeleteSubject('${s.subject_id}')"><i class="fa-solid fa-trash"></i></button>
                 </div>
             </div>`;
     }).join('');
@@ -84,7 +116,9 @@ window.selectSubject = function (id) {
     const subject = allSubjects.find(s => s.subject_id === id);
     if (!subject) return;
     selectedSubject = subject;
-    renderSubjectList(document.getElementById('subjectSearch').value.trim().toLowerCase());
+    
+    const searchVal = document.getElementById('subjectSearch')?.value || '';
+    renderSubjectList(searchVal.trim().toLowerCase());
 
     if (currentTab === 'curriculum') loadCurriculum(subject);
     else loadAssignments(subject);
@@ -97,7 +131,7 @@ async function loadAssignments(subject) {
         const schoolId = user?.user_metadata?.school_id;
 
         const content = document.getElementById('cpContent');
-        content.innerHTML = `<div class="spinner-wrap"><div class="spinner"></div></div>`;
+        if (content) content.innerHTML = `<div class="spinner-wrap"><div class="spinner"></div></div>`;
 
         const { data: allocations, error } = await supabase
             .from('Subject_Allocations')
@@ -115,12 +149,15 @@ async function loadAssignments(subject) {
         renderAssignmentsTable(allocations || []);
     } catch (err) {
         console.error('Error loading assignments:', err);
-        document.getElementById('cpContent').innerHTML = `<div class="cp-error">Failed to load assignments.</div>`;
+        const content = document.getElementById('cpContent');
+        if (content) content.innerHTML = `<div class="cp-error">Failed to load assignments.</div>`;
     }
 }
 
 function renderAssignmentsTable(allocations) {
     const content = document.getElementById('cpContent');
+    if (!content) return;
+
     if (allocations.length === 0) {
         content.innerHTML = `<div class="cp-no-topics"><p>No assignments found.</p><button class="btn-primary" onclick="openAllocationModal()">Assign to Class</button></div>`;
         return;
@@ -160,12 +197,14 @@ function renderAssignmentsTable(allocations) {
         </div>`;
 }
 
-// ─── Allocation Logic (FIXED FOR STUDENT DASHBOARD) ──────────────────────────
+// ─── Allocation Logic ────────────────────────────────────────────────────────
 async function handleAllocationSubmit(e) {
     e.preventDefault();
     const btn = document.getElementById('saveAllocationBtn');
-    btn.disabled = true;
-    btn.textContent = 'Saving...';
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+    }
 
     try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -174,7 +213,6 @@ async function handleAllocationSubmit(e) {
         const subjectId = selectedSubject.subject_id;
         const teacherId = document.getElementById('allocationTeacher').value;
 
-        // 1. Update Class_Subjects (Student Roster)
         const { error: rosterError } = await supabase
             .from('Class_Subjects')
             .upsert({
@@ -185,7 +223,6 @@ async function handleAllocationSubmit(e) {
 
         if (rosterError) throw rosterError;
 
-        // 2. Create Teacher Allocation
         const { error: allocError } = await supabase
             .from('Subject_Allocations')
             .insert([{
@@ -206,36 +243,61 @@ async function handleAllocationSubmit(e) {
     } catch (err) {
         showToast(err.message, 'error');
     } finally {
-        btn.disabled = false;
-        btn.textContent = 'Save Assignment';
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Save Assignment';
+        }
+    }
+}
+
+// ─── Add Subject Logic ───────────────────────────────────────────────────────
+async function handleAddSubjectSubmit(e) {
+    e.preventDefault();
+    const btn = document.getElementById('addSubjectBtn');
+    const name = document.getElementById('asName').value.trim();
+    const isCore = document.getElementById('asCore').checked;
+
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        const schoolId = user.user_metadata.school_id;
+
+        const { error } = await supabase.from('Subjects').insert([{
+            subject_name: name,
+            is_core: isCore,
+            school_id: schoolId
+        }]);
+
+        if (error) throw error;
+
+        showToast('Subject added successfully', 'success');
+        closeModal('addSubjectModal');
+        loadSubjects();
+    } catch (err) {
+        showToast(err.message, 'error');
     }
 }
 
 window.removeAllocation = async function (allocationId) {
-    if (!confirm('Are you sure? Removing the last teacher removes the subject from the student dashboard.')) return;
+    if (!confirm('Are you sure?')) return;
 
     try {
         const { data: { user } } = await supabase.auth.getUser();
         const schoolId = user?.user_metadata?.school_id;
 
-        // Get details to check roster status later
         const { data: target } = await supabase
             .from('Subject_Allocations')
             .select('subject_id, class_id')
             .eq('allocation_id', allocationId)
             .single();
 
-        // Delete Teacher Allocation
         await supabase.from('Subject_Allocations').delete().eq('allocation_id', allocationId);
 
-        // Check if any teachers remain for this subject/class
         const { data: remaining } = await supabase
             .from('Subject_Allocations')
             .select('allocation_id')
             .eq('subject_id', target.subject_id)
             .eq('class_id', target.class_id);
 
-        // If none remain, remove from Student Roster
         if (!remaining || remaining.length === 0) {
             await supabase
                 .from('Class_Subjects')
@@ -278,21 +340,31 @@ async function populateAllocationDropdowns() {
     } catch (err) { console.error('Dropdown init failed:', err); }
 }
 
-function openModal(id) { document.getElementById(id).classList.add('active'); }
-function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+function openModal(id) { 
+    const modal = document.getElementById(id);
+    if (modal) modal.classList.add('active'); 
+}
+function closeModal(id) { 
+    const modal = document.getElementById(id);
+    if (modal) modal.classList.remove('active'); 
+}
 window.closeModal = closeModal;
+window.openModal = openModal;
+
 function setupModalListeners() {
     document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', (e) => { if (e.target === o) closeModal(o.id); }));
 }
+
 window.switchTab = function (tabName) {
     currentTab = tabName;
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
     if (selectedSubject) tabName === 'curriculum' ? loadCurriculum(selectedSubject) : loadAssignments(selectedSubject);
 };
 
-// Curriculum stubs (logic already present in original script)
 async function loadCurriculum(subject) {
-    document.getElementById('cpEmpty').style.display = 'none';
-    document.getElementById('cpDetail').style.display = 'flex';
+    const emptyEl = document.getElementById('cpEmpty');
+    const detailEl = document.getElementById('cpDetail');
+    if (emptyEl) emptyEl.style.display = 'none';
+    if (detailEl) detailEl.style.display = 'flex';
     document.getElementById('cpSubjectName').textContent = subject.subject_name;
 }

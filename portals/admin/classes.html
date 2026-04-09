@@ -3,15 +3,15 @@
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
-    <script type="module" src="../../core/authGuard.js"></script>
     <meta charset="UTF-8">
     
     <title>Classes Management - EduHubAdmin</title>
+    <script type="module" src="../../core/authGuard.js"></script>
     <link rel="stylesheet" href="./schoolAdminStyles/classes.css?v=1.1">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=1.1">
-    <script src="../../assets/js-shared/ui_feedback.js"></script>
-    <script type="module" src="./school_admin_sidebar.js" defer></script>
+    <script src="../../assets/js-shared/ui_feedback.js" defer></script>
+    
 </head>
 
 <body>
@@ -143,16 +143,18 @@
     <input type="hidden" id="editClassId">
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="../../assets/js-shared/sideBar.js"></script>
-
-    <script type="module" src="./classes_scripts/classes_excel_upload.js"></script>
+    <script type="module" src="/core/config.js"></script>
+    <script type="module" src="./school_admin_sidebar.js" defer></script>
+    
     <script type="module" src="./classes_scripts/classes.js"></script>
-    <script type="module" src="./classes_scripts/searchableDropdown.js"></script>
     <script type="module" src="./classes_scripts/render_classes.js"></script>
+    <script type="module" src="./classes_scripts/searchableDropdown.js"></script>
+    <script type="module" src="./classes_scripts/classes_excel_upload.js"></script>
     
     <!-- Global Details Modal -->
+    <script src="../../assets/js-shared/sideBar.js"></script>
     <script type="module" src="../../core/universalRouter.js"></script>
 </body>
 

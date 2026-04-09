@@ -1,32 +1,17 @@
 import { supabase } from '../../../core/config.js';
 
 /**
- * Helper: Smart Level Naming
- * Automatically translates "JSS1" to "Junior Secondary School 1"
- * optimized for Nigerian school naming conventions.
+ * Helper: Smart Level Naming (Kept original logic)
  */
 function getFullLevelName(className) {
     if (!className) return "General Category";
-
     const name = className.toUpperCase().trim();
-
-    if (name.startsWith('JSS')) {
-        return name.replace('JSS', 'Junior Secondary School ');
-    }
-    if (name.startsWith('SS')) {
-        return name.replace('SS', 'Senior Secondary School ');
-    }
-    if (name.startsWith('PRI')) {
-        return name.replace('PRI', 'Primary School ');
-    }
-    if (name.startsWith('NUR')) {
-        return name.replace('NUR', 'Nursery ');
-    }
-    if (name.startsWith('BASIC')) {
-        return name.replace('BASIC', 'Basic Education ');
-    }
-
-    return "Secondary School Level"; // Default fallback
+    if (name.startsWith('JSS')) return name.replace('JSS', 'Junior Secondary School ');
+    if (name.startsWith('SS')) return name.replace('SS', 'Senior Secondary School ');
+    if (name.startsWith('PRI')) return name.replace('PRI', 'Primary School ');
+    if (name.startsWith('NUR')) return name.replace('NUR', 'Nursery ');
+    if (name.startsWith('BASIC')) return name.replace('BASIC', 'Basic Education ');
+    return "Secondary School Level";
 }
 
 // --- State Management ---
@@ -37,8 +22,15 @@ const template = document.querySelector("[data-template]");
 const container = document.querySelector("[data-container]");
 const searchInput = document.querySelector(".search-input");
 
-// --- 1. Function to Render Cards ---
+/**
+ * SPEED FIX 1: DOM Fragment Rendering
+ * Instead of appending elements one by one, we build a fragment in memory
+ * and perform a single "DOM injection" to prevent layout thrashing.
+ */
 function renderClasses(dataToRender) {
+    if (!container || !template) return;
+
+    // Clear container once
     container.innerHTML = "";
 
     if (dataToRender.length === 0) {
@@ -46,120 +38,94 @@ function renderClasses(dataToRender) {
         return;
     }
 
+    const fragment = document.createDocumentFragment();
+
     dataToRender.forEach(elem => {
         const card = template.content.cloneNode(true).children[0];
 
+        // Optimized Selectors
         const classNameEl = card.querySelector("[data-class-name]");
         const classSectionEl = card.querySelector("[data-class-section]");
         const teacherNameEl = card.querySelector("[data-teacher-name]");
         const studentNoEl = card.querySelector("[data-student-no]");
-
-        // Target the subtitle <p> tag. If you add data-level to your HTML, use that selector.
         const levelNameEl = card.querySelector("[data-level]") || card.querySelector("p");
 
-        const teacherFirstName = elem.Teachers?.first_name || "Unassigned";
-        const teacherLastName = elem.Teachers?.last_name || "";
+        const teacherName = elem.Teachers 
+            ? `${elem.Teachers.first_name} ${elem.Teachers.last_name}` 
+            : "Unassigned";
 
-        // Set dynamic content
+        // Batch content updates
         classNameEl.textContent = elem.class_name;
         classSectionEl.textContent = elem.section ? ` - ${elem.section}` : "";
-
-        // Apply the Smart Parsing logic here
-        if (levelNameEl) {
-            levelNameEl.textContent = getFullLevelName(elem.class_name);
-        }
-
-        teacherNameEl.textContent = `${teacherFirstName} ${teacherLastName}`;
+        if (levelNameEl) levelNameEl.textContent = getFullLevelName(elem.class_name);
+        teacherNameEl.textContent = teacherName;
         studentNoEl.textContent = elem._studentCount ?? 0;
 
-        // --- Attach Actions ---
+        // Actions
         const editBtn = card.querySelector(".editBtn");
-        const viewBtn = card.querySelector(".viewBtn");
         const deleteBtn = card.querySelector(".deleteBtn");
+        const viewBtn = card.querySelector(".viewBtn");
 
         if (viewBtn) viewBtn.setAttribute('data-id', elem.class_id);
         if (editBtn) editBtn.onclick = () => window.openEditClassModal(elem.class_id);
 
         if (deleteBtn) {
             deleteBtn.onclick = () => handleDeleteClass(elem);
-            // Visual lock if students exist
             if ((elem._studentCount ?? 0) > 0) {
                 deleteBtn.classList.add('deleteBtn--locked');
                 deleteBtn.title = "Cannot delete class with active students";
             }
         }
 
-        container.append(card);
+        fragment.appendChild(card);
     });
+
+    // Single DOM update
+    container.appendChild(fragment);
 }
 
-// --- 2. Smart Delete Handler ---
-async function handleDeleteClass(elem) {
-    const studentCount = elem._studentCount ?? 0;
-
-    if (studentCount > 0) {
-        showToast(`Cannot delete "${elem.class_name}". It has ${studentCount} active students.`, "warning");
-        return;
+/**
+ * SPEED FIX 2: Event-Driven Initialization
+ * We wait for the 'auth-ready' event from authGuard.js instead of calling
+ * getUser() ourselves, preventing Auth Lock collisions.
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.currentUser) {
+        loadClasses(window.currentUser);
+    } else {
+        window.addEventListener('auth-ready', (e) => loadClasses(e.detail), { once: true });
     }
+});
 
-    const confirmed = await window.showConfirm(`Are you sure you want to delete "${elem.class_name}${elem.section ? ' - ' + elem.section : ''}"?`, "Delete Class");
-    if (!confirmed) return;
-
+async function loadClasses(user) {
     try {
-        const { error } = await supabase
-            .from("Classes")
-            .delete()
-            .eq("class_id", elem.class_id);
+        const schoolId = user?.user_metadata?.school_id;
+        if (!schoolId) return;
 
-        if (error) throw error;
-        await loadClasses(); // Refresh data
-
-    } catch (error) {
-        console.error("Delete error:", error);
-        showToast("Failed to delete class: " + error.message, "error");
-    }
-}
-
-// --- 3. Data Fetching ---
-async function loadClasses() {
-    try {
-        container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 20px;">Loading classes...</p>';
-
-        // Get school_id from the logged-in admin's JWT metadata
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError || !user?.user_metadata?.school_id) {
-            container.innerHTML = '<p style="color: red; text-align: center; padding: 20px;">Authentication error — could not determine your school.</p>';
-            console.error('Missing school_id in user metadata:', userError);
-            return;
-        }
-        const schoolId = user.user_metadata.school_id;
-
+        // SPEED FIX 3: Parallelized Burst Fetching
         const [classesResult, studentsResult] = await Promise.all([
             supabase.from("Classes")
                 .select("*, Teachers(first_name, last_name)")
-                .eq("school_id", schoolId),          // ← only this school's classes
+                .eq("school_id", schoolId)
+                .order('class_name', { ascending: true }),
             supabase.from("Students")
                 .select("class_id")
-                .eq("school_id", schoolId)            // ← only this school's students (for counts)
+                .eq("school_id", schoolId)
         ]);
 
         if (classesResult.error) throw classesResult.error;
-        if (studentsResult.error) throw studentsResult.error;
 
-        // Map students to classes for counts
-        const countMap = {};
-        (studentsResult.data || []).forEach(s => {
-            if (s.class_id != null) {
-                countMap[s.class_id] = (countMap[s.class_id] || 0) + 1;
-            }
-        });
+        // High-speed count mapping using a single loop
+        const countMap = (studentsResult.data || []).reduce((acc, s) => {
+            if (s.class_id) acc[s.class_id] = (acc[s.class_id] || 0) + 1;
+            return acc;
+        }, {});
 
-        const classes = (classesResult.data || []).map(cls => ({
+        window.allClassesData = (classesResult.data || []).map(cls => ({
             ...cls,
             _studentCount: countMap[cls.class_id] ?? 0
         }));
 
-        window.allClassesData = classes;
         renderClasses(window.allClassesData);
 
     } catch (error) {
@@ -168,17 +134,41 @@ async function loadClasses() {
     }
 }
 
-// --- 4. Search Implementation ---
+// SPEED FIX 4: Debounced Search
+// Prevents unnecessary re-renders while typing
+let searchTimeout;
 if (searchInput) {
     searchInput.addEventListener("input", (e) => {
-        const searchTerm = e.target.value.toLowerCase().trim();
-        const filtered = window.allClassesData.filter(item => {
-            const matchString = `${item.class_name} ${item.section}`.toLowerCase();
-            return matchString.includes(searchTerm);
-        });
-        renderClasses(filtered);
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            const filtered = window.allClassesData.filter(item => 
+                `${item.class_name} ${item.section}`.toLowerCase().includes(searchTerm)
+            );
+            renderClasses(filtered);
+        }, 100); 
     });
 }
 
-// Initialize
-loadClasses();
+// Delete Handler (Kept original logic with Optimistic UI hint)
+async function handleDeleteClass(elem) {
+    if ((elem._studentCount ?? 0) > 0) {
+        showToast(`Cannot delete "${elem.class_name}". It has active students.`, "warning");
+        return;
+    }
+
+    const confirmed = await window.showConfirm(`Delete "${elem.class_name}"?`, "Confirm");
+    if (!confirmed) return;
+
+    try {
+        const { error } = await supabase.from("Classes").delete().eq("class_id", elem.class_id);
+        if (error) throw error;
+        
+        // Optimistic UI: remove from local state immediately
+        window.allClassesData = window.allClassesData.filter(c => c.class_id !== elem.class_id);
+        renderClasses(window.allClassesData);
+        showToast("Class deleted", "success");
+    } catch (err) {
+        showToast("Delete failed", "error");
+    }
+}
