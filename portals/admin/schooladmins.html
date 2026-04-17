@@ -3,7 +3,7 @@
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
-    <!-- <script type="module" src="../../core/authGuard.js"></script> -->
+    <script type="module" src="../../core/authGuard.js"></script>
     <meta charset="UTF-8">
     
     <title>School Admin Management - EduHubAdmin</title>
@@ -280,6 +280,16 @@
         if (closePopupBtn && popup) {
             closePopupBtn.addEventListener('click', () => {
                 popup.style.display = 'none';
+            });
+        }
+
+        // Admin Details Popup Close Button
+        const adminDetailsPopup = document.getElementById('adminDetailsPopup');
+        const closeAdminDetailsBtn = document.getElementById('closeAdminDetailsPopup');
+
+        if (closeAdminDetailsBtn && adminDetailsPopup) {
+            closeAdminDetailsBtn.addEventListener('click', () => {
+                adminDetailsPopup.style.display = 'none';
             });
         }
 

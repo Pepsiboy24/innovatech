@@ -32,7 +32,7 @@ async function fetchTotalStudentsCount(classIds) {
             .from('Students')
             .select('*', { count: 'exact', head: true })
             .in('class_id', classIds)
-            .eq('enrollment_status', 'active'); // Only count active students
+            .eq('enrollment_status', 'active');
 
         if (error) {
             console.error('Error fetching total students count:', error);
@@ -52,7 +52,7 @@ async function fetchStudentsFromClass(classId, limit = 5) {
             .from('Students')
             .select('student_id, full_name, date_of_birth, class_id')
             .eq('class_id', classId)
-            .eq('enrollment_status', 'active')  // Only show active students in dashboard list
+            .eq('enrollment_status', 'active')
             .limit(limit);
 
         if (error) {
@@ -75,12 +75,11 @@ async function fetchAverageGrade(classIds) {
     try {
         if (classIds.length === 0) return null;
 
-        // Get all student_ids in the teacher's classes
         const { data: students, error: studentsError } = await supabase
             .from('Students')
             .select('student_id')
             .in('class_id', classIds)
-            .eq('enrollment_status', 'active'); // Only average grades of active students
+            .eq('enrollment_status', 'active');
 
         if (studentsError || !students || students.length === 0) return null;
 
@@ -127,10 +126,13 @@ function getInitials(fullName) {
 function showNoClassesState() {
     const tbody = document.querySelector('.students-table tbody, .tp-table tbody');
     if (tbody) {
+        // FIX 5: Use an inner div instead of display:flex on <td> to avoid broken table layout
         tbody.innerHTML = `
             <tr>
-                <td colspan="5" style="display: flex; justify-content: center; padding: 2rem; color: #6b7280;">
-                    No classes assigned yet. Contact Admin.
+                <td colspan="5">
+                    <div style="display: flex; justify-content: center; padding: 2rem; color: #6b7280;">
+                        No classes assigned yet. Contact Admin.
+                    </div>
                 </td>
             </tr>
         `;
@@ -157,10 +159,13 @@ function renderStudents(students, className, avgPerformance) {
     tbody.innerHTML = '';
 
     if (students.length === 0) {
+        // FIX 5: Use an inner div instead of display:flex on <td>
         tbody.innerHTML = `
             <tr>
-                <td colspan="5" style="display: flex; justify-content: center; padding: 2rem; color: #6b7280;">
-                    No students found in your class.
+                <td colspan="5">
+                    <div style="display: flex; justify-content: center; padding: 2rem; color: #6b7280;">
+                        No students found in your class.
+                    </div>
                 </td>
             </tr>
         `;
@@ -243,7 +248,7 @@ async function loadTeacherDashboard() {
     const totalStudentsEl = document.getElementById('total_students');
     if (totalStudentsEl) totalStudentsEl.textContent = totalStudentsCount;
 
-    // Update average performance display (if the element exists)
+    // Update average performance display
     const avgPerformanceEl = document.getElementById('avg_performance');
     if (avgPerformanceEl) avgPerformanceEl.textContent = avgGrade !== null ? `${avgGrade}%` : 'N/A';
 

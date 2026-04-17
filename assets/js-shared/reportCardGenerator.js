@@ -1,5 +1,6 @@
 import { supabase } from '../../core/config.js';
 import { ResultsEngine } from './resultsEngine.js';
+import { waitForUser } from '/core/perf.js';
 
 /**
  * Report Card Generator - Professional Academic Reports
@@ -18,7 +19,7 @@ class ReportCardGenerator {
     async initialize() {
         try {
             // Get school information for branding
-            const { data: { user } } = await supabase.auth.getUser();
+            const user = await waitForUser();
             if (!user?.user_metadata?.school_id) {
                 throw new Error('School ID not found in user metadata');
             }

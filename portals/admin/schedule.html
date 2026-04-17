@@ -151,6 +151,57 @@
             gap: 24px;
         }
 
+        .search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            color: var(--text-gray);
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .search-input {
+            padding: 8px 12px 8px 36px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            width: 200px;
+            background: var(--white);
+            color: var(--text-dark);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(98, 0, 234, 0.1);
+        }
+
+        .calendar-selector {
+            margin-right: 16px;
+        }
+
+        .calendar-dropdown {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--white);
+            color: var(--text-dark);
+            font-size: 14px;
+            min-width: 160px;
+            cursor: pointer;
+        }
+
+        .calendar-dropdown:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(98, 0, 234, 0.1);
+        }
+
         .profile {
             width: 40px;
             height: 40px;
@@ -308,6 +359,10 @@
                 </div>
             </div>
             <div class="header-right">
+                <div class="search-container">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Search sessions...">
+                </div>
                 <div class="profile"></div>
             </div>
         </div>
@@ -319,6 +374,15 @@
                     <div class="calendar-header">
                         <h2 class="calendar-h2">Academic Calendar</h2>
                         <div class="nav-buttons">
+                            <div class="calendar-selector">
+                                <select id="calendarSelector" class="calendar-dropdown">
+                                    <option value="">Select Calendar...</option>
+                                    <option value="academic">Academic Calendar</option>
+                                    <option value="events">Events Calendar</option>
+                                    <option value="holidays">Holidays Calendar</option>
+                                    <option value="exams">Exams Calendar</option>
+                                </select>
+                            </div>
                             <button class="nav-btn" id="prevButton">
                                 <svg class="nav-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

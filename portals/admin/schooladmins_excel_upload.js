@@ -10,6 +10,7 @@
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { supabase } from '../../core/config.js';
+import { lazyScript } from '/core/perf.js';
 
 const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6b3R3b3poY3h6a3h0dW5tcXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwODk5NzAsImV4cCI6MjA3MDY2NTk3MH0.KJfkrRq46c_Fo7ujkmvcue4jQAzIaSDfO3bU7YqMZdE";
@@ -136,7 +137,8 @@ function buildModalHTML() {
 }
 
 // ── Template download ────────────────────────────────────────────────────────
-function downloadTemplate() {
+async function downloadTemplate() {
+    await lazyScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'XLSX');
     const ws = XLSX.utils.aoa_to_sheet([
         ['full_name', 'email', 'phone_number', 'role'],
         ['Jane Doe', 'jane@school.edu', '+2348012345678', 'School Admin'],

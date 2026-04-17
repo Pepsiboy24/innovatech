@@ -2,6 +2,7 @@
 // Result upload logic for teachers portal with upsert functionality and Excel import
 
 import { supabase } from '../../core/config.js';
+import { waitForUser, lazyScript } from '/core/perf.js';
 
 // Global variables
 let currentClassStudents = [];
@@ -17,7 +18,7 @@ async function initializeUploadResults() {
         currentTeacherId = await checkTeacherLogin();
         if (!currentTeacherId) return;
 
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await waitForUser();
         if (!user?.user_metadata?.school_id) {
             console.warn('Strict Guard: No school_id found. Execution blocked.');
             return;
@@ -39,7 +40,7 @@ async function initializeUploadResults() {
 
 async function checkTeacherLogin() {
     try {
-        const { data: { user }, error } = await supabase.auth.getUser();
+        const user = await waitForUser();
 
         if (error || !user) {
             console.error('No user logged in:', error);
@@ -258,6 +259,8 @@ function updateStudentTable(students) {
 // --- Excel Import Logic ---
 
 async function handleExcelUpload(event) {
+    // Lazy-load XLSX only when needed (saves ~1MB on initial page load)
+    await lazyScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'XLSX');
     const file = event.target.files[0];
     if (!file) return;
 

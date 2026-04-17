@@ -51,25 +51,19 @@ export function showSkeleton(containerId, count, templateType = 'card') {
  */
 export function hideSkeleton(containerId) {
     const container = document.getElementById(containerId);
-    if (!container) {
-        console.warn(`[UI Engine] Container #${containerId} not found`);
-        return;
-    }
+    if (!container) return;
 
-    console.log(`[UI Engine] Hiding skeleton in #${containerId}`);
-
-    // Remove loading state
     container.classList.remove('skeleton-loading');
-    
-    // Clear skeleton content
+
+    // ✅ FIX: Make container visible (it may have been hidden with display:none)
+    container.style.display = '';
+
     const skeletons = container.querySelectorAll('.skeleton-card, .skeleton-list, .skeleton-table');
     skeletons.forEach(skeleton => {
         skeleton.style.opacity = '0';
         setTimeout(() => {
-            if (skeleton.parentNode) {
-                skeleton.remove();
-            }
-        }, 300); // Fade out animation
+            if (skeleton.parentNode) skeleton.remove();
+        }, 300);
     });
 }
 

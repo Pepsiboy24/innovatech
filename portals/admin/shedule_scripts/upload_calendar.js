@@ -1,5 +1,6 @@
 // Supabase setup
-import { supabase } from "../../core/config.js";
+import { supabase } from "../../../core/config.js";
+import { lazyScript } from '/core/perf.js';
 
 document.addEventListener('DOMContentLoaded', function () {
     const fileInput = document.getElementById('fileInput');
@@ -153,6 +154,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     async function parseXLSX(file) {
+    // Lazy-load XLSX only when needed (saves ~1MB on initial page load)
+    await lazyScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'XLSX');
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = (e) => {

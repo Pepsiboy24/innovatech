@@ -1,5 +1,6 @@
 import { supabase } from './config.js';
 import { hasFeatureAccess, getCurrentUserTier, TIERS } from './tierAccess.js';
+import { waitForUser } from '/core/perf.js';
 
 // UI Element hiding based on tier
 class UITierGating {
@@ -41,7 +42,7 @@ class UITierGating {
     async checkSetupStatus() {
         try {
             // Get current user's school data
-            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            const user = await waitForUser();
             
             if (userError || !user) {
                 console.error('User not authenticated');

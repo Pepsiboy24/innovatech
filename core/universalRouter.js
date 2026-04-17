@@ -72,14 +72,23 @@ class UniversalRouter {
         if (closeBtn) closeBtn.addEventListener('click', () => this.closeModal());
         if (overlay) overlay.addEventListener('click', (e) => { if (e.target === overlay) this.closeModal(); });
 
-        document.querySelectorAll('.universal-modal-tab').forEach(tab => {
-            tab.addEventListener('click', (e) => {
+        // Tab switching with event delegation for dynamically loaded content
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('universal-modal-tab')) {
+                // Remove active class from all tabs and content areas
                 document.querySelectorAll('.universal-modal-tab').forEach(t => t.classList.remove('active'));
                 document.querySelectorAll('.universal-modal-content-area').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab
                 e.target.classList.add('active');
-                const target = document.getElementById(e.target.getAttribute('data-target'));
-                if (target) target.classList.add('active');
-            });
+                
+                // Show corresponding content area
+                const targetId = e.target.getAttribute('data-target');
+                const targetContent = document.getElementById(targetId);
+                if (targetContent) {
+                    targetContent.classList.add('active');
+                }
+            }
         });
     }
 
@@ -140,7 +149,7 @@ class UniversalRouter {
 
     async fetchStudentData(id, school_id) {
         let query = supabase
-            .from('student_profiles') // <--- CHANGE THIS from 'Students'
+            .from('Students')
             .select(`
             *,
             Classes (class_name),
@@ -167,6 +176,9 @@ class UniversalRouter {
         const nameEl = document.getElementById('umName');
         const roleEl = document.getElementById('umRole');
         const overviewEl = document.getElementById('um-overview');
+        const academicEl = document.getElementById('um-academic');
+        const contactsEl = document.getElementById('um-contacts');
+        const administrativeEl = document.getElementById('um-administrative');
 
         // Capture email from the fetched record
         const studentEmail = data.email || 'No student email found';
@@ -180,6 +192,7 @@ class UniversalRouter {
 
         const guardian = (data.Parents && data.Parents.length > 0) ? data.Parents[0] : null;
 
+        // Overview Tab
         if (overviewEl) {
             overviewEl.innerHTML = `
                 <div class="um-grid">
@@ -210,6 +223,94 @@ class UniversalRouter {
                 </div>
             `;
         }
+
+        // Academic/Records Tab
+        if (academicEl) {
+            academicEl.innerHTML = `
+                <div class="um-grid">
+                    <div class="um-data-card">
+                        <div class="um-label">Current Class</div>
+                        <div class="um-value">${data.Classes?.class_name || 'N/A'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Date of Birth</div>
+                        <div class="um-value">${data.date_of_birth ? new Date(data.date_of_birth).toLocaleDateString() : 'N/A'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Admission Date</div>
+                        <div class="um-value">${data.admission_date ? new Date(data.admission_date).toLocaleDateString() : 'N/A'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Enrollment Status</div>
+                        <div class="um-value">${data.enrollment_status || 'Active'}</div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <h3 style="margin-bottom: 15px; color: #1e293b;">Academic Performance</h3>
+                    <p style="color: #64748b;">Academic records and performance metrics will be displayed here.</p>
+                </div>
+            `;
+        }
+
+        // Contacts Tab
+        if (contactsEl) {
+            contactsEl.innerHTML = `
+                <div class="um-grid">
+                    <div class="um-data-card">
+                        <div class="um-label">Student Email</div>
+                        <div class="um-value" style="word-break:break-all">${studentEmail}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Phone Number</div>
+                        <div class="um-value">${data.phone_number || 'N/A'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Home Address</div>
+                        <div class="um-value">${data.address || 'N/A'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Guardian Email</div>
+                        <div class="um-value" style="word-break:break-all">${guardian?.email || 'N/A'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Guardian Phone</div>
+                        <div class="um-value">${guardian ? guardian.phone_number : 'N/A'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Guardian Address</div>
+                        <div class="um-value">${guardian?.address || 'N/A'}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Administrative Tab
+        if (administrativeEl) {
+            administrativeEl.innerHTML = `
+                <div class="um-grid">
+                    <div class="um-data-card">
+                        <div class="um-label">Student ID</div>
+                        <div class="um-value" style="font-size:12px; font-family:monospace">${data.student_id}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">School ID</div>
+                        <div class="um-value" style="font-size:12px; font-family:monospace">${data.school_id || 'N/A'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Enrollment Status</div>
+                        <div class="um-value">${data.enrollment_status || 'Active'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Created Date</div>
+                        <div class="um-value">${data.created_at ? new Date(data.created_at).toLocaleDateString() : 'N/A'}</div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <h3 style="margin-bottom: 15px; color: #1e293b;">Administrative Actions</h3>
+                    <p style="color: #64748b;">Administrative actions and history will be displayed here.</p>
+                </div>
+            `;
+        }
     }
 
     async fetchTeacherData(id, sid) {
@@ -219,7 +320,158 @@ class UniversalRouter {
 
     renderTeacher(data) {
         const nameEl = document.getElementById('umName');
-        if (nameEl) nameEl.textContent = data.full_name;
+        const roleEl = document.getElementById('umRole');
+        const overviewEl = document.getElementById('um-overview');
+        const academicEl = document.getElementById('um-academic');
+        const contactsEl = document.getElementById('um-contacts');
+        const administrativeEl = document.getElementById('um-administrative');
+
+        // Capture email from the fetched record
+        const teacherEmail = data.email || 'No teacher email found';
+        const fullName = `${data.first_name || ''} ${data.last_name || ''}`.trim() || data.full_name || 'Teacher';
+
+        if (nameEl) nameEl.textContent = fullName;
+
+        // Update Header
+        if (roleEl) {
+            roleEl.innerHTML = `Teacher <span style="margin-left: 10px; opacity: 0.85; font-size: 0.85em;"><i class="fa fa-envelope"></i> ${teacherEmail}</span>`;
+        }
+
+        // Overview Tab
+        if (overviewEl) {
+            overviewEl.innerHTML = `
+                <div class="um-grid">
+                    <div class="um-data-card">
+                        <div class="um-label">Full Name</div>
+                        <div class="um-value">${fullName}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Teacher Email</div>
+                        <div class="um-value" style="word-break:break-all">${teacherEmail}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Phone Number</div>
+                        <div class="um-value">${data.phone_number || 'N/A'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Job Title</div>
+                        <div class="um-value">${data.job_title || 'Teacher'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Teacher ID</div>
+                        <div class="um-value" style="font-size:10px; font-family:monospace">${data.teacher_id}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Employment Status</div>
+                        <div class="um-value">${data.employment_status || 'Active'}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Academic/Records Tab
+        if (academicEl) {
+            academicEl.innerHTML = `
+                <div class="um-grid">
+                    <div class="um-data-card">
+                        <div class="um-label">Highest Degree</div>
+                        <div class="um-value">${data.highest_degree || 'N/A'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Field of Study</div>
+                        <div class="um-value">${data.degree_major || 'N/A'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Institution</div>
+                        <div class="um-value">${data.institution || 'N/A'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Graduation Year</div>
+                        <div class="um-value">${data.graduation_year || 'N/A'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Teaching License</div>
+                        <div class="um-value">${data.teaching_license || 'N/A'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Total Experience</div>
+                        <div class="um-value">${data.total_experience || 'New Teacher'}</div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <h3 style="margin-bottom: 15px; color: #1e293b;">Teaching Assignments</h3>
+                    <p style="color: #64748b;">Current teaching assignments and class responsibilities will be displayed here.</p>
+                </div>
+            `;
+        }
+
+        // Contacts Tab
+        if (contactsEl) {
+            contactsEl.innerHTML = `
+                <div class="um-grid">
+                    <div class="um-data-card">
+                        <div class="um-label">Work Email</div>
+                        <div class="um-value" style="word-break:break-all">${teacherEmail}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Phone Number</div>
+                        <div class="um-value">${data.phone_number || 'N/A'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Home Phone</div>
+                        <div class="um-value">${data.home_phone || 'N/A'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Address</div>
+                        <div class="um-value">${data.address || 'N/A'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Emergency Contact</div>
+                        <div class="um-value">${data.emergency_contact_name || 'N/A'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Emergency Phone</div>
+                        <div class="um-value">${data.emergency_contact_phone || 'N/A'}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Administrative Tab
+        if (administrativeEl) {
+            administrativeEl.innerHTML = `
+                <div class="um-grid">
+                    <div class="um-data-card">
+                        <div class="um-label">Teacher ID</div>
+                        <div class="um-value" style="font-size:12px; font-family:monospace">${data.teacher_id}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">School ID</div>
+                        <div class="um-value" style="font-size:12px; font-family:monospace">${data.school_id || 'N/A'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Employment Status</div>
+                        <div class="um-value">${data.employment_status || 'Active'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Contract Type</div>
+                        <div class="um-value">${data.contract_type || 'N/A'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Start Date</div>
+                        <div class="um-value">${data.start_date ? new Date(data.start_date).toLocaleDateString() : 'N/A'}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Created Date</div>
+                        <div class="um-value">${data.created_at ? new Date(data.created_at).toLocaleDateString() : 'N/A'}</div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <h3 style="margin-bottom: 15px; color: #1e293b;">Administrative Actions</h3>
+                    <p style="color: #64748b;">Administrative actions and employment history will be displayed here.</p>
+                </div>
+            `;
+        }
     }
 
     async fetchParentData(id, school_id) {

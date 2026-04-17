@@ -1,4 +1,5 @@
 import { supabase } from '../../core/config.js';
+import { waitForUser } from '/core/perf.js';
 
 // DOM Elements
 const sessionSelect = document.getElementById('academicSession');
@@ -26,7 +27,7 @@ const DEFAULT_STRUCTURE = [
 async function getCurrentSchoolId() {
     if (currentSchoolId) return currentSchoolId; // cached
 
-    const { data: { user }, error } = await supabase.auth.getUser();
+    const user = await waitForUser();
     if (error || !user?.user_metadata?.school_id) {
         console.error('grading_settings: cannot determine school_id', error);
         return null;
@@ -233,7 +234,7 @@ async function saveConfiguration() {
     saveConfigBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Saving...';
 
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await waitForUser();
         if (!user) {
             showToast("You must be logged in to save configuration.", "error");
             throw new Error("Unauthorized");

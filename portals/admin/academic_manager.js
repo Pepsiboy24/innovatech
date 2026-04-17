@@ -1,6 +1,7 @@
 // academic_manager.js
 // Unified Academic Manager for School Admin Portal
 import { supabase } from '../../core/config.js';
+import { waitForUser } from '/core/perf.js';
 
 // ─── State ────────────────────────────────────────────────────────────────────
 let allSubjects = [];
@@ -60,10 +61,13 @@ window.openEditSubjectModal = function(id) {
 // ─── Load all subjects ────────────────────────────────────────────────────────
 async function loadSubjects() {
     try {
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError || !user) return;
+        const user = await waitForUser();
+        if (!user?.user_metadata?.school_id) {
+            console.error('Cannot determine school_id from user metadata');
+            return;
+        }
 
-        const schoolId = user?.user_metadata?.school_id;
+        const schoolId = user.user_metadata.school_id;
         const { data, error } = await supabase
             .from('Subjects')
             .select('subject_id, subject_name, is_core')
@@ -127,7 +131,7 @@ window.selectSubject = function (id) {
 // ─── Assignments Functions ───────────────────────────────────────────────────
 async function loadAssignments(subject) {
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await waitForUser();
         const schoolId = user?.user_metadata?.school_id;
 
         const content = document.getElementById('cpContent');
@@ -207,7 +211,7 @@ async function handleAllocationSubmit(e) {
     }
 
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await waitForUser();
         const schoolId = user.user_metadata.school_id;
         const classId = parseInt(document.getElementById('allocationClass').value);
         const subjectId = selectedSubject.subject_id;
@@ -258,7 +262,7 @@ async function handleAddSubjectSubmit(e) {
     const isCore = document.getElementById('asCore').checked;
 
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await waitForUser();
         const schoolId = user.user_metadata.school_id;
 
         const { error } = await supabase.from('Subjects').insert([{
@@ -281,7 +285,7 @@ window.removeAllocation = async function (allocationId) {
     if (!confirm('Are you sure?')) return;
 
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await waitForUser();
         const schoolId = user?.user_metadata?.school_id;
 
         const { data: target } = await supabase
@@ -324,7 +328,7 @@ window.openAllocationModal = function () {
 
 async function populateAllocationDropdowns() {
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await waitForUser();
         const schoolId = user?.user_metadata?.school_id;
 
         const [classesRes, teachersRes] = await Promise.all([

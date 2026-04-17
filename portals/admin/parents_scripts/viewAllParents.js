@@ -1,11 +1,12 @@
 import { supabase } from '../../../core/config.js';
+import { waitForUser, renderToFragment, debounce } from '/core/perf.js';
 
 let allParents = [];
 let currentSearchTerm = '';
 
 async function fetchParents() {
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await waitForUser();
         const userSchoolId = user?.user_metadata?.school_id;
 
         if (!userSchoolId) {
@@ -56,6 +57,7 @@ function renderParents(parents) {
         return;
     }
 
+    const _rows = [];
     parents.forEach(parent => {
         const initials = getInitials(parent.full_name);
         const address = parent.address || 'N/A';
@@ -81,8 +83,9 @@ function renderParents(parents) {
                 </td>
             </tr>
         `;
-        tbody.insertAdjacentHTML('beforeend', row);
+                _rows.push(row);
     });
+    renderToFragment(tbody, _rows);
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -98,10 +101,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const searchInput = document.querySelector('.search-input');
     if (searchInput) {
-        searchInput.addEventListener('input', function() {
+        searchInput.addEventListener('input', debounce(function() {
             currentSearchTerm = this.value.trim();
             applyFilters();
-        });
+        }, 300));
     }
 
     // Modal Logistics

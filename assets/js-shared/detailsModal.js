@@ -1,4 +1,5 @@
 import { supabase } from '../../core/config.js';
+import { waitForUser } from '/core/perf.js';
 
 /**
  * Global Details Modal System
@@ -141,7 +142,7 @@ class DetailsModal {
         this.modal.style.display = 'flex';
 
         try {
-            const { data: { user } } = await supabase.auth.getUser();
+            const user = await waitForUser();
             const schoolId = user.user_metadata.school_id;
 
             let data;

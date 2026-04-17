@@ -3,6 +3,7 @@
 
 import { supabase } from '../../core/config.js';
 import { checkTeacherLogin } from '../../portals/teacher/teacherUtils.js';
+import { waitForUser, debounce } from '/core/perf.js';
 
 // Fetch both form classes and subject classes for the teacher
 async function fetchTeacherClasses(teacherId) {
@@ -102,7 +103,7 @@ async function fetchAllStudentsFromTeacherClasses(classes) {
         }
 
         // Get current user's school_id from metadata
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await waitForUser();
         const userSchoolId = user?.user_metadata?.school_id;
         
         if (!userSchoolId) {
@@ -412,7 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event Listeners with debounce for text input
-    if (searchInput) searchInput.addEventListener('input', debounce(applyFilters, 300));
+    if (searchInput) searchInput.addEventListener('input', debounce( debounce(applyFilters, 300), 300));
     
     if (classFilter) {
         classFilter.addEventListener('change', async (e) => {

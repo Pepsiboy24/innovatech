@@ -1,4 +1,5 @@
 import { supabase } from '../../core/config.js';
+import { waitForUser } from '/core/perf.js';
 
 /**
  * Attendance Manager - Automated Attendance Tracking
@@ -17,7 +18,7 @@ class AttendanceManager {
     async initialize() {
         try {
             // Get school information
-            const { data: { user } } = await supabase.auth.getUser();
+            const user = await waitForUser();
             if (!user?.user_metadata?.school_id) {
                 throw new Error('School ID not found in user metadata');
             }

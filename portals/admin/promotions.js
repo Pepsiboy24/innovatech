@@ -1,4 +1,5 @@
 import { supabase } from '../../core/config.js';
+import { debounce } from '/core/perf.js';
 
 // --- State ---
 let allClasses = [];
@@ -47,7 +48,7 @@ async function loadData() {
 }
 
 // --- Source Select Change ---
-sourceSelect.addEventListener('change', () => {
+sourceSelect.addEventListener('change', debounce( () => {
     const sourceId = parseInt(sourceSelect.value);
     const count = sourceId ? (studentCountMap[sourceId] ?? 0) : 0;
 
@@ -72,10 +73,10 @@ sourceSelect.addEventListener('change', () => {
 
     capacityWarning.style.display = 'none';
     updateSummary();
-});
+}, 300));
 
 // --- Target Select Change ---
-targetSelect.addEventListener('change', () => {
+targetSelect.addEventListener('change', debounce( () => {
     const targetId = targetSelect.value;
     capacityWarning.style.display = 'none';
 
@@ -87,7 +88,7 @@ targetSelect.addEventListener('change', () => {
         }
     }
     updateSummary();
-});
+}, 300));
 
 // --- Update Summary & Button ---
 function updateSummary() {

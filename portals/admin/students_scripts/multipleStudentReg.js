@@ -1,5 +1,6 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import { supabase } from '../../../core/config.js'; // Your main Admin client
+import { waitForUser, lazyScript } from '/core/perf.js';
 
 /**
  * 1. ISOLATED AUTH CLIENT
@@ -25,9 +26,11 @@ const delay = (ms) => new Promise(res => setTimeout(res, ms));
  * 2. MAIN PROCESSING FUNCTION
  */
 export async function uploadAndProcessExcel(file) {
+    // Lazy-load XLSX only when needed (saves ~1MB on initial page load)
+    await lazyScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'XLSX');
   try {
     // Get Admin school_id from the MAIN client (Your persistent login)
-    const { data: { user: adminUser }, error: adminError } = await supabase.auth.getUser();
+    const adminUser = await waitForUser();
 
     if (adminError || !adminUser) {
       return [{ success: false, error: "Admin session expired. Please log in again." }];

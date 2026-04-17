@@ -3,6 +3,7 @@
 // Fetches only classes/subjects assigned to the currently logged-in teacher.
 
 import { supabase } from '../../core/config.js';
+import { waitForUser, debounce } from '/core/perf.js';
 
 // Global variables
 let currentClassStudents = [];
@@ -18,7 +19,7 @@ async function initializeUploadResults() {
         currentTeacherId = await checkTeacherLogin();
         if (!currentTeacherId) return;
 
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await waitForUser();
         if (!user?.user_metadata?.school_id) {
             console.warn('Strict Guard: No school_id found. Execution blocked.');
             return;
@@ -40,7 +41,7 @@ async function initializeUploadResults() {
 
 async function checkTeacherLogin() {
     try {
-        const { data: { user }, error } = await supabase.auth.getUser();
+        const user = await waitForUser();
 
         if (error || !user) {
             console.error('No user logged in:', error);
@@ -224,7 +225,7 @@ function setupEventListeners() {
 
     // Class Change -> Fetch Subjects & Clear Table
     if (classSelect) {
-        classSelect.addEventListener('change', async (e) => {
+        classSelect.addEventListener('change', debounce(async (e) => {
             const classId = e.target.value;
             updateStudentTable([]);
 
@@ -239,7 +240,7 @@ function setupEventListeners() {
 
     // Subject Change -> Fetch Students
     if (subjectSelect) {
-        subjectSelect.addEventListener('change', async (e) => {
+        subjectSelect.addEventListener('change', debounce(async (e) => {
             const classId = classSelect ? classSelect.value : '';
             if (classId && e.target.value) {
                 await fetchStudentsInClass(classId);

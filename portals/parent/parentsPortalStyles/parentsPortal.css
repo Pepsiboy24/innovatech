@@ -193,6 +193,45 @@ body {
     border-radius: 8px;
     padding: 1rem;
 }
+/* --- BUTTON STYLING --- */
+.btn-primary, .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    width: auto; /* Overrides the 'full-width' behavior of block buttons */
+}
+
+.btn-primary {
+    background-color: #7cfc00; /* Your Lawn Green */
+    color: #0f172a; /* Dark text for contrast */
+}
+
+.btn-primary:hover {
+    background-color: #66cc00;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(124, 252, 0, 0.2);
+}
+
+.btn-secondary {
+    background-color: #f1f5f9;
+    color: #475569;
+}
+
+.btn-secondary:hover {
+    background-color: #e2e8f0;
+}
+
+/* Ensure icons inside buttons are sized correctly */
+.btn-primary i, .btn-secondary i {
+    font-size: 14px;
+}
 
 /* --- 5. MOBILE RESPONSIVENESS (THE LOCKDOWN) --- */
 @media (max-width: 768px) {
@@ -240,6 +279,16 @@ body {
 
     .mobile-menu-btn {
         display: flex !important;
+    }
+    .modal-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .btn-primary, .btn-secondary {
+        width: 100% !important;
+        padding: 14px; /* Larger hit area for thumbs */
     }
 }
 

@@ -5,6 +5,7 @@
 
 import { supabase } from '../../core/config.js';
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+import { waitForUser } from '/core/perf.js';
 
 // Dedicated auth client for background signups — keeps teacher session alive.
 const authClient = createClient(
@@ -18,7 +19,7 @@ const authClient = createClient(
 async function registerNewStudent(fullName, email, password, dateOfBirth, admissionDate, profilePicUrl, classId, gender, parentInfo = null) {
     try {
         // 1. IDENTITY GUARD: Fetch Teacher's metadata
-        const { data: { user: teacherUser }, error: authUserErr } = await supabase.auth.getUser();
+        const teacherUser = await waitForUser();
         if (authUserErr || !teacherUser) return { success: false, error: 'Teacher authentication required' };
 
         const schoolId = teacherUser.user_metadata?.school_id;
@@ -170,7 +171,7 @@ async function loadTeacherClasses() {
     const classSelect = document.getElementById('class');
     if (!classSelect) return;
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await waitForUser();
         if (!user) return;
 
         const [formRes, subjectRes] = await Promise.all([

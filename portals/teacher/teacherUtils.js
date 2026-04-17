@@ -2,6 +2,7 @@
 // Import this wherever teacher auth or formatting helpers are needed.
 
 import { supabase } from '../../core/config.js';
+import { waitForUser } from '/core/perf.js';
 
 /**
  * Verify that the currently logged-in user is a teacher.
@@ -10,10 +11,10 @@ import { supabase } from '../../core/config.js';
  */
 export async function checkTeacherLogin() {
     try {
-        const { data: { user }, error } = await supabase.auth.getUser();
+        const user = await waitForUser();
 
-        if (error || !user) {
-            console.error('No user logged in:', error);
+        if (!user) {
+            console.error('No user logged in');
             alert('Please log in as a teacher to view this page.');
             window.location.href = '../../public/login.html';
             return null;

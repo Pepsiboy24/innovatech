@@ -9,6 +9,7 @@
  * CSV/XLSX columns: Title, Start Date, End Date, Description (optional)
  */
 import { openUploadModal } from '../../assets/js-shared/upload_modal_ui.js';
+import { waitForUser, lazyScript } from '/core/perf.js';
 
 const HINT_HTML = `
 <strong style="color:#93c5fd;">ICS file:</strong> Standard calendar file exported from Google Calendar, Outlook, etc.
@@ -31,7 +32,8 @@ const COLUMNS = [
     { key: 'Description', label: 'Description' },
 ];
 
-function downloadTemplate() {
+async function downloadTemplate() {
+    await lazyScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'XLSX');
     if (typeof XLSX !== 'undefined') {
         const ws = XLSX.utils.aoa_to_sheet([
             ['Title', 'Start Date', 'End Date', 'Term Period', 'Description'],
@@ -171,7 +173,7 @@ async function doUpload(file, helpers) {
 
     let schoolId;
     try {
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        const user = await waitForUser();
         if (authError || !user) throw new Error("Auth failed. Please log in.");
         schoolId = user.user_metadata.school_id;
         if (!schoolId) throw new Error("No school ID linked to account.");

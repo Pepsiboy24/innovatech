@@ -1,4 +1,5 @@
 // Payment Configuration JavaScript
+import { waitForUser, debounce } from '/core/perf.js';
 // Handles CRUD operations for Payment_Items table
 
 let currentSchoolId = null;
@@ -35,7 +36,7 @@ async function initializePaymentConfig() {
 
 async function getCurrentAdminId() {
     try {
-        const { data: { user } } = await window.supabase.auth.getUser();
+        const user = await waitForUser();
         return user?.id;
     } catch (error) {
         console.error('Error getting admin ID:', error);
@@ -45,7 +46,7 @@ async function getCurrentAdminId() {
 
 async function getSchoolId() {
     try {
-        const { data: { user } } = await window.supabase.auth.getUser();
+        const user = await waitForUser();
         currentSchoolId = user?.user_metadata?.school_id;
 
         if (!currentSchoolId) {
@@ -67,7 +68,7 @@ function setupEventListeners() {
     if (form) form.addEventListener('submit', handleFormSubmit);
 
     const searchInput = document.getElementById('searchInput');
-    if (searchInput) searchInput.addEventListener('input', handleSearch);
+    if (searchInput) searchInput.addEventListener('input', debounce( handleSearch, 300));
 
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', handleFilter);

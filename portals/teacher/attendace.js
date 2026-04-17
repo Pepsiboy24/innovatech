@@ -1,4 +1,5 @@
 import { supabase } from '../../core/config.js';
+import { waitForUser, debounce } from '../../core/perf.js';
 
 let currentTeacherId = null;
 let currentSchoolId = null;
@@ -6,8 +7,8 @@ let currentSchoolId = null;
 // 1. AUTH GUARD
 async function checkTeacherLogin() {
     try {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        if (error || !user) {
+        const user = await waitForUser();
+        if (!user) {
             window.location.href = '../../index.html';
             return null;
         }
@@ -46,7 +47,17 @@ async function fetchTeacherClasses(teacherId) {
     }
 }
 
-// 3. FETCH STUDENTS
+// 3. FETCH SUBJECTS FOR CLASS
+async function fetchSubjectsForClass(classId) {
+    const { data, error } = await supabase
+        .from('Subjects')
+        .select('subject_id, subject_name')
+        .eq('class_id', classId);
+    
+    return error ? [] : data;
+}
+
+// 4. FETCH STUDENTS
 async function fetchStudentsFromClass(classId) {
     const { data, error } = await supabase
         .from('Students')
@@ -145,21 +156,59 @@ async function handleSaveAttendance() {
 async function initializeAttendanceModule() {
     if (!await checkTeacherLogin()) return;
 
+    // Initialize date input with today's date
+    const dateInput = document.querySelector('.date-input');
+    if (dateInput) {
+        dateInput.value = new Date().toISOString().split('T')[0];
+    }
+
     const classes = await fetchTeacherClasses(currentTeacherId);
     const classSelect = document.querySelector('.class-select');
+    const subjectSelect = document.querySelector('.subject-select');
 
-    if (classSelect) {
+    if (classSelect && subjectSelect) {
         classSelect.innerHTML = classes.map(c => `<option value="${c.class_id}">${c.class_name} ${c.section}</option>`).join('');
-        classSelect.addEventListener('change', async () => {
-            const students = await fetchStudentsFromClass(classSelect.value);
-            renderStudents(students);
-        });
+        
+        classSelect.addEventListener('change', debounce(async () => {
+            const classId = classSelect.value;
+            
+            // Reset and populate subjects
+            subjectSelect.innerHTML = '<option value="">Select a subject</option>';
+            subjectSelect.disabled = !classId;
+            
+            if (classId) {
+                const subjects = await fetchSubjectsForClass(classId);
+                subjects.forEach(subject => {
+                    const option = document.createElement('option');
+                    option.value = subject.subject_id;
+                    option.textContent = subject.subject_name;
+                    subjectSelect.appendChild(option);
+                });
+                
+                // Load students for first subject by default
+                if (subjects.length > 0) {
+                    const students = await fetchStudentsFromClass(classId);
+                    renderStudents(students);
+                }
+            }
+        }));
 
         // Load first class by default
         if (classes.length > 0) {
             const students = await fetchStudentsFromClass(classes[0].class_id);
             renderStudents(students);
         }
+    }
+
+    // Add subject change listener
+    if (subjectSelect) {
+        subjectSelect.addEventListener('change', debounce(async () => {
+            const classId = classSelect.value;
+            if (classId) {
+                const students = await fetchStudentsFromClass(classId);
+                renderStudents(students);
+            }
+        }));
     }
 
     document.querySelector('.save-btn')?.addEventListener('click', handleSaveAttendance);
@@ -173,6 +222,16 @@ function updateSummary() {
 
 window.markAllPresent = () => {
     document.querySelectorAll('input[value="present"]').forEach(i => i.checked = true);
+    updateSummary();
+};
+
+window.markAllAbsent = () => {
+    document.querySelectorAll('input[value="absent"]').forEach(i => i.checked = true);
+    updateSummary();
+};
+
+window.clearAll = () => {
+    document.querySelectorAll('input[type="radio"]').forEach(i => i.checked = false);
     updateSummary();
 };
 

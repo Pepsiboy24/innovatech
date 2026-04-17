@@ -1,4 +1,6 @@
 // School Settings JavaScript
+import { waitForUser } from '/core/perf.js';
+import { supabase } from '../../core/config.js';
 // Handles CRUD operations for Schools table with logo upload
 
 let currentSchoolId = null;
@@ -37,15 +39,15 @@ async function initializeSettings() {
 async function getCurrentAdminId() {
     try {
         // Get authenticated user
-        const { data: { user }, error } = await window.supabase.auth.getUser();
+        const user = await waitForUser();
         
-        if (error || !user) {
-            console.error('Error getting authenticated user:', error);
+        if (!user) {
+            console.error('No authenticated user found');
             return null;
         }
         
         // Get admin record from School_Admin table using email
-        const { data: adminData, error: adminError } = await window.supabase
+        const { data: adminData, error: adminError } = await supabase
             .from('School_Admin')
             .select('admin_id, school_id')
             .eq('email', user.email)
@@ -111,7 +113,7 @@ async function loadSchoolSettings() {
         }
 
         // Load school data
-        const { data: schoolData, error: schoolError } = await window.supabase
+        const { data: schoolData, error: schoolError } = await supabase
             .from('Schools')
             .select('*')
             .eq('school_id', currentSchoolId)
@@ -150,7 +152,7 @@ async function createDefaultSchool() {
             is_active: true
         };
 
-        const { data: newSchool, error: insertError } = await window.supabase
+        const { data: newSchool, error: insertError } = await supabase
             .from('Schools')
             .insert([defaultSchoolData])
             .select()
@@ -159,7 +161,7 @@ async function createDefaultSchool() {
         if (insertError) throw insertError;
 
         // Link admin to school
-        const { error: linkError } = await window.supabase
+        const { error: linkError } = await supabase
             .from('School_Admin')
             .update({ school_id: newSchool.school_id })
             .eq('admin_id', currentAdminId);
@@ -219,7 +221,7 @@ async function handleFormSubmit(e) {
         }
 
         // Update school data
-        const { error: updateError } = await window.supabase
+        const { error: updateError } = await supabase
             .from('Schools')
             .update(formData)
             .eq('school_id', currentSchoolId);
@@ -283,7 +285,7 @@ async function handleLogoUpload(e) {
         // Upload to Supabase Storage
         const fileName = `school-logos/${currentSchoolId}/${Date.now()}-${file.name}`;
         
-        const { error: uploadError } = await window.supabase.storage
+        const { error: uploadError } = await supabase.storage
             .from('school-assets')
             .upload(fileName, file, {
                 cacheControl: '3600',
@@ -293,12 +295,12 @@ async function handleLogoUpload(e) {
         if (uploadError) throw uploadError;
 
         // Get public URL
-        const { data: { publicUrl } } = window.supabase.storage
+        const { data: { publicUrl } } = supabase.storage
             .from('school-assets')
             .getPublicUrl(fileName);
 
         // Update school record with new logo URL
-        const { error: updateError } = await window.supabase
+        const { error: updateError } = await supabase
             .from('Schools')
             .update({ logo_url: publicUrl })
             .eq('school_id', currentSchoolId);

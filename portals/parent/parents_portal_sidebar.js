@@ -219,7 +219,7 @@
         function toggleSidebar() {
             sidebarElement.classList.toggle('active');
             if (overlay) {
-                overlay.style.display = sidebarElement.classList.contains('active') ? 'block' : 'none';
+                overlay.classList.toggle('active');
             }
         }
 
@@ -227,7 +227,7 @@
         if (overlay) {
             overlay.addEventListener('click', () => {
                 sidebarElement.classList.remove('active');
-                overlay.style.display = 'none';
+                overlay.classList.remove('active');
             });
         }
 
@@ -260,7 +260,8 @@
 
         try {
             const { supabase } = await import('../../core/config.js');
-            const { data: { user } } = await supabase.auth.getUser();
+            const { waitForUser } = await import('../../core/perf.js');
+            const user = await waitForUser();
             if (!user) return;
 
             const { data: parentRecord } = await supabase

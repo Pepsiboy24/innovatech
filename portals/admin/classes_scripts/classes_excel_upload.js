@@ -1,5 +1,6 @@
 import { openUploadModal } from '../../../assets/js-shared/upload_modal_ui.js';
 import { supabase } from '../../../core/config.js';
+import { waitForUser, lazyScript } from '/core/perf.js';
 
 const HINT_HTML = `
 <strong style="color:#93c5fd;">Required columns:</strong>
@@ -21,7 +22,8 @@ const COLUMNS = [
 ];
 
 // ── Template download ─────────────────────────────────────────────────────
-function downloadTemplate() {
+async function downloadTemplate() {
+    await lazyScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'XLSX');
     const ws = XLSX.utils.aoa_to_sheet([
         ['class_name', 'section', 'teacher_name', 'students_count'],
         ['JSS 1', 'A', 'Mr James', '30'],
@@ -82,7 +84,7 @@ async function doUpload(file, helpers) {
     );
     if (!confirmed) return;
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await waitForUser();
     const schoolId = user?.user_metadata?.school_id;
 
     if (!schoolId) {

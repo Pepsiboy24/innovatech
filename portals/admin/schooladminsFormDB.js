@@ -1,4 +1,5 @@
 import { supabase } from '../../core/config.js';
+import { waitForUser } from '/core/perf.js';
 
 // Function to submit school admin data to Supabase
 async function submitSchoolAdmin(adminData) {
@@ -145,7 +146,7 @@ async function deleteSchoolAdmin(adminId) {
         console.log('Deleting school admin:', adminId);
 
         // FIX #52: also verify the admin being deleted belongs to the caller's school
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        const user = await waitForUser();
         if (authError || !user?.user_metadata?.school_id) {
             return { success: false, error: 'Cannot verify school identity before deletion' };
         }

@@ -1,5 +1,6 @@
 // curriculum_tracker.js
 import { supabase } from '../../core/config.js';
+import { waitForUser } from '/core/perf.js';
 
 let allTeachers = [];
 let teacherSubjects = new Map();
@@ -11,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function initializeApp() {
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await waitForUser();
         if (!user?.user_metadata?.school_id) {
             console.warn('Strict Guard: No school_id found. Execution blocked.');
             return;

@@ -4,6 +4,7 @@
  * Now supports text prompts and image uploads for textbook analysis.
  */
 import { supabase } from '../../core/config.js';
+import { waitForUser } from '/core/perf.js';
 
 /* ── DOM ─────────────────────────────────────────────────────────── */
 const greetingWrapper = document.getElementById('greetingWrapper');
@@ -24,7 +25,7 @@ let selectedFileBase64 = null; // Stores the image to send to the AI
 
 /* ── Init: fetch teacher name ────────────────────────────────────── */
 async function init() {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await waitForUser();
     if (!user) return;
 
     const { data: teacher } = await supabase

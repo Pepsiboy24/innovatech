@@ -2,6 +2,7 @@
  * Parents Portal Payments - Full working version (2026)
  * Aligned with Supabase Schema: Payment_Items(item_id, amount, is_compulsory)
  */
+import { waitForUser } from '/core/perf.js';
 
 let currentStudentId = null;
 let currentSchoolId = null;
@@ -53,7 +54,7 @@ async function getCurrentStudentInfo() {
 
         // Priority 2: Self-Healing (Auth -> Parent -> Link -> Student)
         if (!id) {
-            const { data: { user } } = await window.supabase.auth.getUser();
+            const user = await waitForUser();
             if (!user) throw new Error('No active session found.');
 
             const { data: parentData } = await window.supabase
@@ -284,7 +285,7 @@ async function proceedToPayment() {
             .eq('school_id', currentSchoolId)
             .single();
 
-        const { data: { user } } = await window.supabase.auth.getUser();
+        const user = await waitForUser();
 
         // 2. Data Formatting
         const cleanAmount = Number(parseFloat(totalAmount).toFixed(2));
@@ -370,4 +371,5 @@ function showError(msg) {
 
 // Global Exports
 window.toggleOptionalItem = toggleOptionalItem;
+window.proceedToPayment = proceedToPayment;
 window.toggleSidebar = toggleSidebar;

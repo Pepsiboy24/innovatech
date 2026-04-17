@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
+import { waitForUser } from '/core/perf.js';
     const subjectForm = document.getElementById('subjectForm');
     const popup = document.getElementById('registrationPopup');
     
@@ -10,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     async function initializeSubjectForm() {
         try {
-            const { data: { user } } = await window.supabase.auth.getUser();
+            const user = await waitForUser();
             if (!user?.user_metadata?.school_id) {
                 console.warn('Strict Guard: No school_id found. Execution blocked.');
                 return;

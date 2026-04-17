@@ -1,4 +1,5 @@
 import { supabaseClient } from './supabase_client.js';
+import { waitForUser, renderToFragment, debounce } from '/core/perf.js';
 
 // ─── Module state ───────────────────────────────────────────────
 let _offboardTeacherId   = null;
@@ -11,7 +12,7 @@ let _allTeachersCache    = [];   // used to populate successor dropdown
 
 async function fetchTeachers() {
     try {
-        const { data: { user } } = await supabaseClient.auth.getUser();
+        const user = await waitForUser();
         const userSchoolId = user?.user_metadata?.school_id;
         if (!userSchoolId) { console.error('User missing school_id'); return []; }
 
@@ -62,6 +63,7 @@ async function fetchTeacherClasses() {
         const { data, error } = await supabaseClient.from('Classes').select('teacher_id, class_name, section');
         if (error) { console.error('Error fetching classes:', error); return {}; }
         const classMap = {};
+        // REMOVED: const _rows = []; (This was in the wrong place)
         data.forEach(cls => { classMap[cls.teacher_id] = `${cls.class_name} ${cls.section}`; });
         return classMap;
     } catch (err) { console.error('Unexpected error fetching classes:', err); return {}; }
@@ -299,6 +301,8 @@ function renderTeachers(teachers, classMap = {}) {
     if (!tbody) { console.error('Teachers table tbody not found'); return; }
     tbody.innerHTML = '';
 
+    const _rows = []; 
+
     if (teachers.length === 0) {
         tbody.insertAdjacentHTML('beforeend', `
             <tr class="student-row">
@@ -310,13 +314,13 @@ function renderTeachers(teachers, classMap = {}) {
     }
 
     teachers.forEach(teacher => {
-        const fullName        = getFullName(teacher.first_name, teacher.last_name, teacher.middle_name);
-        const initials        = getInitials(teacher.first_name, teacher.last_name);
-        const jobTitle        = getJobTitleDisplay(teacher.job_title);
-        const className       = classMap[teacher.teacher_id] || jobTitle;
-        const attendancePct   = 90;
-        const safeName        = fullName.replace(/'/g, "\\'");
-        const empStatus       = teacher.employment_status || 'active';
+        const fullName = getFullName(teacher.first_name, teacher.last_name, teacher.middle_name);
+        const initials = getInitials(teacher.first_name, teacher.last_name);
+        const age = calculateAge(teacher.date_of_birth);
+        const jobTitle = getJobTitleDisplay(teacher.job_title);
+        const className = classMap[teacher.teacher_id] || 'Not Assigned';
+        const attendancePercent = 92; // Placeholder
+        const safeName = fullName.replace(/'/g, "\\'");
 
         const row = `
             <tr class="student-row">
@@ -325,35 +329,44 @@ function renderTeachers(teachers, classMap = {}) {
                         <div class="student-avatar">${initials}</div>
                         <div class="student-details">
                             <h4>${fullName}</h4>
-                            <p>Teacher ID: #T${teacher.id || 'N/A'}</p>
+                            <p>ID: #T${teacher.teacher_id ? teacher.teacher_id.toString().substr(0, 8) : 'N/A'}</p>
                         </div>
                     </div>
                 </td>
-                <td>${teacher.total_experience || 'N/A'}</td>
-                <td><div class="class-badge">${className}</div></td>
+                <td>
+                    <div class="experience-badge">
+                        <span>${teacher.total_experience || 'New'}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="class-badge">${className}</div>
+                </td>
                 <td>
                     <div class="attendance-progress">
                         <div class="progress-bar">
-                            <div class="progress-fill" style="width:${attendancePct}%;"></div>
+                            <div class="progress-fill" style="width: ${attendancePercent}%;"></div>
                         </div>
-                        <span class="attendance-percent">${attendancePct}%</span>
+                        <span class="attendance-percent">${attendancePercent}%</span>
                     </div>
                 </td>
-                <td>${getEmploymentBadge(empStatus)}</td>
+                <td>${getEmploymentBadge(teacher.employment_status || 'active')}</td>
                 <td style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-                    <button class="view-btn" data-type="teacher" data-id="${teacher.id}">View</button>
-                    ${empStatus === 'active' ? `
+                    <button class='view-btn' data-type='teacher' data-id='${teacher.teacher_id}'>View</button>
                     <button
                         class="action-btn"
+                        style="background:#fef3c7; color:#d97706; border:none; cursor:pointer; padding:4px 10px; border-radius:6px; font-size:12px; font-weight:600;"
                         data-offboard-id="${teacher.teacher_id}"
-                        style="background:#fee2e2; color:#dc2626; border:none; cursor:pointer; padding:4px 10px; border-radius:6px; font-size:12px; font-weight:600;"
                         onclick="window.initiateOffboard('${teacher.teacher_id}', '${safeName}')">
-                        ⏏ Deactivate
-                    </button>` : ''}
+                        <i class="fas fa-user-minus"></i> Deactivate
+                    </button>
                 </td>
-            </tr>`;
-        tbody.insertAdjacentHTML('beforeend', row);
+            </tr>
+        `;
+            
+        _rows.push(row);
     });
+    
+    renderToFragment(tbody, _rows);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -407,10 +420,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Search
     const searchInput = document.querySelector('.search-input');
     if (searchInput) {
-        searchInput.addEventListener('input', function () {
+        searchInput.addEventListener('input', debounce(function () {
             currentSearchTerm = this.value.trim();
             applyFilters();
-        });
+        }, 300));
     }
 
     // Filter tabs

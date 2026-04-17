@@ -1,15 +1,16 @@
 import { supabase } from '../../core/config.js';
 import { openUploadModal } from '../../assets/js-shared/upload_modal_ui.js';
+import { waitForUser, debounce } from '/core/perf.js';
 
 let currentTeacherId = null;
 
 // Check if teacher is logged in (reusing pattern from other scripts)
 async function checkTeacherLogin() {
     try {
-        const { data: { user }, error } = await supabase.auth.getUser();
+        const user = await waitForUser();
 
-        if (error || !user) {
-            console.error('No user logged in:', error);
+        if (!user) {
+            console.error('No user logged in');
             alert('Please log in as a teacher to view this page.');
             window.location.href = '../../index.html';
             return null;
@@ -322,7 +323,7 @@ function openCurriculumUploadModal(classId, subjectId) {
         onConfirm: async (file, helpers) => {
             try {
                 // 1. Get school_id from teacher's session
-                const { data: { user } } = await supabase.auth.getUser();
+                const user = await waitForUser();
                 const schoolId = user?.user_metadata?.school_id;
 
                 if (!schoolId) throw new Error("School identity not found. Please re-login.");
@@ -392,7 +393,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             classSelect.appendChild(option);
         });
 
-        classSelect.addEventListener('change', async (e) => {
+        classSelect.addEventListener('change', debounce(async (e) => {
             const classId = e.target.value;
             // Clear table
             renderCurriculumTable([]);
@@ -409,12 +410,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     subjectSelect.appendChild(option);
                 });
             }
-        });
+        }));
     }
 
     // Handle Subject Change
     if (subjectSelect) {
-        subjectSelect.addEventListener('change', async (e) => {
+        subjectSelect.addEventListener('change', debounce(async (e) => {
             const subjectId = e.target.value;
             const classId = classSelect.value;
 
@@ -424,7 +425,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
                 renderCurriculumTable([]);
             }
-        });
+        }));
     }
 
     // Handle File Upload Button

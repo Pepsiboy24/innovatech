@@ -1,13 +1,14 @@
 import { supabase } from '../../core/config.js';
+import { waitForUser } from '/core/perf.js';
 
 export async function initializeSidebar() {
     const sidebarContainer = document.querySelector('[data-sideBar]');
     if (!sidebarContainer) return;
 
     // 1. Get User Session
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const user = await waitForUser();
 
-    if (authError || !user) {
+    if (!user) {
         console.warn('Sidebar: Unauthorized. Redirecting to login...');
         window.location.href = "/public/html/login.html";
         return;
@@ -114,18 +115,18 @@ export async function initializeSidebar() {
     if (userRole === 'school_admin') {
         // ── ADMIN sidebar — matches school_admin_sidebar.js exactly ──────────
         const links = [
-            { title: 'Dashboard', icon: 'fa-table-columns', path: '/html/schoolAdmin/schoolAdminDashboard.html' },
-            { title: 'Classes', icon: 'fa-chalkboard-user', path: '/html/schoolAdmin/classes.html' },
-            { title: 'Students', icon: 'fa-user-graduate', path: '/html/schoolAdmin/students.html' },
-            { title: 'Teachers', icon: 'fa-chalkboard-teacher', path: '/html/schoolAdmin/teachers.html' },
-            { title: 'School Admins', icon: 'fa-user-tie', path: '/html/schoolAdmin/schooladmins.html' },
-            { title: 'Academic Manager', icon: 'fa-book-open', path: '/html/schoolAdmin/academic_manager.html' },
-            { title: 'Schedule', icon: 'fa-calendar', path: '/html/schoolAdmin/schedule.html' },
-            { title: 'Time Table', icon: 'fa-clock', path: '/html/schoolAdmin/timeTable.html' },
-            { title: 'School Settings', icon: 'fa-cog', path: '/html/schoolAdmin/settings.html' },
-            { title: 'Payment Config', icon: 'fa-credit-card', path: '/html/schoolAdmin/payments_config.html' },
-            { title: 'Manage Notes', icon: 'fa-file-lines', path: '/html/shared/manage_notes.html' },
-            { title: 'Parent Portal', icon: 'fa-users', path: '/html/schoolAdmin/parent_portal.html' }
+            { title: 'Dashboard', icon: 'fa-table-columns', path: '../admin/schoolAdminDashboard.html' },
+            { title: 'Classes', icon: 'fa-chalkboard-user', path: '../admin/classes.html' },
+            { title: 'Students', icon: 'fa-user-graduate', path: '../admin/students.html' },
+            { title: 'Teachers', icon: 'fa-chalkboard-teacher', path: '../admin/teachers.html' },
+        { title: 'School Admins', icon: 'fa-user-tie', path: '../admin/schooladmins.html' },
+            { title: 'Academic Manager', icon: 'fa-book-open', path: '../admin/academic_manager.html' },
+            { title: 'Schedule', icon: 'fa-calendar', path: '../admin/schedule.html' },
+            { title: 'Time Table', icon: 'fa-clock', path: '../admin/timeTable.html' },
+            { title: 'School Settings', icon: 'fa-cog', path: '../admin/settings.html' },
+            { title: 'Payment Config', icon: 'fa-credit-card', path: '../admin/payments_config.html' },
+            { title: 'Manage Notes', icon: 'fa-file-lines', path: '../admin/manage_notes.html' },
+            { title: 'Parent Portal', icon: 'fa-users', path: '../admin/parents.html' }
         ];
 
         sidebarContainer.innerHTML = `

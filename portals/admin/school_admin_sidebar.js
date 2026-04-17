@@ -9,7 +9,7 @@ import { hasFeatureAccess, getCurrentUserTier } from '../../core/tierAccess.js';
     }
 
     function sharedPrefix() {
-        return '../shared/'; 
+        return '../student/'; 
     }
 
     // SPEED FIX: Fetch school branding using Shared State + Cache
@@ -65,7 +65,7 @@ import { hasFeatureAccess, getCurrentUserTier } from '../../core/tierAccess.js';
                 <div class="icon mobile-menu-btn" data-sideBarClose><i class="fa fa-times"></i></div>
             </div>
             
-            <nav class="sidebar-nav">
+            <nav style="display: flex; flex-direction: column; flex: 1;">
                 <a href="${a}schoolAdminDashboard.html" class="nav-item">
                     <i class="fa-solid fa-table-columns nav-icon"></i>
                     Dashboard

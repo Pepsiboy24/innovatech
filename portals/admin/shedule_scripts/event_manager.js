@@ -1,4 +1,5 @@
-import { supabase } from "../../core/config.js";
+import { supabase } from "../../../core/config.js";
+import { waitForUser } from '/core/perf.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const addEventForm = document.getElementById('addEventForm');
@@ -102,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // 1. Fetch current user and school_id
-                const { data: { user }, error: userError } = await supabase.auth.getUser();
+                const user = await waitForUser();
                 if (userError || !user) throw new Error("Auth failed. Please log in.");
 
                 const schoolId = user.user_metadata.school_id;

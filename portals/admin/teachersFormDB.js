@@ -1,10 +1,11 @@
 import { supabase } from '../../core/config.js';
+import { waitForUser } from '/core/perf.js';
 
 // Register new teacher function
 export async function registerNewTeacher(formData) {
   try {
     // Get current authenticated user (school admin)
-    const { data: { user: adminUser }, error: adminError } = await supabase.auth.getUser();
+    const adminUser = await waitForUser();
     
     if (adminError || !adminUser) {
       console.error("Error getting authenticated admin:", adminError?.message);

@@ -1,4 +1,5 @@
 import { supabase } from '../../core/config.js';
+import { waitForUser } from '/core/perf.js';
 
 // Dedicated client for background signups (prevents Admin session logout)
 const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
@@ -29,7 +30,7 @@ export async function registerNewStudent(
 ) {
   try {
     // 1. IDENTITY GUARD: Fetch admin's school_id
-    const { data: { user: adminUser }, error: adminError } = await supabase.auth.getUser();
+    const adminUser = await waitForUser();
     if (adminError || !adminUser) return { success: false, error: "Admin authentication required" };
 
     const schoolId = adminUser.user_metadata?.school_id;

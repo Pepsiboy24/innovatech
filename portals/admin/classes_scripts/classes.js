@@ -1,4 +1,5 @@
 import { supabase as supabaseClient } from '../../../core/config.js';
+import { waitForUser } from '/core/perf.js';
 
 // --- 🗄️ Unified Modal Control ---
 
@@ -112,9 +113,17 @@ async function handleCreateClass(e) {
   }
 
   // Get current user's school_id for RLS compliance
-  const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-  if (userError || !user || !user.user_metadata?.school_id) {
-    console.error('User authentication error:', userError);
+  let user;
+  try {
+    user = await waitForUser();
+  } catch (error) {
+    console.error('User authentication error:', error);
+    showToast('Authentication error. Please log in again.', 'error');
+    return;
+  }
+  
+  if (!user || !user.user_metadata?.school_id) {
+    console.error('User authentication error: Invalid user data');
     showToast('Authentication error. Please log in again.', 'error');
     return;
   }

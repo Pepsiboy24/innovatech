@@ -1,5 +1,6 @@
 // viewStudents.js
 import { supabaseClient } from './supabase_client.js';
+import { waitForUser, renderToFragment, debounce } from '/core/perf.js';
 
 // --- Module-level migration state ---
 let _migrationStudentId = null;
@@ -14,7 +15,7 @@ let _statusChangeStudentId = null;
 // --- 1. Fetch Students (Updated with Parent/Guardian Join) ---
 async function fetchStudents(enrollmentStatus = 'active') {
     try {
-        const { data: { user } } = await supabaseClient.auth.getUser();
+        const user = await waitForUser();
         const userSchoolId = user?.user_metadata?.school_id;
 
         if (!userSchoolId) {
@@ -66,7 +67,7 @@ async function fetchStudents(enrollmentStatus = 'active') {
 // --- 2. Fetch Classes (To match ID) ---
 async function fetchClasses() {
     try {
-        const { data: { user } } = await supabaseClient.auth.getUser();
+        const user = await waitForUser();
         const userSchoolId = user?.user_metadata?.school_id;
 
         if (!userSchoolId) {
@@ -162,6 +163,7 @@ function renderStudents(students, classMap = {}) {
         return;
     }
 
+    const _rows = [];
     students.forEach(student => {
         const age = calculateAge(student.date_of_birth);
         const initials = getInitials(student.full_name);
@@ -210,8 +212,9 @@ function renderStudents(students, classMap = {}) {
                 </td>
             </tr>
         `;
-        tbody.insertAdjacentHTML('beforeend', row);
+                _rows.push(row);
     });
+    renderToFragment(tbody, _rows);
 }
 
 // --- 5. Migration Modal Logic ---
@@ -429,10 +432,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Search
     const searchInput = document.querySelector('.search-input');
     if (searchInput) {
-        searchInput.addEventListener('input', function () {
+        searchInput.addEventListener('input', debounce(function () {
             currentSearchTerm = this.value.trim();
             applyFilters();
-        });
+        }, 300));
     }
 
     // Grade filter tabs
@@ -488,7 +491,7 @@ export { fetchStudents };
 // Helper functions for empty state handling
 async function checkAndShowSetupWizard() {
     try {
-        const { data: { user } } = await supabaseClient.auth.getUser();
+        const user = await waitForUser();
         const userSchoolId = user?.user_metadata?.school_id;
         if (!userSchoolId) return;
 

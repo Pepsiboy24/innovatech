@@ -1,5 +1,6 @@
 // upload_notes.js — Teacher Lesson Notes Upload Engine
 import { supabase as supabaseClient } from '../../core/config.js';
+import { waitForUser, debounce } from '/core/perf.js';
 
 // ─── CDN library references (loaded via <script> tags in HTML) ───
 // window.mammoth   — DOCX → HTML
@@ -50,7 +51,7 @@ let currentTeacherId = null;
 
 async function loadSubjectsAndClasses() {
     // ── 1. Get the logged-in teacher's UID ───────────────────────
-    const { data: { user }, error: authErr } = await supabaseClient.auth.getUser();
+    const user = await waitForUser();
     if (authErr || !user) {
         console.error('Not authenticated');
         classSelect.innerHTML = '<option value="">Not logged in</option>';
@@ -87,7 +88,7 @@ async function loadSubjectsAndClasses() {
 }
 
 // ── When teacher picks a class, load its subjects via Class_Subjects
-classSelect.addEventListener('change', async () => {
+classSelect.addEventListener('change', debounce(async () => {
     const classId = classSelect.value;
     subjectSelect.innerHTML = '<option value="">Loading subjects…</option>';
     subjectSelect.disabled = true;
@@ -302,7 +303,7 @@ async function uploadToSupabase() {
     confirmBtn.disabled = true;
 
     try {
-        const { data: { user }, error: authErr } = await supabaseClient.auth.getUser();
+        const user = await waitForUser();
         if (authErr || !user) throw new Error('Not authenticated. Please log in again.');
 
         // Get school_id from user metadata

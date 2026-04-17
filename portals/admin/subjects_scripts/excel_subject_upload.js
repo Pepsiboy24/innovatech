@@ -1,4 +1,5 @@
 import { openUploadModal } from '../../../assets/js-shared/upload_modal_ui.js';
+import { waitForUser } from '/core/perf.js';
 
 document.addEventListener('DOMContentLoaded', function () {
     const uploadBtns = document.querySelectorAll('.add-multiple');
@@ -109,7 +110,7 @@ async function doUpload(file, helpers) {
         });
 
         // Get school_id from Auth Metadata (Required for RLS)
-        const { data: { user }, error: userError } = await window.supabase.auth.getUser();
+        const user = await waitForUser();
         const schoolId = user?.user_metadata?.school_id;
 
         if (userError || !schoolId) {
@@ -196,3 +197,4 @@ function openSubjectsExcelUpload() {
         onConfirm: doUpload,
     });
 }
+

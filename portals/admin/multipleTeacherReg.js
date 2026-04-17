@@ -1,5 +1,6 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import { supabase as supabaseClient } from '../../core/config.js';
+import { waitForUser, lazyScript } from '/core/perf.js';
 
 // --- 1. ISOLATED AUTH CLIENT ---
 // This client is used ONLY for signUp. persistSession: false ensures
@@ -44,9 +45,11 @@ function sanitizeValue(value) {
 }
 
 export async function uploadAndProcessExcel(file) {
+    // Lazy-load XLSX only when needed (saves ~1MB on initial page load)
+    await lazyScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'XLSX');
   try {
     // Get Admin info from the MAIN client (Your persistent login)
-    const { data: { user: adminUser }, error: adminError } = await supabaseClient.auth.getUser();
+    const adminUser = await waitForUser();
 
     if (adminError || !adminUser) {
       throw new Error("Admin authentication required");

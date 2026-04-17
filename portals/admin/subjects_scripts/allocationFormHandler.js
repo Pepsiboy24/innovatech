@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
+import { waitForUser } from '/core/perf.js';
     const allocationForm = document.getElementById('allocationForm');
     const clearBtn = document.getElementById('clearAllocationBtn');
     const allocateBtn = document.getElementById('allocateBtn');
@@ -12,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     async function initializeAllocationForm() {
         try {
-            const { data: { user } } = await window.supabase.auth.getUser();
+            const user = await waitForUser();
             if (!user?.user_metadata?.school_id) {
                 console.warn('Strict Guard: No school_id found. Execution blocked.');
                 return;

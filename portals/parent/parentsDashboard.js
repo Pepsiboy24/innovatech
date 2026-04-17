@@ -1,4 +1,5 @@
 import { supabase } from '../../core/config.js';
+import { waitForUser } from '/core/perf.js';
 
 // ---- Main Initialization ----
 document.addEventListener('DOMContentLoaded', async () => {
@@ -15,9 +16,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function getLinkedChildId() {
   // 1. Get the currently logged-in parent's Auth ID
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  const user = await waitForUser();
 
-  if (authError || !user) {
+  if (!user) {
     console.error("No authenticated parent found.");
     window.location.href = "../../index.html"; // Redirect to login
     return null;

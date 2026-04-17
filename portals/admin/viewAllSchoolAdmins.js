@@ -1,13 +1,14 @@
 import { supabase } from '../../core/config.js';
 import { deleteSchoolAdmin } from './schooladminsFormDB.js'; // FIX #55: was exported but never imported
+import { waitForUser, renderToFragment, debounce } from '/core/perf.js';
 
 // FIX #52: Fetch only admins belonging to the current admin's school
 async function fetchSchoolAdmins() {
     try {
         // Resolve the logged-in admin's school_id from JWT metadata
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        if (authError || !user?.user_metadata?.school_id) {
-            console.error('fetchSchoolAdmins: cannot determine school_id', authError);
+        const user = await waitForUser();
+        if (!user?.user_metadata?.school_id) {
+            console.error('fetchSchoolAdmins: cannot determine school_id', user);
             return [];
         }
         const schoolId = user.user_metadata.school_id;
@@ -92,6 +93,7 @@ function renderSchoolAdmins(admins) {
         return;
     }
 
+    const _rows = [];
     admins.forEach(admin => {
         const age = calculateAge(admin.date_of_birth);
         const fullName = getFullName(admin.first_name, admin.last_name, admin.middle_name);
@@ -125,8 +127,9 @@ function renderSchoolAdmins(admins) {
             </tr>
         `;
 
-        tbody.insertAdjacentHTML('beforeend', row);
+                _rows.push(row);
     });
+    renderToFragment(tbody, _rows);
 }
 
 function filterSchoolAdmins(admins, searchTerm) {
@@ -173,10 +176,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Search
     const searchInput = document.querySelector('.search-input');
     if (searchInput) {
-        searchInput.addEventListener('input', function () {
+        searchInput.addEventListener('input', debounce(function () {
             currentSearchTerm = this.value.trim();
             applyFilters();
-        });
+        }, 300));
     }
 
     // Filter tabs

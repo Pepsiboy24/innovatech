@@ -8,10 +8,12 @@
     <title>TeachSmart — Dashboard</title>
     <link rel="stylesheet" href="./teachersPortalStyles/sidebar.css?v=1.1">
     <link rel="stylesheet" href="./teachersPortalStyles/tp-shared.css?v=1.1">
+    <script src="../../core/authGuard.js" type="module" defer></script>
 </head>
 
 <body>
-    <a href="../../public/login.html"></a>
+    <!-- FIX 4: Removed stray empty <a> tag that was loose in the body -->
+
     <!-- Mobile Top Bar -->
     <div class="mobile-top-bar" id="mobileTopBar">
         <span class="brand">TeachSmart</span>
@@ -46,29 +48,30 @@
             <div class="stat-card">
                 <div class="stat-icon blue"><i class="fas fa-book"></i></div>
                 <div class="stat-content">
-                    <h3 id="active_courses">0</h3>
+                    <h3 id="active_courses">_</h3>
                     <p>Active Courses</p>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon green"><i class="fa fa-people-group"></i></div>
                 <div class="stat-content">
-                    <h3 id="total_students">0</h3>
+                    <h3 id="total_students">_</h3>
                     <p>Total Students</p>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon purple"><i class="fa fa-person-chalkboard"></i></div>
                 <div class="stat-content">
-                    <h3>3</h3>
+                    <h3>_</h3>
                     <p>Upcoming Classes</p>
                 </div>
             </div>
+            <!-- FIX 2: Added missing id="avg_performance" so the JS can update this stat -->
             <div class="stat-card">
-                <div class="stat-icon orange"><i class="fa fa-envelope"></i></div>
+                <div class="stat-icon orange"><i class="fa fa-chart-line"></i></div>
                 <div class="stat-content">
-                    <h3>12</h3>
-                    <p>New Messages</p>
+                    <h3 id="avg_performance">_</h3>
+                    <p>Avg Performance</p>
                 </div>
             </div>
         </div>
@@ -147,10 +150,15 @@
     </main>
 
     <script src="../../assets/js-shared/fontawesome.js"></script>
+
+    <!-- FIX 1 & 3: Supabase and XLSX must be loaded BEFORE the dashboard module scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="./teachersDashboard.js" type="module"></script>
-    <script src="./teachers_portal_sidebar.js" type="module"></script>
+
+    <!-- Dashboard and sidebar modules load after their dependencies are ready -->
+    <script src="./teachersDashboard.js" type="module" defer></script>
+    <script src="./teachers_portal_sidebar.js" type="module" defer></script>
+
     <script>
         (function () {
             const btn = document.getElementById('hamburgerBtn');

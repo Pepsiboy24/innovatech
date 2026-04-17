@@ -1,4 +1,5 @@
 import { supabase } from '../../../core/config.js';
+import { waitForUser } from '/core/perf.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log("Timetable Wizard Loaded");
@@ -17,7 +18,7 @@ async function fetchClasses() {
 
     try {
         // Get school_id for RLS compliance
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        const user = await waitForUser();
         const schoolId = user?.user_metadata?.school_id;
 
         if (userError || !schoolId) {
@@ -112,7 +113,7 @@ async function loadClassConfig(classId) {
     console.log(`Checking config for class ${classId}...`);
     try {
         // Get school_id for RLS compliance
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        const user = await waitForUser();
         const schoolId = user?.user_metadata?.school_id;
 
         if (userError || !schoolId) {
@@ -318,7 +319,7 @@ async function handleSaveConfig(e) {
 
     try {
         // Get school_id for RLS compliance
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        const user = await waitForUser();
         const schoolId = user?.user_metadata?.school_id;
 
         if (userError || !schoolId) {

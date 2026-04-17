@@ -4,6 +4,7 @@
 import { supabase } from '../../core/config.js';
 import { checkTeacherLogin } from '../../portals/teacher/teacherUtils.js';
 import { openUploadModal } from '../../assets/js-shared/upload_modal_ui.js';
+import { waitForUser, debounce, lazyScript } from '/core/perf.js';
 
 // ─── State ────────────────────────────────────────────────────────────────────
 let currentClassStudents = [];
@@ -22,7 +23,7 @@ async function initializeUploadResults() {
         currentTeacherId = authResult.teacherId;
 
         // 2. Fetch school_id from metadata (Crucial for RLS)
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await waitForUser();
         currentSchoolId = user?.user_metadata?.school_id;
 
         if (!currentSchoolId) {
@@ -89,6 +90,8 @@ async function fetchAcademicSessions() {
 }
 
 async function fetchStudentsInClass(classId) {
+    // Lazy-load XLSX only when needed (saves ~1MB on initial page load)
+    await lazyScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'XLSX');
     const { data: students, error } = await supabase
         .from('Students')
         .select('student_id, full_name')
@@ -327,11 +330,11 @@ async function handleSaveResults(e) {
 // ─── Event Listeners & Helpers ────────────────────────────────────────────────
 
 function setupEventListeners() {
-    document.getElementById('classSelect').addEventListener('change', async (e) => {
+    document.getElementById('classSelect').addEventListener('change', debounce(async (e) => {
         const subjects = await fetchClassSubjects(e.target.value);
         populateSubjectDropdown(subjects);
         updateStudentTable([]);
-    });
+    }));
 
     document.getElementById('subjectSelect').addEventListener('change', (e) => {
         if (e.target.value) fetchStudentsInClass(document.getElementById('classSelect').value);

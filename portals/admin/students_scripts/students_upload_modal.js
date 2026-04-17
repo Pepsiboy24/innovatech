@@ -11,6 +11,7 @@
 // import { openUploadModal } from '../../../scripts/upload_modal_ui.js';
 import { openUploadModal } from '../../../assets/js-shared/upload_modal_ui.js';
 import { uploadAndProcessExcel } from './multipleStudentReg.js';
+import { lazyScript } from '/core/perf.js';
 
 const HINT_HTML = `
 <strong style="color:#93c5fd;">Required:</strong>
@@ -41,7 +42,8 @@ const COLUMNS = [
     { key: 'Parent Name', label: 'Parent Name' },
 ];
 
-function downloadTemplate() {
+async function downloadTemplate() {
+    await lazyScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'XLSX');
     const ws = XLSX.utils.aoa_to_sheet([
         ['Full Name', 'Email', 'Date of Birth', 'Gender', 'Admission Date', 'Classes', 'Parent Name', 'Parent Email', 'Parent Phone', 'Relationship'],
         ['Jane Doe', 'jane@school.edu', '2010-05-14', 'Female', '2024-09-01', 'Primary 3 A', 'Mary Doe', 'mary@mail.com', '+2348012345678', 'Mother'],

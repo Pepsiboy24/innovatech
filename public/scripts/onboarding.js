@@ -369,7 +369,7 @@ class SchoolOnboarding {
             setTimeout(() => {
                 // Clear sessionStorage and redirect to main login page
                 sessionStorage.clear();
-                window.location.href = "/public/html/login.html"';
+                window.location.href = "/public/html/login.html";
             }, 2000);
 
         } catch (error) {

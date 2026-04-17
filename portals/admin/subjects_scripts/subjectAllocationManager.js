@@ -1,4 +1,5 @@
 import { supabase } from '../../../core/config.js';
+import { waitForUser } from '/core/perf.js';
 
 /**
  * Subject Allocation Manager - Clean Subject Management System
@@ -17,7 +18,7 @@ class SubjectAllocationManager {
      */
     async initialize() {
         try {
-            const { data: userData } = await supabase.auth.getUser();
+            const user = await waitForUser();
             this.schoolId = userData.user?.user_metadata?.school_id;
 
             if (!this.schoolId) {
@@ -91,7 +92,7 @@ class SubjectAllocationManager {
                     is_core: subjectData.subjectType === 'core',
                     school_id: this.schoolId,
                     created_at: new Date().toISOString(),
-                    created_by: (await supabase.auth.getUser()).data?.user?.email || 'system'
+                    created_by: await waitForUser()?.email || 'system'
                 }])
                 .select()
                 .single();
@@ -136,7 +137,7 @@ class SubjectAllocationManager {
                 throw new Error('This subject is already allocated to this class and teacher');
             }
 
-            const userEmail = (await supabase.auth.getUser()).data?.user?.email || 'system';
+            const userEmail = await waitForUser()?.email || 'system';
 
             // 2. LOGICAL LINK: Upsert into 'class_subjects' (the table used by student dashboard)
             // Using upsert prevents duplicates if multiple teachers are assigned to the same subject/class

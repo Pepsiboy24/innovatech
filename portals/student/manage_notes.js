@@ -2,21 +2,25 @@
  * manage_notes.js — Final Stabilized Version
  */
 
-import { supabase } from './config.js';
+import { supabase } from '/core/config.js';
+import { waitForUser } from '/core/perf.js';
 
 const supabaseClient = supabase;
-
-/* ── DOM refs ──────────────────────────────────────────────────── */
-const pageTitle = document.getElementById('pageTitle');
-const pageSubtitle = document.getElementById('pageSubtitle');
+/* ── DOM refs ──────────────────────────────────────────── */
 const notesBody = document.getElementById('notesBody');
 const searchInput = document.getElementById('searchInput');
 const deleteModal = document.getElementById('deleteModal');
-const confirmDelete = document.getElementById('confirmDelete');
-const cancelDelete = document.getElementById('cancelDelete');
-const loadingRow = document.getElementById('loadingRow');
-const uploaderHeader = document.getElementById('uploaderHeader');
+const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
 const noteCountEl = document.getElementById('noteCount');
+const loadingRow = document.getElementById('loadingRow'); // <--- ADD THIS LINE
+
+
+/* ── DOM refs ──────────────────────────────────────────── */
+// const notesBody = document.getElementById('notesBody');
+// const searchInput = document.getElementById('searchInput');
+// const deleteModal = document.getElementById('deleteModal');
+// const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+// const noteCountEl = document.getElementById('noteCount');
 
 let allNotes = [];
 let pendingDeleteId = null;
@@ -88,13 +92,13 @@ function closeModal() {
     pendingDeleteId = null;
     pendingFilePath = null;
 }
-cancelDelete.addEventListener('click', closeModal);
+// Remove the problematic event listener - buttons use onclick directly
 
 /* ── Delete Action ────────────────────────────────────────────── */
 async function doDelete() {
     if (!pendingDeleteId) return;
-    confirmDelete.disabled = true;
-    confirmDelete.textContent = 'Deleting…';
+    confirmDeleteBtn.disabled = true;
+    confirmDeleteBtn.textContent = 'Deleting…';
 
     try {
         if (pendingFilePath) {
@@ -109,17 +113,17 @@ async function doDelete() {
     } catch (err) {
         alert('Error: ' + err.message);
     } finally {
-        confirmDelete.disabled = false;
-        confirmDelete.textContent = 'Delete';
+        confirmDeleteBtn.disabled = false;
+        confirmDeleteBtn.textContent = 'Delete';
     }
 }
-confirmDelete.addEventListener('click', doDelete);
+// Event listener removed - button uses onclick directly
 
 /* ── Bootstrap (The Fix) ───────────────────────────────────────── */
 async function bootstrap() {
-    const { data: { user }, error: authErr } = await supabaseClient.auth.getUser();
+    const user = await waitForUser();
 
-    if (authErr || !user) {
+    if (!user) {
         window.location.href = '../../index.html';
         return;
     }
@@ -154,13 +158,13 @@ async function bootstrap() {
         return;
     }
 
-    // Setup UI Titles
-    if (currentRole === 'ADMIN') {
-        pageTitle.textContent = 'Global Notes Management';
-        if (uploaderHeader) uploaderHeader.style.display = '';
-    } else {
-        pageTitle.textContent = 'My Lesson Notes';
-    }
+    // Setup UI Titles - Commented out since pageTitle element doesn't exist
+    // if (currentRole === 'ADMIN') {
+    //     pageTitle.textContent = 'Global Notes Management';
+    //     if (uploaderHeader) uploaderHeader.style.display = '';
+    // } else {
+    //     pageTitle.textContent = 'My Lesson Notes';
+    // }
 
     // Fetch Notes based on Role
     const selection = currentRole === 'ADMIN'

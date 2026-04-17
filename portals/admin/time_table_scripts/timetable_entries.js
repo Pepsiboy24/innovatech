@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '../../../core/config.js';
+import { waitForUser } from '/core/perf.js';
 
 // ── State ────────────────────────────────────────────────────────────────────
 let config = null;
@@ -25,7 +26,7 @@ async function init() {
 
     classId = parseInt(raw, 10);
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const user = await waitForUser();
     schoolId = user?.user_metadata?.school_id;
 
     if (userError || !schoolId) {

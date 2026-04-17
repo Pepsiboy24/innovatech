@@ -1,11 +1,12 @@
 import { supabase } from '../../core/config.js';
+import { waitForUser, debounce } from '/core/perf.js';
 
 let currentTeacherId = null;
 
 // Check if teacher is logged in
 async function checkTeacherLogin() {
     try {
-        const { data: { user }, error } = await supabase.auth.getUser();
+        const user = await waitForUser();
 
         if (error || !user) {
             console.error('No user logged in:', error);
@@ -197,7 +198,7 @@ async function saveGrades() {
     }
 
     // Get current user's school_id for RLS compliance
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const user = await waitForUser();
     if (userError || !user || !user.user_metadata?.school_id) {
         alert('Authentication error. Please log in again.');
         return;
@@ -264,7 +265,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const saveBtn = document.getElementById('saveGradesBtn');
 
     if (classSelect) {
-        classSelect.addEventListener('change', async (e) => {
+        classSelect.addEventListener('change', debounce(async (e) => {
             const classId = e.target.value;
             // Clear students table
             document.querySelector('#gradesTable tbody').innerHTML = '';

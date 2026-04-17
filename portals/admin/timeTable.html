@@ -196,6 +196,7 @@
     <script src="../../assets/js-shared/sideBar.js"></script>
     <script type="module">
         import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+        import { waitForUser } from '/core/perf.js';
 
         // 1. CONFIGURATION
         const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
@@ -216,11 +217,20 @@
         // 3. FETCH DATA
         async function loadAllTimetableData() {
             try {
+                // Get authenticated user and school_id
+                const user = await waitForUser();
+                if (!user?.user_metadata?.school_id) {
+                    console.error('Cannot determine school_id from user metadata');
+                    document.getElementById('timetablesGrid').innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #dc2626;">Authentication error - please log in again.</div>';
+                    return;
+                }
+                const schoolId = user.user_metadata.school_id;
+
                 const [configs, classes, subjects, entries] = await Promise.all([
-                    supabase.from('schedule_configs').select('*'),
-                    supabase.from('Classes').select('*'),
-                    supabase.from('Subjects').select('*'),
-                    supabase.from('timetable_entries').select('*')
+                    supabase.from('schedule_configs').select('*').eq('school_id', schoolId),
+                    supabase.from('Classes').select('*').eq('school_id', schoolId),
+                    supabase.from('Subjects').select('*').eq('school_id', schoolId),
+                    supabase.from('timetable_entries').select('*').eq('school_id', schoolId)
                 ]);
 
                 if (configs.error) throw configs.error;
