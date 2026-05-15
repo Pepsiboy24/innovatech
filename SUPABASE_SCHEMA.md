@@ -1,514 +1,972 @@
-Schemas
-auth
-storage
-vault
-realtime
-public
-extensions
-graphql
-graphql_public
-pgbouncer
-auth
-users
-RLS: enabled
-Rows: 51
-Primary key: id
-Columns:
-instance_id (uuid)
-id (uuid)
-aud (character varying)
-role (character varying)
-email (character varying)
-encrypted_password (character varying)
-invited_at (timestamptz)
-confirmation_token (character varying)
-confirmation_sent_at (timestamptz)
-recovery_token (character varying)
-recovery_sent_at (timestamptz)
-email_change (character varying)
-email_change_sent_at (timestamptz)
-last_sign_in_at (timestamptz)
-raw_app_meta_data (jsonb)
-raw_user_meta_data (jsonb)
-is_super_admin (boolean)
-created_at (timestamptz)
-updated_at (timestamptz)
-email_change_token_new (character varying)
-phone_confirmed_at (timestamptz)
-phone_change_sent_at (timestamptz)
-email_confirmed_at (timestamptz)
-confirmed_at (timestamptz) — generated (LEAST(email_confirmed_at, phone_confirmed_at))
-phone_change_token (character varying) — default ''::character varying
-phone (text) — unique
-phone_change (text) — default ''::character varying
-email_change_token_current (character varying) — default ''::character varying
-email_change_confirm_status (smallint) — default 0, check 0..2
-banned_until (timestamptz)
-reauthentication_token (character varying) — default ''::character varying
-reauthentication_sent_at (timestamptz)
-is_sso_user (boolean) — default false (comment: SSO accounts)
-deleted_at (timestamptz)
-is_anonymous (boolean) — default false
-Foreign keys:
-auth.identities.user_id → auth.users.id
-auth.sessions.user_id → auth.users.id
-auth.mfa_factors.user_id → auth.users.id
-auth.one_time_tokens.user_id → auth.users.id
-auth.oauth_authorizations.user_id → auth.users.id
-auth.oauth_consents.user_id → auth.users.id
-Comment: Auth: Stores user login data within a secure schema.
-refresh_tokens
-RLS: enabled
-Rows: 122
-Primary key: id
-Columns: instance_id (uuid), token (varchar, unique), user_id (varchar), revoked (bool), created_at, updated_at, id (bigint, seq), parent (varchar), session_id (uuid)
-Foreign keys:
-auth.refresh_tokens.session_id → auth.sessions.id
-Comment: Store of tokens used to refresh JWT tokens once they expire.
-instances
-RLS: enabled
-Rows: 0
-Primary key: id
-Columns: id (uuid), uuid (uuid), raw_base_config (text), created_at, updated_at
-Comment: Auth: Manages users across multiple sites.
-audit_log_entries
-RLS: enabled
-Rows: 93
-Primary key: id
-Columns: instance_id (uuid), id (uuid), payload (json), created_at, ip_address (varchar default '')
-Comment: Auth: Audit trail for user actions.
-schema_migrations
-RLS: enabled
-Rows: 2
-Primary key: version
-Columns: version
-Comment: Auth: Manages updates to the auth system.
-identities
-RLS: enabled
-Rows: 7
-Primary key: id
-Columns: user_id (uuid), identity_data (jsonb), provider (text), last_sign_in_at (timestamptz), created_at, updated_at, provider_id (text), email (text, generated lower((identity_data ->> 'email'))), id (uuid)
-Foreign keys:
-auth.identities.user_id → auth.users.id
-Comment: Auth: Stores identities associated to a user.
-sessions
-RLS: enabled
-Rows: 71
-Primary key: id
-Columns include: id (uuid), user_id (uuid), created_at, updated_at, factor_id, aal (aal_level enum), not_after, refreshed_at, user_agent, ip (inet), tag, oauth_client_id (uuid), refresh_token_hmac_key, refresh_token_counter, scopes (text, check length <= 4096)
-Foreign keys:
-auth.sessions.user_id → auth.users.id
-auth.sessions.oauth_client_id → auth.oauth_clients.id
-auth.mfa_amr_claims.session_id → auth.sessions.id
-auth.refresh_tokens.session_id → auth.refresh_tokens.session_id (note: refresh_tokens references sessions)
-Comment: Auth: Stores session data associated to a user.
-mfa_factors
-RLS: enabled
-Rows: 0
-Primary key: id
-Columns include id, user_id, friendly_name, factor_type (enum: totp, webauthn, phone), status (enum), created_at, updated_at, secret, phone, last_challenged_at (unique), web_authn_credential (jsonb), web_authn_aaguid (uuid), last_webauthn_challenge_data (jsonb)
-Foreign keys:
-auth.mfa_factors.user_id → auth.users.id
-auth.mfa_challenges.factor_id → auth.mfa_factors.id
-Comment: auth: stores metadata about factors
-mfa_challenges
-RLS: enabled
-Rows: 0
-Primary key: id
-Columns: id, factor_id, created_at, verified_at, ip_address (inet), otp_code (text), web_authn_session_data (jsonb)
-Foreign keys:
-auth.mfa_challenges.factor_id → auth.mfa_factors.id
-Comment: auth: stores metadata about challenge requests made
-mfa_amr_claims
-RLS: enabled
-Rows: 23
-Primary key: id
-Columns: session_id (uuid), created_at, updated_at, authentication_method (text), id (uuid)
-Foreign keys:
-auth.mfa_amr_claims.session_id → auth.sessions.id
-Comment: auth: stores authenticator method reference claims for multi factor authentication
-sso_providers / sso_domains / saml_providers / saml_relay_states
-RLS: enabled (where applicable), rows: 0
-Manage SSO/SAML provider config and domain mappings.
-Foreign keys connect sso_providers → sso_domains, saml_providers, saml_relay_states, etc.
-flow_state
-RLS: enabled
-Rows: 0
-Columns: code_challenge, id, user_id, provider_type, provider_access_token, provider_refresh_token, created_at, updated_at, authentication_method, auth_code_issued_at, invite_token, referrer, oauth_client_state_id, linking_target_id, email_optional (bool default false), code_challenge_method (enum), auth_code
-Foreign keys:
-saml_relay_states.flow_state_id → auth.flow_state.id
-Comment: Stores metadata for OAuth/SSO login flows
-one_time_tokens
-RLS: enabled
-Rows: 0
-Primary key: id
-Columns: id, user_id, token_type (enum), token_hash (text check length>0), relates_to (text), created_at (timestamp default now()), updated_at
-Foreign keys:
-auth.one_time_tokens.user_id → auth.users.id
-oauth_clients / oauth_authorizations / oauth_consents / oauth_client_states
-Manage OAuth clients, authorizations, consents, and client states.
-oauth_clients primary key: id (uuid)
-oauth_authorizations has client_id → oauth_clients.id and user_id → auth.users.id
-oauth_consents has user_id → auth.users.id and client_id → oauth_clients.id
-oauth_client_states
-RLS: disabled
-Rows: 0
-Columns: id (uuid), provider_type, code_verifier, created_at
-Comment: Stores OAuth states for third-party provider authentication flows where Supabase acts as the OAuth client.
-storage
-buckets
-RLS: enabled
-Rows: 0
-Primary key: id (text)
-Columns: id, name, owner (uuid) [deprecated, use owner_id], created_at (default now()), updated_at (default now()), type (enum buckettype: STANDARD, ANALYTICS, VECTOR), allowed_mime_types (text[]), public (bool default false), avif_autodetection (bool default false), file_size_limit (bigint), owner_id (text)
-Foreign keys:
-storage.s3_multipart_uploads_parts.bucket_id → storage.buckets.id
-storage.objects.bucket_id → storage.buckets.id
-storage.s3_multipart_uploads.bucket_id → storage.buckets.id
-objects
-RLS: enabled
-Rows: 0
-Primary key: id (uuid, default gen_random_uuid())
-Columns: bucket_id (text), name (text), owner (uuid) [deprecated], created_at (timestamptz default now()), id (uuid), metadata (jsonb), updated_at (timestamptz default now()), last_accessed_at (timestamptz default now()), path_tokens (text[] generated string_to_array(name,'/')), version (text), owner_id (text), user_metadata (jsonb)
-Foreign keys:
-storage.objects.bucket_id → storage.buckets.id
-migrations
-RLS: enabled
-Rows: 7
-Primary key: id
-Columns: id (int), name (varchar unique), hash (varchar), executed_at (timestamp default CURRENT_TIMESTAMP)
-s3_multipart_uploads / s3_multipart_uploads_parts
-RLS: enabled
-Track multipart uploads, parts, sizes, etags.
-Foreign keys to storage.buckets
-buckets_analytics / buckets_vectors / vector_indexes
-RLS: enabled
-buckets_analytics rows: 0 columns include id (uuid gen_random_uuid), type (buckettype), format (text default 'ICEBERG'), created_at, updated_at, name, deleted_at
-buckets_vectors rows: 0
-vector_indexes: stores vector index config with id (text gen_random_uuid()), bucket_id → buckets_vectors.id
-vault
-secrets
-RLS: disabled
-Rows: 0
-Primary key: id (uuid default gen_random_uuid())
-Columns: name (text), secret (text), key_id (uuid), id (uuid), description (text default ''), nonce (bytea default vault._crypto_aead_det_noncegen()), created_at (timestamptz default CURRENT_TIMESTAMP), updated_at (timestamptz default CURRENT_TIMESTAMP)
-Comment: Table with encrypted secret column for storing sensitive information on disk._
-realtime
-schema_migrations
-RLS: disabled
-Rows: 2
-Primary key: version
-Columns: version (bigint), inserted_at (timestamp)
-subscription
-RLS: disabled
-Rows: 0
-Primary key: id
-Columns: action_filter (text default ''), id (bigint identity), entity (regclass), filters (user_defined_filter[] default '{}'), subscription_id (uuid), claims (jsonb), claims_role (regrole generated), created_at (timestamp default timezone('utc', now()))
-messages
-RLS: enabled
-Rows: 0
-Primary key: inserted_at, id
-Columns: id (uuid default gen_random_uuid()), topic (text), extension (text), payload (jsonb), event (text), private (bool default false), updated_at (timestamp default now()), inserted_at (timestamp default now())
-public
-This schema contains your application tables (school management).
+# Supabase Database Schema
 
-School_Admin
-RLS: disabled
-Rows: 0
-Primary key: admin_id (uuid default gen_random_uuid())
-Columns: admin_id, created_at (timestamptz default now()), email (varchar), role (text), permissions_json (jsonb), phone_number (text), last_login (timestamp), full_name (varchar)
-Teachers
-RLS: disabled
-Rows: 0
-Primary key: teacher_id (uuid default gen_random_uuid())
-Columns include last_name, date_of_birth (date), teacher_id, address (text), created_at (timestamptz default now()), first_name, marital_status, trcn_reg_number, email, gender, phone_number, date_hired (date), profile_picture
-Foreign keys (references from other tables listed below)
-Classes
-RLS: disabled
-Rows: 3
-Primary key: class_id (integer identity)
-Columns: teacher_id (uuid default gen_random_uuid()), class_id, created_at (timestamptz default now()), class_name (varchar), section (varchar)
-Foreign keys:
-public.Classes.teacher_id → public.Teachers.teacher_id
-public.Students.class_id → public.Classes.class_id
-public.timetable_entries.class_id → public.Classes.class_id
-public.schedule_configs.class_id → public.Classes.class_id
-public.Curriculum.class_id → public.Classes.class_id
-public.Class_Subjects.class_id → public.Classes.class_id
-Subjects
-RLS: disabled
-Rows: 6
-Primary key: subject_id (uuid default gen_random_uuid())
-Columns: subject_id, created_at (timestamptz default now()), subject_name (varchar), is_core (bool default false), teacher_id (uuid)
-Foreign keys:
-public.Class_Subjects.subject_id → public.Subjects.subject_id
-public.student_subject.subject_id → public.Subjects.subject_id
-public.timetable_entries.subject_id → public.Subjects.subject_id
-public.Subjects.teacher_id → public.Teachers.teacher_id
-public.Grades.subject_id → public.Subjects.subject_id
-public.Curriculum.subject_id → public.Subjects.subject_id
-Students
-RLS: disabled
-Rows: 7
-Primary key: student_id (uuid default gen_random_uuid())
-Columns: admission_date (date), profile_picture (varchar), total_points (int), class_id (int), student_id, created_at (timestamptz default now()), full_name (varchar), date_of_birth (date), gender (text)
-Foreign keys:
-public.Students.class_id → public.Classes.class_id
-public.Grades.student_id → public.Students.student_id
-public.Attendance.student_id → public.Students.student_id
-public.student_subject.student_id → public.Students.student_id
-Class_Subjects
-RLS: disabled
-Rows: 2
-Primary key: class_subjects__id (uuid default gen_random_uuid())
-Columns: teacher_id (uuid), class_subjects__id, created_at (timestamptz default now()), class_id (int), subject_id (uuid default gen_random_uuid())
-Foreign keys:
-public.Class_Subjects.class_id → public.Classes.class_id
-public.Class_Subjects.teacher_id → public.Teachers.teacher_id
-public.Class_Subjects.subject_id → public.Subjects.subject_id
-student_subject
-RLS: enabled
-Rows: 0
-Primary key: student_subject_id (uuid default gen_random_uuid())
-Columns: subject_id (uuid default gen_random_uuid()), student_id (uuid default gen_random_uuid()), student_subject_id (uuid default gen_random_uuid()), created_at (timestamptz default now())
-Foreign keys:
-public.student_subject.student_id → public.Students.student_id
-public.student_subject.subject_id → public.Subjects.subject_id
-emergency_contact
-RLS: disabled
-Rows: 0
-Primary key: contact_id (bigint identity)
-Columns: teacher_id (uuid default gen_random_uuid()), contact_id, created_at (timestamptz default now()), name (varchar), relationship (varchar), phone_number (varchar), address (text)
-Foreign keys:
-public.emergency_contact.teacher_id → public.Teachers.teacher_id
-qualifications
-RLS: disabled
-Rows: 0
-Primary key: qualification_id (bigint identity)
-Columns: qualification_id, created_at (timestamptz default now()), teacher_id (uuid default gen_random_uuid()), school_name (varchar), certificate_name (varchar), feild_of_study (varchar), graduation_year (int)
-work_experience
-RLS: disabled
-Rows: 0
-Primary key: experience_id (bigint identity)
-Columns: professional_development (text), position_held (varchar), duration (varchar), total_experience (varchar), experience_id, created_at (timestamptz default now()), teacher_id (uuid default gen_random_uuid()), school_name (varchar)
-Foreign keys:
-public.work_experience.teacher_id → public.Teachers.teacher_id
-school_employment
-RLS: disabled
-Rows: 0
-Primary key: employment_id (bigint identity)
-Columns: employment_id, created_at (timestamptz default now()), teacher_id (uuid default gen_random_uuid()), start_date (date), job_title (varchar), contract_type (varchar), salary (numeric)
-Foreign keys:
-public.school_employment.teacher_id → public.Teachers.teacher_id
-buckets_analytics (storage)
-See storage section (analytics buckets)
-study_materials
-RLS: enabled
-Rows: 0
-Primary key: id (int seq)
-Columns: title (varchar), subject (varchar), type (varchar), description (text), file_url (text), file_path (text), file_size (bigint), file_type (varchar), uploaded_by (varchar), id (int), uploaded_at (timestamptz default now())
-academic_events
-RLS: disabled
-Rows: 0
-Primary key: id (bigint identity)
-Columns: id, created_at (timestamptz default now()), term_period (text), activity_event (text), start_date (date), end_date (date), duration (text), remarks (text), academic_session (text)
-Attendance
-RLS: disabled
-Rows: 14
-Primary key: id (bigint identity)
-Columns: id, student_id (uuid default gen_random_uuid()), record_at (timestamptz default now()), date (date), attendance_status (text), notes (text), recorded_by_user_id (uuid default gen_random_uuid())
-Foreign keys:
-public.Attendance.recorded_by_user_id → public.Teachers.teacher_id
-public.Attendance.student_id → public.Students.student_id
-timetable_entries
-RLS: disabled
-Rows: 0
-Primary key: id (uuid default extensions.uuid_generate_v4())
-Columns: subject_id (uuid), class_id (int), day_of_week (varchar), start_time (time), id (uuid), duration_minutes (int default 40), created_at (timestamptz default now())
-Foreign keys:
-public.timetable_entries.subject_id → public.Subjects.subject_id
-public.timetable_entries.class_id → public.Classes.class_id
-schedule_configs
-RLS: disabled
-Rows: 2
-Primary key: id (uuid default extensions.uuid_generate_v4())
-Columns: class_id (int unique), start_time (time), period_duration (int), periods_per_day (int), active_days (text[]), break_times (jsonb), id (uuid), created_at (timestamptz default now())
-Foreign keys:
-public.schedule_configs.class_id → public.Classes.class_id
-Grades
-RLS: enabled
-Rows: 0
-Primary key: grade_id (uuid default gen_random_uuid())
-Columns: student_id (uuid), subject_id (uuid), score (numeric), term (text), academic_session (text), grade_id (uuid), max_score (numeric default 100), created_at (timestamptz default now())
-Foreign keys:
-public.Grades.student_id → public.Students.student_id
-public.Grades.subject_id → public.Subjects.subject_id
-Curriculum
-RLS: disabled
-Rows: 10
-Primary key: id (uuid default gen_random_uuid())
-Columns: teacher_id (uuid), class_id (int), subject_id (uuid), week (text), topic (text), sub_topic (text), academic_session (text), id (uuid), status (text default 'incomplete'), created_at (timestamptz default now()), progress (smallint)
-Foreign keys:
-public.Curriculum.class_id → public.Classes.class_id
-public.Curriculum.teacher_id → public.Teachers.teacher_id
-public.Curriculum.subject_id → public.Subjects.subject_id
+## Table of Contents
+- [1. auth schema](#1-auth-schema)
+- [2. public schema](#2-public-schema)
+- [3. realtime schema](#3-realtime-schema)
+- [4. storage schema](#4-storage-schema)
+- [5. Foreign Key Relationships (Summary)](#5-foreign-key-relationships-summary)
+- [6. AI Consumption Prompts](#6-ai-consumption-prompts)
+- [7. Change Log](#7-change-log)
 
+## 1. auth schema
 
-Grading_Structure
-Schema: public
-RLS: disabled (matches other public tables; enable if required)
-Rows: 0 (new)
-Primary key: id
-Columns:
-id (uuid) — default: gen_random_uuid(), PRIMARY KEY
-assessment_name (text) — NOT NULL — e.g., '1st CA'
-max_score (smallint / int2) — NOT NULL — e.g., 20
-term (text) — NOT NULL — e.g., 'First Term'
-academic_session (text) — NOT NULL
-created_at (timestamptz) — default: now()
+### `auth.audit_log_entries`
+**RLS Enabled**: `true` | **Approx Rows**: `2751`
 
-Lesson_Notes
-Schema: public
+- **instance_id**: `uuid`
+- **id**: `uuid` (PK)
+- **payload**: `json`
+- **created_at**: `timestamptz`
+- **ip_address**: `varchar` (default ''::character varying)
 
-RLS: enabled
+### `auth.custom_oauth_providers`
+**RLS Enabled**: `false` | **Approx Rows**: `0`
 
-Rows: (existing)
+- **id**: `uuid` (PK, default gen_random_uuid())
+- **provider_type**: `text`
+- **identifier**: `text`
+- **name**: `text`
+- **client_id**: `text`
+- **client_secret**: `text`
+- **acceptable_client_ids**: `_text` (default '{}'::text[])
+- **scopes**: `_text` (default '{}'::text[])
+- **pkce_enabled**: `bool` (default true)
+- **attribute_mapping**: `jsonb` (default '{}'::jsonb)
+- **authorization_params**: `jsonb` (default '{}'::jsonb)
+- **enabled**: `bool` (default true)
+- **email_optional**: `bool` (default false)
+- **issuer**: `text`
+- **discovery_url**: `text`
+- **skip_nonce_check**: `bool` (default false)
+- **cached_discovery**: `jsonb`
+- **discovery_cached_at**: `timestamptz`
+- **authorization_url**: `text`
+- **token_url**: `text`
+- **userinfo_url**: `text`
+- **jwks_uri**: `text`
+- **created_at**: `timestamptz` (default now())
+- **updated_at**: `timestamptz` (default now())
 
-Primary key: (existing primary key)
+### `auth.flow_state`
+**RLS Enabled**: `true` | **Approx Rows**: `0`
 
-Columns: (list columns here — copy from your current schema if you want exact names/types)
+- **id**: `uuid` (PK)
+- **user_id**: `uuid`
+- **auth_code**: `text`
+- **code_challenge_method**: `code_challenge_method`
+- **code_challenge**: `text`
+- **provider_type**: `text`
+- **provider_access_token**: `text`
+- **provider_refresh_token**: `text`
+- **created_at**: `timestamptz`
+- **updated_at**: `timestamptz`
+- **authentication_method**: `text`
+- **auth_code_issued_at**: `timestamptz`
+- **invite_token**: `text`
+- **referrer**: `text`
+- **oauth_client_state_id**: `uuid`
+- **linking_target_id**: `uuid`
+- **email_optional**: `bool` (default false)
 
-e.g., id (uuid)
-e.g., lesson_id (uuid)
-e.g., content (text)
-created_at (timestamptz)
-uploaded_by (uuid)
-(adjust to match your actual columns)
-Row-Level Security (policies)
+### `auth.identities`
+**RLS Enabled**: `true` | **Approx Rows**: `138`
 
-"Enable read access for all users"
-Operation: SELECT
-Applies to: public (no role restriction)
-USING clause: true
-Effect: Any user (including unauthenticated/anon) can read Lesson_Notes rows.
-"Teachers can insert notes"
-Operation: INSERT
-Applies to: authenticated
-WITH CHECK clause: true
-Effect: Only logged-in users (any authenticated user) can insert new Lesson_Notes rows.
-(Note: this policy allows all authenticated users — if you want to restrict inserts to teachers/admins only, change the TO clause or WITH CHECK to validate a role claim, e.g.:
-TO authenticated USING (...) AND (auth.jwt() ->> 'role') = 'teacher'
-or WITH CHECK ((auth.jwt() ->> 'role') IN ('teacher','admin')))
+- **provider_id**: `text`
+- **user_id**: `uuid` (FK -> auth.users.id)
+- **identity_data**: `jsonb`
+- **provider**: `text`
+- **last_sign_in_at**: `timestamptz`
+- **created_at**: `timestamptz`
+- **updated_at**: `timestamptz`
+- **email**: `text` (default lower((identity_data ->> 'email'::text)))
+- **id**: `uuid` (PK, default gen_random_uuid())
 
-Parents
-Description: Stores parent/guardian records for students.
+### `auth.instances`
+**RLS Enabled**: `true` | **Approx Rows**: `0`
 
-DDL: CREATE TABLE public."Parents" with columns:
+- **id**: `uuid` (PK)
+- **uuid**: `uuid`
+- **raw_base_config**: `text`
+- **created_at**: `timestamptz`
+- **updated_at**: `timestamptz`
 
-parent_id: uuid, primary key, default gen_random_uuid()
-full_name: varchar, NOT NULL
-email: varchar, UNIQUE
-phone_number: text, UNIQUE, NOT NULL
-address: text
-occupation: text
-created_at: timestamptz, default now()
-Columns:
+### `auth.mfa_amr_claims`
+**RLS Enabled**: `true` | **Approx Rows**: `143`
 
-parent_id (uuid, PK, default gen_random_uuid()) — Primary key.
-full_name (varchar, NOT NULL) — Parent full name.
-email (varchar, UNIQUE) — Optional email address, unique when present.
-phone_number (text, UNIQUE, NOT NULL) — Required phone number, unique.
-address (text) — Postal address.
-occupation (text) — Parent occupation.
-created_at (timestamptz, default now()) — Record creation timestamp.
-Notes:
+- **session_id**: `uuid` (FK -> auth.sessions.id)
+- **created_at**: `timestamptz`
+- **updated_at**: `timestamptz`
+- **authentication_method**: `text`
+- **id**: `uuid` (PK)
 
-RLS: ENABLED.
-Ensure pgcrypto (or an extension providing gen_random_uuid) is available: CREATE EXTENSION IF NOT EXISTS pgcrypto;
-Consider normalizing phone/email formats and adding CHECK constraints if needed (e.g., phone format).
-Consider specifying varchar lengths (e.g., varchar(255)) if you want stricter limits.
-Parent_Student_Links
-Description: Junction table linking parents to students (many-to-many). Prevents duplicate links via a unique constraint on (parent_id, student_id).
+### `auth.mfa_challenges`
+**RLS Enabled**: `true` | **Approx Rows**: `0`
 
-DDL: CREATE TABLE public."Parent_Student_Links" with columns:
+- **id**: `uuid` (PK)
+- **factor_id**: `uuid` (FK -> auth.mfa_factors.id)
+- **created_at**: `timestamptz`
+- **verified_at**: `timestamptz`
+- **ip_address**: `inet`
+- **otp_code**: `text`
+- **web_authn_session_data**: `jsonb`
 
-link_id: uuid, primary key, default gen_random_uuid()
-parent_id: uuid, foreign key references public."Parents"(parent_id), ON DELETE CASCADE
-student_id: uuid, foreign key references public."Students"(student_id), ON DELETE CASCADE
-relationship: text
-created_at: timestamptz, default now()
-UNIQUE(parent_id, student_id)
-Columns:
+### `auth.mfa_factors`
+**RLS Enabled**: `true` | **Approx Rows**: `0`
 
-link_id (uuid, PK, default gen_random_uuid()) — Primary key.
-parent_id (uuid, FK → public."Parents"(parent_id), ON DELETE CASCADE) — Parent reference.
-student_id (uuid, FK → public."Students"(student_id), ON DELETE CASCADE) — Student reference.
-relationship (text) — Relationship type (e.g., 'Mother', 'Father', 'Guardian').
-created_at (timestamptz, default now()) — Link creation timestamp.
-Notes:
+- **id**: `uuid` (PK)
+- **user_id**: `uuid` (FK -> auth.users.id)
+- **friendly_name**: `text`
+- **factor_type**: `factor_type`
+- **status**: `factor_status`
+- **created_at**: `timestamptz`
+- **updated_at**: `timestamptz`
+- **secret**: `text`
+- **phone**: `text`
+- **last_challenged_at**: `timestamptz`
+- **web_authn_credential**: `jsonb`
+- **web_authn_aaguid**: `uuid`
+- **last_webauthn_challenge_data**: `jsonb`
 
-RLS: ENABLED.
-This table references public."Students". Ensure the Students table exists before applying this DDL, or add the FK constraints later with ALTER TABLE if creating in a different order.
-Recommended indexes for performance if you query by these columns frequently:
-index on student_id
-index on parent_id
-Row-Level Security
-Both tables have RLS enabled.
+### `auth.oauth_authorizations`
+**RLS Enabled**: `false` | **Approx Rows**: `0`
 
-RLS state: ALTER TABLE public."Parents" ENABLE ROW LEVEL SECURITY; ALTER TABLE public."Parent_Student_Links" ENABLE ROW LEVEL SECURITY;
+- **id**: `uuid` (PK)
+- **authorization_id**: `text`
+- **client_id**: `uuid` (FK -> auth.oauth_clients.id)
+- **user_id**: `uuid` (FK -> auth.users.id)
+- **redirect_uri**: `text`
+- **scope**: `text`
+- **state**: `text`
+- **resource**: `text`
+- **code_challenge**: `text`
+- **code_challenge_method**: `code_challenge_method`
+- **response_type**: `oauth_response_type` (default 'code'::auth.oauth_response_type)
+- **status**: `oauth_authorization_status` (default 'pending'::auth.oauth_authorization_status)
+- **authorization_code**: `text`
+- **created_at**: `timestamptz` (default now())
+- **expires_at**: `timestamptz` (default (now() + '00:03:00'::interval))
+- **approved_at**: `timestamptz`
+- **nonce**: `text`
 
-Example policy ideas (replace with your app logic):
+### `auth.oauth_client_states`
+**RLS Enabled**: `false` | **Approx Rows**: `0`
 
-Parents: allow authenticated users to SELECT only their own parent records using auth.uid().
-Parent_Student_Links: allow authenticated users to see links where parent_id = auth.uid() OR where student_id is associated with the auth user (replace with your student ownership mapping).
-Add INSERT/UPDATE/DELETE policies as needed for authorized operations.
-Extensions
-Required extension for gen_random_uuid: CREATE EXTENSION IF NOT EXISTS pgcrypto;
+- **id**: `uuid` (PK)
+- **provider_type**: `text`
+- **code_verifier**: `text`
+- **created_at**: `timestamptz`
 
-Parents (updated)
-Description: Stores parent/guardian records for students. Now includes an optional link to an auth user (user account for the parent).
+### `auth.oauth_clients`
+**RLS Enabled**: `false` | **Approx Rows**: `0`
 
-DDL: ALTER TABLE public."Parents" to ensure user_id column exists:
+- **id**: `uuid` (PK)
+- **client_secret_hash**: `text`
+- **registration_type**: `oauth_registration_type`
+- **redirect_uris**: `text`
+- **grant_types**: `text`
+- **client_name**: `text`
+- **client_uri**: `text`
+- **logo_uri**: `text`
+- **created_at**: `timestamptz` (default now())
+- **updated_at**: `timestamptz` (default now())
+- **deleted_at**: `timestamptz`
+- **client_type**: `oauth_client_type` (default 'confidential'::auth.oauth_client_type)
+- **token_endpoint_auth_method**: `text`
 
-user_id: uuid, nullable, references auth.users(id) ON DELETE SET NULL
-Existing columns (for completeness):
+### `auth.oauth_consents`
+**RLS Enabled**: `false` | **Approx Rows**: `0`
 
-parent_id (uuid, PK, default gen_random_uuid()) — Primary key.
-full_name (varchar, NOT NULL) — Parent full name.
-email (varchar, UNIQUE) — Optional email address, unique when present.
-phone_number (text, UNIQUE, NOT NULL) — Required phone number, unique.
-address (text) — Postal address.
-occupation (text) — Parent occupation.
-created_at (timestamptz, default now()) — Record creation timestamp.
-user_id (uuid, FK → auth.users(id), ON DELETE SET NULL) — Optional link to an auth user account for this parent.
-Notes:
+- **id**: `uuid` (PK)
+- **user_id**: `uuid` (FK -> auth.users.id)
+- **client_id**: `uuid` (FK -> auth.oauth_clients.id)
+- **scopes**: `text`
+- **granted_at**: `timestamptz` (default now())
+- **revoked_at**: `timestamptz`
 
-The user_id column allows mapping a parent record to a Supabase Auth user. When the referenced auth.user is deleted, user_id will be set to NULL.
-If you expect many parent lookups by user account, consider an index on user_id:
-CREATE INDEX ON public."Parents"(user_id);
-RLS: when writing policies that allow parents to manage their data, check profiles.role or auth.uid() = user_id as appropriate.
-Parent_Student_Links
-Description: Junction table linking parents to students (many-to-many).
+### `auth.one_time_tokens`
+**RLS Enabled**: `true` | **Approx Rows**: `1`
 
-Columns (summary):
+- **id**: `uuid` (PK)
+- **user_id**: `uuid` (FK -> auth.users.id)
+- **token_type**: `one_time_token_type`
+- **token_hash**: `text`
+- **relates_to**: `text`
+- **created_at**: `timestamp` (default now())
+- **updated_at**: `timestamp` (default now())
 
-link_id (uuid, PK, default gen_random_uuid())
-parent_id (uuid, FK → public."Parents"(parent_id), ON DELETE CASCADE)
-student_id (uuid, FK → public."Students"(student_id), ON DELETE CASCADE)
-relationship (text)
-created_at (timestamptz, default now())
-UNIQUE(parent_id, student_id)
-Notes:
+### `auth.refresh_tokens`
+**RLS Enabled**: `true` | **Approx Rows**: `215`
 
-Ensure the Students table exists before applying the FK or add FK constraints later if needed.
-Consider indexes on student_id and parent_id for query performance.
-Row-Level Security (RLS)
-Current RLS state (if already applied):
+- **instance_id**: `uuid`
+- **id**: `int8` (PK, default nextval('auth.refresh_tokens_id_seq'::regclass))
+- **token**: `varchar`
+- **user_id**: `varchar`
+- **revoked**: `bool`
+- **created_at**: `timestamptz`
+- **updated_at**: `timestamptz`
+- **parent**: `varchar`
+- **session_id**: `uuid` (FK -> auth.sessions.id)
 
-public."Parents" — RLS ENABLED
-public."Parent_Student_Links" — RLS ENABLED
-Additions to document:
+### `auth.saml_providers`
+**RLS Enabled**: `true` | **Approx Rows**: `0`
 
-When creating policies, use profiles.role and auth.uid() to implement role-based behavior. Example checks:
-To allow a parent user to SELECT their parent record: profiles.id = auth.uid() OR public."Parents".user_id = auth.uid()
-To allow teachers/admins broader access: check profiles.role IN ('teacher','admin')
+- **id**: `uuid` (PK)
+- **sso_provider_id**: `uuid` (FK -> auth.sso_providers.id)
+- **entity_id**: `text`
+- **metadata_xml**: `text`
+- **metadata_url**: `text`
+- **attribute_mapping**: `jsonb`
+- **created_at**: `timestamptz`
+- **updated_at**: `timestamptz`
+- **name_id_format**: `text`
+
+### `auth.saml_relay_states`
+**RLS Enabled**: `true` | **Approx Rows**: `0`
+
+- **id**: `uuid` (PK)
+- **sso_provider_id**: `uuid` (FK -> auth.sso_providers.id)
+- **request_id**: `text`
+- **for_email**: `text`
+- **redirect_to**: `text`
+- **created_at**: `timestamptz`
+- **updated_at**: `timestamptz`
+- **flow_state_id**: `uuid` (FK -> auth.flow_state.id)
+
+### `auth.schema_migrations`
+**RLS Enabled**: `true` | **Approx Rows**: `4`
+
+- **version**: `varchar` (PK)
+
+### `auth.sessions`
+**RLS Enabled**: `true` | **Approx Rows**: `143`
+
+- **id**: `uuid` (PK)
+- **user_id**: `uuid` (FK -> auth.users.id)
+- **created_at**: `timestamptz`
+- **updated_at**: `timestamptz`
+- **factor_id**: `uuid`
+- **aal**: `aal_level`
+- **not_after**: `timestamptz`
+- **refreshed_at**: `timestamp`
+- **user_agent**: `text`
+- **ip**: `inet`
+- **tag**: `text`
+- **oauth_client_id**: `uuid` (FK -> auth.oauth_clients.id)
+- **refresh_token_hmac_key**: `text`
+- **refresh_token_counter**: `int8`
+- **scopes**: `text`
+
+### `auth.sso_domains`
+**RLS Enabled**: `true` | **Approx Rows**: `0`
+
+- **id**: `uuid` (PK)
+- **sso_provider_id**: `uuid` (FK -> auth.sso_providers.id)
+- **domain**: `text`
+- **created_at**: `timestamptz`
+- **updated_at**: `timestamptz`
+
+### `auth.sso_providers`
+**RLS Enabled**: `true` | **Approx Rows**: `0`
+
+- **id**: `uuid` (PK)
+- **resource_id**: `text`
+- **created_at**: `timestamptz`
+- **updated_at**: `timestamptz`
+- **disabled**: `bool`
+
+### `auth.users`
+**RLS Enabled**: `true` | **Approx Rows**: `138`
+
+- **instance_id**: `uuid`
+- **id**: `uuid` (PK)
+- **aud**: `varchar`
+- **role**: `varchar`
+- **email**: `varchar`
+- **encrypted_password**: `varchar`
+- **email_confirmed_at**: `timestamptz`
+- **invited_at**: `timestamptz`
+- **confirmation_token**: `varchar`
+- **confirmation_sent_at**: `timestamptz`
+- **recovery_token**: `varchar`
+- **recovery_sent_at**: `timestamptz`
+- **email_change_token_new**: `varchar`
+- **email_change**: `varchar`
+- **email_change_sent_at**: `timestamptz`
+- **last_sign_in_at**: `timestamptz`
+- **raw_app_meta_data**: `jsonb`
+- **raw_user_meta_data**: `jsonb`
+- **is_super_admin**: `bool`
+- **created_at**: `timestamptz`
+- **updated_at**: `timestamptz`
+- **phone**: `text` (default NULL::character varying)
+- **phone_confirmed_at**: `timestamptz`
+- **phone_change**: `text` (default ''::character varying)
+- **phone_change_token**: `varchar` (default ''::character varying)
+- **phone_change_sent_at**: `timestamptz`
+- **confirmed_at**: `timestamptz` (default LEAST(email_confirmed_at, phone_confirmed_at))
+- **email_change_token_current**: `varchar` (default ''::character varying)
+- **email_change_confirm_status**: `int2` (default 0)
+- **banned_until**: `timestamptz`
+- **reauthentication_token**: `varchar` (default ''::character varying)
+- **reauthentication_sent_at**: `timestamptz`
+- **is_sso_user**: `bool` (default false)
+- **deleted_at**: `timestamptz`
+- **is_anonymous**: `bool` (default false)
+
+### `auth.webauthn_challenges`
+**RLS Enabled**: `false` | **Approx Rows**: `0`
+
+- **id**: `uuid` (PK, default gen_random_uuid())
+- **user_id**: `uuid` (FK -> auth.users.id)
+- **challenge_type**: `text`
+- **session_data**: `jsonb`
+- **created_at**: `timestamptz` (default now())
+- **expires_at**: `timestamptz`
+
+### `auth.webauthn_credentials`
+**RLS Enabled**: `false` | **Approx Rows**: `0`
+
+- **id**: `uuid` (PK, default gen_random_uuid())
+- **user_id**: `uuid` (FK -> auth.users.id)
+- **credential_id**: `bytea`
+- **public_key**: `bytea`
+- **attestation_type**: `text` (default ''::text)
+- **aaguid**: `uuid`
+- **sign_count**: `int8` (default 0)
+- **transports**: `jsonb` (default '[]'::jsonb)
+- **backup_eligible**: `bool` (default false)
+- **backed_up**: `bool` (default false)
+- **friendly_name**: `text` (default ''::text)
+- **created_at**: `timestamptz` (default now())
+- **updated_at**: `timestamptz` (default now())
+- **last_used_at**: `timestamptz`
+
+## 2. public schema
+
+### `public.Attendance`
+**RLS Enabled**: `true` | **Approx Rows**: `24`
+
+- **id**: `int8` (PK)
+- **student_id**: `uuid` (FK -> public.Students.student_id, default gen_random_uuid())
+- **record_at**: `timestamptz` (default now())
+- **date**: `date`
+- **attendance_status**: `text`
+- **notes**: `text`
+- **recorded_by_user_id**: `uuid` (FK -> public.Teachers.teacher_id, default gen_random_uuid())
+- **school_id**: `uuid` (FK -> public.Schools.school_id)
+- **subject_id**: `uuid` (FK -> public.Subjects.subject_id)
+
+### `public.Class_Subjects`
+**RLS Enabled**: `true` | **Approx Rows**: `3`
+
+- **class_subjects__id**: `uuid` (PK, default gen_random_uuid())
+- **created_at**: `timestamptz` (default now())
+- **subject_id**: `uuid` (FK -> public.Subjects.subject_id, default gen_random_uuid())
+- **class_id**: `int4` (FK -> public.Classes.class_id)
+- **teacher_id**: `uuid` (FK -> public.Teachers.teacher_id)
+- **school_id**: `uuid` (FK -> public.Schools.school_id)
+
+### `public.Classes`
+**RLS Enabled**: `true` | **Approx Rows**: `6`
+
+- **created_at**: `timestamptz` (default now())
+- **class_name**: `varchar`
+- **section**: `varchar`
+- **teacher_id**: `uuid` (FK -> public.Teachers.teacher_id, default gen_random_uuid())
+- **class_id**: `int4` (PK)
+- **school_id**: `uuid` (FK -> public.Schools.school_id)
+- **students_count**: `int4`
+
+### `public.Curriculum`
+**RLS Enabled**: `true` | **Approx Rows**: `10`
+
+- **id**: `uuid` (PK, default gen_random_uuid())
+- **teacher_id**: `uuid` (FK -> public.Teachers.teacher_id)
+- **class_id**: `int4` (FK -> public.Classes.class_id)
+- **subject_id**: `uuid` (FK -> public.Subjects.subject_id)
+- **week**: `text`
+- **topic**: `text`
+- **sub_topic**: `text`
+- **status**: `text` (default 'incomplete'::text)
+- **academic_session**: `text`
+- **created_at**: `timestamptz` (default now())
+- **progress**: `int2`
+- **school_id**: `uuid` (FK -> public.Schools.school_id)
+
+### `public.Grades`
+**RLS Enabled**: `true` | **Approx Rows**: `6`
+
+- **grade_id**: `uuid` (PK, default gen_random_uuid())
+- **student_id**: `uuid` (FK -> public.Students.student_id)
+- **subject_id**: `uuid` (FK -> public.Subjects.subject_id)
+- **score**: `numeric`
+- **max_score**: `numeric` (default 100)
+- **term**: `text`
+- **academic_session**: `text`
+- **created_at**: `timestamptz` (default now())
+- **assessment_type**: `text`
+- **teacher_id**: `uuid` (FK -> public.Teachers.teacher_id)
+- **comment**: `text`
+- **class_id**: `int4` (FK -> public.Classes.class_id)
+- **school_id**: `uuid` (FK -> public.Schools.school_id)
+
+### `public.Grading_Structure`
+**RLS Enabled**: `true` | **Approx Rows**: `3`
+
+- **id**: `uuid` (PK, default gen_random_uuid())
+- **assessment_name**: `text`
+- **max_score**: `int2`
+- **term**: `text`
+- **academic_session**: `text`
+- **created_at**: `timestamptz` (default now())
+- **school_id**: `uuid` (FK -> public.Schools.school_id)
+
+### `public.Lesson_Notes`
+**RLS Enabled**: `true` | **Approx Rows**: `3`
+
+- **note_id**: `uuid` (PK, default gen_random_uuid())
+- **created_at**: `timestamptz` (default now())
+- **title**: `text`
+- **file_url**: `text`
+- **subject_id**: `uuid` (FK -> public.Subjects.subject_id)
+- **class_id**: `int4` (FK -> public.Classes.class_id)
+- **teacher_id**: `uuid` (FK -> public.Teachers.teacher_id)
+- **file_size_kb**: `numeric`
+- **school_id**: `uuid` (FK -> public.Schools.school_id)
+
+### `public.Parent_Student_Links`
+**RLS Enabled**: `true` | **Approx Rows**: `6`
+
+- **link_id**: `uuid` (PK, default gen_random_uuid())
+- **parent_id**: `uuid` (FK -> public.Parents.parent_id)
+- **student_id**: `uuid` (FK -> public.Students.student_id)
+- **relationship**: `text`
+- **created_at**: `timestamptz` (default now())
+- **school_id**: `uuid` (FK -> public.Schools.school_id)
+
+### `public.Parents`
+**RLS Enabled**: `true` | **Approx Rows**: `7`
+
+- **parent_id**: `uuid` (PK, default gen_random_uuid())
+- **full_name**: `varchar`
+- **email**: `varchar`
+- **phone_number**: `text`
+- **address**: `text`
+- **occupation**: `text`
+- **created_at**: `timestamptz` (default now())
+- **user_id**: `uuid` (FK -> auth.users.id)
+- **school_id**: `uuid` (FK -> public.Schools.school_id)
+
+### `public.Payment_Items`
+**RLS Enabled**: `true` | **Approx Rows**: `1`
+
+- **item_id**: `uuid` (PK, default gen_random_uuid())
+- **school_id**: `uuid`
+- **item_name**: `varchar`
+- **amount**: `numeric`
+- **is_compulsory**: `bool` (default false)
+- **academic_session**: `text`
+- **term**: `text`
+- **created_at**: `timestamptz` (default now())
+- **category**: `text` (default 'other'::text)
+- **description**: `text`
+- **is_active**: `bool` (default true)
+
+### `public.School_Admin`
+**RLS Enabled**: `true` | **Approx Rows**: `43`
+
+- **admin_id**: `uuid` (PK, default gen_random_uuid())
+- **created_at**: `timestamptz` (default now())
+- **email**: `varchar`
+- **role**: `text`
+- **permissions_json**: `jsonb`
+- **phone_number**: `text`
+- **last_login**: `timestamp`
+- **full_name**: `varchar`
+- **school_id**: `uuid` (FK -> public.Schools.school_id)
+- **setup_completed**: `bool` (default false)
+- **setup_steps_json**: `jsonb` (default '{"classes": false, "profile": false, "students": false, "teachers": false}'::jsonb)
+- **gender**: `text`
+
+### `public.Schools`
+**RLS Enabled**: `true` | **Approx Rows**: `41`
+
+- **school_id**: `uuid` (PK, default gen_random_uuid())
+- **school_name**: `varchar`
+- **school_logo_url**: `text`
+- **bank_name**: `varchar`
+- **account_number**: `varchar`
+- **bank_code**: `varchar`
+- **sub_account_code**: `varchar`
+- **commission_rate**: `numeric` (default 1.5)
+- **is_active**: `bool` (default true)
+- **created_at**: `timestamptz` (default now())
+- **subscription_status**: `text` (default 'trial'::text)
+- **current_plan**: `text` (default 'basic'::text)
+- **subscription_expires_at**: `timestamptz`
+- **tier**: `int4` (default 1)
+- **current_session**: `varchar`
+- **current_term**: `varchar`
+- **next_term_start_date**: `date`
+
+### `public.Student_Virtual_Accounts`
+**RLS Enabled**: `true` | **Approx Rows**: `0`
+
+- **id**: `uuid` (PK, default gen_random_uuid())
+- **student_id**: `uuid` (FK -> public.Students.student_id)
+- **account_number**: `varchar`
+- **bank_name**: `varchar`
+- **account_reference**: `varchar`
+- **bank_code**: `varchar`
+- **created_at**: `timestamptz` (default now())
+- **school_id**: `uuid` (FK -> public.Schools.school_id)
+
+### `public.Students`
+**RLS Enabled**: `true` | **Approx Rows**: `64`
+
+- **student_id**: `uuid` (PK, default gen_random_uuid())
+- **created_at**: `timestamptz` (default now())
+- **full_name**: `varchar`
+- **date_of_birth**: `date`
+- **gender**: `text`
+- **admission_date**: `date`
+- **profile_picture**: `varchar`
+- **total_points**: `int4`
+- **class_id**: `int4` (FK -> public.Classes.class_id)
+- **school_id**: `uuid` (FK -> public.Schools.school_id)
+- **enrollment_status**: `text` (default `'active'::text`) — values: `active`, `graduated`, `withdrawn`, `expelled`
+- **status_reason**: `text` — required for `withdrawn` / `expelled` transitions
+- **status_changed_at**: `timestamptz` — timestamp of last status change
+
+> **Migration** (run once in Supabase SQL editor):
+> ```sql
+> ALTER TABLE public."Students"
+>   ADD COLUMN enrollment_status TEXT NOT NULL DEFAULT 'active',
+>   ADD COLUMN status_reason     TEXT,
+>   ADD COLUMN status_changed_at TIMESTAMPTZ;
+> ```
+
+### `public.Subject_Allocations`
+**RLS Enabled**: `true` | **Approx Rows**: `2`
+
+- **allocation_id**: `uuid` (PK, default gen_random_uuid())
+- **subject_id**: `uuid` (FK -> public.Subjects.subject_id)
+- **class_id**: `int4` (FK -> public.Classes.class_id)
+- **teacher_id**: `uuid` (FK -> public.Teachers.teacher_id)
+- **school_id**: `uuid` (FK -> public.Schools.school_id)
+- **created_at**: `timestamptz` (default now())
+- **created_by**: `text`
+- **academic_year**: `text`
+- **term**: `text`
+
+### `public.Subjects`
+**RLS Enabled**: `true` | **Approx Rows**: `11`
+
+- **subject_id**: `uuid` (PK, default gen_random_uuid())
+- **created_at**: `timestamptz` (default now())
+- **subject_name**: `varchar`
+- **is_core**: `bool` (default false)
+- **teacher_id**: `uuid` (FK -> public.Teachers.teacher_id)
+- **school_id**: `uuid` (FK -> public.Schools.school_id)
+
+### `public.Teachers`
+**RLS Enabled**: `true` | **Approx Rows**: `10`
+
+- **teacher_id**: `uuid` (PK, default gen_random_uuid())
+- **created_at**: `timestamptz` (default now())
+- **first_name**: `varchar`
+- **email**: `varchar`
+- **phone_number**: `varchar`
+- **date_hired**: `date`
+- **profile_picture**: `varchar`
+- **last_name**: `varchar`
+- **date_of_birth**: `date`
+- **address**: `text`
+- **marital_status**: `varchar`
+- **trcn_reg_number**: `varchar`
+- **gender**: `varchar`
+- **school_id**: `uuid` (FK -> public.Schools.school_id)
+
+### `public.Termly_Enrollment`
+**RLS Enabled**: `true` | **Approx Rows**: `0`
+
+- **enrollment_id**: `uuid` (PK, default gen_random_uuid())
+- **student_id**: `uuid` (FK -> public.Students.student_id)
+- **school_id**: `uuid` (FK -> public.Schools.school_id)
+- **academic_session**: `text`
+- **term**: `text`
+- **is_active**: `bool` (default true)
+- **billing_status**: `text` (default 'pending'::text)
+- **created_at**: `timestamptz` (default now())
+
+### `public.academic_events`
+**RLS Enabled**: `true` | **Approx Rows**: `5`
+
+- **id**: `int8` (PK)
+- **created_at**: `timestamptz` (default now())
+- **term_period**: `text`
+- **activity_event**: `text`
+- **start_date**: `date`
+- **end_date**: `date`
+- **duration**: `text`
+- **remarks**: `text`
+- **academic_session**: `text`
+- **school_id**: `uuid` (FK -> public.Schools.school_id)
+
+### `public.emergency_contact`
+**RLS Enabled**: `true` | **Approx Rows**: `0`
+
+- **contact_id**: `int8` (PK)
+- **created_at**: `timestamptz` (default now())
+- **name**: `varchar`
+- **relationship**: `varchar`
+- **phone_number**: `varchar`
+- **address**: `text`
+- **teacher_id**: `uuid` (FK -> public.Teachers.teacher_id, default gen_random_uuid())
+- **school_id**: `uuid` (FK -> public.Schools.school_id)
+
+### `public.profiles`
+**RLS Enabled**: `true` | **Approx Rows**: `0`
+
+- **id**: `uuid` (PK, FK -> auth.users.id)
+- **role**: `text` (default 'student'::text)
+- **updated_at**: `timestamptz` (default now())
+- **school_id**: `uuid` (FK -> public.Schools.school_id)
+
+### `public.qualifications`
+**RLS Enabled**: `true` | **Approx Rows**: `6`
+
+- **qualification_id**: `int8` (PK)
+- **created_at**: `timestamptz` (default now())
+- **teacher_id**: `uuid` (default gen_random_uuid())
+- **school_name**: `varchar`
+- **certificate_name**: `varchar`
+- **feild_of_study**: `varchar`
+- **graduation_year**: `int4`
+
+### `public.schedule_configs`
+**RLS Enabled**: `true` | **Approx Rows**: `4`
+
+- **id**: `uuid` (PK, default extensions.uuid_generate_v4())
+- **class_id**: `int4` (FK -> public.Classes.class_id)
+- **start_time**: `time`
+- **period_duration**: `int4`
+- **periods_per_day**: `int4`
+- **active_days**: `_text`
+- **break_times**: `jsonb`
+- **created_at**: `timestamptz` (default now())
+- **school_id**: `uuid` (FK -> public.Schools.school_id)
+
+### `public.school_employment`
+**RLS Enabled**: `true` | **Approx Rows**: `0`
+
+- **employment_id**: `int8` (PK)
+- **created_at**: `timestamptz` (default now())
+- **teacher_id**: `uuid` (FK -> public.Teachers.teacher_id, default gen_random_uuid())
+- **start_date**: `date`
+- **job_title**: `varchar`
+- **contract_type**: `varchar`
+- **salary**: `numeric`
+
+### `public.student_subject`
+**RLS Enabled**: `true` | **Approx Rows**: `0`
+
+- **student_subject_id**: `uuid` (PK, default gen_random_uuid())
+- **created_at**: `timestamptz` (default now())
+- **subject_id**: `uuid` (FK -> public.Subjects.subject_id, default gen_random_uuid())
+- **student_id**: `uuid` (FK -> public.Students.student_id, default gen_random_uuid())
+
+### `public.study_materials`
+**RLS Enabled**: `true` | **Approx Rows**: `0`
+
+- **id**: `int4` (PK, default nextval('study_materials_id_seq'::regclass))
+- **title**: `varchar`
+- **subject**: `varchar`
+- **type**: `varchar`
+- **description**: `text`
+- **file_url**: `text`
+- **file_path**: `text`
+- **file_size**: `int8`
+- **file_type**: `varchar`
+- **uploaded_by**: `varchar`
+- **uploaded_at**: `timestamptz` (default now())
+- **school_id**: `uuid` (FK -> public.Schools.school_id)
+
+### `public.timetable_entries`
+**RLS Enabled**: `true` | **Approx Rows**: `1`
+
+- **id**: `uuid` (PK, default extensions.uuid_generate_v4())
+- **subject_id**: `uuid` (FK -> public.Subjects.subject_id)
+- **class_id**: `int4` (FK -> public.Classes.class_id)
+- **day_of_week**: `varchar`
+- **start_time**: `time`
+- **duration_minutes**: `int4` (default 40)
+- **created_at**: `timestamptz` (default now())
+- **school_id**: `uuid` (FK -> public.Schools.school_id)
+
+### `public.work_experience`
+**RLS Enabled**: `true` | **Approx Rows**: `0`
+
+- **experience_id**: `int8` (PK)
+- **created_at**: `timestamptz` (default now())
+- **teacher_id**: `uuid` (FK -> public.Teachers.teacher_id, default gen_random_uuid())
+- **school_name**: `varchar`
+- **professional_development**: `text`
+- **position_held**: `varchar`
+- **duration**: `varchar`
+- **total_experience**: `varchar`
+
+## 3. realtime schema
+
+### `realtime.messages`
+**RLS Enabled**: `true` | **Approx Rows**: `0`
+
+- **topic**: `text`
+- **extension**: `text`
+- **payload**: `jsonb`
+- **event**: `text`
+- **private**: `bool` (default false)
+- **updated_at**: `timestamp` (default now())
+- **inserted_at**: `timestamp` (PK, default now())
+- **id**: `uuid` (PK, default gen_random_uuid())
+
+### `realtime.schema_migrations`
+**RLS Enabled**: `false` | **Approx Rows**: `3`
+
+- **version**: `int8` (PK)
+- **inserted_at**: `timestamp`
+
+### `realtime.subscription`
+**RLS Enabled**: `false` | **Approx Rows**: `0`
+
+- **id**: `int8` (PK)
+- **subscription_id**: `uuid`
+- **entity**: `regclass`
+- **filters**: `_user_defined_filter` (default '{}'::realtime.user_defined_filter[])
+- **claims**: `jsonb`
+- **claims_role**: `regrole` (default realtime.to_regrole((claims ->> 'role'::text)))
+- **created_at**: `timestamp` (default timezone('utc'::text, now()))
+- **action_filter**: `text` (default '*'::text)
+
+## 4. storage schema
+
+### `storage.buckets`
+**RLS Enabled**: `true` | **Approx Rows**: `1`
+
+- **id**: `text` (PK)
+- **name**: `text`
+- **owner**: `uuid`
+- **created_at**: `timestamptz` (default now())
+- **updated_at**: `timestamptz` (default now())
+- **public**: `bool` (default false)
+- **avif_autodetection**: `bool` (default false)
+- **file_size_limit**: `int8`
+- **allowed_mime_types**: `_text`
+- **owner_id**: `text`
+- **type**: `buckettype` (default 'STANDARD'::storage.buckettype)
+
+### `storage.buckets_analytics`
+**RLS Enabled**: `true` | **Approx Rows**: `0`
+
+- **name**: `text`
+- **type**: `buckettype` (default 'ANALYTICS'::storage.buckettype)
+- **format**: `text` (default 'ICEBERG'::text)
+- **created_at**: `timestamptz` (default now())
+- **updated_at**: `timestamptz` (default now())
+- **id**: `uuid` (PK, default gen_random_uuid())
+- **deleted_at**: `timestamptz`
+
+### `storage.buckets_vectors`
+**RLS Enabled**: `true` | **Approx Rows**: `0`
+
+- **id**: `text` (PK)
+- **type**: `buckettype` (default 'VECTOR'::storage.buckettype)
+- **created_at**: `timestamptz` (default now())
+- **updated_at**: `timestamptz` (default now())
+
+### `storage.migrations`
+**RLS Enabled**: `true` | **Approx Rows**: `7`
+
+- **id**: `int4` (PK)
+- **name**: `varchar`
+- **hash**: `varchar`
+- **executed_at**: `timestamp` (default CURRENT_TIMESTAMP)
+
+### `storage.objects`
+**RLS Enabled**: `true` | **Approx Rows**: `5`
+
+- **id**: `uuid` (PK, default gen_random_uuid())
+- **bucket_id**: `text` (FK -> storage.buckets.id)
+- **name**: `text`
+- **owner**: `uuid`
+- **created_at**: `timestamptz` (default now())
+- **updated_at**: `timestamptz` (default now())
+- **last_accessed_at**: `timestamptz` (default now())
+- **metadata**: `jsonb`
+- **path_tokens**: `_text` (default string_to_array(name, '/'::text))
+- **version**: `text`
+- **owner_id**: `text`
+- **user_metadata**: `jsonb`
+
+### `storage.s3_multipart_uploads`
+**RLS Enabled**: `true` | **Approx Rows**: `0`
+
+- **id**: `text` (PK)
+- **in_progress_size**: `int8` (default 0)
+- **upload_signature**: `text`
+- **bucket_id**: `text` (FK -> storage.buckets.id)
+- **key**: `text`
+- **version**: `text`
+- **owner_id**: `text`
+- **created_at**: `timestamptz` (default now())
+- **user_metadata**: `jsonb`
+
+### `storage.s3_multipart_uploads_parts`
+**RLS Enabled**: `true` | **Approx Rows**: `0`
+
+- **id**: `uuid` (PK, default gen_random_uuid())
+- **upload_id**: `text` (FK -> storage.s3_multipart_uploads.id)
+- **size**: `int8` (default 0)
+- **part_number**: `int4`
+- **bucket_id**: `text` (FK -> storage.buckets.id)
+- **key**: `text`
+- **etag**: `text`
+- **owner_id**: `text`
+- **version**: `text`
+- **created_at**: `timestamptz` (default now())
+
+### `storage.vector_indexes`
+**RLS Enabled**: `true` | **Approx Rows**: `0`
+
+- **id**: `text` (PK, default gen_random_uuid())
+- **name**: `text`
+- **bucket_id**: `text` (FK -> storage.buckets_vectors.id)
+- **data_type**: `text`
+- **dimension**: `int4`
+- **distance_metric**: `text`
+- **metadata_configuration**: `jsonb`
+- **created_at**: `timestamptz` (default now())
+- **updated_at**: `timestamptz` (default now())
+
+## 5. Foreign Key Relationships (Summary)
+- `public.Subject_Allocations.school_id -> public.Schools.school_id`
+- `auth.refresh_tokens.session_id -> auth.sessions.id`
+- `auth.identities.user_id -> auth.users.id`
+- `public.Class_Subjects.class_id -> public.Classes.class_id`
+- `public.Students.school_id -> public.Schools.school_id`
+- `auth.mfa_amr_claims.session_id -> auth.sessions.id`
+- `storage.objects.bucket_id -> storage.buckets.id`
+- `public.Parent_Student_Links.student_id -> public.Students.student_id`
+- `auth.saml_providers.sso_provider_id -> auth.sso_providers.id`
+- `storage.s3_multipart_uploads_parts.bucket_id -> storage.buckets.id`
+- `public.Grades.subject_id -> public.Subjects.subject_id`
+- `public.Parent_Student_Links.parent_id -> public.Parents.parent_id`
+- `public.academic_events.school_id -> public.Schools.school_id`
+- `public.Parents.school_id -> public.Schools.school_id`
+- `auth.saml_relay_states.sso_provider_id -> auth.sso_providers.id`
+- `public.Classes.teacher_id -> public.Teachers.teacher_id`
+- `public.work_experience.teacher_id -> public.Teachers.teacher_id`
+- `auth.mfa_factors.user_id -> auth.users.id`
+- `public.Attendance.recorded_by_user_id -> public.Teachers.teacher_id`
+- `public.profiles.school_id -> public.Schools.school_id`
+- `public.student_subject.student_id -> public.Students.student_id`
+- `public.Lesson_Notes.subject_id -> public.Subjects.subject_id`
+- `public.emergency_contact.teacher_id -> public.Teachers.teacher_id`
+- `public.Grades.school_id -> public.Schools.school_id`
+- `public.student_subject.subject_id -> public.Subjects.subject_id`
+- `public.emergency_contact.school_id -> public.Schools.school_id`
+- `auth.oauth_authorizations.user_id -> auth.users.id`
+- `public.Subject_Allocations.class_id -> public.Classes.class_id`
+- `public.Subjects.teacher_id -> public.Teachers.teacher_id`
+- `public.timetable_entries.class_id -> public.Classes.class_id`
+- `public.Subject_Allocations.teacher_id -> public.Teachers.teacher_id`
+- `auth.sso_domains.sso_provider_id -> auth.sso_providers.id`
+- `public.Curriculum.school_id -> public.Schools.school_id`
+- `public.Subject_Allocations.subject_id -> public.Subjects.subject_id`
+- `public.Termly_Enrollment.student_id -> public.Students.student_id`
+- `auth.saml_relay_states.flow_state_id -> auth.flow_state.id`
+- `auth.one_time_tokens.user_id -> auth.users.id`
+- `auth.sessions.oauth_client_id -> auth.oauth_clients.id`
+- `auth.webauthn_challenges.user_id -> auth.users.id`
+- `public.Attendance.student_id -> public.Students.student_id`
+- `public.Class_Subjects.teacher_id -> public.Teachers.teacher_id`
+- `auth.oauth_consents.client_id -> auth.oauth_clients.id`
+- `storage.vector_indexes.bucket_id -> storage.buckets_vectors.id`
+- `public.schedule_configs.school_id -> public.Schools.school_id`
+- `storage.s3_multipart_uploads_parts.upload_id -> storage.s3_multipart_uploads.id`
+- `public.Grades.teacher_id -> public.Teachers.teacher_id`
+- `public.Curriculum.subject_id -> public.Subjects.subject_id`
+- `public.Parent_Student_Links.school_id -> public.Schools.school_id`
+- `public.Curriculum.class_id -> public.Classes.class_id`
+- `public.Class_Subjects.school_id -> public.Schools.school_id`
+- `public.Students.class_id -> public.Classes.class_id`
+- `public.timetable_entries.subject_id -> public.Subjects.subject_id`
+- `public.schedule_configs.class_id -> public.Classes.class_id`
+- `public.Lesson_Notes.school_id -> public.Schools.school_id`
+- `storage.s3_multipart_uploads.bucket_id -> storage.buckets.id`
+- `public.profiles.id -> auth.users.id`
+- `public.Attendance.school_id -> public.Schools.school_id`
+- `public.Student_Virtual_Accounts.student_id -> public.Students.student_id`
+- `public.Class_Subjects.subject_id -> public.Subjects.subject_id`
+- `public.Lesson_Notes.teacher_id -> public.Teachers.teacher_id`
+- `public.Classes.school_id -> public.Schools.school_id`
+- `auth.sessions.user_id -> auth.users.id`
+- `auth.oauth_authorizations.client_id -> auth.oauth_clients.id`
+- `public.timetable_entries.school_id -> public.Schools.school_id`
+- `public.Student_Virtual_Accounts.school_id -> public.Schools.school_id`
+- `public.school_employment.teacher_id -> public.Teachers.teacher_id`
+- `auth.mfa_challenges.factor_id -> auth.mfa_factors.id`
+- `public.School_Admin.school_id -> public.Schools.school_id`
+- `public.Grading_Structure.school_id -> public.Schools.school_id`
+- `public.study_materials.school_id -> public.Schools.school_id`
+- `auth.webauthn_credentials.user_id -> auth.users.id`
+- `public.Grades.student_id -> public.Students.student_id`
+- `public.Parents.user_id -> auth.users.id`
+- `public.Grades.class_id -> public.Classes.class_id`
+- `auth.oauth_consents.user_id -> auth.users.id`
+- `public.Teachers.school_id -> public.Schools.school_id`
+- `public.Lesson_Notes.class_id -> public.Classes.class_id`
+- `public.Curriculum.teacher_id -> public.Teachers.teacher_id`
+- `public.Attendance.subject_id -> public.Subjects.subject_id`
+- `public.Termly_Enrollment.school_id -> public.Schools.school_id`
+- `public.Subjects.school_id -> public.Schools.school_id`
+
+## 6. AI Consumption Prompts
+Use the exact column names and types above when constructing SQL or building embeddings.
+Primary keys: many tables use UUID primary keys (`gen_random_uuid()`); some use integer identity columns.
+RLS: Many auth and storage tables have RLS enabled. When querying as end-users via Supabase client, RLS will filter rows by JWT/auth context.
+Example compact prompt snippets (Public Schema):
+```
+"Attendance(id: int8 PK, student_id: uuid FK->public.Students.student_id, record_at: timestamptz, date: date, attendance_status: text, notes: text, recorded_by_user_id: uuid FK->public.Teachers.teacher_id, school_id: uuid FK->public.Schools.school_id, subject_id: uuid FK->public.Subjects.subject_id)"
+"Class_Subjects(class_subjects__id: uuid PK, created_at: timestamptz, subject_id: uuid FK->public.Subjects.subject_id, class_id: int4 FK->public.Classes.class_id, teacher_id: uuid FK->public.Teachers.teacher_id, school_id: uuid FK->public.Schools.school_id)"
+"Classes(created_at: timestamptz, class_name: varchar, section: varchar, teacher_id: uuid FK->public.Teachers.teacher_id, class_id: int4 PK, school_id: uuid FK->public.Schools.school_id, students_count: int4)"
+"Curriculum(id: uuid PK, teacher_id: uuid FK->public.Teachers.teacher_id, class_id: int4 FK->public.Classes.class_id, subject_id: uuid FK->public.Subjects.subject_id, week: text, topic: text, sub_topic: text, status: text, academic_session: text, created_at: timestamptz, progress: int2, school_id: uuid FK->public.Schools.school_id)"
+"Grades(grade_id: uuid PK, student_id: uuid FK->public.Students.student_id, subject_id: uuid FK->public.Subjects.subject_id, score: numeric, max_score: numeric, term: text, academic_session: text, created_at: timestamptz, assessment_type: text, teacher_id: uuid FK->public.Teachers.teacher_id, comment: text, class_id: int4 FK->public.Classes.class_id, school_id: uuid FK->public.Schools.school_id)"
+"Grading_Structure(id: uuid PK, assessment_name: text, max_score: int2, term: text, academic_session: text, created_at: timestamptz, school_id: uuid FK->public.Schools.school_id)"
+"Lesson_Notes(note_id: uuid PK, created_at: timestamptz, title: text, file_url: text, subject_id: uuid FK->public.Subjects.subject_id, class_id: int4 FK->public.Classes.class_id, teacher_id: uuid FK->public.Teachers.teacher_id, file_size_kb: numeric, school_id: uuid FK->public.Schools.school_id)"
+"Parent_Student_Links(link_id: uuid PK, parent_id: uuid FK->public.Parents.parent_id, student_id: uuid FK->public.Students.student_id, relationship: text, created_at: timestamptz, school_id: uuid FK->public.Schools.school_id)"
+"Parents(parent_id: uuid PK, full_name: varchar, email: varchar, phone_number: text, address: text, occupation: text, created_at: timestamptz, user_id: uuid FK->auth.users.id, school_id: uuid FK->public.Schools.school_id)"
+"Payment_Items(item_id: uuid PK, school_id: uuid, item_name: varchar, amount: numeric, is_compulsory: bool, academic_session: text, term: text, created_at: timestamptz, category: text, description: text, is_active: bool)"
+"School_Admin(admin_id: uuid PK, created_at: timestamptz, email: varchar, role: text, permissions_json: jsonb, phone_number: text, last_login: timestamp, full_name: varchar, school_id: uuid FK->public.Schools.school_id, setup_completed: bool, setup_steps_json: jsonb, gender: text)"
+"Schools(school_id: uuid PK, school_name: varchar, school_logo_url: text, bank_name: varchar, account_number: varchar, bank_code: varchar, sub_account_code: varchar, commission_rate: numeric, is_active: bool, created_at: timestamptz, subscription_status: text, current_plan: text, subscription_expires_at: timestamptz, tier: int4, current_session: varchar, current_term: varchar, next_term_start_date: date)"
+"Student_Virtual_Accounts(id: uuid PK, student_id: uuid FK->public.Students.student_id, account_number: varchar, bank_name: varchar, account_reference: varchar, bank_code: varchar, created_at: timestamptz, school_id: uuid FK->public.Schools.school_id)"
+"Students(student_id: uuid PK, created_at: timestamptz, full_name: varchar, date_of_birth: date, gender: text, admission_date: date, profile_picture: varchar, total_points: int4, class_id: int4 FK->public.Classes.class_id, school_id: uuid FK->public.Schools.school_id)"
+"Subject_Allocations(allocation_id: uuid PK, subject_id: uuid FK->public.Subjects.subject_id, class_id: int4 FK->public.Classes.class_id, teacher_id: uuid FK->public.Teachers.teacher_id, school_id: uuid FK->public.Schools.school_id, created_at: timestamptz, created_by: text, academic_year: text, term: text)"
+"Subjects(subject_id: uuid PK, created_at: timestamptz, subject_name: varchar, is_core: bool, teacher_id: uuid FK->public.Teachers.teacher_id, school_id: uuid FK->public.Schools.school_id)"
+"Teachers(teacher_id: uuid PK, created_at: timestamptz, first_name: varchar, email: varchar, phone_number: varchar, date_hired: date, profile_picture: varchar, last_name: varchar, date_of_birth: date, address: text, marital_status: varchar, trcn_reg_number: varchar, gender: varchar, school_id: uuid FK->public.Schools.school_id)"
+"Termly_Enrollment(enrollment_id: uuid PK, student_id: uuid FK->public.Students.student_id, school_id: uuid FK->public.Schools.school_id, academic_session: text, term: text, is_active: bool, billing_status: text, created_at: timestamptz)"
+"academic_events(id: int8 PK, created_at: timestamptz, term_period: text, activity_event: text, start_date: date, end_date: date, duration: text, remarks: text, academic_session: text, school_id: uuid FK->public.Schools.school_id)"
+"emergency_contact(contact_id: int8 PK, created_at: timestamptz, name: varchar, relationship: varchar, phone_number: varchar, address: text, teacher_id: uuid FK->public.Teachers.teacher_id, school_id: uuid FK->public.Schools.school_id)"
+"profiles(id: uuid PK FK->auth.users.id, role: text, updated_at: timestamptz, school_id: uuid FK->public.Schools.school_id)"
+"qualifications(qualification_id: int8 PK, created_at: timestamptz, teacher_id: uuid, school_name: varchar, certificate_name: varchar, feild_of_study: varchar, graduation_year: int4)"
+"schedule_configs(id: uuid PK, class_id: int4 FK->public.Classes.class_id, start_time: time, period_duration: int4, periods_per_day: int4, active_days: _text, break_times: jsonb, created_at: timestamptz, school_id: uuid FK->public.Schools.school_id)"
+"school_employment(employment_id: int8 PK, created_at: timestamptz, teacher_id: uuid FK->public.Teachers.teacher_id, start_date: date, job_title: varchar, contract_type: varchar, salary: numeric)"
+"student_subject(student_subject_id: uuid PK, created_at: timestamptz, subject_id: uuid FK->public.Subjects.subject_id, student_id: uuid FK->public.Students.student_id)"
+"study_materials(id: int4 PK, title: varchar, subject: varchar, type: varchar, description: text, file_url: text, file_path: text, file_size: int8, file_type: varchar, uploaded_by: varchar, uploaded_at: timestamptz, school_id: uuid FK->public.Schools.school_id)"
+"timetable_entries(id: uuid PK, subject_id: uuid FK->public.Subjects.subject_id, class_id: int4 FK->public.Classes.class_id, day_of_week: varchar, start_time: time, duration_minutes: int4, created_at: timestamptz, school_id: uuid FK->public.Schools.school_id)"
+"work_experience(experience_id: int8 PK, created_at: timestamptz, teacher_id: uuid FK->public.Teachers.teacher_id, school_name: varchar, professional_development: text, position_held: varchar, duration: varchar, total_experience: varchar)"
+```
+
+## 7. Change Log
+- **2026-03-26**: Synced master schema file with latest MCP DB state (public, auth, storage, realtime schemas included).
