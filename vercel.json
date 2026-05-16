@@ -4,7 +4,7 @@
   "rewrites": [
     {
       "source": "/login",
-      "destination": "/index.html"
+      "destination": "./index.html"
     },
     {
       "source": "/signup",
