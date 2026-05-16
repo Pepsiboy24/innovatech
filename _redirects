@@ -1,0 +1,20 @@
+# Home and Login redirects straight to the subfolder template
+/        /public/html/login.html   200
+/login   /public/html/login.html   200
+/signup  /public/html/signup.html  200
+
+# Admin Portal Mappings
+/admin      /portals/admin/schoolAdminDashboard.html   200
+/admin/* /portals/admin/:splat                      200
+
+# Teacher Portal Mappings
+/teacher    /portals/teacher/teachersPortal.html       200
+/teacher/* /portals/teacher/:splat                    200
+
+# Parent Portal Mappings
+/parent     /portals/parent/parentsPortal.html         200
+/parent/* /portals/parent/:splat                     200
+
+# Student Portal Mappings
+/student    /portals/student/studentPortal.html        200
+/student/* /portals/student/:splat                    200

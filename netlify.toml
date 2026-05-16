@@ -1,0 +1,57 @@
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/"
+  to = "/public/html/login.html"
+  status = 200
+
+[[redirects]]
+  from = "/login"
+  to = "/public/html/login.html"
+  status = 200
+
+[[redirects]]
+  from = "/signup"
+  to = "/public/html/signup.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin"
+  to = "/portals/admin/schoolAdminDashboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin/*"
+  to = "/portals/admin/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/teacher"
+  to = "/portals/teacher/teachersPortal.html"
+  status = 200
+
+[[redirects]]
+  from = "/teacher/*"
+  to = "/portals/teacher/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/parent"
+  to = "/portals/parent/parentsPortal.html"
+  status = 200
+
+[[redirects]]
+  from = "/parent/*"
+  to = "/portals/parent/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/student"
+  to = "/portals/student/studentPortal.html"
+  status = 200
+
+[[redirects]]
+  from = "/student/*"
+  to = "/portals/student/:splat"
+  status = 200
