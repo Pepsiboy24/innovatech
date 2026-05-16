@@ -1,14 +1,14 @@
 [build]
   publish = "."
 
-# 1. FORCE the root URL to ignore the root index.html and redirect to /login
+# 1. Directly rewrite the homepage to display your login file
 [[redirects]]
   from = "/"
-  to = "/login"
+  to = "/public/html/login.html"
   status = 200
   force = true
 
-# 2. FORCE /login to ignore any local files and load your deep public html file
+# 2. If they type /login, show the same file
 [[redirects]]
   from = "/login"
   to = "/public/html/login.html"
