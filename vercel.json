@@ -3,6 +3,10 @@
   "trailingSlash": false,
   "rewrites": [
     {
+      "source": "/",
+      "destination": "/public/html/index.html"
+    },
+    {
       "source": "/login",
       "destination": "/public/html/login.html"
     },
