@@ -77,7 +77,7 @@
             init() {
                 this.setupEventListeners();
                 this.checkForMessages();
-                // this.checkExistingSession();
+                this.checkExistingSession();
             }
 
             setupEventListeners() {
@@ -115,19 +115,19 @@
                 }
             }
 
-            // async checkExistingSession() {
-            //     try {
-            //         // Use getUser() instead of getSession() to bypass stale local storage
-            //         const { data: { user }, error } = await supabase.auth.getUser();
+            async checkExistingSession() {
+                try {
+                    // Use getUser() instead of getSession() to bypass stale local storage
+                    const { data: { user }, error } = await supabase.auth.getUser();
 
-            //         if (user && !error) {
-            //             console.log('Fresh user data found, proceeding to redirect...');
-            //             this.redirectUser(user);
-            //         }
-            //     } catch (error) {
-            //         console.error('Session check error:', error);
-            //     }
-            // }
+                    if (user && !error) {
+                        console.log('Fresh user data found, proceeding to redirect...');
+                        this.redirectUser(user);
+                    }
+                } catch (error) {
+                    console.error('Session check error:', error);
+                }
+            }
 
             togglePasswordVisibility() {
                 const passwordField = document.getElementById('password');
@@ -393,7 +393,7 @@
         new LoginForm();
     </script>
 
-    <style>
+    <!-- <style>
         .password-input {
             position: relative;
         }
@@ -499,7 +499,7 @@
                 transform: rotate(360deg);
             }
         }
-    </style>
+    </style> -->
 </body>
 
 </html>
