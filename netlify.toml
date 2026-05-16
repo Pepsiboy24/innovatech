@@ -1,18 +1,19 @@
 [build]
   publish = "."
 
-# 1. Force the root URL to physically change to /login in the browser
+# 1. FORCE the root URL to ignore the root index.html and redirect to /login
 [[redirects]]
   from = "/"
   to = "/login"
   status = 301
   force = true
 
-# 2. Map the clean /login path to your actual file behind the scenes
+# 2. FORCE /login to ignore any local files and load your deep public html file
 [[redirects]]
   from = "/login"
   to = "/public/html/login.html"
   status = 200
+  force = true
 
 # 3. Authentication Paths
 [[redirects]]
