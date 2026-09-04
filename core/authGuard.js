@@ -32,6 +32,15 @@ import { hasFeatureAccess, getCurrentUserTier, TIERS } from './tierAccess.js';
             return;
         }
 
+        const hasAccess = await checkRouteAccess(currentPath, userTier);
+        if (!hasAccess) {
+            showAccessDeniedModal(
+                'Your current plan does not include access to this feature. Please upgrade your subscription.',
+                '/public/html/login.html'
+            );
+            return;
+        }
+
         // Shared folder bypass
         if (currentPath.includes('/portals/shared/')) return;
 

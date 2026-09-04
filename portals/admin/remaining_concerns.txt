@@ -1,0 +1,14 @@
+Remaining Concerns (to revisit later)
+=======================================
+
+1. manage_notes_admin.html is orphaned
+   - Not linked from any sidebar; sidebar uses /html/shared/manage_notes.html instead
+   - Consider removing this file if it's not needed
+
+2. Paid/unpaid student counts in billing are hardcoded
+   - billingSummary.js sets paidStudents=0, unpaidStudents=count, collectionRate=0
+   - Needs a real query against Payment_Records table to derive actual numbers
+
+3. Dashboard stats are still placeholders
+   - The admin dashboard shows placeholder data for various stat widgets
+   - Their data sources were not identified during the audit

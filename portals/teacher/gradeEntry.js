@@ -206,12 +206,37 @@ async function saveGrades() {
 
     const schoolId = user.user_metadata.school_id;
 
+    const maxScoreEl = document.getElementById('maxScoreInput');
+    const maxScore = maxScoreEl ? parseFloat(maxScoreEl.value) : 100;
+
+    if (isNaN(maxScore) || maxScore <= 0) {
+        alert('Please enter a valid maximum score greater than 0.');
+        return;
+    }
+
+    const subjectName = document.getElementById('subjectSelect')?.selectedOptions?.[0]?.textContent || subjectId;
+
     const inputs = document.querySelectorAll('.score-input');
     const gradesToSave = [];
 
-    inputs.forEach(input => {
+    for (const input of inputs) {
         const score = input.value;
         if (score !== '') { // Only save if a score is entered
+            const parsedScore = parseFloat(score);
+
+            if (isNaN(parsedScore)) {
+                alert(`Score for ${subjectName} must be a valid number.`);
+                return;
+            }
+            if (parsedScore < 0) {
+                alert(`Score for ${subjectName} must be between 0 and ${maxScore}.`);
+                return;
+            }
+            if (parsedScore > maxScore) {
+                alert(`Score for ${subjectName} must be between 0 and ${maxScore}.`);
+                return;
+            }
+
             const studentId = input.getAttribute('data-student-id');
             const row = input.closest('tr');
             const remarks = row.querySelector('.remarks-input').value;
@@ -221,14 +246,15 @@ async function saveGrades() {
                 class_id: parseInt(classId),
                 subject_id: subjectId,
                 teacher_id: currentTeacherId,
-                score: parseFloat(score),
+                score: parsedScore,
+                max_score: maxScore,
                 remarks: remarks,
                 term: term,
                 date_recorded: new Date().toISOString(),
                 school_id: schoolId // CRITICAL: Add school_id for RLS compliance
             });
         }
-    });
+    }
 
     if (gradesToSave.length === 0) {
         alert('No grades entered.');

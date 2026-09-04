@@ -1,4 +1,4 @@
-import { supabase } from './config.js';
+import { supabase } from '../../core/config.js';
 
 const loginForm = document.getElementById('loginForm');
 const emailInput = document.getElementById('email');
@@ -34,7 +34,7 @@ loginForm.addEventListener('submit', async (e) => {
         if (!schoolId) {
             // User hasn't completed onboarding, redirect to onboarding
             console.log('User missing school_id metadata, redirecting to onboarding');
-            window.location.href = '../landing_page/html/onboarding.html';
+            window.location.href = '../html/onboarding.html';
             return;
         }
 
@@ -53,13 +53,15 @@ loginForm.addEventListener('submit', async (e) => {
         console.log('User authenticated with school_id:', schoolId, 'Type:', userType);
         
         // Redirect based on user type
-        if (userType === 'school_admin') {
-            window.location.href = 'schoolAdmin/schoolAdminDashboard.html';
-        } else if (userType === 'teacher') {
-            window.location.href = 'teachersPortal/teachersDashboard.html';
+        if (userType === 'teacher') {
+            window.location.href = '/teacher';
+        } else if (userType === 'parent') {
+            window.location.href = '/parent';
+        } else if (userType === 'student') {
+            window.location.href = '/student';
         } else {
-            // Default to admin dashboard
-            window.location.href = 'schoolAdmin/schoolAdminDashboard.html';
+            // default: admin or school_admin
+            window.location.href = '/admin';
         }
 
     } catch (err) {

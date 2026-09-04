@@ -45,7 +45,7 @@ class ReportCardGenerator {
      */
     async generateStudentReportCard(studentId, options = {}) {
         try {
-            const { data: student } = await supabase
+            const { data: student, error: studentError } = await supabase
                 .from('Students')
                 .select(`
                     student_id, 
@@ -60,7 +60,7 @@ class ReportCardGenerator {
                 .eq('student_id', studentId)
                 .single();
 
-            if (error) throw error;
+            if (studentError) throw studentError;
 
             const reportCard = await this.resultsEngine.generateReportCard(studentId, options.term || 'First Term');
             
@@ -142,24 +142,24 @@ class ReportCardGenerator {
      */
     async getClassDetails(classId) {
         try {
-            const { data: classData } = await supabase
+            const { data: classData, error: classError } = await supabase
                 .from('Classes')
                 .select('class_name, section, teacher_id')
                 .eq('class_id', classId)
                 .single();
 
-            if (error) throw error;
+            if (classError) throw classError;
 
             // Get teacher information
             let teacherInfo = null;
             if (classData.teacher_id) {
-                const { data: teacher } = await supabase
+                const { data: teacher, error: teacherError } = await supabase
                     .from('Teachers')
                     .select('full_name, email')
                     .eq('teacher_id', classData.teacher_id)
                     .single();
 
-                if (!error) {
+                if (!teacherError) {
                     teacherInfo = {
                         name: teacher.full_name,
                         email: teacher.email

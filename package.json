@@ -1,6 +1,21 @@
 {
+  "name": "pulselink-sms",
+  "version": "1.0.0",
+  "description": "Pulse Link SMS school management application",
+  "type": "module",
   "dependencies": {
     "@supabase/supabase-js": "^2.101.0",
     "read-excel-file": "^6.0.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.47.0",
+    "dotenv": "^16.4.5"
+  },
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:report": "playwright show-report",
+    "test:rls": "playwright test tests/rls.spec.js",
+    "test:ui": "playwright test --ui"
   }
 }

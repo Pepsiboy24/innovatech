@@ -9,7 +9,7 @@
     <!-- <script src="./schoolAdminStyles/academic_manager.css"></script> -->
     <link rel="stylesheet" href="./schoolAdminStyles/academic_manager.css?v=1.1">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=1.1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- <script src="../../../assets/js-shared/navigation_manager.js"></script> -->
 </head>
@@ -22,18 +22,19 @@
     <div class="main">
 
         <!-- Top header -->
-        <div class="page-header">
-            <div class="page-header-left">
-                <div class="icon mobile-menu-btn" data-sideBarOpen>
-                    <i class="fa fa-bars"></i>
-                </div>
-                <div>
+        <div class="header">
+            <div class="header-copy">
+                <div class="header-chip">Admin</div>
+                <div class="header-title-row">
                     <h1 class="page-title">Academic Manager</h1>
                     <p class="page-subtitle">Manage subjects and their scheme of work in one place</p>
                 </div>
             </div>
-            <div class="header-actions">
-                <div class="profile-circle"></div>
+            <div class="stuff">
+                <div class="profile" aria-label="Profile"></div>
+                <button class="icon" type="button" data-sideBarOpen aria-label="Open navigation menu">
+                    <i class="fa fa-bars"></i>
+                </button>
             </div>
         </div>
 
@@ -349,7 +350,7 @@
     <script src="../../assets/js-shared/ui_feedback.js"></script>
     <script type="module" src="./school_admin_sidebar.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="../../assets/js-shared/font-awesome.js"></script>
+
     <script src="../../assets/js-shared/sideBar.js"></script>
     <script type="module" src="./academic_manager.js" defer></script>
 

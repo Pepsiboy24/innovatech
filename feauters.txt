@@ -21,18 +21,18 @@ Students Portal:
 - Dashboard displaying rank, points, badges, and achievements
 - Classes section with scheduled upcoming classes and join class options
 - Study Materials section providing learning resources
-- Social section for student interactions and study groups
-- AI Study Buddy for study-related AI assistance
-- Class Leaderboard showing top-performing students
-- Social Feed for posts and reactions
+- Social section for student interactions and study groups //Cancled
+- AI Study Buddy for study-related AI assistance //incoming
+- Class Leaderboard showing top-performing students//cancled
+- Social Feed for posts and reactions//cancled
 
 Teachers Portal:
 - Dashboard with statistics for active courses, total students, upcoming classes, and messages
 - Students management table with performance overview
 - Attendance management and tracking
-- Online Classes section
+- Online Classes section //cancled
 - AI Assistant for generating lesson notes, creating test questions, and analyzing student performance
-- Messaging system for communication with students and parents
+- Messaging system for communication with students and parents //not sure how this will work yet
 - Upcoming classes overview
 
 

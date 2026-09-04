@@ -1,3 +1,4 @@
+import { supabase } from '../../core/config.js';
 
 export const FeatureGate = {
     // Check if the school has a valid subscription
