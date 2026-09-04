@@ -1,66 +1,66 @@
 [build]
   publish = "."
 
-# 1. Directly rewrite the homepage to display your login file
+# ── Auth pages ──────────────────────────────────────────
 [[redirects]]
   from = "/"
-  to = "/public/html/login.html"
+  to   = "/public/html/login.html"
   status = 200
-  force = true
 
-# 2. If they type /login, show the same file
 [[redirects]]
   from = "/login"
-  to = "/public/html/login.html"
+  to   = "/public/html/login.html"
   status = 200
-  force = true
 
-# 3. Authentication Paths
 [[redirects]]
   from = "/signup"
-  to = "/public/html/signup.html"
+  to   = "/public/html/signup.html"
   status = 200
 
-# 4. Admin Portal Rules
+# ── Admin portal ────────────────────────────────────────
 [[redirects]]
   from = "/admin"
-  to = "/portals/admin/schoolAdminDashboard.html"
+  to   = "/portals/admin/schoolAdminDashboard.html"
   status = 200
 
 [[redirects]]
   from = "/admin/*"
-  to = "/portals/admin/:splat"
+  to   = "/portals/admin/:splat"
   status = 200
 
-# 5. Teacher Portal Rules
+# ── Teacher portal ──────────────────────────────────────
 [[redirects]]
   from = "/teacher"
-  to = "/portals/teacher/teachersPortal.html"
+  to   = "/portals/teacher/teachersPortal.html"
   status = 200
 
 [[redirects]]
   from = "/teacher/*"
-  to = "/portals/teacher/:splat"
+  to   = "/portals/teacher/:splat"
   status = 200
 
-# 6. Parent Portal Rules
+# ── Parent portal ───────────────────────────────────────
 [[redirects]]
   from = "/parent"
-  to = "/portals/parent/parentsPortal.html"
+  to   = "/portals/parent/parentsPortal.html"
   status = 200
 
 [[redirects]]
   from = "/parent/*"
-  to = "/portals/parent/:splat"
+  to   = "/portals/parent/:splat"
   status = 200
 
-# 7. Student Portal Rules
+# ── Student portal ──────────────────────────────────────
 [[redirects]]
   from = "/student"
-  to = "/portals/student/studentPortal.html"
+  to   = "/portals/student/studentPortal.html"
   status = 200
 
 [[redirects]]
   from = "/student/*"
-  to = "/portals/student/:splat"
+  to   = "/portals/student/:splat"
   status = 200
+
+# ── Shared assets (core, assets, supabase) pass through ─
+# No rules needed — Netlify serves these as static files
+# from the repo root automatically.
