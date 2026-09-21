@@ -10,7 +10,7 @@ export async function initializeSidebar() {
 
     if (!user) {
         console.warn('Sidebar: Unauthorized. Redirecting to login...');
-        window.location.replace('/public/html/login.html');
+        window.location.replace('/login');
         return;
     }
 
@@ -206,7 +206,7 @@ export async function initializeSidebar() {
             } catch (error) {
                 console.error("Logout Error:", error);
             }
-            window.location.replace('/public/html/login.html');
+            window.location.replace('/login');
         });
     }
 }

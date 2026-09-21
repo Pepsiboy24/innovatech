@@ -54,14 +54,14 @@ loginForm.addEventListener('submit', async (e) => {
         
         // Redirect based on user type
         if (userType === 'teacher') {
-            window.location.href = '/teacher';
+            window.location.replace('/teacher');
         } else if (userType === 'parent') {
-            window.location.href = '/parent';
+            window.location.replace('/parent');
         } else if (userType === 'student') {
-            window.location.href = '/student';
+            window.location.replace('/student');
         } else {
             // default: admin or school_admin
-            window.location.href = '/admin';
+            window.location.replace('/admin');
         }
 
     } catch (err) {

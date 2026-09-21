@@ -247,25 +247,25 @@
 
                 if (userType === 'school_admin' && schoolId) {
                     // School admin with completed onboarding
-                    window.location.href = '../../portals/admin/schoolAdminDashboard.html';
+                    window.location.replace('/admin');
                     return;
                 }
 
                 if (userType === 'teacher' && schoolId) {
                     // Teacher user
-                    window.location.href = '../../portals/teacher/teachersPortal.html';
+                    window.location.replace('/teacher');
                     return;
                 }
 
                 if (userType === 'student' && schoolId) {
                     // Student user
-                    window.location.href = '../../portals/student/studentPortal.html';
+                    window.location.replace('/student');
                     return;
                 }
 
                 if (userType === 'parent' && schoolId) {
                     // Parent user
-                    window.location.href = '../../portals/parent/parentsPortal.html';
+                    window.location.replace('/parent');
                     return;
                 }
 

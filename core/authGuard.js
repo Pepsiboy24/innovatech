@@ -36,7 +36,7 @@ import { hasFeatureAccess, getCurrentUserTier, TIERS } from './tierAccess.js';
         if (!hasAccess) {
             showAccessDeniedModal(
                 'Your current plan does not include access to this feature. Please upgrade your subscription.',
-                '/public/html/login.html'
+                '/login'
             );
             return;
         }
@@ -46,12 +46,12 @@ import { hasFeatureAccess, getCurrentUserTier, TIERS } from './tierAccess.js';
 
         // Role-based access
         if (currentPath.includes('/portals/admin/') && userType !== 'admin' && userType !== 'school_admin') {
-            showAccessDeniedModal('Unauthorized: Admin access required.', '/public/html/login.html');
+            showAccessDeniedModal('Unauthorized: Admin access required.', '/login');
             return;
         }
 
         if (currentPath.includes('/portals/teacher/') && userType !== 'teacher') {
-            showAccessDeniedModal('Access Denied: Teachers only.', '/public/html/login.html');
+            showAccessDeniedModal('Access Denied: Teachers only.', '/login');
             return;
         }
 
@@ -63,7 +63,7 @@ import { hasFeatureAccess, getCurrentUserTier, TIERS } from './tierAccess.js';
 
 function redirectToLogin() {
     if (document.body) document.body.style.display = 'none';
-    window.location.href = '/public/html/login.html';
+    window.location.replace('/login');
 }
 
 function redirectToOnboarding() {
@@ -80,7 +80,7 @@ function showAccessDeniedModal(message, redirectUrl) {
             <p>${message}</p>
         </div>`;
         document.body.appendChild(overlay);
-        setTimeout(() => window.location.href = redirectUrl, 2500);
+        setTimeout(() => window.location.replace(redirectUrl), 2500);
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', render);
     else render();

@@ -260,7 +260,7 @@ class SchoolOnboarding {
 
             if (adminRecord) {
                 console.log('User already assigned to a school, redirecting to dashboard...');
-                window.location.href = '../../portals/admin/schoolAdminDashboard.html';
+                window.location.replace('/admin');
                 return;
             }
 
@@ -854,7 +854,7 @@ class SchoolOnboarding {
                     this.saveDraft();
                     this.showSuccess('Account created! Please confirm your email, then log in — your form is saved.');
                     setTimeout(() => {
-                        window.location.href = "/public/html/login.html";
+                        window.location.replace("/login");
                     }, 2500);
                     return;
                 }
@@ -974,7 +974,7 @@ class SchoolOnboarding {
             setTimeout(() => {
                 // Clear sessionStorage and take the new admin straight to their portal
                 sessionStorage.clear();
-                window.location.href = '../../portals/admin/schoolAdminDashboard.html';
+                window.location.replace('/admin');
             }, 2000);
 
         } catch (error) {

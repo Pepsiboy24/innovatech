@@ -106,7 +106,7 @@ import { waitForUser, cached } from '../../core/perf.js';
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async () => {
                 await supabase.auth.signOut();
-                window.location.replace('/public/html/login.html');
+                window.location.replace('/login');
             });
         }
 

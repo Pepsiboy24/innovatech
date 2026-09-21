@@ -194,7 +194,7 @@ import { hasFeatureAccess, getCurrentUserTier } from '../../core/tierAccess.js';
             logoutBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
                 await supabase.auth.signOut();
-                window.location.replace('/public/html/login.html');
+                window.location.replace('/login');
             });
         }
     });

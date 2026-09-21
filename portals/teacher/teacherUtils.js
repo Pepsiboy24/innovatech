@@ -16,7 +16,7 @@ export async function checkTeacherLogin() {
         if (!user) {
             console.error('No user logged in');
             alert('Please log in as a teacher to view this page.');
-            window.location.href = '/public/html/login.html';
+            window.location.replace('/login');
             return null;
         }
 
@@ -30,7 +30,7 @@ export async function checkTeacherLogin() {
             console.error('User is not authorised as a teacher:', teacherError);
             alert('You are not authorised as a teacher. Please log in with teacher credentials.');
             await supabase.auth.signOut();
-            window.location.href = '/public/html/login.html';
+            window.location.replace('/login');
             return null;
         }
 
@@ -38,7 +38,7 @@ export async function checkTeacherLogin() {
     } catch (err) {
         console.error('Error checking teacher login:', err);
         alert('An error occurred while verifying your login. Please try logging in again.');
-        window.location.href = '/public/html/login.html';
+        window.location.replace('/login');
         return null;
     }
 }

@@ -19,7 +19,7 @@ async function getLinkedChildId() {
 
   if (!user) {
     console.error("No authenticated parent found.");
-    window.location.href = "/public/html/login.html"; // Redirect to login
+    window.location.replace("/login"); // Redirect to login
     return null;
   }
 

@@ -122,7 +122,7 @@
                 } catch (error) {
                     console.error("Logout Error:", error);
                 }
-                window.location.replace('/public/html/login.html');
+                window.location.replace('/login');
             });
         }
 
