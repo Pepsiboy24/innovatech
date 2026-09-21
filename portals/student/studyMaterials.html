@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css?v=1.1">
     <link rel="stylesheet" href="./studentsPortalStyles/studentPortal.css?v=1.1">
     <link rel="stylesheet" href="./studentsPortalStyles/studyMaterials.css?v=1.1">
+    <script src="../../assets/js-shared/ui_feedback.js"></script>
     <script type="module" src="./student_sidebar.js"></script>
     <script type="module" src="../../assets/js-shared/ui-engine.js"></script>
     <!-- Auth Guard: must load before page content renders -->
@@ -465,9 +466,9 @@
                     let actionHtml = '';
 
                     if (isValidUrl) {
-                        titleHtml = `<h4 style="cursor: pointer; color: var(--primary-color); text-decoration: underline;" onclick="window.openViewer('${material.file_url}', '${material.title.replace(/'/g, "\\'")}')">${material.title}</h4>`;
+                        titleHtml = `<h4 class="material-title">${material.title}</h4>`;
                         actionHtml = `
-                            <button class="download-btn" onclick="downloadMaterial('${material.file_url}', '${material.title.replace(/'/g, "\\'")}')">
+                            <button class="download-btn" data-file-url="${material.file_url}">
                                 <i class="fas fa-download"></i>
                                 Download
                             </button>
@@ -521,16 +522,27 @@
             if (papersEl) papersEl.textContent = papersCount;
         }
 
-        // Download material function
-        function downloadMaterial(url, title) {
+        // Download material (delegated handler)
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.download-btn');
+            if (!btn) return;
+
+            const fileUrl = (btn.dataset.fileUrl || '').trim();
+            if (!fileUrl) {
+                if (typeof showToast === 'function') {
+                    showToast('No file available for download yet.', 'warning');
+                }
+                return;
+            }
+
             const link = document.createElement('a');
-            link.href = url;
-            link.download = title;
+            link.href = fileUrl;
+            link.download = '';
             link.target = '_blank';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-        }
+        });
 
         // Search functionality
         const searchInput = document.querySelector('.search-section input');

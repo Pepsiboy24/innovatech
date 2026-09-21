@@ -58,7 +58,11 @@ class UniversalRouter {
             if (btn) {
                 const type = btn.getAttribute('data-type');
                 const id = btn.getAttribute('data-id');
-                if (type && id) {
+                // Only handle types this router actually renders. Other types
+                // (e.g. "class", "subject") are served by their own pages'
+                // dedicated modals and must not open this modal — otherwise it
+                // ends up stuck showing an empty "Loading Context..." panel.
+                if (type && id && ['student', 'teacher', 'parent'].includes(type)) {
                     console.log(`🔍 Opening modal for ${type} (ID: ${id})`);
                     this.handleView(type, id);
                 }
@@ -151,10 +155,12 @@ class UniversalRouter {
         let query = supabase
             .from('Students')
             .select(`
-            *,
-            Classes (class_name),
+            student_id, full_name, gender, date_of_birth,
+            enrollment_status, admission_date, class_id,
+            Classes (class_name, section),
             Parent_Student_Links (
-                Parents (*)
+                relationship,
+                Parents (full_name, email, phone_number, address, occupation)
             )
         `)
             .eq('student_id', id);
@@ -164,11 +170,8 @@ class UniversalRouter {
         const { data: student, error } = await query.single();
         if (error) throw error;
 
-        // Flatten parents logic remains the same
-        if (student && student.Parent_Student_Links) {
-            student.Parents = student.Parent_Student_Links.map(l => l.Parents).filter(p => p);
-        }
-
+        // NOTE: Students has NO email column. Student contact details live on
+        // the linked Parents row (via Parent_Student_Links) and are read below.
         return student;
     }
 
@@ -180,17 +183,48 @@ class UniversalRouter {
         const contactsEl = document.getElementById('um-contacts');
         const administrativeEl = document.getElementById('um-administrative');
 
-        // Capture email from the fetched record
-        const studentEmail = data.email || 'No student email found';
-
         if (nameEl) nameEl.textContent = data.full_name || 'Student';
 
-        // Update Header
+        // Update Header — no student email exists in the schema
         if (roleEl) {
-            roleEl.innerHTML = `Student <span style="margin-left: 10px; opacity: 0.85; font-size: 0.85em;"><i class="fa fa-envelope"></i> ${studentEmail}</span>`;
+            roleEl.innerHTML = `Student`;
         }
 
-        const guardian = (data.Parents && data.Parents.length > 0) ? data.Parents[0] : null;
+        // Guardian info comes from the first linked parent, if any.
+        const links = Array.isArray(data.Parent_Student_Links)
+            ? data.Parent_Student_Links.filter(l => l && l.Parents)
+            : [];
+        const guardian = links[0] || null;
+        const guardianData = guardian?.Parents || null;
+        const relationship = guardian?.relationship || '';
+
+        const guardianHTML = guardianData
+            ? `
+                <div class="um-data-card">
+                    <div class="um-label">Guardian Name</div>
+                    <div class="um-value">${guardianData.full_name || 'N/A'}</div>
+                </div>
+                <div class="um-data-card">
+                    <div class="um-label">Relationship</div>
+                    <div class="um-value">${relationship || 'N/A'}</div>
+                </div>
+                <div class="um-data-card">
+                    <div class="um-label">Guardian Phone</div>
+                    <div class="um-value">${guardianData.phone_number || 'N/A'}</div>
+                </div>
+                <div class="um-data-card">
+                    <div class="um-label">Guardian Email</div>
+                    <div class="um-value" style="word-break:break-all">${guardianData.email || 'N/A'}</div>
+                </div>
+            `
+            : `
+                <div class="um-data-card" style="grid-column: 1 / -1;">
+                    <div class="um-label">Guardian Information</div>
+                    <div class="um-value">No guardian on record</div>
+                </div>
+            `;
+
+        const className = `${data.Classes?.class_name || 'N/A'}${data.Classes?.section ? ' ' + data.Classes.section : ''}`;
 
         // Overview Tab
         if (overviewEl) {
@@ -198,28 +232,24 @@ class UniversalRouter {
                 <div class="um-grid">
                     <div class="um-data-card">
                         <div class="um-label">Full Name</div>
-                        <div class="um-value">${data.full_name}</div>
+                        <div class="um-value">${data.full_name || 'N/A'}</div>
                     </div>
                     <div class="um-data-card">
-                        <div class="um-label">Student Email</div>
-                        <div class="um-value" style="word-break:break-all">${studentEmail}</div>
-                    </div>
-                    <div class="um-data-card">
-                        <div class="um-label">Guardian Name</div>
-                        <div class="um-value">${guardian ? guardian.full_name : 'Not Assigned'}</div>
-                    </div>
-                    <div class="um-data-card">
-                        <div class="um-label">Guardian Phone</div>
-                        <div class="um-value">${guardian ? guardian.phone_number : 'N/A'}</div>
+                        <div class="um-label">Gender</div>
+                        <div class="um-value">${data.gender || 'N/A'}</div>
                     </div>
                     <div class="um-data-card">
                         <div class="um-label">Class</div>
-                        <div class="um-value">${data.Classes?.class_name || 'N/A'}</div>
+                        <div class="um-value">${className}</div>
                     </div>
                     <div class="um-data-card">
                         <div class="um-label">Student ID</div>
-                        <div class="um-value" style="font-size:10px">${data.student_id}</div>
+                        <div class="um-value" style="font-size:10px">${data.student_id || 'N/A'}</div>
                     </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <h3 style="margin-bottom: 15px; color: #1e293b;">Guardian Information</h3>
+                    <div class="um-grid">${guardianHTML}</div>
                 </div>
             `;
         }
@@ -230,7 +260,11 @@ class UniversalRouter {
                 <div class="um-grid">
                     <div class="um-data-card">
                         <div class="um-label">Current Class</div>
-                        <div class="um-value">${data.Classes?.class_name || 'N/A'}</div>
+                        <div class="um-value">${className}</div>
+                    </div>
+                    <div class="um-data-card">
+                        <div class="um-label">Gender</div>
+                        <div class="um-value">${data.gender || 'N/A'}</div>
                     </div>
                     <div class="um-data-card">
                         <div class="um-label">Date of Birth</div>
@@ -255,31 +289,9 @@ class UniversalRouter {
         // Contacts Tab
         if (contactsEl) {
             contactsEl.innerHTML = `
-                <div class="um-grid">
-                    <div class="um-data-card">
-                        <div class="um-label">Student Email</div>
-                        <div class="um-value" style="word-break:break-all">${studentEmail}</div>
-                    </div>
-                    <div class="um-data-card">
-                        <div class="um-label">Phone Number</div>
-                        <div class="um-value">${data.phone_number || 'N/A'}</div>
-                    </div>
-                    <div class="um-data-card">
-                        <div class="um-label">Home Address</div>
-                        <div class="um-value">${data.address || 'N/A'}</div>
-                    </div>
-                    <div class="um-data-card">
-                        <div class="um-label">Guardian Email</div>
-                        <div class="um-value" style="word-break:break-all">${guardian?.email || 'N/A'}</div>
-                    </div>
-                    <div class="um-data-card">
-                        <div class="um-label">Guardian Phone</div>
-                        <div class="um-value">${guardian ? guardian.phone_number : 'N/A'}</div>
-                    </div>
-                    <div class="um-data-card">
-                        <div class="um-label">Guardian Address</div>
-                        <div class="um-value">${guardian?.address || 'N/A'}</div>
-                    </div>
+                <div style="margin-bottom: 15px;">
+                    <h3 style="margin-bottom: 15px; color: #1e293b;">Guardian Information</h3>
+                    <div class="um-grid">${guardianHTML}</div>
                 </div>
             `;
         }

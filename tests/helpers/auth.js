@@ -75,41 +75,66 @@ export async function getSessionForRole(role) {
 }
 
 // Log a role into the browser by injecting the session into
-// localStorage under key `sb-{project-ref}-auth-token`, then reloading
-// so supabase-js picks it up. Returns the access_token for reuse in
-// direct REST assertions.
+// localStorage under key `sb-{project-ref}-auth-token` in the exact
+// shape supabase-js v2 expects, so the SPA auth guards pick it up.
 export async function loginAs(page, role) {
-  const session = await getSessionForRole(role);
-  const ref = getProjectRef();
-  const tokenKey = ref ? `sb-${ref}-auth-token` : 'sb-auth-token';
+  const email    = process.env[`TEST_${role.toUpperCase()}_EMAIL`];
+  const password = process.env[`TEST_${role.toUpperCase()}_PASSWORD`];
+  const supabaseUrl  = process.env.SUPABASE_URL;
+  const supabaseKey  = process.env.SUPABASE_ANON_KEY;
 
-  // Navigate to the app origin first so window.localStorage has a valid
-  // same-origin scope (root "/" is rewritten by netlify to the login page).
-  await page.goto('/', { waitUntil: 'domcontentloaded' }).catch(() => {});
+  if (!email || !password) {
+    throw new Error(
+      `loginAs: no credentials for role "${role}". ` +
+      `Set TEST_${role.toUpperCase()}_EMAIL and _PASSWORD in .env.test`
+    );
+  }
 
-  const tokenValue = JSON.stringify({
-    access_token: session.access_token,
-    refresh_token: session.refresh_token,
-    expires_at: session.expires_at,
-    expires_in: 3600,
-    token_type: 'bearer',
-    // Minimal user object so supabase-js holds a full-lived session.
-    // The access token itself is what authGuard.getUser() validates.
-    user: session.user || {},
-    provider_token: null,
-    provider_refresh_token: null,
-  });
-
-  await page.evaluate(
-    ([key, value]) => {
-      localStorage.setItem(key, value);
-    },
-    [tokenKey, tokenValue],
+  // Call Supabase auth REST endpoint directly
+  const res = await fetch(
+    `${supabaseUrl}/auth/v1/token?grant_type=password`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': supabaseKey,
+      },
+      body: JSON.stringify({ email, password }),
+    }
   );
 
-  await page.reload({ waitUntil: 'domcontentloaded' });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`loginAs: Supabase auth failed for ${role}: ${err}`);
+  }
 
-  return session.access_token;
+  const session = await res.json();
+
+  // Derive the localStorage key Supabase JS v2 uses
+  const projectRef = supabaseUrl
+    .replace('https://', '')
+    .split('.')[0];
+  const storageKey = `sb-${projectRef}-auth-token`;
+
+  // Write session in the exact shape supabase-js v2 expects
+  const storageValue = JSON.stringify({
+    access_token:  session.access_token,
+    token_type:    session.token_type || 'bearer',
+    expires_in:    session.expires_in,
+    expires_at:    session.expires_at,
+    refresh_token: session.refresh_token,
+    user:          session.user,
+  });
+
+  // Navigate to the site root first so localStorage 
+  // is set on the correct origin
+  await page.goto('/', { waitUntil: 'domcontentloaded' })
+            .catch(() => {});
+
+  await page.evaluate(
+    ([key, value]) => localStorage.setItem(key, value),
+    [storageKey, storageValue]
+  );
 }
 
 // Build a small PostgREST client bound to a specific access token.

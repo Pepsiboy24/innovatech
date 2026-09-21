@@ -201,7 +201,8 @@ registrationForm.addEventListener("submit", async function (e) {
   if (result && result.success) {
     document.getElementById("step3").classList.remove("active");
     document.getElementById("successStep").classList.add("active");
-    document.querySelector(".buttons").style.display = "none";
+    const navButtons = document.getElementById("navButtons");
+    if (navButtons) navButtons.style.display = "none";
     if (typeof window.refreshStudentList === 'function') window.refreshStudentList();
   } else {
     alert("Error: " + (result.error || "Unknown error"));
@@ -209,6 +210,32 @@ registrationForm.addEventListener("submit", async function (e) {
     submitBtn.textContent = "Complete Registration";
   }
 });
+
+// --- 4b. Register Another / Done (success step) ---
+
+const registerAnotherBtn = document.getElementById("registerAnotherBtn");
+const doneBtn = document.getElementById("doneBtn");
+
+if (registerAnotherBtn) {
+  registerAnotherBtn.addEventListener("click", () => {
+    registrationForm.reset();
+    document.querySelectorAll(".error-message").forEach((el) => el.style.display = "none");
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = "Complete Registration";
+    currentStep = 1;
+    showStep(1);
+    const navButtons = document.getElementById("navButtons");
+    if (navButtons) navButtons.style.display = "";
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+}
+
+if (doneBtn) {
+  doneBtn.addEventListener("click", () => {
+    const popup = document.getElementById("registrationPopup");
+    if (popup) popup.style.display = "none";
+  });
+}
 
 // --- 5. Parent Search ---
 

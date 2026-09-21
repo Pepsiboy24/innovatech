@@ -58,21 +58,97 @@ window.openEditClassModal = async (classId) => {
 };
 
 // --- 👁️ View Class Function ---
-window.openViewClassModal = (classId) => {
-  const classData = window.allClassesData.find(c => c.class_id == classId);
-  if (!classData) return;
-
-  document.getElementById('viewClassNameDisplay').textContent = classData.class_name;
-  document.getElementById('viewTeacherName').textContent = classData.Teachers ?
-    `${classData.Teachers.first_name} ${classData.Teachers.last_name}` : "Unassigned";
-  document.getElementById('viewStudentCount').textContent = classData._studentCount ?? 0;
-
+window.openViewClassModal = async (classId) => {
   const viewModal = document.getElementById('viewClassModal');
   const overlay = document.getElementById("overlay");
+  if (!viewModal) return;
 
+  // Show the modal immediately with a loading state so the user sees feedback
+  // while the class data is fetched from the database.
   viewModal.style.display = 'flex';
   overlay.style.display = 'block';
   document.body.style.overflow = 'hidden';
+
+  const nameEl = document.getElementById('viewClassNameDisplay');
+  const teacherEl = document.getElementById('viewTeacherName');
+  const countEl = document.getElementById('viewStudentCount');
+
+  nameEl.textContent = 'Loading Class Details...';
+  teacherEl.textContent = 'Loading...';
+  countEl.textContent = 'Loading...';
+
+  // class_id is a PostgreSQL integer (int4), not a uuid — it MUST be parsed
+  // to a number before it can be matched with .eq('class_id', ...).
+  let numericId;
+  try {
+    numericId = parseInt(classId, 10);
+  } catch (e) {
+    numericId = NaN;
+  }
+
+  if (!Number.isInteger(numericId) || numericId <= 0) {
+    console.error('Invalid class id:', classId);
+    nameEl.textContent = 'Class Details';
+    teacherEl.textContent = 'Unavailable';
+    countEl.textContent = 'Unavailable';
+    return;
+  }
+
+  try {
+    // Get the user for school_id (RLS) — wrapped so the modal still renders
+    // for cached/allowlisted flows if the auth lookup fails.
+    let user = null;
+    try {
+      user = await waitForUser();
+    } catch (e) {
+      console.warn('Could not resolve user for class view:', e);
+    }
+    const schoolId = user?.user_metadata?.school_id;
+
+    // Query 1: Class row (with the assigned teacher).
+    let classQuery = supabaseClient
+      .from('Classes')
+      .select('class_id, class_name, section, Teachers(first_name, last_name)')
+      .eq('class_id', numericId)
+      .single();
+    if (schoolId) classQuery = classQuery.eq('school_id', schoolId);
+    const { data: classData, error: classError } = await classQuery;
+
+    // Query 2: Students enrolled in this class.
+    let studentsQuery = supabaseClient
+      .from('Students')
+      .select('student_id')
+      .eq('class_id', numericId);
+    if (schoolId) studentsQuery = studentsQuery.eq('school_id', schoolId);
+    const { data: studentsData, error: studentsError } = await studentsQuery;
+
+    if (classError) {
+      console.error('Error loading class details:', classError.message);
+      showToast('Could not load class details.', 'error');
+      nameEl.textContent = 'Class Details';
+      teacherEl.textContent = 'Unavailable';
+      countEl.textContent = studentsError || !studentsData ? 'Unavailable' : (studentsData.length ?? 0);
+      return;
+    }
+
+    nameEl.textContent = classData.class_name || 'Class Details';
+    teacherEl.textContent = classData.Teachers
+      ? `${classData.Teachers.first_name ?? ''} ${classData.Teachers.last_name ?? ''}`.trim() || 'Unassigned'
+      : 'Unassigned';
+
+    if (studentsError) {
+      console.error('Error loading student count:', studentsError.message);
+      countEl.textContent = 'Unavailable';
+    } else {
+      countEl.textContent = studentsData?.length ?? 0;
+    }
+  } catch (error) {
+    console.error('Unexpected error while viewing class:', error);
+    showToast('Could not load class details.', 'error');
+    nameEl.textContent = 'Class Details';
+    teacherEl.textContent = 'Unavailable';
+    countEl.textContent = 'Unavailable';
+  }
 };
 
 /**

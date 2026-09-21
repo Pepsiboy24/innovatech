@@ -322,6 +322,47 @@ body {
     border-color: #cbd5e0;
 }
 
+/* Sticky Save Bar (bottom of viewport while scrolling) */
+.attendance-save-bar {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border-top: 2px solid #e2e8f0;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    z-index: var(--z-sticky, 1000);
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+    margin-top: 16px;
+    border-radius: 12px;
+}
+
+.attendance-save-bar .save-summary {
+    font-size: 14px;
+    font-weight: 600;
+    color: #4a5568;
+}
+
+.attendance-save-bar .btn-save {
+    background: #3b82f6;
+    color: white;
+    padding: 10px 28px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 15px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.attendance-save-bar .btn-save:hover {
+    background: #2563eb;
+}
+
 /* Summary Stats */
 .attendance-summary {
     display: grid;
@@ -535,6 +576,15 @@ body {
     }
 
     .save-btn {
+        width: 100%;
+    }
+
+    .attendance-save-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .attendance-save-bar .btn-save {
         width: 100%;
     }
 }

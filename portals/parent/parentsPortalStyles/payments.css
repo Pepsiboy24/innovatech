@@ -30,7 +30,7 @@ html, body {
    ============================================================ */
 .sidebar {
     width: 280px;
-    background: white;
+    background: linear-gradient(180deg, #1e3a5f 0%, #1e293b 100%);
     box-shadow: 2px 0 10px rgba(0,0,0,0.05);
     padding: 2rem 0;
     position: fixed;
@@ -40,12 +40,52 @@ html, body {
     overflow-y: auto;
     z-index: 1000;
     transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
 }
 
 .sidebar-header {
-    padding: 0 2rem 2rem;
-    border-bottom: 1px solid #e2e8f0;
-    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 20px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 16px;
+}
+
+.parent-icon {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #7dd3fc;
+    font-size: 18px;
+}
+
+.sidebar-header-text {
+    min-width: 0;
+}
+
+.sidebar-role {
+    font-size: 10px;
+    font-weight: 700;
+    color: #7dd3fc;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 2px;
+}
+
+.sidebar-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .logo {
@@ -98,6 +138,85 @@ html, body {
     width: 20px;
     text-align: center;
     font-size: 16px;
+}
+
+/* Parent portal nav items (navy sidebar) */
+.nav-link.parent-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 16px;
+    margin: 2px 12px;
+    color: #cbd5e1;
+    border-radius: 8px;
+    border-right: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+}
+
+.nav-link.parent-nav-item i {
+    width: 18px;
+    text-align: center;
+    font-size: 15px;
+}
+
+.nav-link.parent-nav-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+
+.nav-link.parent-nav-item.active {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+}
+
+/* Parent identity / child switcher */
+.parent-identity {
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    margin: 4px 12px 12px;
+}
+
+.parent-label {
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+
+.child-switcher-select {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1e293b;
+    background: white;
+    cursor: pointer;
+}
+
+/* Sidebar footer (logout) */
+.sidebar-footer {
+    margin-top: auto;
+    padding: 16px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-logout {
+    color: #f87171;
+    font-weight: 700;
+}
+
+.sidebar-logout:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #fca5a5;
 }
 
 .user-section {
@@ -251,6 +370,30 @@ html, body {
     box-shadow: 0 1px 4px rgba(0,0,0,0.08);
     overflow: hidden;
     width: 100%;
+}
+
+/* Payment status banner (paid / outstanding) */
+#paymentStatusBanner.payment-status.paid,
+#paymentStatusBanner.payment-status.outstanding {
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+#paymentStatusBanner.payment-status.paid {
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    color: #166534;
+}
+
+#paymentStatusBanner.payment-status.outstanding {
+    background: #fff7ed;
+    border: 1px solid #fdba74;
+    color: #9a3412;
 }
 
 /* School Info Header */

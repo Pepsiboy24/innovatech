@@ -28,196 +28,37 @@
     <!-- Sidebar -->
     <div class="sidebar" data-sideBar></div>
 
-    <!-- Student Registration Popup -->
+    <!-- Add Student to Class Popup -->
     <div class="popup" id="registrationPopup" style="display:none;">
         <div class="containment">
             <div class="popup-header">
                 <div class="icon" id="closePopup"><i class="fa fa-times"></i></div>
-                <h1>Student Registration</h1>
-                <p>Complete your enrollment in just 3 easy steps</p>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill" style="width: 33%;"></div>
-                </div>
+                <h1>Add Student to Class</h1>
+                <p>Link an existing student to one of your classes</p>
             </div>
-
-            <div class="step-indicators">
-                <div class="step-indicator active" id="indicator1">
-                    <div class="step-circle">1</div>
-                    <span>Personal Info</span>
-                </div>
-                <div class="step-indicator" id="indicator2">
-                    <div class="step-circle">2</div>
-                    <span>Academic Details</span>
-                </div>
-                <div class="step-indicator" id="indicator3">
-                    <div class="step-circle">3</div>
-                    <span>Review & Submit</span>
-                </div>
-            </div>
-
-            <div class="step" id="successStep" style="padding: 20px">
-                <div class="success-message">
-                    <div class="success-icon">✓</div>
-                    <h2>Registration Successful!</h2>
-                    <p>Welcome to EdTech Portal! Your registration has been completed successfully. You will
-                        receive a confirmation email shortly.</p>
-                    <button type="button" class="btn btn-primary" data-resetBtn style="margin-top: 20px;">Register
-                        Another Student</button>
-                </div>
-            </div>
-
             <div class="form-content">
-                <form id="registrationForm">
-                    <div class="step active" id="step1">
-                        <h2>Personal Information</h2>
-                        <p>Let's start with your basic details</p>
-
-                        <div class="form-group">
-                            <label for="fullName">Full Name *</label>
-                            <input type="text" id="fullName" name="fullName" required
-                                placeholder="Enter your full name">
-                            <div class="error-message" id="fullNameError"
-                                style="display:none; color:red; font-size:12px;">Full Name is required</div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="email">Email Address *</label>
-                            <input type="email" id="email" name="email" required placeholder="your.email@example.com">
-                            <div class="error-message" id="emailError" style="display:none; color:red; font-size:12px;">
-                                Please enter a valid email</div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="dateOfBirth">Date of Birth *</label>
-                                <input type="date" id="dateOfBirth" name="dateOfBirth" required>
-                                <div class="error-message" id="dobError"
-                                    style="display:none; color:red; font-size:12px;"></div>
-                            </div>
-                            <div class="form-group">
-                                <label>Gender *</label>
-                                <div class="radio-group">
-                                    <div class="radio-option">
-                                        <input type="radio" id="male" name="gender" value="male" required>
-                                        <label for="male">Male</label>
-                                    </div>
-                                    <div class="radio-option">
-                                        <input type="radio" id="female" name="gender" value="female" required>
-                                        <label for="female">Female</label>
-                                    </div>
-                                    <div class="error-message" id="genderError"
-                                        style="display:none; color:red; font-size:12px;">Please select a gender</div>
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #e2e8f0;">
-                        <h3>Parent/Guardian Information</h3>
-                        <p style="font-size: 14px; color: #64748b; margin-bottom: 15px;">Search for an existing parent
-                            by phone number or add a new one.</p>
-
-                        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                            <input type="text" id="parentSearchPhone" placeholder="Enter Parent Phone Number..."
-                                style="flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; outline: none;">
-                            <button type="button" id="searchParentBtn" class="btn btn-secondary"
-                                style="margin: 0;">Search Parent</button>
-                        </div>
-                        <div id="parentSearchMessage" style="font-size: 13px; margin-bottom: 15px;"></div>
-
-                        <input type="hidden" id="linkedParentId" name="linkedParentId" value="">
-
-                        <div class="form-group">
-                            <label for="parentFullName">Parent Full Name *</label>
-                            <input type="text" id="parentFullName" name="parentFullName" required
-                                placeholder="Parent's full name">
-                            <div class="error-message" id="parentFullNameError"
-                                style="display:none; color:red; font-size:12px;">Parent Full Name is required</div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="parentEmail">Parent Email Address *</label>
-                            <input type="email" id="parentEmail" name="parentEmail" required
-                                placeholder="parent.email@example.com">
-                            <div class="error-message" id="parentEmailError"
-                                style="display:none; color:red; font-size:12px;">Please enter a valid email</div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="parentPhone">Parent Phone Number *</label>
-                                <input type="tel" id="parentPhone" name="parentPhone" required
-                                    placeholder="e.g., 08012345678">
-                                <div class="error-message" id="parentPhoneError"
-                                    style="display:none; color:red; font-size:12px;">Parent Phone is required</div>
-                            </div>
-                            <div class="form-group">
-                                <label for="relationship">Relationship *</label>
-                                <select id="relationship" name="relationship" required>
-                                    <option value="">Select Relationship</option>
-                                    <option value="Father">Father</option>
-                                    <option value="Mother">Mother</option>
-                                    <option value="Guardian">Guardian</option>
-                                </select>
-                                <div class="error-message" id="relationshipError"
-                                    style="display:none; color:red; font-size:12px;">Relationship is required</div>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="parentOccupation">Parent Occupation</label>
-                                <input type="text" id="parentOccupation" name="parentOccupation"
-                                    placeholder="e.g., Engineer">
-                            </div>
-                            <div class="form-group">
-                                <label for="parentAddress">Home Address</label>
-                                <input type="text" id="parentAddress" name="parentAddress"
-                                    placeholder="e.g., 123 Main St">
-                            </div>
-                        </div>
+                <form id="linkStudentForm">
+                    <div class="info-banner"
+                        style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 12px 16px; border-radius: 8px; font-size: 14px; line-height: 1.5; margin-bottom: 20px;">
+                        Student accounts are created by the school administrator. To register a
+                        brand-new student, contact your admin — here you can only link an
+                        existing student to your class.
                     </div>
-
-                    <div class="step" id="step2">
-                        <h2>Academic Details</h2>
-                        <p>Tell us about your academic information</p>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="class">Class/Grade *</label>
-                                <select id="class" name="class" required>
-                                    <option value="">Loading classes...</option>
-                                </select>
-                                <div class="error-message" id="classError"
-                                    style="display:none; color:red; font-size:12px;">Please select a class</div>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="admissionDate">Admission Date *</label>
-                                <input type="date" id="admissionDate" name="admissionDate" required>
-                                <div class="error-message" id="admissionDateError"
-                                    style="display:none; color:red; font-size:12px;"></div>
-                            </div>
-                        </div>
+                    <div class="form-group">
+                        <label for="class">Target Class *</label>
+                        <select id="class" name="class" required>
+                            <option value="">Select a class</option>
+                        </select>
                     </div>
-
-                    <div class="step" id="step3">
-                        <h2>Review Your Information</h2>
-                        <p>Please review your details before submitting</p>
-                        <div id="reviewContent"
-                            style="background: #f8fafc; padding: 24px; border-radius: 8px; margin: 20px 0;">
-                            <p><strong>Name:</strong> <span id="reviewName"></span></p>
-                            <p><strong>Email:</strong> <span id="reviewEmail"></span></p>
-                            <p><strong>Class:</strong> <span id="reviewClass"></span></p>
-                        </div>
+                    <div class="form-group">
+                        <label for="studentSelect">Student *</label>
+                        <select id="studentSelect" name="studentSelect" required>
+                            <option value="">Select a class first</option>
+                        </select>
                     </div>
-
-                    <div class="buttons">
-                        <button type="button" class="btn btn-secondary" id="prevBtn"
-                            style="display: none;">Previous</button>
-                        <button type="button" class="btn btn-primary" id="nextBtn">Next</button>
-                        <button type="submit" class="btn btn-primary" id="submitBtn" style="display: none;">Submit
-                            Registration</button>
+                    <div class="buttons" style="justify-content: flex-end; margin-top: 24px;">
+                        <button type="button" class="btn btn-secondary" id="cancelLinkBtn">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="linkSubmitBtn">Link Student</button>
                     </div>
                 </form>
             </div>

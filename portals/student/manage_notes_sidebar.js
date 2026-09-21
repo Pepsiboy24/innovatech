@@ -10,7 +10,7 @@ export async function initializeSidebar() {
 
     if (!user) {
         console.warn('Sidebar: Unauthorized. Redirecting to login...');
-        window.location.href = "/public/html/login.html";
+        window.location.replace('/public/html/login.html');
         return;
     }
 
@@ -177,7 +177,7 @@ export async function initializeSidebar() {
             { title: 'Upload Results', icon: uploadIcon, path: '/html/teachersPortal/upload_results.html' },
             { title: 'Upload Notes', icon: uploadIcon, path: '/html/teachersPortal/upload_notes.html' },
             { title: 'AI Assistant', icon: noteIcon, path: '/html/teachersPortal/ai_assistant.html' },
-            { title: 'Manage Notes', icon: noteIcon, path: '/html/shared/manage_notes.html' }
+            { title: 'Manage Notes', icon: noteIcon, path: '/portals/student/manage_notes.html' }
         ];
 
         sidebarContainer.innerHTML = `
@@ -191,7 +191,7 @@ export async function initializeSidebar() {
                 </li>`).join('')}
             </ul>
             <div class="user-section">
-                <button class="logout-btn" id="manageNotesLogoutBtn">Logout</button>
+                <button class="logout-btn" id="manageNotesLogoutBtn" style="background:#fee2e2; color:#ef4444; font-weight:700; border:none; cursor:pointer; border-radius:8px; width:100%; padding:10px; font-size:14px;" onmouseover="this.style.color='#b91c1c'; this.style.background='#fecaca';" onmouseout="this.style.color='#ef4444'; this.style.background='#fee2e2';">Logout</button>
             </div>
         `;
     }
@@ -206,7 +206,7 @@ export async function initializeSidebar() {
             } catch (error) {
                 console.error("Logout Error:", error);
             }
-            window.location.href = "/public/html/login.html";
+            window.location.replace('/public/html/login.html');
         });
     }
 }

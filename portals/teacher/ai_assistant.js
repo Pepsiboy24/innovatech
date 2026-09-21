@@ -2,9 +2,19 @@
  * ai_assistant.js - Groq + Supabase Edition (Multimodal Version)
  * ─────────────────────────────────────────────────────────────────
  * Now supports text prompts and image uploads for textbook analysis.
+ *
+ * DEPLOYMENT REQUIRED:
+ * Run: supabase functions deploy groq-proxy
+ * Run: supabase secrets set GROQ_API_KEY=your_key
  */
 import { supabase } from '../../core/config.js';
 import { waitForUser } from '/core/perf.js';
+
+// System prompt for the Groq-backed assistant
+const SYSTEM_PROMPT = 'You are EduHelp, a helpful AI teaching assistant for TeachSmart. '
+    + 'Help teachers with lesson plans, quiz questions, classroom activities, report comments, '
+    + 'explanations, and parent communication. Keep answers clear, practical, and concise. '
+    + 'Format answers with short paragraphs and headings.';
 
 /* ── DOM ─────────────────────────────────────────────────────────── */
 const greetingWrapper = document.getElementById('greetingWrapper');
@@ -131,23 +141,33 @@ async function handleSend(overrideText = null, actionOverride = 'chat') {
     sendBtn.disabled = true;
 
     try {
-        const { data, error } = await supabase.functions.invoke('clever-responder', {
+        // Build conversation history for the Chat Completions API
+        const conversationHistory = imageToSubmit
+            ? [{
+                role: 'user',
+                content: [
+                    { type: 'text', text: text || 'Analyze the attached image.' },
+                    { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${imageToSubmit}` } }
+                ]
+            }]
+            : [{ role: 'user', content: text }];
+
+        const { data, error } = await supabase.functions.invoke('groq-proxy', {
             body: {
-                action: actionOverride,
-                topic: text,
-                image: imageToSubmit // Sending the Base64 image to Groq via Supabase
+                systemPrompt: SYSTEM_PROMPT,
+                messages: conversationHistory
             }
         });
 
         if (error) throw error;
 
         loaderRow.remove();
-        appendBubble('ai', data.text);
+        appendBubble('ai', data?.text || 'No response received.');
 
     } catch (err) {
         loaderRow.remove();
-        appendBubble('ai', `⚠️ Connection Error: Please try again in a moment.`);
-        console.error('[AI Assistant] Error:', err);
+        appendBubble('ai', 'AI assistant is temporarily unavailable. Please try again in a moment.');
+        console.error('[AI Assistant] Error invoking groq-proxy:', err);
     } finally {
         isLoading = false;
         sendBtn.disabled = false;

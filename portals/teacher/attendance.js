@@ -97,6 +97,10 @@ function renderStudents(students) {
                             <input type="radio" name="att-${student.student_id}" value="present" id="p-${student.student_id}" onchange="updateSummary()">
                             <label for="p-${student.student_id}">Present</label>
                         </div>
+                        <div class="radio-group late">
+                            <input type="radio" name="att-${student.student_id}" value="late" id="l-${student.student_id}" onchange="updateSummary()">
+                            <label for="l-${student.student_id}">Late</label>
+                        </div>
                         <div class="radio-group absent">
                             <input type="radio" name="att-${student.student_id}" value="absent" id="a-${student.student_id}" onchange="updateSummary()">
                             <label for="a-${student.student_id}">Absent</label>
@@ -211,13 +215,24 @@ async function initializeAttendanceModule() {
         }));
     }
 
-    document.querySelector('.save-btn')?.addEventListener('click', handleSaveAttendance);
+    document.querySelectorAll('.save-btn').forEach(btn => btn.addEventListener('click', handleSaveAttendance));
 }
 
 // UI Helpers
 function updateSummary() {
-    document.getElementById('presentCount').textContent = document.querySelectorAll('input[value="present"]:checked').length;
-    document.getElementById('absentCount').textContent = document.querySelectorAll('input[value="absent"]:checked').length;
+    const present = document.querySelectorAll('input[value="present"]:checked').length;
+    const late = document.querySelectorAll('input[value="late"]:checked').length;
+    const absent = document.querySelectorAll('input[value="absent"]:checked').length;
+
+    document.getElementById('presentCount').textContent = present;
+    document.getElementById('lateCount').textContent = late;
+    document.getElementById('absentCount').textContent = absent;
+
+    const markedEl = document.getElementById('markedCount');
+    const totalEl = document.getElementById('totalCount');
+    if (markedEl && totalEl) {
+        markedEl.textContent = `${present + late + absent} of ${totalEl.textContent} marked`;
+    }
 }
 
 window.markAllPresent = () => {

@@ -45,8 +45,8 @@ async function fetchTotalStudentsCount(classIds) {
     }
 }
 
-// Fetch students from a specific class (limited to 5)
-async function fetchStudentsFromClass(classId, limit = 5) {
+// Fetch students from a specific class (limited to 10 for the dashboard preview)
+async function fetchStudentsFromClass(classId, limit = 10) {
     try {
         const { data, error } = await supabase
             .from('Students')
@@ -224,6 +224,11 @@ async function loadTeacherDashboard() {
         greetingEl.textContent = `${teacherData.first_name || ''} ${teacherData.last_name || ''}`.trim() || 'Teacher';
     }
 
+    // Update profile avatar with the teacher's first initial (FIX: was hardcoded "T")
+    const initial = (teacherData?.first_name || '')?.[0]?.toUpperCase() || 'T';
+    document.querySelectorAll('#userAvatarInitials, .profile-avatar, .teacher-avatar, [data-avatar]')
+        .forEach(el => el.textContent = initial);
+
     // Fetch teacher's assigned classes
     const teacherClasses = await fetchTeacherClasses(teacherId);
 
@@ -254,7 +259,7 @@ async function loadTeacherDashboard() {
 
     // Display students from first class
     const firstClass = teacherClasses[0];
-    const students = await fetchStudentsFromClass(firstClass.class_id, 5);
+    const students = await fetchStudentsFromClass(firstClass.class_id, 10);
     const classDisplayName = `${firstClass.class_name} ${firstClass.section}`;
     renderStudents(students, classDisplayName, avgGrade);
 }

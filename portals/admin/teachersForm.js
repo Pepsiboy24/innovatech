@@ -44,7 +44,7 @@ function showStep(step) {
   const prevBtn = document.getElementById("prevBtn");
   const nextBtn = document.getElementById("nextBtn");
   const submitBtn = document.getElementById("submitBtn");
-  const buttonsContainer = document.querySelector(".buttons");
+  const buttonsContainer = document.getElementById("navButtons");
   const indicators = document.querySelector('.step-indicators');
 
   // 2. Handle Success State (Hide everything)
@@ -241,7 +241,7 @@ document.getElementById("teacherForm").addEventListener("submit", async function
     // LOGIC: Check if registration was successful
     if (result.success === true) {
       this.style.display = "none";
-      const buttonsContainer = document.querySelector(".buttons");
+      const buttonsContainer = document.getElementById("navButtons");
       if (buttonsContainer) buttonsContainer.style.display = "none";
       showStep('success');
       showToast("Teacher registered successfully!", "success");
@@ -298,3 +298,36 @@ document.addEventListener("click", function (e) {
     }
   }
 });
+
+// Register Another / Done buttons on the success step
+const registerAnotherBtn = document.getElementById("registerAnotherBtn");
+const doneBtn = document.getElementById("doneBtn");
+
+if (registerAnotherBtn) {
+  registerAnotherBtn.addEventListener("click", () => {
+    const form = document.getElementById("teacherForm");
+    if (form) {
+      form.style.display = "";
+      form.reset();
+    }
+    document.querySelectorAll(".error").forEach((el) => el.classList.remove("error"));
+    submissionInProgress = false;
+
+    currentStep = 1;
+    showStep(1);
+
+    const submitBtn = document.getElementById("submitBtn");
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Submit Registration";
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+}
+
+if (doneBtn) {
+  doneBtn.addEventListener("click", () => {
+    const popup = document.getElementById("registrationPopup");
+    if (popup) popup.style.display = "none";
+  });
+}

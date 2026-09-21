@@ -48,6 +48,11 @@ window.openAddSubjectModal = function() {
     openModal('addSubjectModal');
 };
 
+// Placeholder until topic management is wired up.
+window.openAddTopicModal = function() {
+    showToast('Curriculum topics coming soon', 'info');
+};
+
 window.openEditSubjectModal = function(id) {
     const subject = allSubjects.find(s => s.subject_id === id);
     if (!subject) return;
@@ -130,12 +135,16 @@ window.selectSubject = function (id) {
 
 // ─── Assignments Functions ───────────────────────────────────────────────────
 async function loadAssignments(subject) {
+    const panel = document.getElementById('assignments-panel');
+    if (!panel) return;
+
+    // BUG B fix: ALWAYS clear the panel BEFORE querying, so a subject with no
+    // assignments never shows the previous subject's data.
+    panel.innerHTML = `<div class="spinner-wrap"><div class="spinner"></div></div>`;
+
     try {
         const user = await waitForUser();
         const schoolId = user?.user_metadata?.school_id;
-
-        const content = document.getElementById('cpContent');
-        if (content) content.innerHTML = `<div class="spinner-wrap"><div class="spinner"></div></div>`;
 
         const { data: allocations, error } = await supabase
             .from('Subject_Allocations')
@@ -153,21 +162,20 @@ async function loadAssignments(subject) {
         renderAssignmentsTable(allocations || []);
     } catch (err) {
         console.error('Error loading assignments:', err);
-        const content = document.getElementById('cpContent');
-        if (content) content.innerHTML = `<div class="cp-error">Failed to load assignments.</div>`;
+        panel.innerHTML = `<div class="cp-error">Failed to load assignments.</div>`;
     }
 }
 
 function renderAssignmentsTable(allocations) {
-    const content = document.getElementById('cpContent');
-    if (!content) return;
+    const panel = document.getElementById('assignments-panel');
+    if (!panel) return;
 
     if (allocations.length === 0) {
-        content.innerHTML = `<div class="cp-no-topics"><p>No assignments found.</p><button class="btn-primary" onclick="openAllocationModal()">Assign to Class</button></div>`;
+        panel.innerHTML = `<div class="cp-no-topics"><p>No classes assigned to this subject yet</p><button class="btn-primary" onclick="openAllocationModal()">Assign to Class</button></div>`;
         return;
     }
 
-    content.innerHTML = `
+    panel.innerHTML = `
         <div class="assignments-header">
             <h3>Class Assignments</h3>
             <button class="btn-primary" onclick="openAllocationModal()">+ Assign to Class</button>
@@ -361,8 +369,22 @@ function setupModalListeners() {
 
 window.switchTab = function (tabName) {
     currentTab = tabName;
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
-    if (selectedSubject) tabName === 'curriculum' ? loadCurriculum(selectedSubject) : loadAssignments(selectedSubject);
+
+    // BUG A fix: hide ALL views first, then show ONLY the selected view.
+    document.querySelectorAll('.view-panel').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+
+    const panel = document.getElementById(tabName + '-panel');
+    if (panel) panel.style.display = 'block';
+
+    const tabBtn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+    if (tabBtn) tabBtn.classList.add('active');
+
+    // Re-render with the current subject so the view never shows stale content.
+    if (selectedSubject) {
+        if (tabName === 'curriculum') loadCurriculum(selectedSubject);
+        else loadAssignments(selectedSubject);
+    }
 };
 
 async function loadCurriculum(subject) {
@@ -370,5 +392,23 @@ async function loadCurriculum(subject) {
     const detailEl = document.getElementById('cpDetail');
     if (emptyEl) emptyEl.style.display = 'none';
     if (detailEl) detailEl.style.display = 'flex';
+
     document.getElementById('cpSubjectName').textContent = subject.subject_name;
+    document.getElementById('cpTypeBadge').textContent = subject.is_core ? 'Core Subject' : 'Elective';
+
+    const topicCountEl = document.getElementById('cpTopicCount');
+    if (topicCountEl) topicCountEl.textContent = '0 topics';
+
+    // Render the curriculum view (distinct from assignments) so switching tabs
+    // never leaves the previous view's markup on screen.
+    const panel = document.getElementById('curriculum-panel');
+    if (panel) {
+        panel.innerHTML = `
+            <div class="cp-curriculum">
+                <div class="cp-no-topics">
+                    <i class="fa-solid fa-book-open"></i>
+                    <p>No curriculum topics yet for ${subject.subject_name}.</p>
+                </div>
+            </div>`;
+    }
 }

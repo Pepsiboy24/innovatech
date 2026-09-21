@@ -36,6 +36,12 @@ async function initializePayments() {
             console.warn('Minor: School branding failed to load', e);
         }
 
+        try {
+            await loadPaymentStatus();
+        } catch (e) {
+            console.warn('Payment status failed to load', e);
+        }
+
         // 3. Bind UI Events
         setupEventListeners();
 
@@ -134,6 +140,47 @@ async function loadSchoolInfo() {
         const logoEl = document.getElementById('schoolLogo');
         if (nameEl) nameEl.textContent = schoolData.school_name;
         if (logoEl && schoolData.school_logo_url) logoEl.src = schoolData.school_logo_url;
+    }
+}
+
+// --- PAYMENT STATUS (PAID / OUTSTANDING BANNER) ---
+
+async function loadPaymentStatus() {
+    const bannerEl = document.getElementById('paymentStatusBanner');
+    if (!bannerEl) return;
+
+    const { data: records } = await window.supabase
+        .from('Payment_Records')
+        .select('amount')
+        .eq('student_id', currentStudentId)
+        .eq('school_id', currentSchoolId);
+
+    const { data: items } = await window.supabase
+        .from('Payment_Items')
+        .select('amount, is_compulsory')
+        .eq('school_id', currentSchoolId)
+        .eq('is_active', true);
+
+    const paid = (records || []).reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
+    const owed = (items || [])
+        .filter(i => i.is_compulsory)
+        .reduce((sum, i) => sum + (parseFloat(i.amount) || 0), 0);
+
+    const naira = (n) => `₦${n.toLocaleString()}`;
+
+    if (owed === 0 || paid >= owed) {
+        bannerEl.className = 'payment-status paid';
+        bannerEl.innerHTML = `
+            <i class="fas fa-circle-check"></i>
+            All fees cleared for this term
+        `;
+    } else {
+        const outstanding = owed - paid;
+        bannerEl.className = 'payment-status outstanding';
+        bannerEl.innerHTML = `
+            <i class="fas fa-triangle-exclamation"></i>
+            ${naira(outstanding)} outstanding for this term
+        `;
     }
 }
 

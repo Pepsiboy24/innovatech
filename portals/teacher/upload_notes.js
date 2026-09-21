@@ -46,95 +46,132 @@ function resetStepper() {
 
 // ─── Supabase: load teacher's classes, subjects on demand ─────────
 
-// Holds the teacher's auth UID for reuse
+// Holds the teacher's auth UID + school_id for reuse
 let currentTeacherId = null;
+let currentSchoolId = null;
 
 async function loadSubjectsAndClasses() {
     // ── 1. Get the logged-in teacher's UID ───────────────────────
-    const user = await waitForUser();
-    if (authErr || !user) {
+    let user = null;
+    try {
+        user = await waitForUser();
+    } catch (e) {
+        console.error('Not authenticated:', e);
+    }
+    if (!user) {
         console.error('Not authenticated');
         classSelect.innerHTML = '<option value="">Not logged in</option>';
         subjectSelect.innerHTML = '<option value="">Not logged in</option>';
         return;
     }
     currentTeacherId = user.id;
+    currentSchoolId = user.user_metadata?.school_id;
 
-    // ── 2. Fetch ONLY this teacher's classes ─────────────────────
-    const { data: classData, error: classErr } = await supabaseClient
-        .from('Classes')
-        .select('class_id, class_name, section')
-        .eq('teacher_id', currentTeacherId)
-        .order('class_name', { ascending: true });
-
-    if (classErr) {
-        console.error('Error loading classes:', classErr.message);
-        classSelect.innerHTML = '<option value="">Error loading classes</option>';
-    } else if (!classData || classData.length === 0) {
-        classSelect.innerHTML = '<option value="">No classes assigned</option>';
-    } else {
-        classSelect.innerHTML = '<option value="">Select a Class</option>';
-        classData.forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = c.class_id;
-            opt.textContent = `${c.class_name} ${c.section}`;
-            classSelect.appendChild(opt);
-        });
-    }
-
-    // ── 3. Subjects start empty — loaded dynamically on class pick
-    subjectSelect.innerHTML = '<option value="">Select a Class first</option>';
-    subjectSelect.disabled = true;
-}
-
-// ── When teacher picks a class, load its subjects via Class_Subjects
-classSelect.addEventListener('change', debounce(async () => {
-    const classId = classSelect.value;
+    // ── 2. Load the teacher's subjects via Subject_Allocations ───
+    // Subjects come first; the classes dropdown is populated only after
+    // the teacher picks a subject (see the subjectSelect change handler).
     subjectSelect.innerHTML = '<option value="">Loading subjects…</option>';
     subjectSelect.disabled = true;
+    classSelect.innerHTML = '<option value="">Select a Subject first</option>';
+    classSelect.disabled = true;
 
-    if (!classId) {
-        subjectSelect.innerHTML = '<option value="">Select a Class first</option>';
-        return;
-    }
-
-    // ── FIXED QUERY ──
-    // We fetch from Subject_Allocations where this teacher is assigned to this class
-    const { data, error } = await supabaseClient
+    let subjectQuery = supabaseClient
         .from('Subject_Allocations')
         .select(`
-            subject_id, 
-            Subjects!inner (
-                subject_id, 
-                subject_name
-            )
+            subject_id,
+            Subjects!inner (subject_id, subject_name)
         `)
-        .eq('class_id', classId)
         .eq('teacher_id', currentTeacherId);
+    if (currentSchoolId) subjectQuery = subjectQuery.eq('school_id', currentSchoolId);
 
+    const { data, error } = await subjectQuery;
+
+    // Loading state is cleared in BOTH branches.
     if (error) {
-        console.error('Error:', error.message);
+        console.error('Error loading subjects:', error.message);
         subjectSelect.innerHTML = '<option value="">Error loading subjects</option>';
+        subjectSelect.disabled = false;
         return;
     }
 
     if (!data || data.length === 0) {
-        subjectSelect.innerHTML = '<option value="">No subjects assigned to you for this class</option>';
+        subjectSelect.innerHTML = '<option value="">No subjects assigned</option>';
+        subjectSelect.disabled = false;
         return;
     }
 
-    // Populate dropdown
+    // Distinct subjects only — a teacher can hold multiple allocations
+    // for the same subject across different classes.
+    const seen = new Set();
+    const subjects = data.filter(row => {
+        if (!row.Subjects || seen.has(row.Subjects.subject_id)) return false;
+        seen.add(row.Subjects.subject_id);
+        return true;
+    });
+
     subjectSelect.innerHTML = '<option value="">Select a Subject</option>';
-    data.forEach(row => {
-        if (row.Subjects) {
-            const opt = document.createElement('option');
-            opt.value = row.Subjects.subject_id;
-            opt.textContent = row.Subjects.subject_name;
-            subjectSelect.appendChild(opt);
-        }
+    subjects.forEach(row => {
+        const opt = document.createElement('option');
+        opt.value = row.Subjects.subject_id;
+        opt.textContent = row.Subjects.subject_name;
+        subjectSelect.appendChild(opt);
     });
     subjectSelect.disabled = false;
-});
+}
+
+// ── When teacher picks a subject, load the classes they teach it in
+subjectSelect.addEventListener('change', debounce(async () => {
+    const subjectId = subjectSelect.value;
+    classSelect.innerHTML = '<option value="">Loading classes…</option>';
+    classSelect.disabled = true;
+
+    if (!subjectId) {
+        classSelect.innerHTML = '<option value="">Select a Subject first</option>';
+        classSelect.disabled = false;
+        return;
+    }
+
+    // ── FIXED QUERY ──
+    // Classes are derived from Subject_Allocations for this teacher + subject.
+    let allocationQuery = supabaseClient
+        .from('Subject_Allocations')
+        .select(`
+            class_id,
+            Classes (class_id, class_name, section)
+        `)
+        .eq('teacher_id', currentTeacherId)
+        .eq('subject_id', subjectId);
+    if (currentSchoolId) allocationQuery = allocationQuery.eq('school_id', currentSchoolId);
+
+    let data, error;
+    try {
+        const result = await allocationQuery;
+        data = result.data;
+        error = result.error;
+    } catch (err) {
+        error = err;
+    }
+
+    // Loading state is ALWAYS cleared — both on error and on empty results.
+    if (error || !data || data.length === 0) {
+        console.error('Error loading classes for subject:', error?.message ?? 'No allocations');
+        classSelect.innerHTML = '<option value="">No classes assigned for this subject</option>';
+        classSelect.disabled = false;
+        return;
+    }
+
+    classSelect.innerHTML = '<option value="">Select a Class</option>';
+    data.forEach(row => {
+        if (!row.Classes) return;
+        const opt = document.createElement('option');
+        // class_id is int4 — serialize as a plain numeric string so the
+        // value matches the integer column when uploaded.
+        opt.value = String(row.Classes.class_id);
+        opt.textContent = `${row.Classes.class_name} ${row.Classes.section ?? ''}`.trim();
+        classSelect.appendChild(opt);
+    });
+    classSelect.disabled = false;
+}));
 
 
 

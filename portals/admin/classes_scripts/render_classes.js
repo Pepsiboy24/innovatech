@@ -66,7 +66,17 @@ function renderClasses(dataToRender) {
         const deleteBtn = card.querySelector(".deleteBtn");
         const viewBtn = card.querySelector(".viewBtn");
 
-        if (viewBtn) viewBtn.setAttribute('data-id', elem.class_id);
+        if (viewBtn) {
+          viewBtn.setAttribute('data-id', elem.class_id);
+          // Route the view action to the classes-specific modal. The global
+          // universal-router .view-btn handler has no 'class' branch and would
+          // open an empty modal, so stop the event from bubbling to it.
+          viewBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            window.openViewClassModal(elem.class_id);
+          };
+        }
         if (editBtn) editBtn.onclick = () => window.openEditClassModal(elem.class_id);
 
         if (deleteBtn) {

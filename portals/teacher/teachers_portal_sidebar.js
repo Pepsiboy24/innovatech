@@ -65,10 +65,16 @@ import { waitForUser, cached } from '../../core/perf.js';
                 <li><a href="${t}upload_results.html" class="nav-item">${uploadIcon} Upload Results</a></li>
                 <li><a href="${t}upload_notes.html" class="nav-item">${noteIcon} Upload Notes</a></li>
                 <li><a href="${t}ai_assistant.html" class="nav-item">${aiIcon} AI Assistant</a></li>
-                <li><a href="${sh}manage_notes.html" class="nav-item">${linkIcon} Manage Notes</a></li>
+                <a href="/portals/student/manage_notes.html" class="nav-item">${linkIcon} Manage Notes</a>
             </ul>
             <div class="user-section">
-                <button class="logout-btn" id="sidebarLogoutBtn">Logout</button>
+                <div class="user-info">
+                    <div class="user-avatar" id="sidebarAvatar">T</div>
+                    <div>
+                        <span id="sidebarName">Teacher</span>
+                    </div>
+                </div>
+                <button class="logout-btn" id="sidebarLogoutBtn" style="background:#fee2e2; color:#ef4444; font-weight:700; border:none; cursor:pointer; border-radius:8px; width:100%; padding:10px; font-size:14px;" onmouseover="this.style.color='#b91c1c'; this.style.background='#fecaca';" onmouseout="this.style.color='#ef4444'; this.style.background='#fee2e2';">Logout</button>
             </div>`;
     }
 
@@ -100,8 +106,33 @@ import { waitForUser, cached } from '../../core/perf.js';
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async () => {
                 await supabase.auth.signOut();
-                window.location.href = '/public/html/login.html';
+                window.location.replace('/public/html/login.html');
             });
+        }
+
+        // Personalise sidebar avatar + name so the initial is consistent on every page
+        try {
+            const user = await waitForUser();
+            if (user) {
+                const { data: teacher } = await supabase
+                    .from('Teachers')
+                    .select('first_name, last_name')
+                    .eq('teacher_id', user.id)
+                    .single();
+
+                if (teacher) {
+                    const initial = (teacher.first_name || '')?.[0]?.toUpperCase() || 'T';
+                    const avatarEl = document.getElementById('sidebarAvatar');
+                    if (avatarEl) avatarEl.textContent = initial;
+
+                    const nameEl = document.getElementById('sidebarName');
+                    if (nameEl) {
+                        nameEl.textContent = `${teacher.first_name || ''} ${teacher.last_name || ''}`.trim() || 'Teacher';
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Sidebar: could not load teacher info', err);
         }
     });
 })();

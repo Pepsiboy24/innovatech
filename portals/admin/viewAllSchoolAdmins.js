@@ -122,13 +122,32 @@ function renderSchoolAdmins(admins) {
                     <div class="student-action-stack">
                         <button class="view-btn view-admin-btn" type="button" data-admin-id="${admin.admin_id}">View</button>
                         <div class="student-menu">
-                            <button class="student-menu-toggle" type="button" aria-label="Open admin actions">⋮</button>
-                            <div class="student-menu-dropdown">
+                            <button class="admin-actions-btn" type="button" data-admin-id="${admin.admin_id}" aria-label="Open admin actions">⋮</button>
+                            <div class="actions-dropdown">
                                 <button
-                                    class="menu-action-btn delete-admin-btn"
+                                    class="menu-action-btn view-details-btn"
                                     type="button"
                                     data-admin-id="${admin.admin_id}">
-                                    Delete
+                                    <i class="fa-solid fa-eye"></i> View Details
+                                </button>
+                                <button
+                                    class="menu-action-btn edit-role-btn"
+                                    type="button"
+                                    data-admin-id="${admin.admin_id}">
+                                    <i class="fa-solid fa-user-shield"></i> Edit Role
+                                </button>
+                                <button
+                                    class="menu-action-btn deactivate-admin-btn"
+                                    type="button"
+                                    data-admin-id="${admin.admin_id}">
+                                    <i class="fa-solid fa-user-slash"></i> Deactivate
+                                </button>
+                                <div class="menu-action-divider"></div>
+                                <button
+                                    class="menu-action-btn menu-action-btn--danger delete-admin-btn"
+                                    type="button"
+                                    data-admin-id="${admin.admin_id}">
+                                    <i class="fa-solid fa-trash"></i> Delete
                                 </button>
                             </div>
                         </div>
@@ -183,35 +202,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     applyFilters();
     console.log(`Loaded ${allAdmins.length} school admins`);
 
-    document.addEventListener('click', function (event) {
-        const menuToggle = event.target.closest('.student-menu-toggle');
-        const menu = event.target.closest('.student-menu');
-
-        if (menuToggle) {
-            event.stopPropagation();
-            const dropdown = menuToggle.parentElement.querySelector('.student-menu-dropdown');
-            const isOpen = dropdown.classList.contains('show');
-
-            document.querySelectorAll('.student-menu-dropdown').forEach(item => {
-                item.classList.remove('show');
-                const button = item.parentElement?.querySelector('.student-menu-toggle');
-                if (button) button.setAttribute('aria-expanded', 'false');
-            });
-
-            if (!isOpen && dropdown) {
-                dropdown.classList.add('show');
-                menuToggle.setAttribute('aria-expanded', 'true');
-            }
+    // FIX: Open/close the ellipsis dropdown via a SINGLE delegated listener.
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.admin-actions-btn');
+        if (!btn) {
+            // Close any open dropdown
+            document.querySelectorAll('.actions-dropdown')
+                .forEach(d => d.classList.remove('open'));
             return;
         }
 
-        if (!menu) {
-            document.querySelectorAll('.student-menu-dropdown').forEach(item => {
-                item.classList.remove('show');
-                const button = item.parentElement?.querySelector('.student-menu-toggle');
-                if (button) button.setAttribute('aria-expanded', 'false');
-            });
-        }
+        e.stopPropagation();
+        document.querySelectorAll('.actions-dropdown')
+            .forEach(d => d.classList.remove('open'));
+        const dropdown = btn.nextElementSibling;
+        if (dropdown) dropdown.classList.toggle('open');
     });
 
     // Search
@@ -242,6 +247,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (tbody) {
         tbody.addEventListener('click', async (e) => {
             const viewBtn = e.target.closest('.view-admin-btn');
+            const viewDetailsBtn = e.target.closest('.view-details-btn');
+            const editRoleBtn = e.target.closest('.edit-role-btn');
+            const deactivateBtn = e.target.closest('.deactivate-admin-btn');
             const deleteBtn = e.target.closest('.delete-admin-btn');
 
             if (viewBtn) {
@@ -249,6 +257,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const adminId = viewBtn.dataset.adminId;
                 const admin = allAdmins.find(a => String(a.admin_id) === String(adminId));
                 if (admin) showAdminDetailsPopup(admin);
+            }
+
+            if (viewDetailsBtn) {
+                e.preventDefault();
+                const adminId = viewDetailsBtn.dataset.adminId;
+                const admin = allAdmins.find(a => String(a.admin_id) === String(adminId));
+                if (admin) showAdminDetailsPopup(admin);
+            }
+
+            if (editRoleBtn) {
+                e.preventDefault();
+                showToast('Edit Role — coming soon', 'info');
+            }
+
+            if (deactivateBtn) {
+                e.preventDefault();
+                showToast('Deactivate — coming soon', 'info');
             }
 
             if (deleteBtn) {

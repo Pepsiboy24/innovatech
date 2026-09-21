@@ -89,6 +89,37 @@ body {
     margin-right: 12px;
 }
 
+/* Sidebar user info (avatar + name) */
+.sidebar-footer .user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.sidebar-footer .user-avatar {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.sidebar-footer .user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* Main Content & Header Reused */
 .main-content {
     margin-left: 250px;
@@ -913,6 +944,66 @@ body {
     display: flex;
     gap: 16px;
     justify-content: center;
+}
+
+/* Custom confirm modal (replaces window.confirm) */
+.cbt-confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    padding: 16px;
+    backdrop-filter: blur(2px);
+}
+
+.cbt-confirm-box {
+    background: var(--card-background, #ffffff);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 360px;
+    width: 100%;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.cbt-confirm-box p {
+    margin: 0 0 18px;
+    color: var(--text-primary, #1e293b);
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.cbt-confirm-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.cbt-confirm-actions button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: opacity 0.2s;
+}
+
+.cbt-confirm-actions button:hover {
+    opacity: 0.85;
+}
+
+.cbt-confirm-actions .btn-cancel {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.cbt-confirm-actions .btn-confirm {
+    background: var(--danger-color, #ef4444);
+    color: #ffffff;
 }
 
 /* Responsive */

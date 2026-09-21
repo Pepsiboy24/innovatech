@@ -47,8 +47,11 @@
                     <h2>Registration Successful!</h2>
                     <p>Welcome to EdTech Portal! Your registration has been completed successfully. You will
                         receive a confirmation email shortly.</p>
-                    <button type="button" class="btn btn-primary" data-resetBtn style="margin-top: 20px;">Register
-                        Another Student</button>
+                    <div class="buttons" style="justify-content: center; margin-top: 20px;">
+                        <button type="button" class="btn btn-primary" id="registerAnotherBtn">+ Register
+                            Another</button>
+                        <button type="button" class="btn btn-secondary" id="doneBtn">Done</button>
+                    </div>
                 </div>
             </div>
 
@@ -197,7 +200,7 @@
                         </div>
                     </div>
 
-                    <div class="buttons">
+                    <div class="buttons" id="navButtons">
                         <button type="button" class="btn btn-secondary" id="prevBtn"
                             style="display: none;">Previous</button>
                         <button type="button" class="btn btn-primary" id="nextBtn">Next</button>

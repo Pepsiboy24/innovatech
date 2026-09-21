@@ -12,19 +12,36 @@
 import { supabase } from '../../core/config.js';
 // Dynamic school branding
 let schoolBranding = { school_name: 'EduHub', logo_url: null };
+let studentProfile = { full_name: null };
+
+// Resolve the current student id: prefer the authenticated user.id (like the dashboard),
+// fall back to the cached id used by the sidebar.
+function getCachedStudentId() {
+    return localStorage.getItem('student_id') ||
+        sessionStorage.getItem('student_id') ||
+        window.currentStudentId;
+}
+
+async function resolveStudentId() {
+    try {
+        const { data } = await supabase.auth.getUser();
+        if (data?.user?.id) return data.user.id;
+    } catch (err) {
+        console.error('[Sidebar] Auth session error:', err.message);
+    }
+    return getCachedStudentId();
+}
 
 async function loadSchoolBranding() {
     try {
-        const studentId = localStorage.getItem('student_id') ||
-            sessionStorage.getItem('student_id') ||
-            window.currentStudentId;
+        const studentId = await resolveStudentId();
 
         if (!studentId) return;
 
-        // 1. Get student's class_id
+        // 1. Get student's class_id and full_name
         const { data: studentData } = await supabase
             .from('Students')
-            .select('class_id')
+            .select('class_id, full_name')
             .eq('student_id', studentId)
             .single();
 
@@ -60,6 +77,7 @@ async function loadSchoolBranding() {
             };
             console.log('Branding loaded:', schoolBranding);
         }
+        studentProfile = { full_name: studentData.full_name || null };
 
     } catch (error) {
         console.error('Error loading school branding:', error);
@@ -103,7 +121,11 @@ function getSidebarHTML() {
         </nav>
         
         <div class="sidebar-footer" style="margin-top: auto; padding: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
-            <button id="logoutBtn" class="nav-item" style="background: none; border: none; width: 100%; text-align: left; cursor: pointer; color: inherit;">
+            <div class="user-info">
+                <div class="user-avatar" id="sidebarAvatar">S</div>
+                <span class="user-name" id="sidebarUserName">Student</span>
+            </div>
+            <button id="logoutBtn" class="nav-item" style="background: none; border: none; width: 100%; text-align: left; cursor: pointer; color: #ef4444; font-weight: 700;" onmouseover="this.style.color='#b91c1c'" onmouseout="this.style.color='#ef4444';">
                 <i class="fas fa-sign-out-alt"></i>
                 Logout
             </button>
@@ -137,6 +159,9 @@ async function injectSidebar() {
         }
     });
 
+    // ── STUDENT PROFILE (AVATAR INITIAL + NAME) ─────────────────────────────
+    setProfileInitial();
+
     // ── LOGOUT LOGIC ────────────────────────────────────────────────────────
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
@@ -145,7 +170,7 @@ async function injectSidebar() {
             if (error) {
                 console.error('[Sidebar] Logout Error:', error.message);
             }
-            window.location.replace('../../public/login.html');
+            window.location.replace('/public/html/login.html');
         });
     }
 
@@ -178,6 +203,42 @@ async function injectSidebar() {
             }
         }
     });
+}
+
+// ── STUDENT PROFILE (AVATAR INITIAL + NAME) ─────────────────────────────
+async function setProfileInitial() {
+    try {
+        if (!studentProfile.full_name) {
+            const studentId = await resolveStudentId();
+            if (!studentId) return;
+
+            const { data, error } = await supabase
+                .from('Students')
+                .select('full_name')
+                .eq('student_id', studentId)
+                .single();
+
+            if (error || !data?.full_name) return;
+            studentProfile.full_name = data.full_name;
+        }
+
+        const fullName = studentProfile.full_name.trim();
+        const initial = fullName.charAt(0).toUpperCase() || 'S';
+        const firstName = fullName.split(' ')[0];
+
+        // Update every avatar button on the page header (S / A / blank placeholders)
+        document.querySelectorAll('#profileInitial, .profile-btn').forEach(el => {
+            if (!el.querySelector('i, svg, img')) el.textContent = initial;
+        });
+
+        // Update the sidebar avatar + name
+        const sidebarAvatar = document.getElementById('sidebarAvatar');
+        const sidebarUserName = document.getElementById('sidebarUserName');
+        if (sidebarAvatar) sidebarAvatar.textContent = initial;
+        if (sidebarUserName) sidebarUserName.textContent = firstName;
+    } catch (error) {
+        console.error('[Sidebar] Error setting profile initial:', error);
+    }
 }
 
 // Run on load

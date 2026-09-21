@@ -234,7 +234,9 @@ async function renderStudents(students) {
                     </div>
                 </td>
                 <td data-label="Action">
-                    <button class='view-btn' data-type='student' data-id='${student.student_id}'>View</button>
+                    <button class="view-btn btn-view-student" data-type="student" data-id="${student.student_id}" data-student-id="${student.student_id}">
+                        <i class="fa-solid fa-eye"></i> View
+                    </button>
                 </td>
             </tr>
         `;

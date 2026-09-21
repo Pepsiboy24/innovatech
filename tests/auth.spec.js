@@ -18,10 +18,10 @@ const PORTALS = ['/admin', '/teacher', '/parent', '/student'];
 // Each role -> the portal home route it should land on, and a substring
 // expected in the rendered page once logged in.
 const ROLE_HOME = [
-  ['admin', '/portals/admin/schoolAdminDashboard.html', /Dashboard|Admin/i],
-  ['teacher', '/portals/teacher/teachersPortal.html', /Dashboard|Teacher/i],
-  ['parent', '/portals/parent/parentsPortal.html', /Dashboard|Parent/i],
-  ['student', '/portals/student/studentPortal.html', /Dashboard|Student/i],
+  ['admin', '/portals/admin/schoolAdminDashboard', /Dashboard|Admin/i],
+  ['teacher', '/portals/teacher/teachersPortal', /Dashboard|Teacher/i],
+  ['parent', '/portals/parent/parentsPortal', /Dashboard|Parent/i],
+  ['student', '/portals/student/studentPortal', /Dashboard|Student/i],
 ];
 
 test.beforeEach(async ({ page }) => {

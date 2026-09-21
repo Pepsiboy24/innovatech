@@ -212,6 +212,31 @@ body {
     min-width: 35px;
 }
 
+/* View button — blue pill icon-button styling */
+.btn-view-student {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-view-student:hover {
+    background: #dbeafe;
+    border-color: #93c3fd;
+}
+
+.btn-view-student i {
+    font-size: 13px;
+}
+
 .view-all-btn {
     color: #3182ce;
     text-decoration: none;

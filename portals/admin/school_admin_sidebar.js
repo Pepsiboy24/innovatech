@@ -115,7 +115,7 @@ import { hasFeatureAccess, getCurrentUserTier } from '../../core/tierAccess.js';
                     Parents
                 </a>
                 
-                <a href="#" id="schoolAdminLogoutBtn" class="nav-item logout-link-style" style="margin-top: auto; border-top: 1px solid var(--border); border-radius: 0; padding-top: 16px;">
+                <a href="#" id="schoolAdminLogoutBtn" class="nav-item logout-link-style" style="margin-top: auto; border-top: 1px solid var(--border); border-radius: 0; padding-top: 16px; color: #ef4444; font-weight: 700;" onmouseover="this.style.color='#b91c1c'" onmouseout="this.style.color='#ef4444'">
                     <i class="fa-solid fa-sign-out-alt nav-icon"></i>
                     Logout
                 </a>
@@ -194,7 +194,7 @@ import { hasFeatureAccess, getCurrentUserTier } from '../../core/tierAccess.js';
             logoutBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
                 await supabase.auth.signOut();
-                window.location.href = "/public/html/login.html";
+                window.location.replace('/public/html/login.html');
             });
         }
     });

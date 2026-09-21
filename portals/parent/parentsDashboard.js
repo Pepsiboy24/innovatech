@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   await fetchRecentGrades(childId);
   await fetchOverallProgress(childId);
   await fetchReportCards(childId);
-  await fetchMessages(childId);
 });
 
 
@@ -20,7 +19,7 @@ async function getLinkedChildId() {
 
   if (!user) {
     console.error("No authenticated parent found.");
-    window.location.href = "../../index.html"; // Redirect to login
+    window.location.href = "/public/html/login.html"; // Redirect to login
     return null;
   }
 
@@ -62,12 +61,9 @@ async function getLinkedChildId() {
   const child = selectedLink.Students;
   console.log(`Successfully linked to: ${child.full_name}`);
 
-  // Update UI Header
-  const parentNameEl = document.querySelector('.user-details h4');
-  const childNameEl = document.querySelector('.user-details p');
-
+  // Update UI Header (sidebar parent name)
+  const parentNameEl = document.querySelector('.sidebar-name');
   if (parentNameEl) parentNameEl.textContent = parentRecord.full_name;
-  if (childNameEl) childNameEl.textContent = `${selectedLink.relationship} of ${child.full_name}`;
 
   return child.student_id;
 }
@@ -266,26 +262,4 @@ async function fetchReportCards(childId) {
       </div>
     `;
   }, 1000);
-}
-
-async function fetchMessages(childId) {
-  // Hide skeleton and show content
-  const skeletonElement = document.getElementById('messagesSkeleton');
-  const contentElement = document.getElementById('messagesContainer');
-  if (skeletonElement) skeletonElement.style.display = 'none';
-  if (contentElement) contentElement.style.display = 'block';
-
-  // Mock implementation - replace with actual data fetching
-  setTimeout(() => {
-    contentElement.innerHTML = `
-      <div style="padding: 20px; text-align: center; color: #64748b;">
-        <i class="fas fa-envelope" style="font-size: 2rem; margin-bottom: 16px; color: #f59e0b;"></i>
-        <h3>3 New Messages</h3>
-        <p>From teachers and school administration</p>
-        <button class="test-btn" style="margin-top: 16px;">
-            <i class="fas fa-inbox"></i> View Messages
-        </button>
-      </div>
-    `;
-  }, 1500);
 }

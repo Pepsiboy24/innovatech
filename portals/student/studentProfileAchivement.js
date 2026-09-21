@@ -118,6 +118,9 @@ async function initStudentSession() {
     const nameEl = document.getElementById('studentName');
     if (nameEl) nameEl.textContent = student.full_name?.split(' ')[0] || 'Student';
 
+    const initialEl = document.getElementById('profileInitial');
+    if (initialEl) initialEl.textContent = (student.full_name?.trim().charAt(0) || 'S').toUpperCase();
+
     updateSubtitle(`Welcome to ${student.Classes?.class_name || 'your dashboard'}`);
 
     return student;

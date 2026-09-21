@@ -49,10 +49,9 @@ document.documentElement.style.visibility = 'hidden';
         // We do NOT check for Admin or Teacher roles here. We just deny access.
         console.warn('[Auth Guard] Access Denied: User is not in Students table.');
 
-        // OPTIONAL: Clear the session so they don't auto-login again
-        // await supabase.auth.signOut(); 
-
-        redirectTo('../../index.html');
+        await supabase.auth.signOut();
+        window.location.replace('/login');
+        return;
 
     } catch (err) {
         console.error('[Auth Guard] Critical Failure:', err);

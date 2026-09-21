@@ -11,148 +11,69 @@
         return './';          // default: already in parent portal
     }
 
-    async function loadSchoolBranding() {
+    async function loadParentIdentity() {
         try {
-            // Get current student's school ID
-            const studentId = localStorage.getItem('student_id') ||
-                sessionStorage.getItem('student_id') ||
-                window.currentStudentId;
-
-            if (!studentId) {
-                console.log('No student ID found, using default branding');
-                return { school_name: 'EdTech', school_logo_url: null };
-            }
-
-            // Import supabase
             const { supabase } = await import('../../core/config.js');
+            const { waitForUser } = await import('../../core/perf.js');
+            const user = await waitForUser();
+            if (!user) return 'Parent';
 
-            // Get student's class and school
-            const { data: studentData } = await supabase
-                .from('Students')
-                .select('class_id')
-                .eq('student_id', studentId)
-                .single();
-
-            if (!studentData) {
-                console.log('Student data not found, using default branding');
-                return { school_name: 'EdTech', school_logo_url: null };
-            }
-
-            // Get school info
-            const { data: classData } = await supabase
-                .from('Classes')
-                .select('school_id')
-                .eq('class_id', studentData.class_id)
-                .single();
-
-            if (!classData) {
-                console.log('Class data not found, using default branding');
-                return { school_name: 'EdTech', school_logo_url: null };
-            }
-
-            const { data: schoolData } = await supabase
-                .from('Schools')
-                .select('school_name, school_logo_url')
-                .eq('school_id', classData.school_id)
-                .single();
-
-            return schoolData || { school_name: 'EdTech', school_logo_url: null };
-
-        } catch (error) {
-            console.error('Error loading school branding:', error);
-            return { school_name: 'EdTech', school_logo_url: null };
-        }
-    }
-
-    async function loadUserInfo() {
-        try {
-            const studentId = localStorage.getItem('student_id') ||
-                sessionStorage.getItem('student_id') ||
-                window.currentStudentId;
-
-            if (!studentId) {
-                return { name: 'John Smith', relation: 'Parent of Alex Smith', initials: 'JS' };
-            }
-
-            const { supabase } = await import('../../core/config.js');
-
-            const { data: studentData } = await supabase
-                .from('Students')
+            const { data: parentData } = await supabase
+                .from('Parents')
                 .select('full_name')
-                .eq('student_id', studentId)
+                .eq('user_id', user.id)
                 .single();
 
-            if (studentData) {
-                const studentName = studentData.full_name;
-                const initials = studentName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-                return {
-                    name: 'Parent',
-                    relation: `Parent of ${studentName}`,
-                    initials: initials || 'PA'
-                };
-            }
-
-            return { name: 'John Smith', relation: 'Parent of Alex Smith', initials: 'JS' };
+            if (parentData?.full_name) return parentData.full_name;
+            return 'Parent';
 
         } catch (error) {
-            console.error('Error loading user info:', error);
-            return { name: 'John Smith', relation: 'Parent of Alex Smith', initials: 'JS' };
+            console.error('Error loading parent name:', error);
+            return 'Parent';
         }
     }
 
     async function buildSidebar() {
         const p = parentPrefix();
-
-        // Load school branding and user info
-        const [schoolBranding, userInfo] = await Promise.all([
-            loadSchoolBranding(),
-            loadUserInfo()
-        ]);
-
-        const logoHtml = schoolBranding.school_logo_url
-            ? `<img src="${schoolBranding.school_logo_url}" alt="${schoolBranding.school_name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem;">`
-            : schoolBranding.school_name.substring(0, 2).toUpperCase();
+        const parentName = await loadParentIdentity();
 
         return `
             <div class="sidebar-header">
-                <div class="logo" data-school-name="${schoolBranding.school_name}">
-                    ${logoHtml}
+                <div class="parent-icon">
+                    <i class="fas fa-person"></i>
                 </div>
-                <div class="user-info">
-                    <div class="user-avatar">${userInfo.initials}</div>
-                    <div class="user-details">
-                        <h4>${userInfo.name}</h4>
-                        <p>${userInfo.relation}</p>
-                    </div>
+                <div class="sidebar-header-text">
+                    <p class="sidebar-role">PARENT PORTAL</p>
+                    <p class="sidebar-name">${parentName}</p>
                 </div>
             </div>
 
             <!-- GLOBAL CHILD SWITCHER CONTAINER -->
-            <div id="globalChildSwitcherContainer" style="padding: 0 2rem 1rem;"></div>
+            <div id="globalChildSwitcherContainer"></div>
 
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="${p}parentsPortal.html" class="nav-link">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Home</span>
+                    <a href="${p}parentsPortal.html" class="nav-link parent-nav-item">
+                        <i class="fas fa-house"></i>
+                        <span>Dashboard</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="${p}childsResult.html" class="nav-link">
-                        <i class="fas fa-file-alt"></i>
-                        <span>Report Cards</span>
+                    <a href="${p}childsResult.html" class="nav-link parent-nav-item">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>My Child's Results</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="${p}payments.html" class="nav-link">
+                    <a href="${p}payments.html" class="nav-link parent-nav-item">
                         <i class="fas fa-credit-card"></i>
                         <span>Payments</span>
                     </a>
                 </li>
             </ul>
 
-            <div style="margin-top: auto; padding: 20px; border-top: 1px solid #e2e8f0;">
-                <a href="#" id="parentLogoutBtn" class="nav-link" style="color: #ef4444; margin: 0; display: flex; align-items: center; gap: 0.75rem;">
+            <div class="sidebar-footer">
+                <a href="#" id="parentLogoutBtn" class="nav-link parent-nav-item sidebar-logout">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Logout</span>
                 </a>
@@ -201,7 +122,7 @@
                 } catch (error) {
                     console.error("Logout Error:", error);
                 }
-                window.location.href = "/public/html/login.html";
+                window.location.replace('/public/html/login.html');
             });
         }
 
@@ -276,7 +197,7 @@
                 .from('Parent_Student_Links')
                 .select(`
                     relationship,
-                    Students (student_id, full_name)
+                    Students (student_id, full_name, class_id, Classes (class_name, section))
                 `)
                 .eq('parent_id', parentRecord.parent_id);
 
@@ -290,15 +211,31 @@
                 localStorage.setItem('student_id', activeId);
             }
 
+            const classLabel = (s) => {
+                const cls = s.Classes;
+                if (!cls) return '';
+                const className = (cls.class_name || '').toString().trim();
+                let section = (cls.section || '').toString().trim();
+                if (section && className.toUpperCase().endsWith(section.toUpperCase())) {
+                    section = '';
+                }
+                return section ? `${className} ${section}` : className;
+            };
+
             let optionsHtml = links.map(l => {
                 const s = l.Students;
-                return `<option value="${s.student_id}" ${s.student_id === activeId ? 'selected' : ''}>${s.full_name}</option>`;
+                const classStr = classLabel(s);
+                const label = classStr ? `${s.full_name} — ${classStr}` : s.full_name;
+                return `<option value="${s.student_id}" ${s.student_id === activeId ? 'selected' : ''}>${label}</option>`;
             }).join('');
 
             container.innerHTML = `
-                <select id="globalChildSwitcher" style="width:100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #e2e8f0; background: #f8fafc; color: #1e293b; font-size: 0.95rem; font-weight: 500; cursor: pointer; outline: none; appearance: auto; transition: all 0.2s ease;">
-                    ${optionsHtml}
-                </select>
+                <div class="parent-identity">
+                    <p class="parent-label">Parent of</p>
+                    <select id="globalChildSwitcher" class="child-switcher-select">
+                        ${optionsHtml}
+                    </select>
+                </div>
             `;
 
             const selectEl = container.querySelector('#globalChildSwitcher');

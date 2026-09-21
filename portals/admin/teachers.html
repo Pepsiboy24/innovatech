@@ -428,10 +428,12 @@
                         <div class="success-message">
                             <div class="success-icon"><i class="fa fa-check"></i></div>
                             <h2>Registration Successful!</h2>
-                            <p>Welcome to our teaching staff! Your registration has been submitted for HR review. You
-                                will receive confirmation within 2-3 business days.</p>
-                            <button type="button" class="btn btn-primary" onclick="location.reload()"
-                                style="margin-top: 20px;">Register Another Teacher</button>
+                            <p>Teacher registered successfully! Their login credentials have been sent.</p>
+                            <div class="buttons" style="justify-content: center; margin-top: 20px;">
+                                <button type="button" class="btn btn-primary" id="registerAnotherBtn">+ Register
+                                    Another</button>
+                                <button type="button" class="btn btn-secondary" id="doneBtn">Done</button>
+                            </div>
                         </div>
                     </div>
                     <div id="errorStep" class="step">
@@ -448,7 +450,7 @@
                             </button>
                         </div>
                     </div>
-                    <div class="buttons">
+                    <div class="buttons" id="navButtons">
                         <button type="button" class="btn btn-secondary" id="prevBtn"
                             style="display: none;">Previous</button>
                         <button type="button" class="btn btn-primary" id="nextBtn">Next</button>
@@ -875,78 +877,7 @@
             });
         }
 
-        // Multi-Step Form Logic
-        const nextBtn = document.getElementById('nextBtn');
-        const prevBtn = document.getElementById('prevBtn');
-        const submitBtn = document.getElementById('submitBtn');
-        const steps = ['step1', 'step2', 'step3', 'step4', 'step5', 'step6', 'step7'];
-        let currentStep = 0;
-
-        function updateSteps() {
-            // Hide all steps
-            steps.forEach((stepId, index) => {
-                const stepEl = document.getElementById(stepId);
-                if (stepEl) stepEl.classList.remove('active');
-
-                const indicator = document.getElementById(`indicator${index + 1}`);
-                if (indicator) indicator.classList.remove('active');
-            });
-
-            // Show current step
-            document.getElementById(steps[currentStep]).classList.add('active');
-            const currentIndicator = document.getElementById(`indicator${currentStep + 1}`);
-            if (currentIndicator) currentIndicator.classList.add('active');
-
-            // Update buttons
-            prevBtn.style.display = currentStep === 0 ? 'none' : 'block';
-
-            if (currentStep === steps.length - 1) {
-                // Review Step
-                nextBtn.style.display = 'none';
-                submitBtn.style.display = 'block';
-                populateReview();
-            } else {
-                nextBtn.style.display = 'block';
-                submitBtn.style.display = 'none';
-            }
-
-            // Update progress
-            document.getElementById('progressFill').style.width = `${((currentStep + 1) / steps.length) * 100}%`;
-        }
-
-        function populateReview() {
-            const firstName = document.getElementById('firstName').value;
-            const lastName = document.getElementById('lastName').value;
-            const email = document.getElementById('personalEmail').value;
-            const phone = document.getElementById('mobilePhone').value;
-            const degree = document.getElementById('highestDegree').value;
-            const experience = document.getElementById('totalExperience').value;
-
-            document.getElementById('reviewName').textContent = `${firstName} ${lastName}`;
-            document.getElementById('reviewEmail').textContent = email;
-            document.getElementById('reviewPhone').textContent = phone;
-            document.getElementById('reviewDegree').textContent = degree;
-            document.getElementById('reviewExperience').textContent = experience;
-        }
-
-        if (nextBtn) {
-            nextBtn.addEventListener('click', () => {
-                // Basic validation could go here
-                if (currentStep < steps.length - 1) {
-                    currentStep++;
-                    updateSteps();
-                }
-            });
-        }
-
-        if (prevBtn) {
-            prevBtn.addEventListener('click', () => {
-                if (currentStep > 0) {
-                    currentStep--;
-                    updateSteps();
-                }
-            });
-        }
+        // Multi-Step wizard is handled by the teachersForm.js module.
 
 
 

@@ -127,8 +127,7 @@
                                 <option value="">Select category</option>
                                 <option value="academic">Academic</option>
                                 <option value="behavioral">Behavioral</option>
-                                <option value="attendance">Attendance</option>
-                                <option value="health">Health</option>
+                                <option value="medical">Medical</option>
                                 <option value="general">General</option>
                             </select>
                         </div>
@@ -146,6 +145,7 @@
                         <div class="form-group full-width">
                             <label for="noteContent">Content *</label>
                             <textarea id="noteContent" name="noteContent" rows="5" required maxlength="1000"></textarea>
+                            <small class="form-hint">PDF attachments coming soon — for now, paste note content in the field below.</small>
                         </div>
                     </div>
 
@@ -179,6 +179,25 @@
         </div>
     </div>
 
+    <!-- Delete Note Confirmation Modal -->
+    <div id="deleteConfirmModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 420px;">
+            <div class="modal-header">
+                <h3>Delete Note</h3>
+                <button type="button" class="modal-close delete-cancel-x">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this note? This action cannot be undone.</p>
+            </div>
+            <div class="modal-actions" style="padding-bottom: 20px;">
+                <button type="button" class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script type="module">
         import { supabase } from '../../core/config.js';
@@ -188,6 +207,7 @@
         let notes = [];
         let students = [];
         let currentSchoolId = null;
+        let currentFilter = 'all';
 
         // DOM Elements
         const totalNotesEl = document.getElementById('totalNotes');
@@ -228,9 +248,11 @@
 
         async function loadStudents() {
             try {
+                // NOTE: Students has no 'class_name' column — class info must
+                // come through the Classes join.
                 const { data, error } = await supabase
                     .from('Students')
-                    .select('student_id, full_name, class_name')
+                    .select('student_id, full_name, class_id, Classes(class_name, section)')
                     .eq('school_id', currentSchoolId)
                     .order('full_name');
 
@@ -241,53 +263,64 @@
                 
             } catch (error) {
                 console.error('Error loading students:', error);
+                students = [];
+                populateStudentSelect();
             }
         }
 
         async function loadNotes() {
-            try {
-                const { data, error } = await supabase
-                    .from('Student_Notes')
-                    .select(`
-                        *,
-                        Students (full_name, class_name)
-                    `)
-                    .eq('school_id', currentSchoolId)
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-
-                notes = data || [];
-                updateStats();
-                renderNotes();
-                
-            } catch (error) {
-                console.error('Error loading notes:', error);
-                showError('Failed to load notes.');
+            // Show the loading state immediately while notes are fetched.
+            if (notesTableBody) {
+                notesTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center">
+                            <div class="loading-state">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Loading notes...
+                            </div>
+                        </td>
+                    </tr>
+                `;
             }
+
+            // Counts are computed directly from the Student_Notes table.
+            try {
+                const { count: totalCount } = await supabase
+                    .from('Student_Notes')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('school_id', currentSchoolId);
+
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+                const { count: recentCount } = await supabase
+                    .from('Student_Notes')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('school_id', currentSchoolId)
+                    .gte('created_at', sevenDaysAgo.toISOString());
+
+                if (totalNotesEl) totalNotesEl.textContent = totalCount ?? 0;
+                if (recentNotesEl) recentNotesEl.textContent = recentCount ?? 0;
+            } catch (error) {
+                console.error('Error updating note stats:', error);
+                if (totalNotesEl) totalNotesEl.textContent = 0;
+                if (recentNotesEl) recentNotesEl.textContent = 0;
+            }
+
+            // Load the notes list (with the current filter applied).
+            await applyFilters(currentFilter);
         }
 
         function populateStudentSelect() {
             const select = document.getElementById('studentSelect');
             if (select) {
                 select.innerHTML = '<option value="">Select student</option>' +
-                    students.map(student => 
-                        `<option value="${student.student_id}">${student.full_name} - ${student.class_name || 'No Class'}</option>`
-                    ).join('');
+                    students.map(student => {
+                        const classText = [student.Classes?.class_name, student.Classes?.section]
+                            .filter(Boolean).join(' ');
+                        return `<option value="${student.student_id}">${student.full_name}${classText ? ' — ' + classText : ''}</option>`;
+                    }).join('');
             }
-        }
-
-        function updateStats() {
-            const totalNotes = notes.length;
-            const recentNotes = notes.filter(note => {
-                const noteDate = new Date(note.created_at);
-                const weekAgo = new Date();
-                weekAgo.setDate(weekAgo.getDate() - 7);
-                return noteDate >= weekAgo;
-            }).length;
-
-            if (totalNotesEl) totalNotesEl.textContent = totalNotes;
-            if (recentNotesEl) recentNotesEl.textContent = recentNotes;
         }
 
         function renderNotes(filteredNotes = null) {
@@ -328,7 +361,7 @@
                         <button class="btn btn-sm btn-warning" onclick="editNote('${note.note_id}')">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteNote('${note.note_id}')">
+                        <button class="btn btn-sm btn-danger delete-note-btn" data-note-id="${note.note_id}">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
@@ -340,6 +373,7 @@
             const colors = {
                 academic: 'info',
                 behavioral: 'warning',
+                medical: 'danger',
                 attendance: 'success',
                 health: 'danger',
                 general: 'secondary'
@@ -373,21 +407,22 @@
                 form.addEventListener('submit', handleNoteSubmit);
             }
 
-            // Filter buttons
+            // Filter buttons — each change triggers a fresh DB query.
             const filterButtons = document.querySelectorAll('.filter-btn');
             filterButtons.forEach(button => {
                 button.addEventListener('click', (e) => {
                     filterButtons.forEach(btn => btn.classList.remove('active'));
                     e.target.classList.add('active');
-                    
-                    const filterType = e.target.dataset.filter;
-                    filterNotes(filterType);
+                    currentFilter = e.target.dataset.filter;
+                    applyFilters(currentFilter);
                 });
             });
 
-            // Search functionality
+            // Search functionality — debounced to re-query against the DB.
             if (searchInput) {
-                searchInput.addEventListener('input', () => filterNotes());
+                searchInput.addEventListener('input', debounce(() => {
+                    applyFilters(currentFilter);
+                }, 300));
             }
         }
 
@@ -414,9 +449,13 @@
                         .eq('note_id', noteId);
                 } else {
                     // Add new note
+                    const insertData = {
+                        ...formData,
+                        created_at: new Date().toISOString()
+                    };
                     result = await supabase
                         .from('Student_Notes')
-                        .insert([formData]);
+                        .insert([insertData]);
                 }
 
                 if (result.error) throw result.error;
@@ -431,28 +470,70 @@
             }
         }
 
-        function filterNotes(filterType = null) {
-            let filtered = [...notes];
-            
-            // Apply type filter
-            if (filterType && filterType !== 'all') {
-                filtered = filtered.filter(note => {
-                    if (filterType === 'urgent') return note.priority === 'urgent';
-                    return note.category === filterType;
-                });
+        // Filters re-query Student_Notes so the displayed list reflects what is
+        // actually stored (not a stale in-memory copy).
+        async function applyFilters(filterType = 'all') {
+            if (searchInput) {
+                notesTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center">
+                            <div class="loading-state">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Loading notes...
+                            </div>
+                        </td>
+                    </tr>
+                `;
             }
-            
-            // Apply search filter
+
+            let query = supabase
+                .from('Student_Notes')
+                .select(`
+                    note_id, title, category, priority, content, created_at,
+                    Students (full_name)
+                `)
+                .eq('school_id', currentSchoolId)
+                .order('created_at', { ascending: false });
+
+            // Category / priority filters (priority 'urgent' maps to filterType 'urgent').
+            if (filterType === 'urgent') {
+                query = query.eq('priority', 'urgent');
+            } else if (filterType && filterType !== 'all') {
+                query = query.eq('category', filterType);
+            }
+
+            // Search filter.
             if (searchInput && searchInput.value.trim()) {
-                const searchTerm = searchInput.value.trim().toLowerCase();
-                filtered = filtered.filter(note => 
-                    note.title.toLowerCase().includes(searchTerm) ||
-                    note.content.toLowerCase().includes(searchTerm) ||
-                    (note.Students?.full_name && note.Students.full_name.toLowerCase().includes(searchTerm))
-                );
+                const term = `%${searchInput.value.trim()}%`;
+                query = query.ilike('title', term);
             }
-            
-            renderNotes(filtered);
+
+            try {
+                const { data, error } = await query;
+                if (error) throw error;
+                notes = data || [];
+                renderNotes(notes);
+            } catch (error) {
+                console.error('Error querying notes:', error);
+                notes = [];
+                if (notesTableBody) {
+                    notesTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
+                                Failed to load notes.
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
+        }
+
+        function debounce(fn, delay) {
+            let t;
+            return (...args) => {
+                clearTimeout(t);
+                t = setTimeout(() => fn(...args), delay);
+            };
         }
 
         // Modal Functions
@@ -536,24 +617,60 @@
             if (modal) modal.style.display = 'none';
         };
 
-        window.deleteNote = async function(noteId) {
-            if (!confirm('Are you sure you want to delete this note?')) return;
+        // Delete confirmation flow — a SINGLE delegated listener avoids the
+        // per-element listeners being lost when the notes list re-renders.
+        let pendingDeleteId = null;
+        const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
 
-            try {
-                const { error } = await supabase
-                    .from('Student_Notes')
-                    .delete()
-                    .eq('note_id', noteId);
+        function closeDeleteConfirm() {
+            if (deleteConfirmModal) deleteConfirmModal.style.display = 'none';
+            pendingDeleteId = null;
+        }
 
-                if (error) throw error;
+        if (cancelDeleteBtn) cancelDeleteBtn.addEventListener('click', closeDeleteConfirm);
+        document.querySelectorAll('.delete-cancel-x').forEach(btn => btn.addEventListener('click', closeDeleteConfirm));
 
-                showSuccess('Note deleted successfully!');
-                await loadNotes();
-            } catch (error) {
-                console.error('Error deleting note:', error);
-                showError('Failed to delete note.');
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.delete-note-btn')) {
+                pendingDeleteId = e.target.closest('.delete-note-btn').dataset.noteId || null;
+                if (deleteConfirmModal) {
+                    deleteConfirmModal.style.display = 'flex';
+                }
             }
-        };
+        });
+
+        if (confirmDeleteBtn) {
+            confirmDeleteBtn.addEventListener('click', async () => {
+                if (!pendingDeleteId) return;
+
+                const btn = confirmDeleteBtn;
+                btn.disabled = true;
+                btn.textContent = 'Deleting...';
+
+                try {
+                    const { error } = await supabase
+                        .from('Student_Notes')
+                        .delete()
+                        .eq('note_id', pendingDeleteId)
+                        .eq('school_id', currentSchoolId);
+
+                    if (error) throw error;
+
+                    closeDeleteConfirm();
+                    showToast('Note deleted', 'success');
+                    await loadNotes();
+                } catch (error) {
+                    console.error('Error deleting note:', error);
+                    showToast('Delete failed: ' + (error.message || 'Unknown error'), 'error');
+                    closeDeleteConfirm();
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Delete';
+                }
+            });
+        }
 
         // Utility Functions
         function showSuccess(message) {

@@ -313,7 +313,10 @@
         .input-bar {
             position: fixed;
             bottom: 24px;
-            left: calc(var(--sidebar-w) + 50%);
+            /* Correct centering: +50% of the viewport, but the bar sits inside
+               the chat area that starts after the sidebar — centre over the
+               content region (sidebar/2 + half of viewport width). */
+            left: calc(var(--sidebar-w) / 2 + 50%);
             transform: translateX(-50%);
             width: calc(100% - var(--sidebar-w) - 48px);
             max-width: var(--max-chat-w);

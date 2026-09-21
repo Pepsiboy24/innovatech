@@ -6,6 +6,11 @@ const CONFIG = {
     xRapidapiHost: 'nigeria-past-questions2.p.rapidapi.com' // Ensure the '2' is there
 };
 
+// --- Exam Timing ---
+const EXAM_DURATION_MINUTES = 30; // 30 minutes for the 20-question mock exam
+const EXAM_DURATION_SECONDS = EXAM_DURATION_MINUTES * 60;
+const LOW_TIME_SECONDS = 5 * 60;  // Warn when 5 minutes remain
+
 // --- State Management ---
 const testState = {
     examConfig: null, // Stores selected exam
@@ -15,7 +20,8 @@ const testState = {
     currentIndex: 0,
     timeRemaining: 0,
     timerInterval: null,
-    isReviewMode: false
+    isReviewMode: false,
+    lowTimeWarned: false
 };
 
 // --- DOM References ---
@@ -156,7 +162,7 @@ function renderLobbySubjects() {
             <span style="font-weight: 600; font-size: 15px;">${sub.name}</span>
         `;
             card.addEventListener('click', () => {
-                const timeLimit = activeExamType === 'utme' ? 3600 : 7200; // Mock time limits: JAMB 60m, WAEC 120m
+                const timeLimit = EXAM_DURATION_SECONDS; // 30-minute mock exam
                 const title = `${activeExamType.toUpperCase()} ${sub.name}`;
                 openInstructionModal(title, timeLimit, activeExamType, sub.key);
             });
@@ -277,7 +283,7 @@ async function startExamination() {
 
     // CRITICAL FIX: If no questions are found, don't leave the screen blank
     if (!qs || qs.length === 0) {
-        alert("Failed to load questions. Please check your internet or try another subject.");
+        showToast('Failed to load questions. Please check your internet or try another subject.', 'error');
         resetToLobby();
         return;
     }
@@ -288,6 +294,7 @@ async function startExamination() {
     testState.currentIndex = 0;
     testState.timeRemaining = testState.examConfig.timeSecs;
     testState.isReviewMode = false;
+    testState.lowTimeWarned = false;
 
     // View Transitions
     lobbyView.classList.remove('active');
@@ -324,8 +331,15 @@ function updateTimerUI() {
     timerText.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 
     if (!testState.isReviewMode) {
-        if (testState.timeRemaining < 300) { // Pulse < 5 mins
+        if (testState.timeRemaining <= LOW_TIME_SECONDS) { // Pulse < 5 mins
             hudTimer.classList.add('pulse');
+            // Warn once at the 5-minute mark
+            if (testState.timeRemaining === LOW_TIME_SECONDS && !testState.lowTimeWarned) {
+                testState.lowTimeWarned = true;
+                if (typeof showToast === 'function') {
+                    showToast('⚠️ 5 minutes remaining!', 'warning');
+                }
+            }
         } else {
             hudTimer.classList.remove('pulse');
         }
@@ -497,9 +511,10 @@ function updateOverallProgress() {
 }
 
 // --- Phase C: Scoring & Conclusion ---
-function completeTest(isAuto) {
-    if (!isAuto && !confirm("Are you sure you want to submit your examination? You cannot reverse this action.")) {
-        return;
+async function completeTest(isAuto) {
+    if (!isAuto) {
+        const confirmed = await confirmModal('Are you sure you want to submit your examination? You cannot reverse this action.');
+        if (!confirmed) return;
     }
 
     clearInterval(testState.timerInterval);
@@ -533,6 +548,52 @@ function completeTest(isAuto) {
     setTimeout(() => {
         scoreCirclePath.setAttribute('stroke-dasharray', `${percent}, 100`);
     }, 100);
+}
+
+// Reusable custom confirmation modal (replaces window.confirm)
+function confirmModal(message) {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'cbt-confirm-overlay';
+        overlay.innerHTML = `
+            <div class="cbt-confirm-box">
+                <p>${message}</p>
+                <div class="cbt-confirm-actions">
+                    <button type="button" class="btn-cancel">Cancel</button>
+                    <button type="button" class="btn-confirm">Submit</button>
+                </div>
+            </div>
+        `;
+
+        const cleanup = () => {
+            overlay.remove();
+            document.removeEventListener('keydown', onKey);
+        };
+        const onKey = (e) => {
+            if (e.key === 'Escape') {
+                cleanup();
+                resolve(false);
+            }
+        };
+
+        overlay.querySelector('.btn-confirm').addEventListener('click', () => {
+            cleanup();
+            resolve(true);
+        });
+        overlay.querySelector('.btn-cancel').addEventListener('click', () => {
+            cleanup();
+            resolve(false);
+        });
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                cleanup();
+                resolve(false);
+            }
+        });
+        document.addEventListener('keydown', onKey);
+
+        document.body.appendChild(overlay);
+    });
 }
 
 function resetToLobby() {
