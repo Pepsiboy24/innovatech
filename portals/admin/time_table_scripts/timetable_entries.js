@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function init() {
     const params = new URLSearchParams(window.location.search);
     const raw = params.get('classId');
-    if (!raw) return window.location.href = 'create_timetable_setup.html';
+    if (!raw) return window.location.href = '/admin/create_timetable_setup';
 
     classId = parseInt(raw, 10);
 
@@ -286,7 +286,7 @@ function setupSaveButton() {
         const unsaved = entries.filter(e => !e.id);
         if (!unsaved.length) {
             // If no changes, just go back
-            window.location.href = 'timeTable.html';
+            window.location.href = '/admin/timeTable';
             return;
         }
 
@@ -313,7 +313,7 @@ function setupSaveButton() {
 
             // 3. Redirect to the main timetable page after a short delay
             setTimeout(() => {
-                window.location.href = 'timeTable.html';
+                window.location.href = '/admin/timeTable';
             }, 1500);
 
         } catch (error) {

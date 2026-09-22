@@ -53,19 +53,19 @@
 
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="${p}parentsPortal.html" class="nav-link parent-nav-item">
+                    <a href="/parent" class="nav-link parent-nav-item">
                         <i class="fas fa-house"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="${p}childsResult.html" class="nav-link parent-nav-item">
+                    <a href="/parent/childsResult" class="nav-link parent-nav-item">
                         <i class="fas fa-chart-bar"></i>
                         <span>My Child's Results</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="${p}payments.html" class="nav-link parent-nav-item">
+                    <a href="/parent/payments" class="nav-link parent-nav-item">
                         <i class="fas fa-credit-card"></i>
                         <span>Payments</span>
                     </a>

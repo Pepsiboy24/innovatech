@@ -1,0 +1,51 @@
+# ── Cloudflare Pages rewrites ─────────────────────────────
+# Status 200 = REWRITE (URL in the browser stays clean, e.g. /admin/classes)
+# Status 301/302 would be a real redirect and show /portals/... in the URL.
+# Rules are matched in order, first match wins — put explicit rules BEFORE wildcards.
+
+# ── Auth / landing ─────────────────────────────────────────
+/                /public/html/login.html        200
+/login           /public/html/login.html        200
+/signup          /public/html/signup.html       200
+
+# ── Admin portal ───────────────────────────────────────────
+/admin              /portals/admin/schoolAdminDashboard.html  200
+/admin/classes      /portals/admin/classes.html   200
+/admin/students     /portals/admin/students.html  200
+/admin/teachers     /portals/admin/teachers.html  200
+/admin/schooladmins /portals/admin/schooladmins.html  200
+/admin/academic_manager  /portals/admin/academic_manager.html  200
+/admin/schedule     /portals/admin/schedule.html  200
+/admin/timeTable    /portals/admin/timeTable.html  200
+/admin/settings     /portals/admin/settings.html  200
+/admin/payments_config  /portals/admin/payments_config.html  200
+/admin/parents      /portals/admin/parents.html   200
+/admin/create_timetable_setup  /portals/admin/create_timetable_setup.html  200
+/admin/create_timetable_entries  /portals/admin/create_timetable_entries.html  200
+/admin/results_page /portals/admin/results_page.html  200
+/admin/*            /portals/admin/:splat          200
+
+# ── Teacher portal ─────────────────────────────────────────
+/teacher                /portals/teacher/teachersPortal.html   200
+/teacher/listOfStudents /portals/teacher/listOfStudents.html   200
+/teacher/curriculum     /portals/teacher/curriculum.html       200
+/teacher/attendance     /portals/teacher/attendance.html       200
+/teacher/upload_results /portals/teacher/upload_results.html   200
+/teacher/upload_notes   /portals/teacher/upload_notes.html     200
+/teacher/ai_assistant   /portals/teacher/ai_assistant.html     200
+/teacher/*              /portals/teacher/:splat                200
+
+# ── Parent portal ──────────────────────────────────────────
+/parent              /portals/parent/parentsPortal.html  200
+/parent/childsResult /portals/parent/childsResult.html   200
+/parent/payments     /portals/parent/payments.html       200
+/parent/*            /portals/parent/:splat              200
+
+# ── Student portal ─────────────────────────────────────────
+/student              /portals/student/studentPortal.html  200
+/student/studentClasses  /portals/student/studentClasses.html  200
+/student/studyMaterials  /portals/student/studyMaterials.html  200
+/student/schedule     /portals/student/schedule.html      200
+/student/cbtEngine    /portals/student/cbtEngine.html     200
+/student/manage_notes /portals/student/manage_notes.html  200
+/student/*            /portals/student/:splat             200

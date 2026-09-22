@@ -66,51 +66,51 @@ import { hasFeatureAccess, getCurrentUserTier } from '../../core/tierAccess.js';
             </div>
             
             <nav style="display: flex; flex-direction: column; flex: 1;">
-                <a href="${a}schoolAdminDashboard.html" class="nav-item">
+                <a href="/admin" class="nav-item">
                     <i class="fa-solid fa-table-columns nav-icon"></i>
                     Dashboard
                 </a>
-                <a href="${a}classes.html" class="nav-item">
+                <a href="/admin/classes" class="nav-item">
                     <i class="fa-solid fa-chalkboard-user nav-icon"></i>
                     <span>Classes</span>
                 </a>
-                <a href="${a}students.html" class="nav-item" data-tier="1">
+                <a href="/admin/students" class="nav-item" data-tier="1">
                     <i class="fa-solid fa-user-graduate nav-icon"></i>
                     Students
                 </a>
-                <a href="${a}teachers.html" class="nav-item" data-tier="1">
+                <a href="/admin/teachers" class="nav-item" data-tier="1">
                     <i class="fa-solid fa-chalkboard-teacher nav-icon"></i>
                     Teachers
                 </a>
-                <a href="${a}schooladmins.html" class="nav-item" data-tier="1">
+                <a href="/admin/schooladmins" class="nav-item" data-tier="1">
                     <i class="fa-solid fa-user-tie nav-icon"></i>
                     School Admins
                 </a>
-                <a href="${a}academic_manager.html" class="nav-item" data-tier="1">
+                <a href="/admin/academic_manager" class="nav-item" data-tier="1">
                     <i class="fa-solid fa-book-open nav-icon"></i>
                     <span>Academic Manager</span>
                 </a>
-                <a href="${a}schedule.html" class="nav-item" data-tier="1">
+                <a href="/admin/schedule" class="nav-item" data-tier="1">
                     <i class="fa-regular fa-calendar nav-icon"></i>
                     Schedule
                 </a>
-                <a href="${a}timeTable.html" class="nav-item" data-tier="1">
+                <a href="/admin/timeTable" class="nav-item" data-tier="1">
                     <i class="fa-solid fa-clock nav-icon"></i>
                     Time Table
                 </a>
-                <a href="${a}settings.html" class="nav-item" data-tier="1">
+                <a href="/admin/settings" class="nav-item" data-tier="1">
                     <i class="fa-solid fa-cog nav-icon"></i>
                     School Settings
                 </a>
-                <a href="${a}payments_config.html" class="nav-item" data-tier="1">
+                <a href="/admin/payments_config" class="nav-item" data-tier="1">
                     <i class="fa-solid fa-credit-card nav-icon"></i>
                     Payment Config
                 </a>
-                <a href="${sh}manage_notes.html" class="nav-item" data-tier="1">
+                <a href="/student/manage_notes" class="nav-item" data-tier="1">
                     <i class="fa-solid fa-file-lines nav-icon"></i>
                     Manage Notes
                 </a>
-                <a href="${a}parents.html" class="nav-item" data-tier="3">
+                <a href="/admin/parents" class="nav-item" data-tier="3">
                     <i class="fa-solid fa-users nav-icon"></i>
                     Parents
                 </a>

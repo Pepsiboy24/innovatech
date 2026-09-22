@@ -58,14 +58,14 @@ import { waitForUser, cached } from '../../core/perf.js';
                 </div>
             </div>
             <ul class="sidebar-menu">
-                <li><a href="${t}teachersPortal.html" class="nav-item">${homeIcon} Dashboard</a></li>
-                <li><a href="${t}listOfStudents.html" class="nav-item">${usersIcon} Students</a></li>
-                <li><a href="${t}curriculum.html" class="nav-item">${bookIcon} Scheme of Work</a></li>
-                <li><a href="${t}attendance.html" class="nav-item">${chartIcon} Attendance</a></li>
-                <li><a href="${t}upload_results.html" class="nav-item">${uploadIcon} Upload Results</a></li>
-                <li><a href="${t}upload_notes.html" class="nav-item">${noteIcon} Upload Notes</a></li>
-                <li><a href="${t}ai_assistant.html" class="nav-item">${aiIcon} AI Assistant</a></li>
-                <a href="/portals/student/manage_notes.html" class="nav-item">${linkIcon} Manage Notes</a>
+                <li><a href="/teacher" class="nav-item">${homeIcon} Dashboard</a></li>
+                <li><a href="/teacher/listOfStudents" class="nav-item">${usersIcon} Students</a></li>
+                <li><a href="/teacher/curriculum" class="nav-item">${bookIcon} Scheme of Work</a></li>
+                <li><a href="/teacher/attendance" class="nav-item">${chartIcon} Attendance</a></li>
+                <li><a href="/teacher/upload_results" class="nav-item">${uploadIcon} Upload Results</a></li>
+                <li><a href="/teacher/upload_notes" class="nav-item">${noteIcon} Upload Notes</a></li>
+                <li><a href="/teacher/ai_assistant" class="nav-item">${aiIcon} AI Assistant</a></li>
+                <a href="/student/manage_notes" class="nav-item">${linkIcon} Manage Notes</a>
             </ul>
             <div class="user-section">
                 <div class="user-info">

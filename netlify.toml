@@ -21,45 +21,45 @@
 [[redirects]]
   from = "/admin"
   to   = "/portals/admin/schoolAdminDashboard.html"
-  status = 301
+  status = 200
 
 [[redirects]]
   from = "/admin/*"
   to   = "/portals/admin/:splat"
-  status = 301
+  status = 200
 
 # ── Teacher portal ──────────────────────────────────────
 [[redirects]]
   from = "/teacher"
   to   = "/portals/teacher/teachersPortal.html"
-  status = 301
+  status = 200
 
 [[redirects]]
   from = "/teacher/*"
   to   = "/portals/teacher/:splat"
-  status = 301
+  status = 200
 
 # ── Parent portal ───────────────────────────────────────
 [[redirects]]
   from = "/parent"
   to   = "/portals/parent/parentsPortal.html"
-  status = 301
+  status = 200
 
 [[redirects]]
   from = "/parent/*"
   to   = "/portals/parent/:splat"
-  status = 301
+  status = 200
 
 # ── Student portal ──────────────────────────────────────
 [[redirects]]
   from = "/student"
   to   = "/portals/student/studentPortal.html"
-  status = 301
+  status = 200
 
 [[redirects]]
   from = "/student/*"
   to   = "/portals/student/:splat"
-  status = 301
+  status = 200
 
 # ── Shared assets (core, assets, supabase) pass through ─
 # No rules needed — Netlify serves these as static files

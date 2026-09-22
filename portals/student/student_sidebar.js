@@ -98,23 +98,23 @@ function getSidebarHTML() {
             <h2 data-school-name="${displayName}">${displayName}</h2>
         </div>
         <nav class="sidebar-nav">
-            <a href="./studentPortal.html" class="nav-item" data-path="studentPortal.html">
+            <a href="/student" class="nav-item" data-path="student">
                 <i class="fas fa-home"></i>
                 Dashboard
             </a>
-            <a href="./studentClasses.html" class="nav-item" data-path="studentClasses.html">
+            <a href="/student/studentClasses" class="nav-item" data-path="studentClasses">
                 <i class="fas fa-calendar-alt"></i>
                 Classes
             </a>
-            <a href="./studyMaterials.html" class="nav-item" data-path="studyMaterials.html">
+            <a href="/student/studyMaterials" class="nav-item" data-path="studyMaterials">
                 <i class="fas fa-book"></i>
                 Study Materials
             </a>
-            <a href="./schedule.html" class="nav-item" data-path="schedule.html">
+            <a href="/student/schedule" class="nav-item" data-path="schedule">
                 <i class="fas fa-clock"></i>
                 Schedule
             </a>
-            <a href="./cbtEngine.html" class="nav-item" data-path="cbtEngine.html">
+            <a href="/student/cbtEngine" class="nav-item" data-path="cbtEngine">
                 <i class="fas fa-pencil-alt"></i>
                 CBT Practice
             </a>
@@ -147,7 +147,7 @@ async function injectSidebar() {
     anchor.innerHTML = getSidebarHTML();
 
     // ── ACTIVE LINK DETECTION ───────────────────────────────────────────────
-    const currentPath = window.location.pathname.split('/').pop() || 'studentPortal.html';
+    const currentPath = window.location.pathname.split('/').pop() || 'student';
     const navItems = anchor.querySelectorAll('.nav-item');
 
     navItems.forEach(item => {
