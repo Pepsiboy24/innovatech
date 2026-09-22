@@ -115,6 +115,18 @@ import { hasFeatureAccess, getCurrentUserTier } from '../../core/tierAccess.js';
                     Parents
                 </a>
                 
+                <a href="/admin/results_page" class="nav-item" data-tier="1">
+                    <i class="fa-solid fa-clipboard-list nav-icon"></i>
+                    <span>Results (Scores)</span>
+                </a>
+                <a href="/admin/printed_result_sheet" class="nav-item" data-tier="1">
+                    <i class="fa-solid fa-file-lines nav-icon"></i>
+                    <span>Result Sheets (Print)</span>
+                </a>
+                <a href="/admin/result_template_editor" class="nav-item" data-tier="1">
+                    <i class="fa-solid fa-layer-group nav-icon"></i>
+                    <span>Result Sheet Templates</span>
+                </a>
                 <a href="#" id="schoolAdminLogoutBtn" class="nav-item logout-link-style" style="margin-top: auto; border-top: 1px solid var(--border); border-radius: 0; padding-top: 16px; color: #ef4444; font-weight: 700;" onmouseover="this.style.color='#b91c1c'" onmouseout="this.style.color='#ef4444'">
                     <i class="fa-solid fa-sign-out-alt nav-icon"></i>
                     Logout

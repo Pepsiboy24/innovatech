@@ -178,13 +178,86 @@ class ReportCardGenerator {
     }
 
     /**
-     * Download report card with enhanced formatting
+     * Download report card — real PDF export via jsPDF (UMD: window.jspdf.jsPDF).
+     * Renders the report card as a formatted PDF; falls back to .txt if jsPDF
+     * is unavailable.
      */
     downloadReportCard(reportCard) {
+        const student = reportCard.studentInfo || {};
+        const perf = reportCard.academicPerformance || {};
+        const subjects = Object.entries(perf.subjectAverages || {});
+
+        if (window.jspdf && window.jspdf.jsPDF) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+            const pageW = doc.internal.pageSize.getWidth();
+            const margin = 48;
+            let y = margin;
+
+            // Header
+            const schoolName = this.schoolInfo?.name || 'Educational Institution';
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(16);
+            doc.text(schoolName, pageW / 2, y, { align: 'center' });
+            y += 20;
+            doc.setFontSize(12);
+            doc.text('ACADEMIC REPORT CARD', pageW / 2, y, { align: 'center' });
+            y += 22;
+
+            // Student info block
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.text(`Name: ${student.name || 'N/A'}`, margin, y); y += 14;
+            doc.text(`Class: ${reportCard.classInfo?.class_name || student.class || 'N/A'}`, margin, y); y += 14;
+            doc.text(`Admission Date: ${student.admissionDate ? new Date(student.admissionDate).toLocaleDateString() : 'N/A'}`, margin, y); y += 14;
+            doc.text(`Term: ${perf.term || 'N/A'}`, margin, y); y += 18;
+
+            // Column positions
+            const colX = {
+                subject: margin,
+                pct: margin + 210,
+                grade: margin + 280,
+                count: margin + 350,
+                remark: margin + 420
+            };
+            const colHead = ['Subject', 'Average %', 'Grade', 'Assessments', 'Remark'];
+            const colPos = Object.values(colX);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(9);
+            colHead.forEach((h, i) => doc.text(h, colPos[i], y));
+            y += 8;
+            doc.line(margin, y, pageW - margin, y);
+            y += 12;
+            doc.setFont('helvetica', 'normal');
+
+            subjects.forEach(([sid, data]) => {
+                if (y > 760) { doc.addPage(); y = margin; doc.setFont('helvetica','bold'); doc.setFontSize(9); colHead.forEach((h,i)=>doc.text(h, colPos[i], y)); y += 8; doc.line(margin, y, pageW-margin, y); y += 12; doc.setFont('helvetica','normal'); }
+                doc.text(String(sid).slice(0, 18), colX.subject, y);
+                doc.text(String(data.averagePercentage ?? '')+'%', colX.pct, y);
+                doc.text(data.letterGrade || 'N/A', colX.grade, y);
+                doc.text(String(data.assignmentCount ?? 0), colX.count, y);
+                doc.text(String(data.remark || ''), colX.remark, y);
+                y += 12;
+            });
+            y += 8;
+            doc.line(margin, y, pageW - margin, y);
+            y += 14;
+            doc.setFont('helvetica', 'bold');
+            doc.text(`Overall Grade: ${perf.overallGrade || 'N/A'}`, margin, y); y += 13;
+            doc.text(`Grade Remark: ${perf.overallGPA || 'N/A'}`, margin, y);
+            doc.setFont('helvetica', 'normal');
+            y += 14;
+            doc.text(`Generated: ${new Date(reportCard.generatedAt || Date.now()).toLocaleString()}`, margin, y);
+
+            const fname = this.generateFilename(reportCard).replace(/\.txt$/, '.pdf');
+            doc.save(fname);
+            this.showNotification('Report downloaded as PDF', 'success');
+            return;
+        }
+
+        // ── Fallback: original text download ──────────────────────
         const content = this.formatReportCard(reportCard);
         const filename = this.generateFilename(reportCard);
-        
-        // Create download
         const blob = new Blob([content], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -196,7 +269,6 @@ class ReportCardGenerator {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
-        // Show success message
         this.showNotification('Report downloaded successfully', 'success');
     }
 

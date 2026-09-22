@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Result Sheet Templates | Admin</title>
+    <link rel="stylesheet" href="/styles/dashboard_admin.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="/assets/logo.png">
+</head>
+<body data-sideBar>
+    <div class="dashboard-layout">
+        <!-- Sidebar injected by school_admin_sidebar.js -->
+        <aside>
+            <div id="sidebarContainer"></div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="page-header">
+                <button class="icon mobile-menu-btn" data-sideBar><i class="fa fa-bars"></i></button>
+                <div>
+                    <h1>Result Sheet Templates</h1>
+                    <p>Design the report-card / result-sheet layout shown to your class teachers and parents.</p>
+                </div>
+            </header>
+
+            <!-- Alerts -->
+            <div id="alertContainer"></div>
+
+            <!-- Template List -->
+            <section id="templateListSection" class="card">
+                <div class="card-header" style="display:flex; align-items:center; justify-content:space-between;">
+                    <h2><i class="fa-solid fa-sheet-plastic"></i> Your Templates</h2>
+                    <button id="newTemplateBtn" class="btn btn-primary">
+                        <i class="fa-solid fa-plus"></i> New Template
+                    </button>
+                </div>
+                <div id="templateList" class="template-list"></div>
+            </section>
+
+            <!-- Template Editor (hidden until create/edit) -->
+            <section id="templateEditorSection" class="card" style="display:none;">
+                <div class="card-header" style="display:flex; align-items:center; justify-content:space-between;">
+                    <h2 id="editorTitle">New Template</h2>
+                    <div>
+                        <button id="cancelEditBtn" class="btn btn-outline">Cancel</button>
+                        <button id="saveTemplateBtn" class="btn btn-primary">
+                            <i class="fa-solid fa-floppy-disk"></i> Save Template
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="templateName">Template Name *</label>
+                        <input type="text" id="templateName" placeholder="e.g. Standard WAEC/NECO Result Sheet">
+                    </div>
+                    <div class="form-group">
+                        <label for="templateDescription">Description</label>
+                        <input type="text" id="templateDescription" placeholder="e.g. Used for end-of-term report cards">
+                    </div>
+                    <div class="form-group">
+                        <label for="layoutConfig">Layout Config (JSON)</label>
+                        <textarea id="layoutConfig" rows="14" class="code-input"></textarea>
+                        <small class="hint">layout_config drives the printed sheet — header, breakdown (groupBy: assessment_type, CA/exam columns), gradingScale (WAEC A1-F9), accentColor, footerNote.</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-row">
+                            <input type="checkbox" id="isDefaultTemplate">
+                            <span>Set as the school's default template</span>
+                        </label>
+                        <label class="checkbox-row">
+                            <input type="checkbox" id="isActiveTemplate" checked>
+                            <span>Active (available for printing)</span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Live Preview -->
+            <section id="previewSection" class="card" style="display:none;">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-eye"></i> Print Preview</h2>
+                </div>
+                <div id="templatePreview"></div>
+            </section>
+        </main>
+    </div>
+
+    <script type="module" src="./result_template_editor.js"></script>
+</body>
+</html>

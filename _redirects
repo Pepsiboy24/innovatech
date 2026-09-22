@@ -23,6 +23,8 @@
 /admin/create_timetable_setup  /portals/admin/create_timetable_setup.html  200
 /admin/create_timetable_entries  /portals/admin/create_timetable_entries.html  200
 /admin/results_page /portals/admin/results_page.html  200
+/admin/result_template_editor  /portals/admin/result_template_editor.html  200
+/admin/printed_result_sheet    /portals/admin/printed_result_sheet.html    200
 /admin/*            /portals/admin/:splat          200
 
 # ── Teacher portal ─────────────────────────────────────────
