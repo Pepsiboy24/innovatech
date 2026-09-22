@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+    <script type="module" src="../../core/authGuard.js"></script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Result Sheet — Printable View | Admin</title>
-    <link rel="stylesheet" href="/styles/dashboard_admin.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="icon" type="image/x-icon" href="/assets/logo.png">
+    <title>Result Sheets (Print) - Admin Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="./schoolAdminStyles/adminPortal.css">
+    <script type="module" src="../../core/config.js"></script>
     <style>
         /* ── Print-only styling: hides everything except the result sheet ── */
         @media print {
@@ -26,10 +27,26 @@
             #printControls { display: none; }
         }
 
+        .controls-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: flex-end;
+        }
+        .controls-row .form-group {
+            flex: 1;
+            min-width: 220px;
+        }
+        .controls-row .form-group.actions {
+            flex: 0 0 auto;
+            display: flex;
+            gap: 10px;
+        }
+
         #resultSheetPrintRoot {
             background: #fff;
             margin: 24px auto;
-            max-width: 820px;
+            max-width: 860px;
             padding: 24px;
             border-radius: 8px;
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
@@ -55,6 +72,21 @@
         .subject-table td.num, .subject-table th.num { text-align: center; }
         .grade-badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-weight: 700; font-size: 12px; }
         .grade-remark { font-size: 12px; color: #475569; }
+        .domain-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+        .domain-table td { border: 1px solid #e2e8f0; padding: 6px 10px; font-size: 13px; }
+        .domain-table td.lbl { background: #f8fafc; color: #64748b; width: 45%; }
+        .domain-title { font-size: 14px; font-weight: 700; color: #1e293b; margin: 8px 0 4px; }
+        .remarks-block {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 13px;
+        }
+        .remarks-block .lbl { color: #64748b; }
         .summary-strip {
             display: flex;
             justify-content: space-between;
@@ -73,34 +105,42 @@
         }
     </style>
 </head>
-<body data-sideBar>
-    <div class="dashboard-layout">
+<body>
+    <div class="container">
         <!-- Sidebar (shared admin nav) -->
-        <aside>
-            <div id="sidebarContainer"></div>
-        </aside>
+        <aside class="sidebar" data-sideBar></aside>
 
         <main class="main-content">
-            <header class="page-header no-print">
-                <button class="icon mobile-menu-btn" data-sideBar><i class="fa fa-bars"></i></button>
-                <div>
-                    <h1>Printable Result Sheet</h1>
-                    <p>Live preview of the student's report card using your selected template. Use the Print or PDF buttons.</p>
+            <!-- Header -->
+            <div class="header no-print">
+                <div class="header-copy">
+                    <div class="header-chip">Admin</div>
+                    <div class="header-title-row">
+                        <h1 class="page-title">Printable Result Sheet</h1>
+                        <p class="page-subtitle">Live preview of a student's report card using your selected template. Print or export to PDF.</p>
+                    </div>
                 </div>
-            </header>
+                <div class="stuff no-print">
+                    <div class="profile" aria-label="Profile"></div>
+                    <button class="icon" type="button" data-sideBarOpen aria-label="Open navigation menu">
+                        <i class="fa fa-bars"></i>
+                    </button>
+                </div>
+            </div>
 
             <!-- Controls (hidden when printing) -->
-            <section class="card no-print" id="printControls">
-                <div class="form-grid" style="display:flex; flex-wrap:wrap; gap:16px; align-items:flex-end;">
-                    <div class="form-group" style="flex:1; min-width:220px;">
+            <section class="section no-print" id="printControls">
+                <div class="section-header"><h2>Generate Result Sheet</h2></div>
+                <div class="controls-row">
+                    <div class="form-group">
                         <label for="studentSelect">Student *</label>
                         <select id="studentSelect"><option value="">Select a student…</option></select>
                     </div>
-                    <div class="form-group" style="flex:1; min-width:220px;">
+                    <div class="form-group">
                         <label for="templateSelect">Result Sheet Template *</label>
                         <select id="templateSelect"><option value="">Select a template…</option></select>
                     </div>
-                    <div class="form-group" style="flex:1; min-width:180px;">
+                    <div class="form-group">
                         <label for="termSelect">Term</label>
                         <select id="termSelect">
                             <option>First Term</option>
@@ -108,10 +148,10 @@
                             <option>Third Term</option>
                         </select>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group actions">
                         <button id="generateBtn" class="btn btn-primary"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate</button>
-                        <button id="printBtn" class="btn btn-outline" disabled><i class="fa-solid fa-print"></i> Print</button>
-                        <button id="pdfBtn" class="btn btn-outline" disabled><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+                        <button id="printBtn" class="btn btn-secondary" disabled><i class="fa-solid fa-print"></i> Print</button>
+                        <button id="pdfBtn" class="btn btn-secondary" disabled><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
                     </div>
                 </div>
             </section>
@@ -121,9 +161,10 @@
         </main>
     </div>
 
-    <!-- jsPDF: real PDF export (UMD 2.5.1 — same CDN + window.jspdf.jsPDF pattern as upload_notes.html) -->
+    <!-- Scripts -->
+    <script src="../../assets/js-shared/ui_feedback.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Font-Awesome/6.5.1/webfonts/fa-solid-900.woff2" defer></script>
+    <script type="module" src="./school_admin_sidebar.js"></script>
     <script type="module" src="./printed_result_sheet.js"></script>
 </body>
 </html>

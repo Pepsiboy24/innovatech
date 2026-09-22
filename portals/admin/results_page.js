@@ -1,12 +1,13 @@
-// upload_results.js
-// Result upload logic for teachers portal with upsert functionality and Excel import
+// results_page.js
+// Result upload logic for the admin portal (school-scoped) with upsert + Excel import.
 
 import { supabase } from '../../core/config.js';
 import { waitForUser, lazyScript } from '/core/perf.js';
 
 // Global variables
 let currentClassStudents = [];
-let currentTeacherId = null;
+let currentAdminId = null;
+let currentSchoolId = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     initializeUploadResults();
@@ -14,17 +15,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function initializeUploadResults() {
     try {
-        // 1. Verify Teacher Login
-        currentTeacherId = await checkTeacherLogin();
-        if (!currentTeacherId) return;
+        // 1. Resolve current admin + school (no teacher-only gate)
+        const ctx = await resolveSchoolContext();
+        if (!ctx) return;
 
-        const user = await waitForUser();
-        if (!user?.user_metadata?.school_id) {
-            return;
-        }
-
-        // 2. Fetch Teacher's Classes
-        const classes = await fetchTeacherClasses(currentTeacherId);
+        // 2. Fetch School's Classes
+        const classes = await fetchSchoolClasses(ctx.schoolId);
         populateClassDropdown(classes);
 
         // 3. Setup Event Listeners
@@ -37,43 +33,39 @@ async function initializeUploadResults() {
 
 // --- Auth & Initial Data Fetching ---
 
-async function checkTeacherLogin() {
+async function resolveSchoolContext() {
     try {
         const user = await waitForUser();
-
         if (!user) {
-            showToast('Please log in as a teacher to view this page.', 'warning');
+            showToast('Please log in to view this page.', 'warning');
             window.location.replace('/login');
             return null;
         }
 
-        // Verify this user is actually a teacher
-        const { data: teacherData, error: teacherError } = await supabase
-            .from('Teachers')
-            .select('*')
-            .eq('teacher_id', user.id)
-            .single();
-
-        if (teacherError || !teacherData) {
-            showToast('You are not authorized as a teacher.', 'error');
+        const schoolId = user.user_metadata?.school_id;
+        if (!schoolId) {
+            showToast('No school linked to this account.', 'error');
             await supabase.auth.signOut();
             window.location.replace('/login');
             return null;
         }
 
-        return user.id;
+        currentAdminId = user.id;
+        currentSchoolId = schoolId;
+        return { userId: user.id, schoolId };
     } catch (err) {
-        console.error('Error checking teacher login:', err);
+        console.error('Error resolving school context:', err);
         return null;
     }
 }
 
-async function fetchTeacherClasses(teacherId) {
+async function fetchSchoolClasses(schoolId) {
     try {
         const { data, error } = await supabase
             .from('Classes')
             .select('class_id, class_name, section')
-            .eq('teacher_id', teacherId);
+            .eq('school_id', schoolId)
+            .order('class_name');
 
         if (error) {
             return [];
@@ -95,8 +87,7 @@ async function fetchClassSubjects(classId) {
                     subject_id
                 )
             `)
-            .eq('class_id', classId)
-            .eq('teacher_id', currentTeacherId);
+            .eq('class_id', classId);
 
         if (error) {
             return [];
@@ -194,7 +185,8 @@ async function fetchStudentsInClass(classId) {
         const { data: students, error } = await supabase
             .from('Students')
             .select('student_id, full_name') // Only select what you need
-            .eq('class_id', classId) // Remove parseInt() if your class_id is a UUID
+            .eq('class_id', classId)
+            .eq('school_id', currentSchoolId)
             .order('full_name', { ascending: true });
 
         if (error) {
@@ -356,14 +348,15 @@ async function handleSaveResults(e) {
                 scores.push({
                     student_id: studentId,
                     subject_id: subjectId,
-                    class_id: classId, // Often redundant if normalized, but good for safety
+                    class_id: classId,
+                    school_id: currentSchoolId, // CRITICAL: RLS compliance
                     term: term,
                     academic_session: academicSession,
                     assessment_type: assessmentType,
                     score: score,
                     max_score: maxScore,
                     comment: comment,
-                    teacher_id: currentTeacherId
+                    teacher_id: currentAdminId
                 });
             }
         });
