@@ -1,6 +1,7 @@
 // curriculum_tracker.js
 import { supabase } from '../../core/config.js';
 import { waitForUser } from '/core/perf.js';
+import { showSkeleton, hideSkeleton } from '../../assets/js-shared/ui-engine.js';
 
 let allTeachers = [];
 let teacherSubjects = new Map();
@@ -11,6 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initializeApp() {
+    const containerEl = document.getElementById('teachersContainer');
+    if (containerEl) { showSkeleton(containerEl, 8, 'card'); }
     try {
         const user = await waitForUser();
         if (!user?.user_metadata?.school_id) {
@@ -23,6 +26,8 @@ async function initializeApp() {
     } catch (error) {
         console.error('Error initializing app:', error);
         showError('Failed to load curriculum tracker. Please refresh the page.');
+    } finally {
+        if (containerEl) { hideSkeleton(containerEl); }
     }
 }
 

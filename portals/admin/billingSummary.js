@@ -1,10 +1,13 @@
 import { supabase } from '../../core/config.js';
+import { showSkeleton, hideSkeleton } from '../../assets/js-shared/ui-engine.js';
 
 class BillingSummary {
     constructor() {
         this.currentTerm = '';
         this.ratePerStudent = 2500;
         this.metrics = null;
+        this.billingGrid = document.querySelector('.billing-grid');
+        this.originalGridHTML = this.billingGrid ? this.billingGrid.innerHTML : '';
         this.init();
     }
 
@@ -18,7 +21,14 @@ class BillingSummary {
         }
     }
 
+    restoreGrid() {
+        if (this.billingGrid && this.originalGridHTML) this.billingGrid.innerHTML = this.originalGridHTML;
+        if (this.billingGrid) hideSkeleton(this.billingGrid);
+    }
+
     async loadBillingData(user) {
+        // Replace the billing cards with skeleton placeholders while data loads
+        if (this.billingGrid) { showSkeleton(this.billingGrid, 2, 'stat'); }
         try {
             const schoolId = user?.user_metadata?.school_id;
             if (!schoolId) return;
@@ -45,9 +55,11 @@ class BillingSummary {
             }
 
             this.calculateBillingMetrics(students || [], schoolId);
+            this.restoreGrid();
             this.updateBillingDisplay();
         } catch (error) {
             console.error('Billing error:', error);
+            this.restoreGrid();
         }
     }
 

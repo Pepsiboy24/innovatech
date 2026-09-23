@@ -1,6 +1,7 @@
 // Payment Configuration JavaScript
 import { supabase } from '../../core/config.js';
 import { waitForUser } from '/core/perf.js';
+import { showSkeleton, hideSkeleton } from '../../assets/js-shared/ui-engine.js';
 
 // State Management
 let paymentItems = [];
@@ -39,7 +40,8 @@ async function initializePaymentConfig() {
 
 async function loadPaymentItems() {
     try {
-        
+        if (itemsTableBody) { showSkeleton(itemsTableBody, 6, 'rows', 6); }
+
         const { data, error } = await supabase
             .from('Payment_Items')
             .select('*')
@@ -55,6 +57,8 @@ async function loadPaymentItems() {
         
     } catch (error) {
         showError('Failed to load payment items.');
+    } finally {
+        if (itemsTableBody) { hideSkeleton(itemsTableBody); }
     }
 }
 

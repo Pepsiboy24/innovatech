@@ -1,6 +1,7 @@
 // printed_result_sheet.js
 import { supabase } from '../../core/config.js';
 import { waitForUser } from '/core/perf.js';
+import { showSkeleton, hideSkeleton } from '../../assets/js-shared/ui-engine.js';
 import { ResultsEngine } from '../../assets/js-shared/resultsEngine.js';
 
 const re = new ResultsEngine();
@@ -230,6 +231,8 @@ async function generate() {
   if (!tpl) { alert('Select a template'); return; }
   const term = $('termSelect').value;
   const srow = students.find(x => String(x.student_id) === String(sid));
+  const r = root();
+  if (r) { showSkeleton(r, 2, 'card'); }
   try {
     const rc = await re.generateReportCard(sid, term);
     lastRC = rc;
@@ -276,6 +279,8 @@ async function generate() {
   } catch (e) {
     console.error(e);
     alert('Failed to generate report card: ' + e.message);
+  } finally {
+    if (r) { hideSkeleton(r); }
   }
 }
 
@@ -385,6 +390,8 @@ function exportPDF() {
 }
 
 async function init() {
+  const r = root();
+  if (r) { showSkeleton(r, 3, 'card'); }
   try {
     await loadSchoolId();
     await Promise.all([loadTemplates(), loadStudents()]);
@@ -393,8 +400,9 @@ async function init() {
     $('pdfBtn')?.addEventListener('click', exportPDF);
   } catch (e) {
     console.error(e);
-    const r = root();
     if (r) r.innerHTML = `<div style="color:#b91c1c;padding:16px;">Failed to initialize: ${e.message}</div>`;
+  } finally {
+    if (r) { hideSkeleton(r); }
   }
 }
 

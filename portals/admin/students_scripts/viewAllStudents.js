@@ -1,6 +1,7 @@
 // viewStudents.js
 import { supabaseClient } from './supabase_client.js';
 import { waitForUser, renderToFragment, debounce } from '/core/perf.js';
+import { showSkeleton, hideSkeleton } from '../../../assets/js-shared/ui-engine.js';
 
 // --- Module-level migration state ---
 let _migrationStudentId = null;
@@ -395,6 +396,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const statusFilter = document.getElementById('statusFilter');
     let currentStatusFilter = statusFilter?.value || 'active';
 
+    const tableBody = document.querySelector('.students-table tbody');
+
+    if (tableBody) { showSkeleton(tableBody, 6, 'rows', 6); }
     let allStudents = await fetchStudents(currentStatusFilter);
     let classes = await fetchClasses();
     _allClasses = classes;
@@ -422,17 +426,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     applyFilters();
     console.log(`Loaded ${allStudents.length} students with status: ${currentStatusFilter}`);
+    if (tableBody) { hideSkeleton(tableBody); }
 
     // Status filter dropdown — re-fetch from DB on change
     if (statusFilter) {
         statusFilter.addEventListener('change', async function () {
             currentStatusFilter = this.value;
-            allStudents = await fetchStudents(currentStatusFilter);
-            _countMap = {};
-            allStudents.forEach(s => {
-                if (s.class_id != null) _countMap[s.class_id] = (_countMap[s.class_id] || 0) + 1;
-            });
-            applyFilters();
+            const refreshBody = document.querySelector('.students-table tbody');
+            if (refreshBody) { showSkeleton(refreshBody, 6, 'rows', 6); }
+            try {
+                allStudents = await fetchStudents(currentStatusFilter);
+                _countMap = {};
+                allStudents.forEach(s => {
+                    if (s.class_id != null) _countMap[s.class_id] = (_countMap[s.class_id] || 0) + 1;
+                });
+                applyFilters();
+            } finally {
+                if (refreshBody) { hideSkeleton(refreshBody); }
+            }
         });
     }
 
@@ -510,17 +521,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Global refresh — re-fetches with current status filter
     window.refreshStudentList = async () => {
         currentStatusFilter = document.getElementById('statusFilter')?.value || 'active';
-        allStudents = await fetchStudents(currentStatusFilter);
-        classes = await fetchClasses();
-        _allClasses = classes;
-        _countMap = {};
-        allStudents.forEach(s => {
-            if (s.class_id != null) _countMap[s.class_id] = (_countMap[s.class_id] || 0) + 1;
-        });
-        classes.forEach(cls => {
-            classMap[cls.class_id] = `${cls.class_name} ${cls.section || ''}`.trim();
-        });
-        applyFilters();
+        const refreshBody = document.querySelector('.students-table tbody');
+        if (refreshBody) { showSkeleton(refreshBody, 6, 'rows', 6); }
+        try {
+            allStudents = await fetchStudents(currentStatusFilter);
+            classes = await fetchClasses();
+            _allClasses = classes;
+            _countMap = {};
+            allStudents.forEach(s => {
+                if (s.class_id != null) _countMap[s.class_id] = (_countMap[s.class_id] || 0) + 1;
+            });
+            classes.forEach(cls => {
+                classMap[cls.class_id] = `${cls.class_name} ${cls.section || ''}`.trim();
+            });
+            applyFilters();
+        } finally {
+            if (refreshBody) { hideSkeleton(refreshBody); }
+        }
     };
 });
 

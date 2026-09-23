@@ -1,7 +1,11 @@
+import { showSkeleton, hideSkeleton } from '../../../assets/js-shared/ui-engine.js';
+
 document.addEventListener('DOMContentLoaded', async function () {
     const tbody = document.querySelector('.students-table tbody');
 
     try {
+        if (tbody) { showSkeleton(tbody, 6, 'rows', 5); }
+
         // Fetch subjects with their class and teacher assignments
         const { data: classSubjects, error } = await window.supabase
             .from('Class_Subjects')
@@ -71,6 +75,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     } catch (err) {
         console.error('Unexpected error:', err);
         showToast('An unexpected error occurred while loading subjects.', 'error');
+    } finally {
+        if (tbody) { hideSkeleton(tbody); }
     }
 });
 

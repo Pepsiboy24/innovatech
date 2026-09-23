@@ -6,14 +6,46 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
+let skeletonStylesheetInjected = false;
+
+/**
+ * Ensure the shared skeleton stylesheet is present once.
+ * Self-contained: any page that imports ui-engine gets the styles it needs.
+ */
+function ensureSkeletonStyles() {
+    if (skeletonStylesheetInjected) return;
+    if (document.querySelector('link[href="/assets/css/skeleton.css"]')) {
+        skeletonStylesheetInjected = true;
+        return;
+    }
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = '/assets/css/skeleton.css';
+    document.head.appendChild(link);
+    skeletonStylesheetInjected = true;
+}
+
+/**
+ * Resolve a container from a string id OR an HTMLElement.
+ * @param {string|HTMLElement} id
+ * @returns {HTMLElement|null}
+ */
+function resolveContainer(id) {
+    if (typeof id === 'string') return document.getElementById(id);
+    if (id && typeof id === 'object' && id.nodeType) return id;
+    return null;
+}
+
 /**
  * Show skeleton loading with animated shine placeholders
- * @param {string} containerId - ID of container to inject skeleton into
+ * @param {string|HTMLElement} containerId - ID or element of container to inject skeleton into
  * @param {number} count - Number of skeleton items to show
- * @param {string} templateType - Type of skeleton template ('card', 'list', 'table', etc.)
+ * @param {string} templateType - Type of skeleton template ('card','list','table','profile','stat','rows')
+ * @param {number} [colCount=4] - Number of table columns for the 'rows' (tbody) template
  */
-export function showSkeleton(containerId, count, templateType = 'card') {
-    const container = document.getElementById(containerId);
+export function showSkeleton(containerId, count, templateType = 'card', colCount = 4) {
+    ensureSkeletonStyles();
+    const container = resolveContainer(containerId);
     if (!container) {
         console.warn(`[UI Engine] Container #${containerId} not found`);
         return;
@@ -25,7 +57,7 @@ export function showSkeleton(containerId, count, templateType = 'card') {
     container.innerHTML = '';
 
     // Generate skeleton HTML based on template type
-    const skeletonHTML = generateSkeletonHTML(count, templateType);
+    const skeletonHTML = generateSkeletonHTML(count, templateType, colCount);
     
     // Inject skeleton with animation
     container.innerHTML = skeletonHTML;
@@ -50,7 +82,7 @@ export function showSkeleton(containerId, count, templateType = 'card') {
  * @param {string} containerId - ID of container to restore
  */
 export function hideSkeleton(containerId) {
-    const container = document.getElementById(containerId);
+    const container = resolveContainer(containerId);
     if (!container) return;
 
     container.classList.remove('skeleton-loading');
@@ -58,7 +90,7 @@ export function hideSkeleton(containerId) {
     // ✅ FIX: Make container visible (it may have been hidden with display:none)
     container.style.display = '';
 
-    const skeletons = container.querySelectorAll('.skeleton-card, .skeleton-list, .skeleton-table');
+    const skeletons = container.querySelectorAll('.skeleton-card, .skeleton-list, .skeleton-table, .skeleton-profile, .skeleton-stat, .skeleton-row');
     skeletons.forEach(skeleton => {
         skeleton.style.opacity = '0';
         setTimeout(() => {
@@ -71,9 +103,10 @@ export function hideSkeleton(containerId) {
  * Generate skeleton HTML based on template type
  * @param {number} count - Number of skeleton items
  * @param {string} templateType - Type of template
+ * @param {number} [colCount=4] - Table columns for the 'rows' template
  * @returns {string} HTML string for skeleton
  */
-function generateSkeletonHTML(count, templateType) {
+function generateSkeletonHTML(count, templateType, colCount = 4) {
     switch (templateType) {
         case 'card':
             return generateCardSkeletons(count);
@@ -83,6 +116,10 @@ function generateSkeletonHTML(count, templateType) {
             return generateTableSkeletons(count);
         case 'profile':
             return generateProfileSkeletons(count);
+        case 'stat':
+            return generateStatSkeletons(count);
+        case 'rows':
+            return generateTableRowSkeletons(count, colCount);
         default:
             return generateCardSkeletons(count);
     }
@@ -175,6 +212,46 @@ function generateProfileSkeletons(count) {
                     <div class="skeleton-shine skeleton-text skeleton-short"></div>
                 </div>
             </div>
+        `;
+    }
+    return html;
+}
+
+/**
+ * Generate compact stat-tile skeleton placeholders (dashboard number cards)
+ * @param {number} count - Number of tiles
+ * @returns {string} HTML string
+ */
+function generateStatSkeletons(count) {
+    let html = '';
+    for (let i = 0; i < count; i++) {
+        html += `
+            <div class="skeleton-stat">
+                <div class="skeleton-shine skeleton-stat-label"></div>
+                <div class="skeleton-shine skeleton-stat-number"></div>
+            </div>
+        `;
+    }
+    return html;
+}
+
+/**
+ * Generate <tr> skeleton rows for real <tbody> containers.
+ * Plain div skeletons break DOM structure inside a table, so rows
+ * are emitted as actual table rows with a single shimmering cell.
+ * @param {number} count - Number of rows
+ * @param {number} colCount - Number of columns to span
+ * @returns {string} HTML string
+ */
+function generateTableRowSkeletons(count, colCount = 4) {
+    let html = '';
+    for (let i = 0; i < count; i++) {
+        html += `
+            <tr class="skeleton-row">
+                <td class="skeleton-row-cell" colspan="${colCount}">
+                    <div class="skeleton-shine skeleton-cell-line"></div>
+                </td>
+            </tr>
         `;
     }
     return html;

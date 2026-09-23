@@ -1,4 +1,5 @@
 import { supabase } from '../../../core/config.js';
+import { showSkeleton, hideSkeleton } from '../../../assets/js-shared/ui-engine.js';
 
 /**
  * Helper: Smart Level Naming (Kept original logic)
@@ -112,6 +113,8 @@ async function loadClasses(user) {
         const schoolId = user?.user_metadata?.school_id;
         if (!schoolId) return;
 
+        if (container) { showSkeleton(container, 8, 'card'); }
+
         // SPEED FIX 3: Parallelized Burst Fetching
         const [classesResult, studentsResult] = await Promise.all([
             supabase.from("Classes")
@@ -141,6 +144,8 @@ async function loadClasses(user) {
     } catch (error) {
         console.error("Load error:", error);
         container.innerHTML = '<p style="color: red; text-align: center; padding: 20px;">Failed to load classes.</p>';
+    } finally {
+        if (container) { hideSkeleton(container); }
     }
 }
 

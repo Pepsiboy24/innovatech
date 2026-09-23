@@ -1,6 +1,7 @@
 import { supabase } from '../../core/config.js';
 import { deleteSchoolAdmin } from './schooladminsFormDB.js'; // FIX #55: was exported but never imported
 import { waitForUser, renderToFragment, debounce } from '/core/perf.js';
+import { showSkeleton, hideSkeleton } from '../../assets/js-shared/ui-engine.js';
 
 // FIX #52: Fetch only admins belonging to the current admin's school
 async function fetchSchoolAdmins() {
@@ -184,7 +185,15 @@ function filterSchoolAdminsByStatus(admins, statusFilter) {
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('Loading school admins...');
-    let allAdmins = await fetchSchoolAdmins();
+    const tableBody = document.querySelector('.students-table tbody');
+
+    if (tableBody) { showSkeleton(tableBody, 5, 'rows', 5); }
+    let allAdmins = [];
+    try {
+        allAdmins = await fetchSchoolAdmins();
+    } finally {
+        if (tableBody) { hideSkeleton(tableBody); }
+    }
     let currentSearchTerm = '';
     let currentStatusFilter = 'all';
 

@@ -1,6 +1,7 @@
 // result_template_editor.js
 import { supabase } from '../../core/config.js';
 import { waitForUser } from '/core/perf.js';
+import { showSkeleton, hideSkeleton } from '../../assets/js-shared/ui-engine.js';
 
 let currentSchoolId = null;
 let templates = [];
@@ -43,16 +44,22 @@ async function loadSchoolId() {
 }
 
 async function fetchTemplates() {
-  if (!currentSchoolId) await loadSchoolId();
-  const { data, error } = await supabase
-    .from('result_sheet_templates')
-    .select('*')
-    .eq('school_id', currentSchoolId)
-    .order('is_default', { ascending: false })
-    .order('created_at', { ascending: false });
-  if (error) { showAlert('error', error.message); return; }
-  templates = data || [];
-  renderList();
+  const el = templateList();
+  if (el) { showSkeleton(el, 4, 'list'); }
+  try {
+    if (!currentSchoolId) await loadSchoolId();
+    const { data, error } = await supabase
+      .from('result_sheet_templates')
+      .select('*')
+      .eq('school_id', currentSchoolId)
+      .order('is_default', { ascending: false })
+      .order('created_at', { ascending: false });
+    if (error) { showAlert('error', error.message); return; }
+    templates = data || [];
+    renderList();
+  } finally {
+    if (el) { hideSkeleton(el); }
+  }
 }
 
 function renderList() {

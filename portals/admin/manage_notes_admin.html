@@ -202,6 +202,7 @@
     <script type="module">
         import { supabase } from '../../core/config.js';
         import { waitForUser } from '/core/perf.js';
+        import { showSkeleton, hideSkeleton } from '../../assets/js-shared/ui-engine.js';
 
         // State Management
         let notes = [];
@@ -269,19 +270,8 @@
         }
 
         async function loadNotes() {
-            // Show the loading state immediately while notes are fetched.
-            if (notesTableBody) {
-                notesTableBody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="text-center">
-                            <div class="loading-state">
-                                <i class="fas fa-spinner fa-spin"></i>
-                                Loading notes...
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }
+            // Show skeleton rows while notes are fetched.
+            if (notesTableBody) { showSkeleton(notesTableBody, 6, 'rows', 6); }
 
             // Counts are computed directly from the Student_Notes table.
             try {
@@ -308,7 +298,11 @@
             }
 
             // Load the notes list (with the current filter applied).
-            await applyFilters(currentFilter);
+            try {
+                await applyFilters(currentFilter);
+            } finally {
+                if (notesTableBody) { hideSkeleton(notesTableBody); }
+            }
         }
 
         function populateStudentSelect() {

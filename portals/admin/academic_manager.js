@@ -2,6 +2,7 @@
 // Unified Academic Manager for School Admin Portal
 import { supabase } from '../../core/config.js';
 import { waitForUser } from '/core/perf.js';
+import { showSkeleton, hideSkeleton } from '../../assets/js-shared/ui-engine.js';
 
 // ─── State ────────────────────────────────────────────────────────────────────
 let allSubjects = [];
@@ -65,6 +66,8 @@ window.openEditSubjectModal = function(id) {
 
 // ─── Load all subjects ────────────────────────────────────────────────────────
 async function loadSubjects() {
+    const listEl = document.getElementById('subjectsList');
+    if (listEl) { showSkeleton(listEl, 6, 'list'); }
     try {
         const user = await waitForUser();
         if (!user?.user_metadata?.school_id) {
@@ -87,6 +90,8 @@ async function loadSubjects() {
         renderSubjectList('');
     } catch (err) {
         console.error('Error in loadSubjects:', err);
+    } finally {
+        if (listEl) { hideSkeleton(listEl); }
     }
 }
 
@@ -138,9 +143,8 @@ async function loadAssignments(subject) {
     const panel = document.getElementById('assignments-panel');
     if (!panel) return;
 
-    // BUG B fix: ALWAYS clear the panel BEFORE querying, so a subject with no
-    // assignments never shows the previous subject's data.
-    panel.innerHTML = `<div class="spinner-wrap"><div class="spinner"></div></div>`;
+    // Show skeleton instead of the spinner while assignments load
+    showSkeleton(panel, 5, 'table');
 
     try {
         const user = await waitForUser();
@@ -163,6 +167,8 @@ async function loadAssignments(subject) {
     } catch (err) {
         console.error('Error loading assignments:', err);
         panel.innerHTML = `<div class="cp-error">Failed to load assignments.</div>`;
+    } finally {
+        hideSkeleton(panel);
     }
 }
 

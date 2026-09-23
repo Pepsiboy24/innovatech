@@ -3,6 +3,7 @@
 
 import { supabase } from '../../core/config.js';
 import { waitForUser, lazyScript } from '/core/perf.js';
+import { showSkeleton, hideSkeleton } from '../../assets/js-shared/ui-engine.js';
 
 // Global variables
 let currentClassStudents = [];
@@ -180,6 +181,9 @@ function setupEventListeners() {
 // --- Core Logic ---
 
 async function fetchStudentsInClass(classId) {
+    const tableBody = document.getElementById('studentTableBody');
+    if (tableBody) { showSkeleton(tableBody, 6, 'rows', 4); }
+
     try {
 
         const { data: students, error } = await supabase
@@ -199,6 +203,8 @@ async function fetchStudentsInClass(classId) {
     } catch (error) {
         updateStudentTable([]);
         showToast("Error loading students: " + error.message, "error");
+    } finally {
+        if (tableBody) { hideSkeleton(tableBody); }
     }
 }
 

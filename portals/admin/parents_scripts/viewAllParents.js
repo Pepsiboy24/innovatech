@@ -1,5 +1,6 @@
 import { supabase } from '../../../core/config.js';
 import { waitForUser, renderToFragment, debounce } from '/core/perf.js';
+import { showSkeleton, hideSkeleton } from '../../../assets/js-shared/ui-engine.js';
 
 let allParents = [];
 let currentSearchTerm = '';
@@ -97,7 +98,14 @@ function renderParents(parents) {
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('Loading parents...');
-    allParents = await fetchParents();
+    const tableBody = document.querySelector('.students-table tbody');
+
+    if (tableBody) { showSkeleton(tableBody, 5, 'rows', 5); }
+    try {
+        allParents = await fetchParents();
+    } finally {
+        if (tableBody) { hideSkeleton(tableBody); }
+    }
     
     function applyFilters() {
         const filtered = filterParents(allParents, currentSearchTerm);
@@ -169,7 +177,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.closeEditModal();
             
             // Refresh inline
-            allParents = await fetchParents();
+            const refreshBody = document.querySelector('.students-table tbody');
+            if (refreshBody) { showSkeleton(refreshBody, 5, 'rows', 5); }
+            try {
+                allParents = await fetchParents();
+            } finally {
+                if (refreshBody) { hideSkeleton(refreshBody); }
+            }
             applyFilters();
         } catch (err) {
             console.error('Error updating parent:', err);

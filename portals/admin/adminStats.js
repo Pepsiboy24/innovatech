@@ -1,6 +1,13 @@
 import { supabase } from '../../core/config.js';
+import { showSkeleton, hideSkeleton } from '../../assets/js-shared/ui-engine.js';
+
+const statsGrid = document.querySelector('.stats-grid');
+const originalGridHTML = statsGrid ? statsGrid.innerHTML : '';
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Replace the stat tiles with skeleton placeholders while counts load
+    if (statsGrid) { showSkeleton(statsGrid, 4, 'stat'); }
+
     // Wait for authGuard to provide the user
     if (window.currentUser) {
         fetchAdminStats(window.currentUser);
@@ -8,6 +15,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.addEventListener('auth-ready', (e) => fetchAdminStats(e.detail), { once: true });
     }
 });
+
+function restoreStatsGrid() {
+    if (!statsGrid) return;
+    if (originalGridHTML) statsGrid.innerHTML = originalGridHTML;
+    hideSkeleton(statsGrid);
+}
 
 async function fetchAdminStats(user) {
     try {
@@ -19,6 +32,9 @@ async function fetchAdminStats(user) {
             supabase.from('Teachers').select('*', { count: 'exact', head: true }).eq('school_id', schoolId).eq('employment_status', 'active')
         ]);
 
+        // Restore the static tile markup before writing the fetched values
+        restoreStatsGrid();
+
         updateStat('total-students-count', studentCount || 0);
         updateStat('total-teachers-count', teacherCount || 0);
 
@@ -26,6 +42,7 @@ async function fetchAdminStats(user) {
 
     } catch (err) {
         console.error('Stats error:', err);
+        restoreStatsGrid();
     }
 }
 

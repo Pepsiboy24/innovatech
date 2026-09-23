@@ -5,6 +5,7 @@
 
 import { supabase } from '../../../core/config.js';
 import { waitForUser } from '/core/perf.js';
+import { showSkeleton, hideSkeleton } from '../../../assets/js-shared/ui-engine.js';
 
 // ── State ────────────────────────────────────────────────────────────────────
 let config = null;
@@ -26,36 +27,43 @@ async function init() {
 
     classId = parseInt(raw, 10);
 
-    const user = await waitForUser();
-    schoolId = user?.user_metadata?.school_id;
+    const gridContainer = document.getElementById('gridContainer');
+    if (gridContainer) { showSkeleton(gridContainer, 6, 'table'); }
 
-    if (userError || !schoolId) {
-        alert('Authentication error. Please log in again.');
-        return;
+    try {
+        const user = await waitForUser();
+        schoolId = user?.user_metadata?.school_id;
+
+        if (userError || !schoolId) {
+            alert('Authentication error. Please log in again.');
+            return;
+        }
+
+        const [configRes, entriesRes, teachersRes, classRes] = await Promise.all([
+            supabase.from('schedule_configs').select('*').eq('class_id', classId).eq('school_id', schoolId).single(),
+            supabase.from('timetable_entries').select('*').eq('class_id', classId).eq('school_id', schoolId),
+            supabase.from('Teachers').select('teacher_id, first_name, last_name').eq('school_id', schoolId),
+            supabase.from('Classes').select('class_name, section').eq('class_id', classId).eq('school_id', schoolId).single(),
+        ]);
+
+        config = configRes.data;
+        entries = entriesRes.data || [];
+        teachers = teachersRes.data || [];
+        const classInfo = classRes.data;
+
+        if (classInfo) {
+            const label = [classInfo.class_name, classInfo.section].filter(Boolean).join(' — ');
+            document.getElementById('pageTitle').textContent = `Timetable: ${label}`;
+            document.getElementById('pageSubtitle').textContent = `Academic Year · ${label}`;
+        }
+
+        await populateDropdowns();
+        updateScheduleInfo();
+        renderWeeklyGrid();
+        setupSaveButton();
+    } finally {
+        if (gridContainer) { hideSkeleton(gridContainer); }
     }
-
-    const [configRes, entriesRes, teachersRes, classRes] = await Promise.all([
-        supabase.from('schedule_configs').select('*').eq('class_id', classId).eq('school_id', schoolId).single(),
-        supabase.from('timetable_entries').select('*').eq('class_id', classId).eq('school_id', schoolId),
-        supabase.from('Teachers').select('teacher_id, first_name, last_name').eq('school_id', schoolId),
-        supabase.from('Classes').select('class_name, section').eq('class_id', classId).eq('school_id', schoolId).single(),
-    ]);
-
-    config = configRes.data;
-    entries = entriesRes.data || [];
-    teachers = teachersRes.data || [];
-    const classInfo = classRes.data;
-
-    if (classInfo) {
-        const label = [classInfo.class_name, classInfo.section].filter(Boolean).join(' — ');
-        document.getElementById('pageTitle').textContent = `Timetable: ${label}`;
-        document.getElementById('pageSubtitle').textContent = `Academic Year · ${label}`;
-    }
-
-    await populateDropdowns();
-    updateScheduleInfo();
-    renderWeeklyGrid();
-    setupSaveButton();
 }
 
 // =============================================================================

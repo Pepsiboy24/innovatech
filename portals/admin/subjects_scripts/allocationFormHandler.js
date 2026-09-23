@@ -1,5 +1,7 @@
-document.addEventListener('DOMContentLoaded', function () {
 import { waitForUser } from '/core/perf.js';
+import { showSkeleton, hideSkeleton } from '../../../assets/js-shared/ui-engine.js';
+
+document.addEventListener('DOMContentLoaded', function () {
     const allocationForm = document.getElementById('allocationForm');
     const clearBtn = document.getElementById('clearAllocationBtn');
     const allocateBtn = document.getElementById('allocateBtn');
@@ -97,6 +99,7 @@ import { waitForUser } from '/core/perf.js';
 
     async function loadAllocations() {
         try {
+            showSkeleton(allocationsTableBody, 5, 'rows', 5);
             const result = await allocationManager.getAllocations();
             
             if (result.success) {
@@ -108,6 +111,8 @@ import { waitForUser } from '/core/perf.js';
         } catch (error) {
             console.error('Error loading allocations:', error);
             showToast('Failed to load allocations', 'error');
+        } finally {
+            hideSkeleton(allocationsTableBody);
         }
     }
 

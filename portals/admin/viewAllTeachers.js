@@ -1,5 +1,6 @@
 import { supabaseClient } from './supabase_client.js';
 import { waitForUser, renderToFragment, debounce } from '/core/perf.js';
+import { showSkeleton, hideSkeleton } from '../../assets/js-shared/ui-engine.js';
 
 // ─── Module state ───────────────────────────────────────────────
 let _offboardTeacherId   = null;
@@ -402,6 +403,9 @@ function filterTeachersByGrade(teachers, gradeFilter, classMap) {
 // ═══════════════════════════════════════════════════════════════
 
 document.addEventListener('DOMContentLoaded', async () => {
+    const tableBody = document.querySelector('.students-table tbody');
+
+    if (tableBody) { showSkeleton(tableBody, 6, 'rows', 6); }
     let allTeachers = await fetchTeachers();
     let classMap    = await fetchTeacherClasses();
     _allTeachersCache = allTeachers; // used by wizard successor dropdown
@@ -417,6 +421,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     applyFilters();
+    if (tableBody) { hideSkeleton(tableBody); }
 
     document.addEventListener('click', function (event) {
         const menuToggle = event.target.closest('.student-menu-toggle');
@@ -480,10 +485,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Global refresh
     window.refreshTeacherList = async () => {
-        allTeachers       = await fetchTeachers();
-        classMap          = await fetchTeacherClasses();
-        _allTeachersCache = allTeachers;
-        applyFilters();
+        const refreshBody = document.querySelector('.students-table tbody');
+        if (refreshBody) { showSkeleton(refreshBody, 6, 'rows', 6); }
+        try {
+            allTeachers       = await fetchTeachers();
+            classMap          = await fetchTeacherClasses();
+            _allTeachersCache = allTeachers;
+            applyFilters();
+        } finally {
+            if (refreshBody) { hideSkeleton(refreshBody); }
+        }
     };
 });
 

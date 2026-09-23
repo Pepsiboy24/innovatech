@@ -200,6 +200,7 @@
     <script type="module">
         import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
         import { waitForUser } from '/core/perf.js';
+        import { showSkeleton, hideSkeleton } from '../../assets/js-shared/ui-engine.js';
 
         // 1. CONFIGURATION
         const SUPABASE_URL = "https://dzotwozhcxzkxtunmqth.supabase.co";
@@ -219,6 +220,8 @@
 
         // 3. FETCH DATA
         async function loadAllTimetableData() {
+            const grid = document.getElementById('timetablesGrid');
+            if (grid) { showSkeleton(grid, 4, 'card'); }
             try {
                 // Get authenticated user and school_id
                 const user = await waitForUser();
@@ -260,6 +263,8 @@
                 console.error('Error loading data:', error);
                 document.getElementById('timetablesGrid').innerHTML =
                     `<div style="color:red;text-align:center;">Error loading timetables: ${error.message}</div>`;
+            } finally {
+                if (grid) { hideSkeleton(grid); }
             }
         }
 

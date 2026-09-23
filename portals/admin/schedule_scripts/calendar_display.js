@@ -1,5 +1,6 @@
 import { supabase } from "../../../core/config.js";
 import { waitForUser, debounce } from '/core/perf.js';
+import { showSkeleton, hideSkeleton } from '../../../assets/js-shared/ui-engine.js';
 
 // --- State Management ---
 let allEvents = [];          
@@ -16,6 +17,7 @@ const calendarSelector = document.getElementById('calendarSelector');
 // --- 1. Fetching Data ---
 async function fetchEvents() {
     try {
+        showSkeleton(tableBody, 6, 'rows', 5);
         const user = await waitForUser();
         if (!user?.user_metadata?.school_id) {
             tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:red;">Auth error — please log in again.</td></tr>';
@@ -36,6 +38,8 @@ async function fetchEvents() {
         renderCurrentSession();
     } catch (error) {
         console.error("Error fetching events:", error);
+    } finally {
+        hideSkeleton(tableBody);
     }
 }
 
