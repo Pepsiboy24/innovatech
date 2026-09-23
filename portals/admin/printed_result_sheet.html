@@ -156,6 +156,38 @@
                 </div>
             </section>
 
+            <!-- Bulk class results (hidden when printing) -->
+            <section class="section no-print" id="bulkControls" style="margin-top:18px;">
+                <div class="section-header"><h2>Generate Class Result Sheets (Bulk)</h2></div>
+                <p class="page-subtitle" style="margin-top:4px;font-size:13px;color:#64748b;">Generates one multi-page PDF containing the result sheet for every student in the selected class and term.</p>
+                <div class="controls-row" style="margin-top:10px;">
+                    <div class="form-group">
+                        <label for="bulkClassSelect">Class *</label>
+                        <select id="bulkClassSelect"><option value="">Select a class…</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="bulkTermSelect">Term *</label>
+                        <select id="bulkTermSelect">
+                            <option>First Term</option>
+                            <option>Second Term</option>
+                            <option>Third Term</option>
+                        </select>
+                    </div>
+                    <div class="form-group actions">
+                        <button id="generateClassBtn" class="btn btn-primary"><i class="fa-solid fa-layer-group"></i> Generate Class PDF</button>
+                    </div>
+                </div>
+                <div id="bulkProgressWrap" hidden style="margin-top:14px;max-width:480px;">
+                    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;color:#475569;">
+                        <span id="bulkProgressText">Generating…</span>
+                        <span id="bulkProgressPct">0%</span>
+                    </div>
+                    <div style="height:10px;background:#e2e8f0;border-radius:999px;overflow:hidden;">
+                        <div id="bulkProgressBar" style="height:100%;width:0%;background:#2563eb;border-radius:999px;transition:width .2s ease;"></div>
+                    </div>
+                </div>
+            </section>
+
             <!-- Rendered result sheet (print target) -->
             <div id="resultSheetPrintRoot"></div>
         </main>

@@ -9,6 +9,7 @@ let currentSchoolId = null;
 let schoolInfo = null;
 let templates = [];
 let students = [];
+let classes = [];
 let classSeq = []; // [{studentId, averagePercentage, rank}]
 let lastRC = null;
 
@@ -65,7 +66,7 @@ async function loadTemplates() {
 async function loadStudents() {
   const { data, error } = await supabase
     .from('Students')
-    .select('student_id, full_name, admission_date, class_id, admission_number')
+    .select('student_id, full_name, admission_date, class_id')
     .eq('school_id', currentSchoolId)
     .order('full_name', { ascending: true });
   if (error) throw error;
@@ -85,14 +86,14 @@ function getSelectedTemplate() {
   return templates.find(t => t.id === id) || templates.find(t => t.is_default) || null;
 }
 
-// Build class ranking for the student's class to compute position
-async function computeClassPosition(studentId, classId, term) {
-  if (!classId) return null;
+// Build a class-wide ranking map once, reused for single-student and bulk flows.
+async function buildClassRankMap(classId, term) {
+  if (!classId) return {};
   const { data, error } = await supabase
     .from('Students')
     .select('student_id')
     .eq('class_id', classId);
-  if (error || !data || data.length === 0) return null;
+  if (error || !data || data.length === 0) return {};
   const rows = await Promise.all(data.map(async s => {
     try {
       const p = await re.calculateStudentPerformance(s.student_id, term);
@@ -101,8 +102,57 @@ async function computeClassPosition(studentId, classId, term) {
   }));
   rows.sort((a, b) => b.avg - a.avg);
   classSeq = rows;
-  const idx = rows.findIndex(r => String(r.studentId) === String(studentId));
-  return { position: idx + 1, totalStudents: rows.length };
+  const map = {};
+  rows.forEach((r, idx) => { map[String(r.studentId)] = { position: idx + 1, totalStudents: rows.length }; });
+  return map;
+}
+
+async function computeClassPosition(studentId, classId, term) {
+  if (!classId) return null;
+  const map = await buildClassRankMap(classId, term);
+  return map[String(studentId)] || null;
+}
+
+// Build class-wide subject-position maps once for a whole class:
+// returns { [studentId]: { [subject_id]: { position, total } } }
+async function computeSubjectPositionsMap(classId, term) {
+  const map = {};
+  try {
+    const { data: classStudents } = await supabase
+      .from('Students')
+      .select('student_id')
+      .eq('class_id', classId);
+    if (classStudents && classStudents.length > 1) {
+      const gradesRows = await supabase
+        .from('Grades')
+        .select('student_id, subject_id, score, max_score')
+        .eq('term', term)
+        .eq('school_id', currentSchoolId);
+      const subjAvg = {};
+      classStudents.forEach(cs => {
+        const rows2 = (gradesRows.data || []).filter(g => String(g.student_id) === String(cs.student_id));
+        const bySubj = {};
+        rows2.forEach(g => {
+          const pct = (parseFloat(g.score) / parseFloat(g.max_score)) * 100;
+          if (!bySubj[g.subject_id]) bySubj[g.subject_id] = [];
+          bySubj[g.subject_id].push(pct);
+        });
+        Object.entries(bySubj).forEach(([subj, arr]) => {
+          const avg = arr.reduce((a, b) => a + b, 0) / arr.length;
+          if (!subjAvg[subj]) subjAvg[subj] = [];
+          subjAvg[subj].push({ studentId: cs.student_id, avg });
+        });
+      });
+      Object.entries(subjAvg).forEach(([subj, list]) => {
+        list.sort((a, b) => b.avg - a.avg);
+        list.forEach((x, idx) => {
+          if (!map[String(x.studentId)]) map[String(x.studentId)] = {};
+          map[String(x.studentId)][subj] = { position: idx + 1, total: list.length };
+        });
+      });
+    }
+  } catch (e) { /* best-effort */ }
+  return map;
 }
 
 function renderResultSheet(rc, srow, tpl) {
@@ -241,37 +291,8 @@ async function generate() {
     if (pos) rc.positionInfo = pos;
     // Compute subject-level positions (best-effort) — rank each subject within class
     try {
-      const subjPos = {};
-      const { data: classStudents } = await supabase
-        .from('Students').select('student_id').eq('class_id', srow?.class_id || rc?.studentInfo?.class);
-      if (classStudents && classStudents.length > 1) {
-        const gradesRows = await supabase
-          .from('Grades')
-          .select('student_id, subject_id, score, max_score')
-          .eq('term', term)
-          .eq('school_id', currentSchoolId);
-        const subjAvg = {};
-        classStudents.forEach(cs => {
-          const rows2 = (gradesRows.data || []).filter(g => String(g.student_id) === String(cs.student_id));
-          const bySubj = {};
-          rows2.forEach(g => {
-            const pct = (parseFloat(g.score) / parseFloat(g.max_score)) * 100;
-            if (!bySubj[g.subject_id]) bySubj[g.subject_id] = [];
-            bySubj[g.subject_id].push(pct);
-          });
-          Object.entries(bySubj).forEach(([subj, arr]) => {
-            const avg = arr.reduce((a,b)=>a+b,0) / arr.length;
-            if (!subjAvg[subj]) subjAvg[subj] = [];
-            subjAvg[subj].push({ studentId: cs.student_id, avg });
-          });
-        });
-        Object.entries(subjAvg).forEach(([subj, list]) => {
-          list.sort((a,b) => b.avg - a.avg);
-          const myIdx = list.findIndex(x => String(x.studentId) === String(sid));
-          if (myIdx !== -1) subjPos[subj] = { position: myIdx + 1, total: list.length };
-        });
-        rc.subjectPositions = subjPos;
-      }
+      const sp = (await computeSubjectPositionsMap(srow?.class_id || rc?.studentInfo?.class, term))[String(sid)];
+      if (sp) rc.subjectPositions = sp;
     } catch (e) { /* best-effort */ }
     renderResultSheet(rc, srow, tpl);
     $('printBtn').disabled = false;
@@ -286,21 +307,15 @@ async function generate() {
 
 function printSheet() { window.print(); }
 
-function exportPDF() {
-  if (!lastRC) { alert('Generate first'); return; }
-  const tpl = getSelectedTemplate();
-  const sid = $('studentSelect').value;
-  const srow = students.find(x => String(x.student_id) === String(sid));
-  const name = srow?.full_name || lastRC.studentInfo?.name || 'student';
-  const term = $('termSelect').value;
+// Draws ONE student's result sheet onto an existing jsPDF doc.
+// Shared by the single-student export and the bulk class generator,
+// so the sheet-rendering logic is never duplicated.
+function drawStudentPDF(doc, { rc, srow, tpl, term }) {
   const cfg = tpl?.layout_config || {};
   const accent = cfg.accentColor || '#0066cc';
-  const breakdown = lastRC.academicPerformance?.assessmentBreakdown || {};
-  const sa = lastRC.academicPerformance?.subjectAverages || {};
+  const breakdown = rc.academicPerformance?.assessmentBreakdown || {};
+  const sa = rc.academicPerformance?.subjectAverages || {};
 
-  if (!window.jspdf || !window.jspdf.jsPDF) { alert('jsPDF library not loaded'); return; }
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit: 'pt', format: 'a4' });
   const pageW = doc.internal.pageSize.getWidth();
   const margin = 48;
   let y = margin;
@@ -318,10 +333,10 @@ function exportPDF() {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
   const stLines = [
-    `Name: ${lastRC.studentInfo?.name || srow?.full_name || 'N/A'}`,
-    `Admission No.: ${lastRC.studentInfo?.admissionNumber || srow?.admission_number || srow?.student_id || 'N/A'}`,
-    `Class: ${lastRC.studentInfo?.class || srow?.class_id || 'N/A'}`,
-    `Overall Grade: ${lastRC.academicPerformance?.overallGrade || 'N/A'}  |  Remark: ${lastRC.academicPerformance?.overallGPA || '-'}`
+    `Name: ${rc.studentInfo?.name || srow?.full_name || 'N/A'}`,
+    `Admission No.: ${rc.studentInfo?.admissionNumber || srow?.admission_number || srow?.student_id || 'N/A'}`,
+    `Class: ${rc.studentInfo?.class || srow?.class_id || 'N/A'}`,
+    `Overall Grade: ${rc.academicPerformance?.overallGrade || 'N/A'}  |  Remark: ${rc.academicPerformance?.overallGPA || '-'}`
   ];
   stLines.forEach(l => { doc.text(l, margin, y); y += 13; });
   y += 6;
@@ -356,7 +371,7 @@ function exportPDF() {
       if (c==='exam') return b.Exam?.score ?? '-';
       if (c==='total') return b.Total?.score != null ? b.Total.score : (d?.averagePercentage ?? '')+'%';
       if (c==='grade') return d?.letterGrade ?? 'N/A';
-      if (c==='position') { const sp = lastRC.subjectPositions?.[sid]; return sp ? sp.position : '-'; }
+      if (c==='position') { const sp = rc.subjectPositions?.[sid]; return sp ? sp.position : '-'; }
       if (c==='remark') return String(re.getGradeRemark(d?.averagePercentage));
       return '';
     };
@@ -385,8 +400,120 @@ function exportPDF() {
   if (rem.showPrincipal) { if (y>740){doc.addPage(); y=margin;} doc.text(`Principal's Remark: ${rem.principalDefault || ''}`, margin, y); y += 13; }
 
   if (cfg.footerNote) { if (y>740){doc.addPage(); y=margin;} doc.setFontSize(9); const fl = doc.splitTextToSize(cfg.footerNote, pageW-margin*2); doc.text(fl, margin, y); }
+}
 
+function exportPDF() {
+  if (!lastRC) { alert('Generate first'); return; }
+  const tpl = getSelectedTemplate();
+  const sid = $('studentSelect').value;
+  const srow = students.find(x => String(x.student_id) === String(sid));
+  const name = srow?.full_name || lastRC.studentInfo?.name || 'student';
+  const term = $('termSelect').value;
+
+  if (!window.jspdf || !window.jspdf.jsPDF) { alert('jsPDF library not loaded'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+  drawStudentPDF(doc, { rc: lastRC, srow, tpl, term });
   doc.save(`${name.replace(/[^a-zA-Z0-9]/g,'-')}-${term.replace(/\s+/g,'-')}-result-sheet.pdf`);
+}
+
+// ── Bulk: generate a single multi-page PDF for every student in a class ──────
+async function loadBulkClasses() {
+  const { data, error } = await supabase
+    .from('Classes')
+    .select('class_id, class_name, section')
+    .eq('school_id', currentSchoolId)
+    .order('class_name', { ascending: true });
+  if (error) throw error;
+  classes = data || [];
+  const sel = $('bulkClassSelect');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Select a class…</option>';
+  classes.forEach(c => {
+    const o = document.createElement('option');
+    o.value = c.class_id;
+    o.textContent = [c.class_name, c.section].filter(Boolean).join(' — ');
+    sel.appendChild(o);
+  });
+}
+
+async function generateClassResults() {
+  const tpl = getSelectedTemplate();
+  const classId = $('bulkClassSelect').value;
+  const term = $('bulkTermSelect').value;
+  if (!classId) { alert('Select a class'); return; }
+  if (!tpl) { alert('Select a result sheet template'); return; }
+  if (!term) { alert('Select a term'); return; }
+  if (!window.jspdf || !window.jspdf.jsPDF) { alert('jsPDF library not loaded'); return; }
+
+  const btn = $('generateClassBtn');
+  const wrap = $('bulkProgressWrap');
+  const bar = $('bulkProgressBar');
+  const text = $('bulkProgressText');
+  const pct = $('bulkProgressPct');
+  const setProgress = (done, total) => {
+    const p = Math.min(100, Math.max(0, Math.round((done / Math.max(1, total)) * 100)));
+    if (bar) bar.style.width = `${p}%`;
+    if (pct) pct.textContent = `${p}%`;
+  };
+
+  btn.disabled = true;
+  wrap.hidden = false;
+  setProgress(0, 1);
+  text.textContent = 'Fetching class students…';
+  try {
+    const { data: classStudents, error } = await supabase
+      .from('Students')
+      .select('student_id, full_name, admission_date, class_id')
+      .eq('school_id', currentSchoolId)
+      .eq('class_id', classId)
+      .order('full_name', { ascending: true });
+    if (error) throw error;
+    if (!classStudents || classStudents.length === 0) {
+      alert('No students found in this class.');
+      text.textContent = 'No students found in this class.';
+      return;
+    }
+
+    const total = classStudents.length;
+    setProgress(0, total);
+    text.textContent = `Generating result sheets for ${total} students…`;
+
+    // Class-wide rankings computed ONCE, reused for every student in this class.
+    const rankMap = await buildClassRankMap(classId, term);
+    const subjMap = await computeSubjectPositionsMap(classId, term);
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    // The initial blank page carries the first student's sheet; later students get doc.addPage() below.
+
+    for (let i = 0; i < total; i++) {
+      const s = classStudents[i];
+      text.textContent = `Generating ${i + 1} / ${total} — ${s.full_name || 'student'}`;
+      setProgress(i + 1, total);
+
+      const rc = await re.generateReportCard(s.student_id, term);
+      const rankInfo = rankMap[String(s.student_id)];
+      if (rankInfo) rc.positionInfo = rankInfo;
+      const sp = subjMap[String(s.student_id)];
+      if (sp) rc.subjectPositions = sp;
+
+      if (i > 0) doc.addPage();
+      drawStudentPDF(doc, { rc, srow: s, tpl, term });
+    }
+
+    const cls = classes.find(c => String(c.class_id) === String(classId));
+    const clsLabel = [cls?.class_name, cls?.section].filter(Boolean).join(' ').replace(/[^a-zA-Z0-9]+/g, '-') || 'Class';
+    doc.save(`${clsLabel}-${term.replace(/\s+/g, '-')}-Result-Sheets.pdf`);
+
+    text.textContent = `Done — ${total} result sheets exported.`;
+    setProgress(total, total);
+  } catch (e) {
+    console.error(e);
+    alert('Failed to generate class results: ' + e.message);
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 async function init() {
@@ -394,10 +521,11 @@ async function init() {
   if (r) { showSkeleton(r, 3, 'card'); }
   try {
     await loadSchoolId();
-    await Promise.all([loadTemplates(), loadStudents()]);
+    await Promise.all([loadTemplates(), loadStudents(), loadBulkClasses()]);
     $('generateBtn')?.addEventListener('click', generate);
     $('printBtn')?.addEventListener('click', printSheet);
     $('pdfBtn')?.addEventListener('click', exportPDF);
+    $('generateClassBtn')?.addEventListener('click', generateClassResults);
   } catch (e) {
     console.error(e);
     if (r) r.innerHTML = `<div style="color:#b91c1c;padding:16px;">Failed to initialize: ${e.message}</div>`;

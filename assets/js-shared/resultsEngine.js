@@ -263,7 +263,7 @@ class ResultsEngine {
 
             if (error) throw error;
 
-            const { data: performance } = await this.calculateStudentPerformance(studentId, term);
+            const performance = await this.calculateStudentPerformance(studentId, term);
             if (!performance) throw new Error('Unable to calculate performance data');
 
             const { data: classData } = await supabase
