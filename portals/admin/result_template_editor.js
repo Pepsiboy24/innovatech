@@ -6,11 +6,14 @@ import { showSkeleton, hideSkeleton } from '../../assets/js-shared/ui-engine.js'
 let currentSchoolId = null;
 let templates = [];
 let editingId = null; // null = create
+let layoutBase = null; // source config (breakdown/gradingScale + any fields without a form control survive untouched)
 
 const qs = (id) => document.getElementById(id);
 const templateList = () => qs('templateList');
 const templateEditorSection = () => qs('templateEditorSection');
 const previewSection = () => qs('previewSection');
+
+const clone = (o) => JSON.parse(JSON.stringify(o));
 
 const alertContainer = () => qs('alertContainer');
 
@@ -147,12 +150,120 @@ const DEFAULT_LAYOUT = {
   footerNote: "This result sheet is computer-generated and does not require a signature."
 };
 
+const COLUMN_IDS = ['ca1', 'ca2', 'exam', 'total', 'grade', 'position', 'remark'];
+const COLUMN_LABELS = { ca1: 'CA1', ca2: 'CA2', exam: 'Exam', total: 'Total', grade: 'Grade', position: 'Position', remark: 'Remark' };
+const AFFECTIVE_TRAITS = ['attendance', 'punctuality', 'attitudeToWork', 'conduct', 'neatness', 'speech', 'handwriting'];
+const PSYCHOMOTOR_TRAITS = ['handlingTools', 'games', 'creativeArts', 'musicalSkills'];
+// Renderer keys are showCA1/showCA2/showExam/… (uppercase CA prefixes).
+const SHOW_KEY = (id) => 'show' + (id === 'ca1' || id === 'ca2' ? id.toUpperCase() : id[0].toUpperCase() + id.slice(1));
+
+function populateColumns(cfg) {
+  const order = cfg?.columns?.order || [];
+  const el = qs('columnsEditor');
+  if (!el) return;
+  el.innerHTML = '';
+  const ids = COLUMN_IDS.slice().sort((a, b) => {
+    const ia = order.indexOf(a); const ib = order.indexOf(b);
+    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+  });
+  ids.forEach(id => {
+    const showKey = SHOW_KEY(id);
+    const shown = cfg.columns ? cfg.columns[showKey] !== false : true;
+    const row = document.createElement('div');
+    row.className = 'col-row';
+    row.dataset.col = id;
+    row.innerHTML = `
+      <label class="checkbox-label">
+        <input type="checkbox" class="col-check" id="col-show-${id}" ${shown ? 'checked' : ''}>
+        <span class="checkmark"></span>
+        <span class="checkbox-text">${COLUMN_LABELS[id]}</span>
+      </label>
+      <div class="col-arrows">
+        <button type="button" class="col-btn" data-dir="up" aria-label="Move up"><i class="fa-solid fa-arrow-up"></i></button>
+        <button type="button" class="col-btn" data-dir="down" aria-label="Move down"><i class="fa-solid fa-arrow-down"></i></button>
+      </div>`;
+    el.appendChild(row);
+  });
+}
+
+function populateFields(cfg) {
+  layoutBase = clone(cfg || {});
+  const h = cfg.header || {};
+  qs('hdrLogo').checked = h.showLogo !== false;
+  qs('hdrSchoolName').checked = h.showSchoolName !== false;
+  qs('hdrAddress').checked = h.showAddress !== false;
+  qs('hdrPhone').checked = h.showPhone !== false;
+  qs('hdrTerm').checked = h.showTerm !== false;
+  qs('hdrTitle').value = h.title || '';
+
+  populateColumns(cfg);
+
+  const aff = cfg.affective || {};
+  qs('affShow').checked = aff.show !== false;
+  AFFECTIVE_TRAITS.forEach(k => { const el = qs('aff-' + k); if (el) el.value = aff[k] || ''; });
+
+  const psy = cfg.psychomotor || {};
+  qs('psyShow').checked = psy.show !== false;
+  PSYCHOMOTOR_TRAITS.forEach(k => { const el = qs('psy-' + k); if (el) el.value = psy[k] || ''; });
+
+  const rem = cfg.remarks || {};
+  qs('remClassTeacher').checked = rem.showClassTeacher !== false;
+  qs('remClassTeacherDefault').value = rem.classTeacherDefault || '';
+  qs('remPrincipal').checked = rem.showPrincipal !== false;
+  qs('remPrincipalDefault').value = rem.principalDefault || '';
+
+  qs('accentColor').value = cfg.accentColor || '#0066cc';
+  qs('footerNote').value = cfg.footerNote || '';
+}
+
+// Reassemble the same layout_config JSON shape the renderer expects.
+// Any fields without a form control (breakdown, gradingScale, …) survive via layoutBase.
+function configFromFields() {
+  const ck = (id) => qs(id).checked;
+  const val = (id) => (qs(id).value || '').trim();
+
+  const columns = { order: ['subject'] };
+  qs('columnsEditor').querySelectorAll('.col-row').forEach(row => {
+    const id = row.dataset.col;
+    columns.order.push(id);
+    columns[SHOW_KEY(id)] = ck('col-show-' + id);
+  });
+
+  const affective = { show: ck('affShow') };
+  AFFECTIVE_TRAITS.forEach(k => { affective[k] = val('aff-' + k); });
+  const psychomotor = { show: ck('psyShow') };
+  PSYCHOMOTOR_TRAITS.forEach(k => { psychomotor[k] = val('psy-' + k); });
+
+  return {
+    ...layoutBase,
+    header: {
+      showLogo: ck('hdrLogo'),
+      showSchoolName: ck('hdrSchoolName'),
+      showAddress: ck('hdrAddress'),
+      showPhone: ck('hdrPhone'),
+      showTerm: ck('hdrTerm'),
+      title: val('hdrTitle') || 'Student Result Sheet'
+    },
+    columns,
+    affective,
+    psychomotor,
+    remarks: {
+      showClassTeacher: ck('remClassTeacher'),
+      classTeacherDefault: val('remClassTeacherDefault'),
+      showPrincipal: ck('remPrincipal'),
+      principalDefault: val('remPrincipalDefault')
+    },
+    accentColor: qs('accentColor').value || '#0066cc',
+    footerNote: val('footerNote')
+  };
+}
+
 function startCreate() {
   editingId = null;
   qs('editorTitle').textContent = 'New Template';
   qs('templateName').value = '';
   qs('templateDescription').value = '';
-  qs('layoutConfig').value = JSON.stringify(DEFAULT_LAYOUT, null, 2);
+  populateFields(clone(DEFAULT_LAYOUT));
   qs('isDefaultTemplate').checked = false;
   qs('isActiveTemplate').checked = true;
   toggleEditor(true);
@@ -166,7 +277,7 @@ function startEdit(id) {
   qs('editorTitle').textContent = `Edit Template — ${t.template_name}`;
   qs('templateName').value = t.template_name || '';
   qs('templateDescription').value = t.description || '';
-  qs('layoutConfig').value = JSON.stringify(t.layout_config || DEFAULT_LAYOUT, null, 2);
+  populateFields(t.layout_config || DEFAULT_LAYOUT);
   qs('isDefaultTemplate').checked = !!t.is_default;
   qs('isActiveTemplate').checked = t.is_active !== false;
   toggleEditor(true);
@@ -174,9 +285,7 @@ function startEdit(id) {
 }
 
 function renderPreview() {
-  const cfgStr = qs('layoutConfig').value;
-  let cfg = DEFAULT_LAYOUT;
-  try { cfg = JSON.parse(cfgStr); } catch (e) {}
+  const cfg = configFromFields();
   const pv = qs('templatePreview');
   const cols = cfg.columns || {};
   const colList = (cols.order || []).map(c => {
@@ -209,8 +318,7 @@ async function saveTemplate() {
   if (!currentSchoolId) await loadSchoolId();
   const name = qs('templateName').value.trim();
   if (!name) { showAlert('error', 'Template Name is required'); return; }
-  let layout;
-  try { layout = JSON.parse(qs('layoutConfig').value); } catch (e) { showAlert('error', 'Layout Config must be valid JSON'); return; }
+  const layout = configFromFields();
   const payload = {
     school_id: currentSchoolId,
     template_name: name,
@@ -256,11 +364,30 @@ async function deleteTemplate(id) {
   await fetchTemplates();
 }
 
+function handleColumnsClick(e) {
+  const btn = e.target.closest('.col-btn');
+  if (!btn) return;
+  const el = qs('columnsEditor');
+  const row = btn.closest('.col-row');
+  if (!el || !row) return;
+  if (btn.dataset.dir === 'up') {
+    const prev = row.previousElementSibling;
+    if (prev) el.insertBefore(row, prev);
+  } else {
+    const next = row.nextElementSibling;
+    if (next) el.insertBefore(next, row);
+  }
+  renderPreview();
+}
+
 function init() {
   qs('newTemplateBtn')?.addEventListener('click', startCreate);
   qs('cancelEditBtn')?.addEventListener('click', () => toggleEditor(false));
   qs('saveTemplateBtn')?.addEventListener('click', saveTemplate);
-  qs('layoutConfig')?.addEventListener('input', renderPreview);
+  const editor = templateEditorSection();
+  editor?.addEventListener('input', renderPreview);
+  editor?.addEventListener('change', renderPreview);
+  editor?.addEventListener('click', handleColumnsClick);
   loadSchoolId().then(fetchTemplates).catch(()=>{});
 }
 

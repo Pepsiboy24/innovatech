@@ -18,11 +18,6 @@
             text-align: center;
             padding: 40px 20px;
         }
-        .code-input {
-            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-            font-size: 12px;
-            line-height: 1.5;
-        }
         .hint {
             font-size: 12px;
             color: var(--text-gray);
@@ -61,6 +56,104 @@
         .btn-xs[disabled] {
             opacity: 0.45;
             cursor: not-allowed;
+        }
+        .layout-form {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .form-block {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 14px;
+            background: var(--white);
+        }
+        .form-block-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .form-block-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .form-block-title-row .form-block-title {
+            margin-bottom: 0;
+        }
+        .hint-inline {
+            font-weight: 400;
+            font-size: 12px;
+            color: var(--text-gray);
+        }
+        .checkbox-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 18px;
+        }
+        .form-row-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+        .trait-label {
+            font-size: 12px;
+            text-transform: capitalize;
+        }
+        .columns-editor {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .col-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+        }
+        .col-arrows {
+            display: flex;
+            gap: 6px;
+        }
+        .col-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--white);
+            color: var(--text-gray);
+            cursor: pointer;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .col-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .remarks-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+        @media (max-width: 720px) {
+            .form-row-grid {
+                grid-template-columns: 1fr;
+            }
+            .remarks-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -123,9 +216,132 @@
                     </div>
                 </div>
                 <div class="form-group" style="margin-top: 16px;">
-                    <label for="layoutConfig">Layout Config (JSON)</label>
-                    <textarea id="layoutConfig" rows="14" class="form-group textarea code-input"></textarea>
-                    <div class="hint">layout_config drives the printed sheet — header fields, columns (order, show/hide CA1/CA2/Exam/Total/Grade/Position/Remark), affective &amp; psychomotor domains, remarks, breakdown groupBy (assessment_type), gradingScale (WAEC A1-F9), accentColor, footerNote.</div>
+                    <label>Layout</label>
+                    <div class="layout-form">
+
+                        <!-- Header -->
+                        <div class="form-block">
+                            <div class="form-block-title">Header</div>
+                            <div class="form-group" style="margin-bottom: 10px;">
+                                <label for="hdrTitle">Sheet Title</label>
+                                <input type="text" id="hdrTitle" placeholder="e.g. Student Result Sheet">
+                            </div>
+                            <div class="checkbox-grid">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="hdrLogo">
+                                    <span class="checkmark"></span>
+                                    <span class="checkbox-text">Show logo</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="hdrSchoolName">
+                                    <span class="checkmark"></span>
+                                    <span class="checkbox-text">Show school name</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="hdrAddress">
+                                    <span class="checkmark"></span>
+                                    <span class="checkbox-text">Show address</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="hdrPhone">
+                                    <span class="checkmark"></span>
+                                    <span class="checkbox-text">Show phone</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="hdrTerm">
+                                    <span class="checkmark"></span>
+                                    <span class="checkbox-text">Show term</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Columns -->
+                        <div class="form-block">
+                            <div class="form-block-title">
+                                Subject Columns
+                                <span class="hint-inline">Use the arrows to change their order on the sheet</span>
+                            </div>
+                            <div id="columnsEditor" class="columns-editor"></div>
+                        </div>
+
+                        <!-- Affective -->
+                        <div class="form-block">
+                            <div class="form-block-title-row">
+                                <span class="form-block-title">Affective Domain</span>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="affShow">
+                                    <span class="checkmark"></span>
+                                    <span class="checkbox-text">Show on sheet</span>
+                                </label>
+                            </div>
+                            <div class="form-row-grid">
+                                <div class="form-group"><label class="trait-label" for="aff-attendance">Attendance</label><input type="text" id="aff-attendance" placeholder="e.g. Present"></div>
+                                <div class="form-group"><label class="trait-label" for="aff-punctuality">Punctuality</label><input type="text" id="aff-punctuality" placeholder="e.g. Punctual"></div>
+                                <div class="form-group"><label class="trait-label" for="aff-attitudeToWork">Attitude to Work</label><input type="text" id="aff-attitudeToWork" placeholder="e.g. Good"></div>
+                                <div class="form-group"><label class="trait-label" for="aff-conduct">Conduct</label><input type="text" id="aff-conduct" placeholder="e.g. Orderly"></div>
+                                <div class="form-group"><label class="trait-label" for="aff-neatness">Neatness</label><input type="text" id="aff-neatness" placeholder="e.g. Tidy"></div>
+                                <div class="form-group"><label class="trait-label" for="aff-speech">Speech</label><input type="text" id="aff-speech" placeholder="e.g. Fluent"></div>
+                                <div class="form-group"><label class="trait-label" for="aff-handwriting">Handwriting</label><input type="text" id="aff-handwriting" placeholder="e.g. Legible"></div>
+                            </div>
+                        </div>
+
+                        <!-- Psychomotor -->
+                        <div class="form-block">
+                            <div class="form-block-title-row">
+                                <span class="form-block-title">Psychomotor Domain</span>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="psyShow">
+                                    <span class="checkmark"></span>
+                                    <span class="checkbox-text">Show on sheet</span>
+                                </label>
+                            </div>
+                            <div class="form-row-grid">
+                                <div class="form-group"><label class="trait-label" for="psy-handlingTools">Handling Tools</label><input type="text" id="psy-handlingTools" placeholder="e.g. Good"></div>
+                                <div class="form-group"><label class="trait-label" for="psy-games">Games</label><input type="text" id="psy-games" placeholder="e.g. Fair"></div>
+                                <div class="form-group"><label class="trait-label" for="psy-creativeArts">Creative Arts</label><input type="text" id="psy-creativeArts" placeholder="e.g. Good"></div>
+                                <div class="form-group"><label class="trait-label" for="psy-musicalSkills">Musical Skills</label><input type="text" id="psy-musicalSkills" placeholder="e.g. Fair"></div>
+                            </div>
+                        </div>
+
+                        <!-- Remarks -->
+                        <div class="form-block">
+                            <div class="form-block-title">Remarks</div>
+                            <div class="remarks-grid">
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="remClassTeacher">
+                                        <span class="checkmark"></span>
+                                        <span class="checkbox-text">Class Teacher's remark</span>
+                                    </label>
+                                    <textarea id="remClassTeacherDefault" rows="2" class="textarea" placeholder="Default wording shown on the sheet"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="remPrincipal">
+                                        <span class="checkmark"></span>
+                                        <span class="checkbox-text">Principal's remark</span>
+                                    </label>
+                                    <textarea id="remPrincipalDefault" rows="2" class="textarea" placeholder="Default wording shown on the sheet"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Styling & notes -->
+                        <div class="form-block">
+                            <div class="form-block-title">Styling &amp; Notes</div>
+                            <div class="form-row-grid">
+                                <div class="form-group" style="max-width: 220px;">
+                                    <label for="accentColor">Accent Color</label>
+                                    <input type="color" id="accentColor" value="#0066cc">
+                                </div>
+                                <div class="form-group" style="grid-column: span 2;">
+                                    <label for="footerNote">Footer Note</label>
+                                    <input type="text" id="footerNote" placeholder="e.g. Computer-generated, no signature required">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
                 <div class="form-group" style="margin-top: 16px; flex-direction: row; gap: 24px; flex-wrap: wrap;">
                     <label class="checkbox-label">
