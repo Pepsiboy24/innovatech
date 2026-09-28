@@ -10,6 +10,7 @@
  */
 
 import { supabase } from '../../core/config.js';
+import { showSkeleton, hideSkeleton } from '../../assets/js-shared/ui-engine.js';
 // Dynamic school branding
 let schoolBranding = { school_name: 'EduHub', logo_url: null };
 let studentProfile = { full_name: null };
@@ -135,15 +136,20 @@ function getSidebarHTML() {
 }
 
 async function injectSidebar() {
-    // Load school branding first
-    await loadSchoolBranding();
-
     const anchor = document.getElementById('sidebarAnchor');
     if (!anchor) {
         console.warn('[Sidebar] No #sidebarAnchor found in HTML.');
         return;
     }
 
+    // Show a skeleton nav immediately — the sidebar is otherwise
+    // completely empty until branding loads and the HTML is built
+    showSkeleton(anchor, 8, 'list');
+
+    // Load school branding first
+    await loadSchoolBranding();
+
+    hideSkeleton(anchor);
     anchor.innerHTML = getSidebarHTML();
 
     // ── ACTIVE LINK DETECTION ───────────────────────────────────────────────
