@@ -3,7 +3,6 @@
 
 import { supabase } from '../../core/config.js';
 import { waitForUser, cached } from '../../core/perf.js';
-import { showSkeleton, hideSkeleton } from '../../assets/js-shared/ui-engine.js';
 
 (async function () {
     function teacherPrefix() {
@@ -86,13 +85,8 @@ import { showSkeleton, hideSkeleton } from '../../assets/js-shared/ui-engine.js'
         const t  = teacherPrefix();
         const sh = sharedPrefix();
 
-        // Show a skeleton nav immediately — the sidebar is otherwise
-        // completely empty until branding + links are built below
-        showSkeleton(sidebarEl, 8, 'list');
-
         // PARALLEL: branding fetch runs while DOM is being parsed
         const branding = await getSchoolBranding();
-        hideSkeleton(sidebarEl);
         sidebarEl.innerHTML = buildSidebar(t, sh, branding);
 
         // Active link highlighting
