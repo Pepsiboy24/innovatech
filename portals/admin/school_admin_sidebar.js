@@ -1,7 +1,6 @@
 // school_admin_sidebar.js
 import { supabase } from '../../core/config.js';
 import { hasFeatureAccess, getCurrentUserTier } from '../../core/tierAccess.js';
-import { showSkeleton, hideSkeleton } from '../../assets/js-shared/ui-engine.js';
 
 (async function () {
     // Path detection logic - kept exactly as original
@@ -142,15 +141,10 @@ import { showSkeleton, hideSkeleton } from '../../assets/js-shared/ui-engine.js'
         const a = adminPrefix();
         const sh = sharedPrefix();
 
-        // Show a skeleton nav immediately — the sidebar is otherwise
-        // completely empty until branding + links are built below
-        showSkeleton(sidebarElement, 8, 'list');
-
         // 1. Fetch school branding data (Optimized)
         const branding = await getSchoolBranding();
         
         // 2. Build sidebar
-        hideSkeleton(sidebarElement);
         sidebarElement.innerHTML = renderSidebar(branding, a, sh);
 
         // 3. Tier-based filtering (Restored Logic)
