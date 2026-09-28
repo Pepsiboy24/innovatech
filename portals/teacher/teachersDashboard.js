@@ -3,6 +3,17 @@
 
 import { supabase } from '../../core/config.js';
 import { checkTeacherLogin, startLiveClock } from '../../portals/teacher/teacherUtils.js';
+import { showSkeleton, hideSkeleton } from '../../assets/js-shared/ui-engine.js';
+
+const statsGrid = document.querySelector('.stats-grid');
+const originalGridHTML = statsGrid ? statsGrid.innerHTML : '';
+const studentsTbody = document.querySelector('.students-table tbody, .tp-table tbody');
+
+function restoreStatsGrid() {
+    if (!statsGrid) return;
+    if (originalGridHTML) statsGrid.innerHTML = originalGridHTML;
+    hideSkeleton(statsGrid);
+}
 
 // Fetch teacher's assigned classes
 async function fetchTeacherClasses(teacherId) {
@@ -126,6 +137,7 @@ function getInitials(fullName) {
 function showNoClassesState() {
     const tbody = document.querySelector('.students-table tbody, .tp-table tbody');
     if (tbody) {
+        hideSkeleton(tbody);
         // FIX 5: Use an inner div instead of display:flex on <td> to avoid broken table layout
         tbody.innerHTML = `
             <tr>
@@ -156,6 +168,7 @@ function renderStudents(students, className, avgPerformance) {
         return;
     }
 
+    hideSkeleton(tbody);
     tbody.innerHTML = '';
 
     if (students.length === 0) {
@@ -212,6 +225,10 @@ async function loadTeacherDashboard() {
     // Start the live clock
     startLiveClock('teacherGreetingDate');
 
+    // Show skeleton placeholders while auth resolves and data loads
+    if (statsGrid) showSkeleton(statsGrid, 4, 'stat');
+    if (studentsTbody) showSkeleton(studentsTbody, 5, 'rows', 5);
+
     // Auth check
     const authResult = await checkTeacherLogin();
     if (!authResult) return;
@@ -231,6 +248,10 @@ async function loadTeacherDashboard() {
 
     // Fetch teacher's assigned classes
     const teacherClasses = await fetchTeacherClasses(teacherId);
+
+    // Restore the real stat card markup (with its element IDs) now that
+    // we have data to show — must happen before any getElementById below
+    restoreStatsGrid();
 
     // Update Active Courses count
     const activeCoursesEl = document.getElementById('active_courses');

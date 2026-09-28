@@ -3,6 +3,8 @@
 //   portals/parent/anyPage.html       → prefix = "./"
 //   portals/shared/anyPage.html       → prefix = "../parent/"
 
+import { showSkeleton, hideSkeleton } from '../../assets/js-shared/ui-engine.js';
+
 (function () {
     // Compute the relative path from the current page to the parentsPortal folder
     function parentPrefix() {
@@ -86,8 +88,14 @@
         const sidebarElement = document.querySelector('.sidebar');
         if (!sidebarElement) return;
 
+        // Show a skeleton nav immediately — the sidebar is otherwise
+        // completely empty until profile + links are built below
+        showSkeleton(sidebarElement, 8, 'list');
+
         // Build sidebar with dynamic content
-        sidebarElement.innerHTML = await buildSidebar();
+        const sidebarHTML = await buildSidebar();
+        hideSkeleton(sidebarElement);
+        sidebarElement.innerHTML = sidebarHTML;
 
         // Inject the child switcher logic
         await initGlobalChildSwitcher(sidebarElement);
