@@ -46,7 +46,7 @@ async function checkTeacherLogin() {
         if (error || !user) {
             console.error('No user logged in:', error);
             alert('Please log in as a teacher to view this page.');
-            window.location.href = '../../index.html';
+            window.location.href = '/login';
             return null;
         }
 
@@ -61,7 +61,7 @@ async function checkTeacherLogin() {
             console.error('User is not authorized as a teacher:', teacherError);
             alert('You are not authorized as a teacher.');
             await supabase.auth.signOut();
-            window.location.href = '../../index.html';
+            window.location.href = '/login';
             return null;
         }
 
@@ -235,7 +235,7 @@ function setupEventListeners() {
             } else {
                 populateSubjectDropdown([]);
             }
-        });
+        }));
     }
 
     // Subject Change -> Fetch Students
@@ -247,7 +247,7 @@ function setupEventListeners() {
             } else {
                 updateStudentTable([]);
             }
-        });
+        }));
     }
 
     // Trigger file input on button click

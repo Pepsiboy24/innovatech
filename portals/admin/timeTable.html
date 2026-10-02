@@ -38,7 +38,7 @@
 
 
         <div class="toolbar">
-            <button class="btn btn-primary" onclick="window.location.href='./create_timetable_setup.html'">
+            <button class="btn btn-primary" onclick="window.location.href='/admin/create_timetable_setup'">
                 <i class="fa-solid fa-plus"></i> Create New Timetable
             </button>
             <button class="btn active" onclick="filterTimetables('all')">All Timetables</button>
@@ -419,7 +419,7 @@
 
         // --- EXPOSE FUNCTIONS TO WINDOW FOR BUTTONS ---
         window.editTimetable = (classId) => {
-            window.location.href = `./create_timetable_setup.html?classId=${classId}`;
+            window.location.href = `/admin/create_timetable_setup?classId=${classId}`;
         };
 
         window.viewFullTimetable = (classId) => {

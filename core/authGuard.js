@@ -1,6 +1,13 @@
 import { supabase } from './config.js';
 import { hasFeatureAccess, getCurrentUserTier, TIERS } from './tierAccess.js';
 
+// Which part of the app is this URL? Works for clean URLs (/admin/students)
+// AND the real file paths (/portals/admin/students.html).
+function areaOf(path) {
+    const m = path.match(/^\/(?:portals\/)?(admin|teacher|student|parent|shared)(?:\/|$)/);
+    return m ? m[1] : null;
+}
+
 (async function authGuard() {
     try {
         const { data: { user }, error: authErr } = await supabase.auth.getUser();
@@ -32,7 +39,15 @@ import { hasFeatureAccess, getCurrentUserTier, TIERS } from './tierAccess.js';
             return;
         }
 
-        const hasAccess = await checkRouteAccess(currentPath, userTier);
+        // Temporary password still in use -> must choose their own first
+        if (userMetadata.must_change_password) {
+            window.location.replace('/change-password');
+            return;
+        }
+
+        const area = areaOf(currentPath);
+
+        const hasAccess = await checkRouteAccess(area, userTier);
         if (!hasAccess) {
             showAccessDeniedModal(
                 'Your current plan does not include access to this feature. Please upgrade your subscription.',
@@ -42,16 +57,27 @@ import { hasFeatureAccess, getCurrentUserTier, TIERS } from './tierAccess.js';
         }
 
         // Shared folder bypass
-        if (currentPath.includes('/portals/shared/')) return;
+        if (area === 'shared') return;
 
-        // Role-based access
-        if (currentPath.includes('/portals/admin/') && userType !== 'admin' && userType !== 'school_admin') {
+        // Role-based access (this is only a UI guard; real protection is the database rules)
+        if (area === 'admin' && userType !== 'admin' && userType !== 'school_admin') {
             showAccessDeniedModal('Unauthorized: Admin access required.', '/login');
             return;
         }
 
-        if (currentPath.includes('/portals/teacher/') && userType !== 'teacher') {
+        if (area === 'teacher' && userType !== 'teacher') {
             showAccessDeniedModal('Access Denied: Teachers only.', '/login');
+            return;
+        }
+
+        if (area === 'student' && userType !== 'student' && userType !== 'teacher' && userType !== 'admin' && userType !== 'school_admin') {
+            // Teachers/admins may open student pages (e.g. Manage Notes lives under /student)
+            showAccessDeniedModal('Access Denied: Students only.', '/login');
+            return;
+        }
+
+        if (area === 'parent' && userType !== 'parent') {
+            showAccessDeniedModal('Access Denied: Parents only.', '/login');
             return;
         }
 
@@ -86,14 +112,12 @@ function showAccessDeniedModal(message, redirectUrl) {
     else render();
 }
 
-async function checkRouteAccess(path, userTier) {
-    const routeTierMap = {
-        '/portals/student': TIERS.STUDENT_ENGAGEMENT,
-        '/portals/admin': TIERS.ADMIN_CORE,
-        '/portals/teacher': TIERS.ADMIN_CORE,
+async function checkRouteAccess(area, userTier) {
+    const areaTierMap = {
+        student: TIERS.STUDENT_ENGAGEMENT,
+        admin: TIERS.ADMIN_CORE,
+        teacher: TIERS.ADMIN_CORE,
     };
-    for (const [route, requiredTier] of Object.entries(routeTierMap)) {
-        if (path.startsWith(route)) return userTier >= requiredTier;
-    }
+    if (area && areaTierMap[area] !== undefined) return userTier >= areaTierMap[area];
     return true;
 }

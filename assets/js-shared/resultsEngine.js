@@ -257,7 +257,7 @@ class ResultsEngine {
         try {
             const { data: student, error } = await supabase
                 .from('Students')
-                .select('full_name, admission_date, class_id')
+                .select('full_name, admission_date, class_id, admission_number')
                 .eq('student_id', studentId)
                 .single();
 
@@ -275,7 +275,7 @@ class ResultsEngine {
             const reportCard = {
                 studentInfo: {
                     name: student.full_name,
-                    admissionNumber: student.student_id,
+                    admissionNumber: student.admission_number || student.student_id,
                     admissionDate: student.admission_date,
                     class: `${classData?.class_name || 'N/A'} ${classData?.section || ''}`.trim()
                 },

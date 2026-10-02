@@ -1,26 +1,43 @@
 [build]
   publish = "."
 
+# NOTE: targets have no .html on purpose (see _redirects). If you deploy on
+# Cloudflare Pages this file is ignored and can be deleted.
 # ── Auth pages ──────────────────────────────────────────
 [[redirects]]
   from = "/"
-  to   = "/public/html/login.html"
+  to   = "/public/html/login"
   status = 200
 
 [[redirects]]
   from = "/login"
-  to   = "/public/html/login.html"
+  to   = "/public/html/login"
   status = 200
 
 [[redirects]]
   from = "/signup"
-  to   = "/public/html/signup.html"
+  to   = "/public/html/signup"
+  status = 200
+
+[[redirects]]
+  from = "/change-password"
+  to   = "/public/html/change_password"
+  status = 200
+
+[[redirects]]
+  from = "/forgot-password"
+  to   = "/public/html/forgot_password"
+  status = 200
+
+[[redirects]]
+  from = "/reset-password"
+  to   = "/public/reset_password"
   status = 200
 
 # ── Admin portal ────────────────────────────────────────
 [[redirects]]
   from = "/admin"
-  to   = "/portals/admin/schoolAdminDashboard.html"
+  to   = "/portals/admin/schoolAdminDashboard"
   status = 200
 
 [[redirects]]
@@ -31,7 +48,7 @@
 # ── Teacher portal ──────────────────────────────────────
 [[redirects]]
   from = "/teacher"
-  to   = "/portals/teacher/teachersPortal.html"
+  to   = "/portals/teacher/teachersPortal"
   status = 200
 
 [[redirects]]
@@ -42,7 +59,7 @@
 # ── Parent portal ───────────────────────────────────────
 [[redirects]]
   from = "/parent"
-  to   = "/portals/parent/parentsPortal.html"
+  to   = "/portals/parent/parentsPortal"
   status = 200
 
 [[redirects]]
@@ -53,7 +70,7 @@
 # ── Student portal ──────────────────────────────────────
 [[redirects]]
   from = "/student"
-  to   = "/portals/student/studentPortal.html"
+  to   = "/portals/student/studentPortal"
   status = 200
 
 [[redirects]]

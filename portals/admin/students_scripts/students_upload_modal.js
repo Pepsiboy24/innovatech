@@ -1,52 +1,66 @@
 /**
  * students_upload_modal.js
  * Bulk Excel upload for the Students page.
- * Wraps the existing uploadAndProcessExcel() from multipleStudentReg.js
- * in the new shared dark-themed modal UI.
  *
- * Required columns: Full Name, Email
- * Optional: Date of Birth, Gender, Admission Date, Classes,
- *           Parent Name, Parent Email, Parent Phone, Relationship
+ * Required column : Full Name   (or First Name + Surname)
+ * Optional        : Gender, Date of Birth, Admission Date, Admission Number, Classes,
+ *                   Parent Name, Parent Phone, Parent Email, Relationship
+ *
+ * Students do NOT need an email. Each one gets a username (amina.bello) and a
+ * random one-time password, and signs in as  username@schoolcode.
  */
-// import { openUploadModal } from '../../../scripts/upload_modal_ui.js';
 import { openUploadModal } from '../../../assets/js-shared/upload_modal_ui.js';
-import { uploadAndProcessExcel } from './multipleStudentReg.js';
+import { excelRowToStudent, previewStudents, createStudents, downloadCredentials } from './multipleStudentReg.js';
 import { lazyScript } from '/core/perf.js';
+
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 const HINT_HTML = `
 <strong style="color:#93c5fd;">Required:</strong>
-<code style="color:#a5f3fc;">Full Name</code>,
-<code style="color:#a5f3fc;">Email</code>
+<code style="color:#a5f3fc;">Full Name</code>
 &nbsp;·&nbsp;
 <strong style="color:#93c5fd;">Optional:</strong>
-<code style="color:#a5f3fc;">Date of Birth</code>,
 <code style="color:#a5f3fc;">Gender</code>,
+<code style="color:#a5f3fc;">Date of Birth</code>,
 <code style="color:#a5f3fc;">Admission Date</code>,
+<code style="color:#a5f3fc;">Admission Number</code>,
 <code style="color:#a5f3fc;">Classes</code>,
 <code style="color:#a5f3fc;">Parent Name</code>,
-<code style="color:#a5f3fc;">Parent Email</code>,
 <code style="color:#a5f3fc;">Parent Phone</code>,
+<code style="color:#a5f3fc;">Parent Email</code>,
 <code style="color:#a5f3fc;">Relationship</code>
+<div style="margin-top:8px;">
+  <label for="nameOrderSelect" style="color:#93c5fd;">Names in the file are written:</label>
+  <select id="nameOrderSelect" onchange="window.__studentNameOrderChanged && window.__studentNameOrderChanged()"
+          style="margin-left:6px;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:6px;padding:4px 8px;">
+    <option value="first_surname">First name first (Amina Grace Bello)</option>
+    <option value="surname_first">Surname first (Bello Amina Grace)</option>
+  </select>
+</div>
 <br>
 <span style="color:#64748b;">
-  Each row creates one student account + auth user (default password: <code style="color:#fcd34d;">123456</code>).
-  If Parent Email is provided, a parent account is linked automatically.
-  Rows with duplicate emails are skipped.
+  No student email needed. Every student gets a username like <code style="color:#fcd34d;">amina.bello</code>
+  and a random one-time password, and signs in as <code style="color:#fcd34d;">amina.bello@schoolcode</code>.
+  A parent login is created automatically when Parent Name plus a phone or email is given.
+  Check the <b>Username</b> column in the preview, then download the logins sheet when the upload ends
+  (passwords are shown only once).
 </span>`;
 
 const COLUMNS = [
     { key: 'Full Name', label: 'Full Name', required: true },
-    { key: 'Email', label: 'Email', required: true },
+    { key: 'Username', label: 'Username (preview)' },
     { key: 'Gender', label: 'Gender' },
     { key: 'Classes', label: 'Class' },
     { key: 'Parent Name', label: 'Parent Name' },
 ];
 
+const nameOrder = () => document.getElementById('nameOrderSelect')?.value || 'first_surname';
+
 async function downloadTemplate() {
     await lazyScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'XLSX');
     const ws = XLSX.utils.aoa_to_sheet([
-        ['Full Name', 'Email', 'Date of Birth', 'Gender', 'Admission Date', 'Classes', 'Parent Name', 'Parent Email', 'Parent Phone', 'Relationship'],
-        ['Jane Doe', 'jane@school.edu', '2010-05-14', 'Female', '2024-09-01', 'Primary 3 A', 'Mary Doe', 'mary@mail.com', '+2348012345678', 'Mother'],
+        ['Full Name', 'Gender', 'Date of Birth', 'Admission Date', 'Admission Number', 'Classes', 'Parent Name', 'Parent Phone', 'Parent Email', 'Relationship'],
+        ['Amina Grace Bello', 'Female', '2010-05-14', '2024-09-01', 'AFM/2024/001', 'JSS 1 A', 'Mary Bello', '08012345678', '', 'Mother'],
     ]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Students');
@@ -63,58 +77,92 @@ async function processFile(file, helpers) {
     if (!raw.length) { showToast('File is empty.', 'warning'); return; }
 
     const rows = raw.map((r, i) => {
+        const student = excelRowToStudent(r);
         const errors = [];
-        const fullName = (r['Full Name'] || r['full_name'] || r['Name'] || '').toString().trim();
-        const email = (r['Email'] || r['email'] || '').toString().trim().toLowerCase();
-        if (!fullName) errors.push('Missing Full Name');
-        if (!email) errors.push('Missing Email');
-        if (email && !/^[^@]+@[^@]+\.[^@]+$/.test(email)) errors.push('Invalid email');
-        return { ...r, 'Full Name': fullName, 'Email': email, __index: i, __errors: errors };
+        if (!student.full_name) errors.push('Missing Full Name');
+        if (student.parent && !student.parent.phone && !student.parent.email) errors.push('Parent needs a phone or email');
+        return { ...r, 'Full Name': student.full_name, Username: '', Classes: student.class_input, __student: student, __index: i, __errors: errors };
     });
 
     helpers._rows = rows;
     helpers._file = file;
+
+    // Ask the server which usernames would be created (nothing is saved yet).
+    const valid = rows.filter((r) => !r.__errors.length);
+    if (valid.length) {
+        try {
+            const planned = await previewStudents(valid.map((r) => r.__student), nameOrder());
+            planned.forEach((p, k) => {
+                valid[k].Username = p.ok ? p.login : '';
+                if (!p.ok) valid[k].__errors.push(p.error || 'Cannot create username');
+                else if (p.class_matched === false) valid[k].Username += '  (class not found)';
+            });
+        } catch (e) {
+            showToast('Could not reach the student service: ' + e.message, 'error', 7000);
+            helpers.setUploadEnabled(false);
+            helpers.showPreview(rows, COLUMNS);
+            return;
+        }
+    }
+
     helpers.showPreview(rows, COLUMNS);
-    const valid = rows.filter(r => !r.__errors.length).length;
-    helpers.setUploadEnabled(valid > 0);
-    if (valid === 0) showToast('No valid rows found.', 'warning');
-    else showToast(`${valid} student${valid !== 1 ? 's' : ''} ready to upload.`, 'success', 3500);
+    const ok = rows.filter((r) => !r.__errors.length).length;
+    helpers.setUploadEnabled(ok > 0);
+    if (ok === 0) showToast('No valid rows found.', 'warning');
+    else showToast(`${ok} student${ok !== 1 ? 's' : ''} ready. Check the usernames, then upload.`, 'success', 4500);
 }
 
 async function doUpload(file, helpers) {
-    const validCount = (helpers._rows || []).filter(r => !r.__errors.length).length;
+    const toCreate = (helpers._rows || []).filter((r) => !r.__errors.length);
     const confirmed = await window.showConfirm(
-        `Upload ${validCount} student${validCount !== 1 ? 's' : ''}? Each will get a temporary password of "123456".`,
+        `Create ${toCreate.length} student${toCreate.length !== 1 ? 's' : ''}? Each gets a random one-time password. You will download a sheet with all logins when it finishes.`,
         'Confirm Bulk Upload'
     );
     if (!confirmed) return;
 
-    helpers.startProgress(validCount);
+    helpers.startProgress(toCreate.length);
 
-    const errors = [];
-    // Delegate to existing uploadAndProcessExcel which handles DB + Auth per-row
-    // We wrap it to show progress via the modal
     try {
-        const results = await uploadAndProcessExcel(helpers._file);
-        const succeeded = results.filter(r => r.success).length;
-        const failed = results.filter(r => !r.success);
+        const results = await createStudents(toCreate.map((r) => r.__student), {
+            nameOrder: nameOrder(),
+            onProgress: (done, total) => helpers.tickProgress && helpers.tickProgress(done, total, `Created ${done} of ${total}…`),
+        });
 
-        failed.forEach(r => errors.push(`${r.email || 'Row'}: ${r.error}`));
-        helpers.finishProgress(errors.map(e => `<div style="color:#fca5a5;margin-top:4px;">⚠ ${e}</div>`).join(''));
+        const succeeded = results.filter((r) => r.success);
+        const failed = results.filter((r) => !r.success);
+        const warned = succeeded.filter((r) => r.warnings && r.warnings.length);
+
+        // Passwords exist only in this result. Save them now.
+        window.__lastStudentLogins = results;
+        if (succeeded.length) downloadCredentials(results);
+
+        const lines = [];
+        if (succeeded.length) {
+            lines.push(`<div style="color:#86efac;margin-top:6px;">✓ ${succeeded.length} created. A logins sheet was downloaded: <b>keep it safe, passwords are not shown again.</b>
+                <button type="button" onclick="window.__downloadStudentLogins()" style="margin-left:8px;background:#1d4ed8;color:#fff;border:0;border-radius:6px;padding:4px 10px;cursor:pointer;">Download again</button></div>`);
+        }
+        failed.forEach((r) => lines.push(`<div style="color:#fca5a5;margin-top:4px;">⚠ ${esc(r.full_name || 'Row')}: ${esc(r.error)}</div>`));
+        warned.forEach((r) => lines.push(`<div style="color:#fcd34d;margin-top:4px;">ℹ ${esc(r.full_name)}: ${esc(r.warnings.join(' '))}</div>`));
+
+        helpers.finishProgress(lines.join(''));
         helpers.showFooterDone();
 
-        if (succeeded > 0 && failed.length === 0)
-            showToast(`✅ ${succeeded} student${succeeded !== 1 ? 's' : ''} uploaded!`, 'success', 6000);
-        else if (succeeded > 0)
-            showToast(`Uploaded ${succeeded}, ${failed.length} failed.`, 'warning', 7000);
+        if (succeeded.length > 0 && failed.length === 0)
+            showToast(`✅ ${succeeded.length} student${succeeded.length !== 1 ? 's' : ''} created!`, 'success', 6000);
+        else if (succeeded.length > 0)
+            showToast(`Created ${succeeded.length}, ${failed.length} failed.`, 'warning', 7000);
         else
             showToast('All uploads failed. Check details.', 'error');
     } catch (e) {
-        helpers.finishProgress(`<div style="color:#fca5a5;">Upload error: ${e.message}</div>`);
+        helpers.finishProgress(`<div style="color:#fca5a5;">Upload error: ${esc(e.message)}</div>`);
         helpers.showFooterDone();
         showToast('Upload error: ' + e.message, 'error');
     }
 }
+
+window.__downloadStudentLogins = () => {
+    if (window.__lastStudentLogins) downloadCredentials(window.__lastStudentLogins);
+};
 
 window.openStudentsExcelUpload = function () {
     if (typeof XLSX === 'undefined') { showToast('Excel library not loaded. Refresh and try again.', 'error'); return; }
@@ -125,7 +173,11 @@ window.openStudentsExcelUpload = function () {
         hintHtml: HINT_HTML,
         templateFn: downloadTemplate,
         confirmLabel: 'Upload Students',
-        onFile: processFile,
+        onFile: (file, helpers) => {
+            // Re-run the preview if the admin flips "surname first" after choosing the file.
+            window.__studentNameOrderChanged = () => { if (helpers._file) processFile(helpers._file, helpers); };
+            return processFile(file, helpers);
+        },
         onConfirm: doUpload,
     });
 };

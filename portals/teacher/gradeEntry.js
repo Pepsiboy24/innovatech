@@ -11,7 +11,7 @@ async function checkTeacherLogin() {
         if (error || !user) {
             console.error('No user logged in:', error);
             alert('Please log in as a teacher to view this page.');
-            window.location.href = '../../index.html';
+            window.location.href = '/login';
             return null;
         }
 
@@ -26,7 +26,7 @@ async function checkTeacherLogin() {
             console.error('User is not authorized as a teacher:', teacherError);
             alert('You are not authorized as a teacher. Please log in with teacher credentials.');
             await supabase.auth.signOut();
-            window.location.href = '../../index.html';
+            window.location.href = '/login';
             return null;
         }
 
@@ -35,7 +35,7 @@ async function checkTeacherLogin() {
     } catch (err) {
         console.error('Error checking teacher login:', err);
         alert('An error occurred while verifying your login. Please try logging in again.');
-        window.location.href = '../../index.html';
+        window.location.href = '/login';
         return null;
     }
 }
@@ -307,7 +307,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
                 populateSubjectDropdown([]); // Clear subjects
             }
-        });
+        }));
     }
 
     if (saveBtn) {

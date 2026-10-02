@@ -26,9 +26,10 @@
             <!-- Login Form -->
             <form id="loginForm" class="auth-form">
                 <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" id="email" name="email" required placeholder="Enter your email address"
-                        autocomplete="email">
+                    <label for="email">Email, Username or Phone</label>
+                    <input type="text" id="email" name="email" required
+                        placeholder="Email, username@schoolcode, or phone number"
+                        autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
                     <span class="error-message" id="emailError"></span>
                 </div>
 
@@ -50,7 +51,7 @@
                         <span class="checkmark"></span>
                         Remember me
                     </label>
-                    <a href="forgot-password.html" class="forgot-password">Forgot password?</a>
+                    <a href="/forgot-password" class="forgot-password">Forgot password?</a>
                 </div>
 
                 <button type="submit" class="btn btn-primary btn-full" id="loginBtn">
@@ -68,6 +69,7 @@
     <a href="../../portals/parent/parentsPortal.html"></a>
     <script type="module">
         import { supabase } from '../../core/config.js';
+        import { toLoginEmail } from '../../core/loginIdentity.js';
 
         class LoginForm {
             constructor() {
@@ -162,8 +164,13 @@
                     btnText.textContent = 'Signing In...';
 
                     const formData = new FormData(this.form);
-                    const email = formData.get('email');
+                    const typed = formData.get('email');
                     const password = formData.get('password');
+
+                    // Students (username@schoolcode) and phone-only parents get a hidden login email
+                    const identity = toLoginEmail(typed);
+                    if (identity.error) throw new Error(identity.error);
+                    const email = identity.email;
                     const remember = formData.get('remember');
 
                     // Sign in user
@@ -214,7 +221,7 @@
 
             getErrorMessage(error) {
                 const errorMessages = {
-                    'Invalid login credentials': 'Invalid email or password. Please try again.',
+                    'Invalid login credentials': 'Wrong login details. Check your username/email and password and try again.',
                     'Email not confirmed': 'Please check your email to confirm your account before signing in.',
                     'Too many requests': 'Too many login attempts. Please try again later.',
                     'User not found': 'No account found with this email address.',
@@ -231,6 +238,12 @@
                 const isReturningFromOnboarding = window.location.search.includes('status=complete');
 
                 console.log('Redirecting user:', { userType, schoolId });
+
+                // First login with a temporary password -> must choose their own
+                if (userMetadata.must_change_password) {
+                    window.location.replace('/change-password');
+                    return;
+                }
 
                 // Redirect logic based on user state
                 // STRICT: Always redirect to onboarding if school_id is missing, regardless of user_type
@@ -295,16 +308,16 @@
             }
 
             validateEmail() {
-                const email = document.getElementById('email').value.trim();
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                const typed = document.getElementById('email').value.trim();
 
-                if (!email) {
-                    this.showFieldError('email', 'Email address is required');
+                if (!typed) {
+                    this.showFieldError('email', 'Enter your email, username or phone number');
                     return false;
                 }
 
-                if (!emailRegex.test(email)) {
-                    this.showFieldError('email', 'Please enter a valid email address');
+                const identity = toLoginEmail(typed);
+                if (identity.error) {
+                    this.showFieldError('email', identity.error);
                     return false;
                 }
 

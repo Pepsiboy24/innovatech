@@ -11,7 +11,7 @@ async function checkTeacherLogin() {
 
         if (!user) {
             alert('Please log in as a teacher to view this page.');
-            window.location.href = '../../index.html';
+            window.location.href = '/login';
             return null;
         }
 
@@ -25,7 +25,7 @@ async function checkTeacherLogin() {
         if (teacherError || !teacherData) {
             alert('You are not authorized as a teacher. Please log in with teacher credentials.');
             await supabase.auth.signOut();
-            window.location.href = '../../index.html';
+            window.location.href = '/login';
             return null;
         }
 
@@ -33,7 +33,7 @@ async function checkTeacherLogin() {
         return user.id;
     } catch (err) {
         alert('An error occurred while verifying your login. Please try logging in again.');
-        window.location.href = '../../index.html';
+        window.location.href = '/login';
         return null;
     }
 }

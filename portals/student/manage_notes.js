@@ -124,7 +124,7 @@ async function bootstrap() {
     const user = await waitForUser();
 
     if (!user) {
-        window.location.href = '../../index.html';
+        window.location.href = '/login';
         return;
     }
 
@@ -154,7 +154,7 @@ async function bootstrap() {
     // Guard Clause
     if (!currentRole) {
         if (loadingRow) loadingRow.querySelector('td').innerHTML = 'Access Denied. Role not recognized.';
-        setTimeout(() => window.location.href = '../../index.html', 2500);
+        setTimeout(() => window.location.href = '/login', 2500);
         return;
     }
 

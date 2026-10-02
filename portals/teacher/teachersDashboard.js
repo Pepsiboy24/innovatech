@@ -210,7 +210,7 @@ function renderStudents(students, className, avgPerformance) {
                         <span class="performance-text">${performanceLabel}</span>
                     </div>
                 </td>
-                <td data-label="Action"><a href="./student_details.html?id=${student.student_id}" class="view-details">View Details</a></td>
+                <td data-label="Action"><a href="/teacher/student_details?id=${student.student_id}" class="view-details">View Details</a></td>
             </tr>
         `;
 

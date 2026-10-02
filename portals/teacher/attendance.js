@@ -9,7 +9,7 @@ async function checkTeacherLogin() {
     try {
         const user = await waitForUser();
         if (!user) {
-            window.location.href = '../../index.html';
+            window.location.href = '/login';
             return null;
         }
 
@@ -21,7 +21,7 @@ async function checkTeacherLogin() {
 
         if (tErr || !teacherData) {
             await supabase.auth.signOut();
-            window.location.href = '../../index.html';
+            window.location.href = '/login';
             return null;
         }
 

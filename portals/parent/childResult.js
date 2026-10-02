@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (authError || !session) {
       console.error("Auth session not found. Redirecting to login...");
-      window.location.href = "../../index.html";
+      window.location.href = "/login";
       return;
     }
 

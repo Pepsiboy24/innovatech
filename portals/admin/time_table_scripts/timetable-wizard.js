@@ -437,7 +437,7 @@ async function handleSaveConfig(e) {
             }
         }
 
-        window.location.href = `create_timetable_entries.html?classId=${classId}`;
+        window.location.href = `/admin/create_timetable_entries?classId=${classId}`;
 
     } catch (err) {
         showToast(err.message, 'error');

@@ -248,7 +248,7 @@ function renderSubjectsGrid(subjects, containerId) {
     return;
   }
   container.innerHTML = subjects.map((s, i) => `
-    <a href="./studyMaterials.html?subject=${encodeURIComponent(s.subject_name)}"
+    <a href="/student/studyMaterials?subject=${encodeURIComponent(s.subject_name)}"
        class="subject-card" data-color="${i % 8}">
       <div class="subject-icon"><i class="fas ${getSubjectIcon(s.subject_name)}"></i></div>
       <span class="subject-name">${s.subject_name}</span>
