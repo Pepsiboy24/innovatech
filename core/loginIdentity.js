@@ -15,7 +15,7 @@
 // !! the `manage-users` Edge Function. Change it in both places.
 // ─────────────────────────────────────────────────────────────────────────
 
-export const LOGIN_EMAIL_DOMAIN = 'CHANGE-ME.example.com';
+export const LOGIN_EMAIL_DOMAIN = 'login.ultra-tea.com';
 
 export function isPlaceholderDomain() {
     return LOGIN_EMAIL_DOMAIN.startsWith('CHANGE-ME');
