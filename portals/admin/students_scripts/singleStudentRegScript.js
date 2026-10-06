@@ -1,147 +1,86 @@
-import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../../core/config.js';
-
-// Dedicated client to prevent session overwrites during registration
-const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-const authClient = createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-      detectSessionInUrl: false
-    }
-  }
-);
+import { supabase } from '../../../core/config.js';
 
 /**
- * Full Registration Flow:
- * 1. Auth Signup for Student (with school_id metadata)
- * 2. Profile insertion into 'Students' table
- * 3. Conditional Auth Signup for Parent (if not already linked)
- * 4. Profile insertion into 'Parents' table
- * 5. Creation of Parent-Student junction record
- * 6. Invocation of Virtual Account Edge Function
+ * Registers ONE student through the `manage-users` Edge Function.
+ *
+ * The server (not this browser) decides the school, makes a unique username,
+ * generates a random one-time password, creates the login + Students row, and
+ * creates/links the parent. If any step fails it rolls the login back.
+ *
+ * Returns { success: true, credentials } or { success: false, error }.
+ *   credentials = { full_name, username, login, password, class_matched,
+ *                   warnings: [], parent: { created, login?, password? } | null }
  */
-export async function registerNewStudent(
-  fullName, email, password, dateOfBirth, admissionDate, profilePicUrl, classId, gender, parentInfo = null
-) {
+export async function registerNewStudent({
+  fullName, dateOfBirth, admissionDate, admissionNumber, classId, gender, parentInfo = null,
+}) {
   try {
-    // 1. IDENTITY GUARD: Fetch admin's school_id from session
-    const { data: { user: adminUser }, error: adminError } = await supabase.auth.getUser();
-    if (adminError || !adminUser) return { success: false, error: "Admin authentication required" };
-
-    const schoolId = adminUser.user_metadata?.school_id;
-    if (!schoolId) return { success: false, error: "Admin school identity not found." };
-
-    // 2. DATA PREP: Defaults for credentials
-    const studentEmail = email || `${fullName.toLowerCase().replace(/\s+/g, '.')}@ischool.com`;
-    const studentPassword = password || '123456';
-
-    // 3. STUDENT AUTH: Create account tagged with school metadata (RLS bypass)
-    const { data: studentAuth, error: authError } = await authClient.auth.signUp({
-      email: studentEmail,
-      password: studentPassword,
-      options: {
-        data: {
-          user_type: 'student',
-          school_id: schoolId
+    const parent = parentInfo && parentInfo.parentFullName
+      ? {
+          full_name: parentInfo.parentFullName,
+          email: parentInfo.parentEmail || '',
+          phone: parentInfo.parentPhone || '',
+          relationship: parentInfo.relationship || 'Guardian',
+          address: parentInfo.parentAddress || '',
+          occupation: parentInfo.parentOccupation || '',
         }
-      }
+      : null;
+
+    const { data, error } = await supabase.functions.invoke('manage-users', {
+      body: {
+        action: 'create_students',
+        rows: [{
+          full_name: fullName,
+          gender,
+          date_of_birth: dateOfBirth || null,
+          admission_date: admissionDate || null,
+          admission_number: admissionNumber || '',
+          class_id: classId || null,
+          parent,
+        }],
+      },
     });
-    if (authError) throw authError;
 
-    // 4. STUDENT PROFILE: Insert into public.Students table
-    const { error: studentInsertError } = await supabase
-      .from("Students")
-      .insert([{
-        student_id: studentAuth.user.id,
-        full_name: fullName,
-        date_of_birth: dateOfBirth,
-        gender: gender,
-        admission_date: admissionDate,
-        profile_picture: profilePicUrl,
-        class_id: classId,
-        school_id: schoolId,
-        enrollment_status: 'active'
-      }]);
-    if (studentInsertError) throw studentInsertError;
-
-    // 5. PARENT WORKFLOW
-    if (parentInfo) {
-      let finalParentId = parentInfo.linkedParentId;
-
-      if (!finalParentId) {
-        // Create Parent Auth (including school_id fixes 403 Forbidden errors)
-        const { data: parentAuth, error: pAuthError } = await authClient.auth.signUp({
-          email: parentInfo.parentEmail,
-          password: '123456',
-          options: {
-            data: {
-              user_type: 'parent',
-              school_id: schoolId
-            }
-          }
-        });
-
-        if (pAuthError) {
-          // Handle existing parent (e.g. Sibling already in school)
-          if (pAuthError.message.includes("already registered")) {
-            const { data: existing } = await supabase
-              .from('Parents')
-              .select('parent_id')
-              .eq('email', parentInfo.parentEmail)
-              .single();
-            finalParentId = existing?.parent_id;
-          } else throw pAuthError;
-        } else {
-          // Insert New Parent Profile record
-          const { data: newParent, error: pInsertError } = await supabase
-            .from("Parents")
-            .insert([{
-              user_id: parentAuth.user.id,
-              full_name: parentInfo.parentFullName,
-              email: parentInfo.parentEmail,
-              phone_number: parentInfo.parentPhone,
-              address: parentInfo.parentAddress || null,
-              school_id: schoolId
-            }])
-            .select("parent_id").single();
-
-          if (pInsertError) throw pInsertError;
-          finalParentId = newParent.parent_id;
-        }
-      }
-
-      // Link Parent to Student in junction table
-      const { error: linkError } = await supabase
-        .from("Parent_Student_Links")
-        .insert([{
-          parent_id: finalParentId,
-          student_id: studentAuth.user.id,
-          relationship: parentInfo.relationship || 'Guardian'
-        }]);
-      if (linkError) console.error("Link established error:", linkError.message);
+    if (error) {
+      let msg = error.message;
+      try { const j = await error.context.json(); if (j?.error) msg = j.error; } catch (_) { /* keep default */ }
+      return { success: false, error: msg };
     }
+    if (!data?.ok) return { success: false, error: data?.error || 'The server rejected the request.' };
 
-    // 6. VIRTUAL ACCOUNT: Invoke Monnify generation function
+    const r = data.results?.[0];
+    if (!r?.ok) return { success: false, error: r?.error || 'Could not create the student.' };
+
+    // Ask the existing Monnify function for a payment account (best effort, never blocks)
     try {
+      const { data: { user } } = await supabase.auth.getUser();
       await supabase.functions.invoke('create-student-virtual-account', {
         body: {
-          studentId: studentAuth.user.id,
+          studentId: r.student_id,
           studentName: fullName,
-          schoolId: schoolId,
-          parentEmail: parentInfo?.parentEmail || null
-        }
+          schoolId: user?.user_metadata?.school_id,
+          parentEmail: parentInfo?.parentEmail || null,
+        },
       });
-      console.log("Virtual account request dispatched.");
     } catch (vErr) {
-      console.warn("Virtual account creation background failure:", vErr.message);
+      console.warn('Virtual account request failed:', vErr.message);
     }
 
-    return { success: true };
+    return {
+      success: true,
+      credentials: {
+        full_name: r.full_name || fullName,
+        username: r.username,
+        login: r.login,
+        password: r.password,
+        class_matched: r.class_matched,
+        warnings: r.warnings || [],
+        parent: r.parent || null,
+        parent_name: parent?.full_name || '',
+      },
+    };
   } catch (err) {
-    console.error("Critical Registration Failure:", err.message);
+    console.error('Registration failed:', err);
     return { success: false, error: err.message };
   }
 }

@@ -137,6 +137,7 @@ interface ParentIn {
   phone?: string;
   relationship?: string;
   address?: string;
+  occupation?: string;
 }
 interface StudentIn {
   full_name?: string;
@@ -289,6 +290,7 @@ async function createStudents(schoolId: string, body: { rows?: StudentIn[]; name
             email: pEmail,
             phone_number: p.phone ?? null,
             address: p.address ?? null,
+            occupation: p.occupation ?? null,
             school_id: schoolId,
           }]).select("parent_id").single();
           if (pInsErr) throw new Error(pInsErr.message);

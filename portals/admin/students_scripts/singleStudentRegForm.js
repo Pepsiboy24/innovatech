@@ -1,5 +1,6 @@
 import { registerNewStudent } from "./singleStudentRegScript.js";
 import { supabaseClient } from './supabase_client.js';
+import { downloadCredentials } from './multipleStudentReg.js';
 
 // --- State Management ---
 let currentStep = 1;
@@ -71,7 +72,6 @@ function validateStep(step) {
 
   if (step === 1) {
     checkField("fullName", "fullNameError");
-    checkField("email", "emailError");
 
     // DOB check
     const dob = document.getElementById("dateOfBirth");
@@ -87,12 +87,21 @@ function validateStep(step) {
     checkField("parentPhone", "parentPhoneError");
     checkField("relationship", "relationshipError");
 
+    // Parent email is optional, but if it is filled in it must be valid.
     const parentEmail = document.getElementById("parentEmail");
-    if (!parentEmail.value.trim() || (parentEmail.value !== "No Email in DB" && !parentEmail.validity.valid)) {
+    const pe = parentEmail.value.trim();
+    if (pe && pe !== "No Email in DB" && !parentEmail.validity.valid) {
       showError("parentEmailError");
       isValid = false;
     } else {
       hideError("parentEmailError");
+    }
+
+    // Parent phone must look like a real number (it is also their login if they have no email).
+    const phoneDigits = document.getElementById("parentPhone").value.replace(/\D/g, "");
+    if (phoneDigits.length < 10) {
+      showError("parentPhoneError");
+      isValid = false;
     }
   }
 
@@ -149,7 +158,7 @@ function populateReview() {
         <div class="review-section">
             <h4>Student Information</h4>
             <p><strong>Name:</strong> ${getValue("fullName")}</p>
-            <p><strong>Email:</strong> ${getValue("email")}</p>
+            <p><strong>Admission No:</strong> ${document.getElementById("admissionNumber")?.value || "Not given"}</p>
             <p><strong>DOB:</strong> ${getValue("dateOfBirth")}</p>
         </div>
         <div class="review-section">
@@ -176,40 +185,85 @@ registrationForm.addEventListener("submit", async function (e) {
   submitBtn.disabled = true;
   submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registering...';
 
+  const clean = (v) => (v || "").trim() === "No Email in DB" ? "" : (v || "").trim();
   const parentData = {
     linkedParentId: document.getElementById("linkedParentId").value,
-    parentFullName: document.getElementById("parentFullName").value,
-    parentEmail: document.getElementById("parentEmail").value,
-    parentPhone: document.getElementById("parentPhone").value,
-    parentAddress: document.getElementById("parentAddress").value,
+    parentFullName: document.getElementById("parentFullName").value.trim(),
+    parentEmail: clean(document.getElementById("parentEmail").value),
+    parentPhone: document.getElementById("parentPhone").value.trim(),
+    parentAddress: document.getElementById("parentAddress").value.trim(),
     relationship: document.getElementById("relationship").value,
-    parentOccupation: document.getElementById("parentOccupation").value
+    parentOccupation: document.getElementById("parentOccupation").value.trim()
   };
 
-  const result = await registerNewStudent(
-    document.getElementById("fullName").value,
-    document.getElementById("email").value,
-    "123456", // Default password
-    document.getElementById("dateOfBirth").value,
-    document.getElementById("admissionDate").value,
-    "https://placehold.co/150",
-    document.getElementById("class").value,
-    document.querySelector('input[name="gender"]:checked')?.value || 'other',
-    parentData
-  );
+  const result = await registerNewStudent({
+    fullName: document.getElementById("fullName").value.trim(),
+    dateOfBirth: document.getElementById("dateOfBirth").value,
+    admissionDate: document.getElementById("admissionDate").value,
+    admissionNumber: document.getElementById("admissionNumber").value.trim(),
+    classId: document.getElementById("class").value,
+    gender: document.querySelector('input[name="gender"]:checked')?.value || 'other',
+    parentInfo: parentData
+  });
 
   if (result && result.success) {
+    lastCredentials = result.credentials;
+    renderCredentials(result.credentials);
     document.getElementById("step3").classList.remove("active");
     document.getElementById("successStep").classList.add("active");
     const navButtons = document.getElementById("navButtons");
     if (navButtons) navButtons.style.display = "none";
     if (typeof window.refreshStudentList === 'function') window.refreshStudentList();
   } else {
-    alert("Error: " + (result.error || "Unknown error"));
+    alert("Error: " + (result?.error || "Unknown error"));
     submitBtn.disabled = false;
     submitBtn.textContent = "Complete Registration";
   }
 });
+
+// --- 4a. One-time credentials display ---
+let lastCredentials = null;
+
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+function renderCredentials(c) {
+  const box = document.getElementById("credentialsBox");
+  if (!box) return;
+  let html = `
+    <div><strong>Student:</strong> ${esc(c.full_name)}</div>
+    <div><strong>Login:</strong> <code>${esc(c.login)}</code></div>
+    <div><strong>Password:</strong> <code>${esc(c.password)}</code></div>`;
+  if (c.parent && c.parent.created) {
+    html += `<hr style="opacity:.2">
+    <div><strong>Parent:</strong> ${esc(c.parent_name)}</div>
+    <div><strong>Login:</strong> <code>${esc(c.parent.login)}</code></div>
+    <div><strong>Password:</strong> <code>${esc(c.parent.password)}</code></div>`;
+  } else if (c.parent) {
+    html += `<hr style="opacity:.2"><div>Parent: linked to an existing parent account.</div>`;
+  }
+  if (c.class_matched === false) html += `<div style="color:#b45309;margin-top:6px;">Class was not matched, the student has no class yet.</div>`;
+  (c.warnings || []).forEach((w) => { html += `<div style="color:#b45309;margin-top:6px;">${esc(w)}</div>`; });
+  html += `<div style="margin-top:10px;font-size:12px;opacity:.75;">These passwords are shown only once. Each person must choose their own password the first time they sign in.</div>
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button type="button" class="btn btn-secondary" id="copyCredsBtn">Copy</button>
+      <button type="button" class="btn btn-secondary" id="downloadCredsBtn">Download CSV</button>
+    </div>`;
+  box.innerHTML = html;
+
+  document.getElementById("copyCredsBtn").addEventListener("click", async () => {
+    let t = `${c.full_name}\nLogin: ${c.login}\nPassword: ${c.password}`;
+    if (c.parent && c.parent.created) t += `\n\nParent: ${c.parent_name}\nLogin: ${c.parent.login}\nPassword: ${c.parent.password}`;
+    try { await navigator.clipboard.writeText(t); document.getElementById("copyCredsBtn").textContent = "Copied"; }
+    catch (_) { alert(t); }
+  });
+  document.getElementById("downloadCredsBtn").addEventListener("click", () => {
+    downloadCredentials([{
+      success: true, full_name: c.full_name, login: c.login, password: c.password,
+      class_matched: c.class_matched, warnings: c.warnings, parent: c.parent,
+      data: { parent: { full_name: c.parent_name } },
+    }], "student_login.csv");
+  });
+}
 
 // --- 4b. Register Another / Done (success step) ---
 
@@ -219,6 +273,13 @@ const doneBtn = document.getElementById("doneBtn");
 if (registerAnotherBtn) {
   registerAnotherBtn.addEventListener("click", () => {
     registrationForm.reset();
+    lastCredentials = null;
+    const cb = document.getElementById("credentialsBox");
+    if (cb) cb.innerHTML = "";
+    document.getElementById("linkedParentId").value = "";
+    ["parentFullName", "parentEmail", "parentPhone", "parentOccupation", "parentAddress"].forEach((id) => { document.getElementById(id).readOnly = false; });
+    const psm = document.getElementById("parentSearchMessage");
+    if (psm) psm.innerHTML = "";
     document.querySelectorAll(".error-message").forEach((el) => el.style.display = "none");
     submitBtn.disabled = false;
     submitBtn.innerHTML = "Complete Registration";
@@ -246,13 +307,22 @@ if (searchParentBtn) {
     const msgDiv = document.getElementById("parentSearchMessage");
 
     if (!phoneInput) return;
+    const last10 = phoneInput.replace(/\D/g, "").slice(-10);
+    if (last10.length < 10) {
+      msgDiv.textContent = "Enter the full phone number.";
+      msgDiv.style.color = "#b45309";
+      return;
+    }
 
     try {
-      const { data, error } = await supabaseClient
+      // Match on the last 10 digits so 0802..., +234802... and 234802... all find the same parent.
+      const { data: found, error } = await supabaseClient
         .from("Parents")
         .select("*")
-        .eq("phone_number", phoneInput)
-        .maybeSingle();
+        .ilike("phone_number", `%${last10}`)
+        .limit(1);
+      if (error) throw error;
+      const data = found && found[0];
 
       const parentFields = ["parentFullName", "parentEmail", "parentPhone", "parentOccupation", "parentAddress", "linkedParentId"];
 
