@@ -58,12 +58,32 @@ const nameOrder = () => document.getElementById('nameOrderSelect')?.value || 'fi
 
 async function downloadTemplate() {
     await lazyScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'XLSX');
+
+    // Sheet 1: the data sheet. The upload reads ONLY the first sheet.
     const ws = XLSX.utils.aoa_to_sheet([
         ['Full Name', 'Gender', 'Date of Birth', 'Admission Date', 'Admission Number', 'Classes', 'Parent Name', 'Parent Phone', 'Parent Email', 'Relationship'],
         ['Amina Grace Bello', 'Female', '2010-05-14', '2024-09-01', 'AFM/2024/001', 'JSS 1 A', 'Mary Bello', '08012345678', '', 'Mother'],
     ]);
+    ws['!cols'] = [26, 10, 16, 16, 20, 14, 22, 16, 26, 14].map((wch) => ({ wch }));
+
+    // Sheet 2: instructions (ignored by the upload)
+    const help = XLSX.utils.aoa_to_sheet([
+        ['How to fill in this template'],
+        ['1. Delete the example row (row 2), or replace it with a real student, before uploading.'],
+        ['2. Only "Full Name" is required. Every other column can be left empty.'],
+        ['3. Students do NOT need an email. Each gets a username like amina.bello and a random one-time password.'],
+        ['4. Dates: write them as YYYY-MM-DD, for example 2010-05-14.'],
+        ['5. Classes: write the class the way it appears on your Classes page, for example JSS 1 A. Classes that do not match are flagged in the preview.'],
+        ['6. Parent: give Parent Name plus a Parent Phone or Parent Email and a parent login is created and linked.'],
+        ['7. Parent Phone: Nigerian format, for example 08012345678. Siblings with the same parent phone share one parent login.'],
+        ['8. Admission Number: optional, but must be unique within your school.'],
+        ['9. In the upload screen, choose whether names are written first-name-first or surname-first.'],
+    ]);
+    help['!cols'] = [{ wch: 120 }];
+
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Students');
+    XLSX.utils.book_append_sheet(wb, help, 'Instructions');
     XLSX.writeFile(wb, 'students_template.xlsx');
 }
 
