@@ -53,6 +53,9 @@ function json(body: unknown, status = 200) {
   });
 }
 
+// ilike treats _ and % as wildcards; emails often contain "_", so escape them.
+const escapeLike = (v: string) => v.replace(/[\\%_]/g, "\\$&");
+
 // ── Who is calling? Trust the database, not the token's metadata. ─────────
 type Role = "school_admin" | "teacher";
 
@@ -62,16 +65,34 @@ async function getCaller(req: Request): Promise<{ userId: string; schoolId: stri
   const { data, error } = await admin.auth.getUser(token);
   if (error || !data.user) throw new HttpError(401, "Your session has expired. Sign in again.");
   const userId = data.user.id;
+  const email = (data.user.email ?? "").trim().toLowerCase();
 
-  const { data: adminRow, error: adminErr } = await admin
-    .from("School_Admin").select("school_id").eq("admin_id", userId).maybeSingle();
-  if (adminErr) throw new HttpError(500, "Could not verify your account: " + adminErr.message);
-  if (adminRow?.school_id) return { userId, schoolId: adminRow.school_id as string, role: "school_admin" };
+  // School admin: match on the login id first, then on email (older rows were keyed by email).
+  let adminSchool: string | null = null;
+  {
+    const byId = await admin.from("School_Admin").select("school_id").eq("admin_id", userId).limit(1);
+    if (byId.error) throw new HttpError(500, "Could not verify your account: " + byId.error.message);
+    adminSchool = byId.data?.[0]?.school_id ?? null;
+    if (!adminSchool && email) {
+      const byEmail = await admin.from("School_Admin").select("school_id").ilike("email", escapeLike(email)).limit(1);
+      adminSchool = byEmail.data?.[0]?.school_id ?? null;
+    }
+  }
+  if (adminSchool) return { userId, schoolId: adminSchool as string, role: "school_admin" };
 
-  const { data: teacherRow } = await admin
-    .from("Teachers").select("school_id").eq("teacher_id", userId).maybeSingle();
-  if (teacherRow?.school_id) return { userId, schoolId: teacherRow.school_id as string, role: "teacher" };
+  // Teacher: same two-step match.
+  let teacherSchool: string | null = null;
+  {
+    const byId = await admin.from("Teachers").select("school_id").eq("teacher_id", userId).limit(1);
+    teacherSchool = byId.data?.[0]?.school_id ?? null;
+    if (!teacherSchool && email) {
+      const byEmail = await admin.from("Teachers").select("school_id").ilike("email", escapeLike(email)).limit(1);
+      teacherSchool = byEmail.data?.[0]?.school_id ?? null;
+    }
+  }
+  if (teacherSchool) return { userId, schoolId: teacherSchool as string, role: "teacher" };
 
+  console.error("getCaller: no School_Admin/Teachers row for", userId, email);
   throw new HttpError(403, "Only school staff can do this.");
 }
 
@@ -152,9 +173,6 @@ interface StudentIn {
   class_id?: string;
   parent?: ParentIn | null;
 }
-
-// ilike treats _ and % as wildcards; emails often contain "_", so escape them.
-const escapeLike = (v: string) => v.replace(/[\\%_]/g, "\\$&");
 
 async function findParent(schoolId: string, email: string | null, phone: string) {
   if (email) {
