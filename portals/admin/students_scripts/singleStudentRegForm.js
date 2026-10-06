@@ -281,17 +281,40 @@ if (searchParentBtn) {
 }
 
 // --- 6. Initialization ---
+async function loadClasses() {
+  const dropdown = document.getElementById("class");
+  if (!dropdown) return;
+  dropdown.innerHTML = '<option value="">Loading classes...</option>';
+
+  const { data: classes, error } = await supabaseClient
+    .from('Classes')
+    .select('class_id, class_name, section')
+    .order('class_name');
+
+  if (error) {
+    console.error('Could not load classes:', error);
+    dropdown.innerHTML = '<option value="">Could not load classes (see console)</option>';
+    return;
+  }
+  if (!classes || classes.length === 0) {
+    dropdown.innerHTML = '<option value="">No classes yet. Create one on the Classes page first.</option>';
+    return;
+  }
+  dropdown.innerHTML = '<option value="">Select a Class</option>' +
+    classes.map(c => `<option value="${c.class_id}">${c.class_name} ${c.section || ''}</option>`).join('');
+}
+
 async function init() {
   showStep(currentStep);
   document.getElementById("admissionDate").valueAsDate = new Date();
-
-  // Load Classes
-  const { data: classes } = await supabaseClient.from('Classes').select('class_id, class_name, section').order('class_name');
-  const dropdown = document.getElementById("class");
-  if (dropdown && classes) {
-    dropdown.innerHTML = '<option value="">Select a Class</option>' +
-      classes.map(c => `<option value="${c.class_id}">${c.class_name} ${c.section || ''}</option>`).join('');
-  }
+  await loadClasses();
 }
 
-document.addEventListener('DOMContentLoaded', init);
+// This file can finish loading AFTER the page's DOMContentLoaded event has already fired
+// (it waits on a top-level await import in singleStudentRegScript.js). In that case a
+// DOMContentLoaded listener never runs, which left the class list empty.
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
