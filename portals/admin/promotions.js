@@ -1,192 +1,240 @@
 import { supabase } from '../../core/config.js';
-import { debounce } from '/core/perf.js';
 
-// --- State ---
-let allClasses = [];
-let studentCountMap = {}; // class_id → student count
+// ---------- state ----------
+let school = null;            // { current_session, current_term }
+let classes = [];             // all classes
+let students = [];            // active students
+let dest = {};                // class_id -> '' | 'graduate' | '<class_id>'
+let repeaters = new Set();    // student_id
+let batches = [];
+let openRows = new Set();
 
-// --- DOM refs ---
-const sourceSelect = document.getElementById('sourceClassSelect');
-const targetSelect = document.getElementById('targetClassSelect');
-const sourcePreview = document.getElementById('sourcePreview');
-const sourceCountText = document.getElementById('sourceCountText');
-const capacityWarning = document.getElementById('capacityWarning');
-const capacityText = document.getElementById('capacityText');
-const executeBtn = document.getElementById('executeBtn');
-const promotionSummary = document.getElementById('promotionSummary');
-const summaryText = document.getElementById('summaryText');
-const resultMessage = document.getElementById('resultMessage');
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const label = c => `${c.class_name}${c.section ? ' - ' + c.section : ''}`;
+const natural = (a, b) => label(a).localeCompare(label(b), undefined, { numeric: true, sensitivity: 'base' });
 
 async function getSchoolId() {
     const { data: { user } } = await supabase.auth.getUser();
     return user?.user_metadata?.school_id;
 }
 
-// --- Load Data ---
-async function loadData() {
+// ---------- suggestions: "JSS 1 A" -> "JSS 2 A" ----------
+function suggestNext(cls) {
+    const m = String(cls.class_name || '').match(/^(.*?)(\d+)(.*)$/);
+    if (!m) return '';
+    const [, prefix, num, suffix] = m;
+    const want = c => {
+        const n = String(c.class_name || '').match(/^(.*?)(\d+)(.*)$/);
+        return n && n[1].trim().toLowerCase() === prefix.trim().toLowerCase()
+            && parseInt(n[2]) === parseInt(num) + 1
+            && n[3].trim().toLowerCase() === suffix.trim().toLowerCase()
+            && (c.section || '') === (cls.section || '');
+    };
+    const hit = classes.find(want);
+    return hit ? String(hit.class_id) : '';
+}
+
+// ---------- load ----------
+async function load() {
     const schoolId = await getSchoolId();
     if (!schoolId) return;
-    const [classesRes, studentsRes] = await Promise.all([
-        supabase.from('Classes').select('class_id, class_name, section').eq('school_id', schoolId).order('class_name'),
-        supabase.from('Students').select('class_id').eq('school_id', schoolId)
+
+    const [sch, cls, stu, bat] = await Promise.all([
+        supabase.from('Schools').select('current_session, current_term').eq('school_id', schoolId).single(),
+        supabase.from('Classes').select('class_id, class_name, section, promotes_to, is_final').eq('school_id', schoolId),
+        supabase.from('Students').select('student_id, full_name, class_id').eq('school_id', schoolId).eq('enrollment_status', 'active'),
+        supabase.from('Promotion_Batches').select('*').eq('school_id', schoolId).order('created_at', { ascending: false }).limit(5)
     ]);
+    if (cls.error || stu.error) { showStatus('bad', 'Could not load classes or students. ' + (cls.error || stu.error).message); return; }
 
-    if (classesRes.error) { console.error(classesRes.error); return; }
-    if (studentsRes.error) { console.error(studentsRes.error); return; }
+    school = sch.data || {};
+    classes = (cls.data || []).slice().sort(natural);
+    students = stu.data || [];
+    batches = bat.data || [];
 
-    allClasses = classesRes.data || [];
-
-    // Build count map
-    studentCountMap = {};
-    (studentsRes.data || []).forEach(s => {
-        if (s.class_id != null) {
-            studentCountMap[s.class_id] = (studentCountMap[s.class_id] || 0) + 1;
-        }
+    // choose starting destinations: saved choice first, then a suggestion, else blank
+    dest = {};
+    classes.forEach(c => {
+        if (c.is_final) dest[c.class_id] = 'graduate';
+        else if (c.promotes_to) dest[c.class_id] = String(c.promotes_to);
+        else dest[c.class_id] = suggestNext(c);
     });
-
-    // Populate source dropdown
-    sourceSelect.innerHTML = '<option value="">Select source class...</option>';
-    allClasses.forEach(cls => {
-        const count = studentCountMap[cls.class_id] ?? 0;
-        const label = `${cls.class_name}${cls.section ? ' - ' + cls.section : ''} (${count} student${count !== 1 ? 's' : ''})`;
-        const opt = new Option(label, cls.class_id);
-        sourceSelect.appendChild(opt);
-    });
+    repeaters = new Set();
+    render();
 }
 
-// --- Source Select Change ---
-sourceSelect.addEventListener('change', debounce( () => {
-    const sourceId = parseInt(sourceSelect.value);
-    const count = sourceId ? (studentCountMap[sourceId] ?? 0) : 0;
+// ---------- render ----------
+function studentsOf(classId) { return students.filter(s => s.class_id === classId); }
 
-    // Show preview
-    if (sourceId) {
-        sourcePreview.style.display = 'flex';
-        sourceCountText.textContent = `${count} student${count !== 1 ? 's' : ''} will be moved`;
+function render() {
+    const session = school?.current_session;
+    const term = school?.current_term;
+    $('sessionLine').textContent = session
+        ? `Closing session ${session}. After this, start the new session on the Term & Session page.`
+        : 'No current session is set. Open Term & Session first.';
+
+    const done = batches.find(b => !b.reverted_at && b.from_session === session);
+    let msg = '';
+    if (done) {
+        msg = `<div class="pm-note pm-ok"><i class="fas fa-check-circle"></i><span>Promotion for <strong>${esc(session)}</strong> was already done on ${esc(new Date(done.created_at).toLocaleDateString())}.
+            Next, <a href="/admin/term_session">start the new session</a>. To run it again, undo it below first.</span></div>`;
+    } else if (term && term !== 'Third Term') {
+        msg = `<div class="pm-note pm-warn"><i class="fas fa-exclamation-triangle"></i><span>The school is on <strong>${esc(term)}</strong>. Promotions are normally run after Third Term results are final.</span></div>`;
+    }
+    $('statusBox').innerHTML = msg;
+
+    const withStudents = classes.filter(c => studentsOf(c.class_id).length > 0);
+    const empty = classes.length - withStudents.length;
+    $('hiddenNote').textContent = empty ? `${empty} class${empty > 1 ? 'es have' : ' has'} no students and ${empty > 1 ? 'are' : 'is'} not listed (still available as destinations).` : '';
+
+    if (!withStudents.length) {
+        $('classRows').innerHTML = '<tr><td colspan="4">No active students found.</td></tr>';
     } else {
-        sourcePreview.style.display = 'none';
+        $('classRows').innerHTML = withStudents.map(c => {
+            const list = studentsOf(c.class_id);
+            const rep = list.filter(s => repeaters.has(s.student_id)).length;
+            const d = dest[c.class_id] ?? '';
+            const options = ['<option value="">Choose destination...</option>',
+                '<option value="graduate"' + (d === 'graduate' ? ' selected' : '') + '>🎓 Graduates (leaves school)</option>']
+                .concat(classes.filter(o => o.class_id !== c.class_id)
+                    .map(o => `<option value="${o.class_id}"${String(o.class_id) === d ? ' selected' : ''}>${esc(label(o))}</option>`)).join('');
+            const moving = list.length - rep;
+            const verb = d === 'graduate' ? 'graduating' : 'moving up';
+            const result = d ? `${moving} ${verb}${rep ? `, <strong>${rep} repeating</strong>` : ''}` : '<span style="color:#b91c1c">Pick a destination</span>';
+            const isOpen = openRows.has(c.class_id);
+            return `<tr data-class="${c.class_id}">
+                <td><strong>${esc(label(c))}</strong></td>
+                <td>${list.length} <button class="pm-link" data-toggle="${c.class_id}">${isOpen ? 'hide' : 'repeaters'}</button></td>
+                <td><select data-dest="${c.class_id}" class="${d ? '' : 'pm-missing'}">${options}</select></td>
+                <td>${result}</td></tr>` +
+                (isOpen ? `<tr><td colspan="4" class="pm-students">
+                    <div class="pm-small" style="margin-bottom:6px;">Tick students who will <strong>repeat</strong> this class:</div>
+                    ${list.map(s => `<label><input type="checkbox" data-rep="${esc(s.student_id)}" ${repeaters.has(s.student_id) ? 'checked' : ''}> ${esc(s.full_name || 'Unnamed')}</label>`).join('')}
+                </td></tr>` : '');
+        }).join('');
     }
-
-    // Rebuild target dropdown — exclude source, include Graduate option
-    targetSelect.innerHTML = '<option value="">Select target class...</option>';
-    targetSelect.innerHTML += '<option value="graduate">🎓 Graduate / Alumni (remove from class)</option>';
-
-    allClasses.forEach(cls => {
-        if (cls.class_id === sourceId) return; // exclude source
-        const label = `${cls.class_name}${cls.section ? ' - ' + cls.section : ''}`;
-        const opt = new Option(label, cls.class_id);
-        targetSelect.appendChild(opt);
-    });
-
-    capacityWarning.style.display = 'none';
-    updateSummary();
-}, 300));
-
-// --- Target Select Change ---
-targetSelect.addEventListener('change', debounce( () => {
-    const targetId = targetSelect.value;
-    capacityWarning.style.display = 'none';
-
-    if (targetId && targetId !== 'graduate') {
-        const count = studentCountMap[parseInt(targetId)] ?? 0;
-        if (count >= 40) {
-            capacityText.textContent = `Target class already has ${count} students (40+ capacity).`;
-            capacityWarning.style.display = 'flex';
-        }
-    }
-    updateSummary();
-}, 300));
-
-// --- Update Summary & Button ---
-function updateSummary() {
-    const sourceId = parseInt(sourceSelect.value);
-    const targetId = targetSelect.value;
-
-    if (!sourceId || !targetId) {
-        promotionSummary.style.display = 'none';
-        executeBtn.disabled = true;
-        return;
-    }
-
-    const sourceClass = allClasses.find(c => c.class_id === sourceId);
-    const count = studentCountMap[sourceId] ?? 0;
-    const sourceName = sourceClass ? `${sourceClass.class_name}${sourceClass.section ? ' - ' + sourceClass.section : ''}` : '?';
-
-    let targetName;
-    if (targetId === 'graduate') {
-        targetName = 'Graduate / Alumni';
-    } else {
-        const t = allClasses.find(c => c.class_id === parseInt(targetId));
-        targetName = t ? `${t.class_name}${t.section ? ' - ' + t.section : ''}` : '?';
-    }
-
-    summaryText.textContent = `${count} student${count !== 1 ? 's' : ''} from "${sourceName}" → "${targetName}"`;
-    promotionSummary.style.display = 'flex';
-    executeBtn.disabled = count === 0;
+    updateTotals(withStudents, !!done);
+    renderHistory();
 }
 
-// --- Execute Promotion ---
-executeBtn.addEventListener('click', async () => {
-    const sourceId = parseInt(sourceSelect.value);
-    const targetId = targetSelect.value;
-    const count = studentCountMap[sourceId] ?? 0;
+function updateTotals(withStudents, alreadyDone) {
+    let promo = 0, rep = 0, grad = 0, missing = 0;
+    withStudents.forEach(c => {
+        const list = studentsOf(c.class_id);
+        const r = list.filter(s => repeaters.has(s.student_id)).length;
+        rep += r;
+        const d = dest[c.class_id];
+        if (!d) { missing++; return; }
+        if (d === 'graduate') grad += list.length - r; else promo += list.length - r;
+    });
+    // warn if two classes feed one class (a merge)
+    const targets = {};
+    withStudents.forEach(c => { const d = dest[c.class_id]; if (d && d !== 'graduate') (targets[d] = targets[d] || []).push(c); });
+    const merges = Object.entries(targets).filter(([, v]) => v.length > 1)
+        .map(([id, v]) => `${v.map(label).join(' + ')} → ${label(classes.find(c => String(c.class_id) === id))}`);
 
-    if (!sourceId || !targetId) return;
+    $('totals').innerHTML = `<strong>${promo}</strong> moving up &nbsp;·&nbsp; <strong>${rep}</strong> repeating &nbsp;·&nbsp; <strong>${grad}</strong> graduating`
+        + (merges.length ? `<div class="pm-note pm-warn" style="margin:12px 0 0;"><i class="fas fa-code-merge"></i><span>These classes will be merged: ${esc(merges.join('; '))}. Check this is what you want.</span></div>` : '');
 
-    const sourceClass = allClasses.find(c => c.class_id === sourceId);
-    const sourceName = sourceClass ? `${sourceClass.class_name}${sourceClass.section ? ' - ' + sourceClass.section : ''}` : 'this class';
+    let reason = '';
+    if (!school?.current_session) reason = 'Set the current session on Term & Session first.';
+    else if (alreadyDone) reason = 'Already done for this session.';
+    else if (!withStudents.length) reason = 'No students to promote.';
+    else if (missing) reason = `${missing} class${missing > 1 ? 'es need' : ' needs'} a destination.`;
+    $('blockReason').textContent = reason;
+    $('executeBtn').disabled = !!reason;
+}
 
-    const message = targetId === 'graduate'
-        ? `Graduate all ${count} student(s) from "${sourceName}"? They will be removed from the active class pool.`
-        : `Move all ${count} student(s) from "${sourceName}" to the selected class? This cannot be undone.`;
-    const confirmed = await window.showConfirm(message, 'Confirm Promotion');
-    if (!confirmed) return;
+function renderHistory() {
+    if (!batches.length) { $('history').textContent = 'No promotions yet.'; return; }
+    const latestActive = batches.find(b => !b.reverted_at);
+    $('history').innerHTML = batches.map(b => `
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--border);">
+            <span><strong>${esc(b.from_session)}</strong> · ${esc(new Date(b.created_at).toLocaleString())}</span>
+            <span>${b.promoted} promoted, ${b.repeated} repeated, ${b.graduated} graduated</span>
+            ${b.reverted_at ? '<span class="pm-pill" style="background:#f1f5f9;color:#64748b;">Undone</span>'
+                : (latestActive && latestActive.batch_id === b.batch_id ? `<button class="pm-link" data-undo="${esc(b.batch_id)}">Undo this promotion</button>` : '')}
+        </div>`).join('');
+}
 
-    executeBtn.disabled = true;
-    executeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Executing...';
-    resultMessage.style.display = 'none';
+// ---------- events ----------
+$('classRows').addEventListener('change', e => {
+    const d = e.target.dataset;
+    if (d.dest !== undefined) { dest[d.dest] = e.target.value; render(); }
+    if (d.rep !== undefined) {
+        e.target.checked ? repeaters.add(d.rep) : repeaters.delete(d.rep);
+        render();
+    }
+});
+$('classRows').addEventListener('click', e => {
+    const t = e.target.dataset?.toggle;
+    if (t !== undefined) { const id = parseInt(t); openRows.has(id) ? openRows.delete(id) : openRows.add(id); render(); }
+});
 
+async function confirmBox(message, title) {
+    if (typeof window.showConfirm === 'function') return window.showConfirm(message, title);
+    return window.confirm(message);
+}
+
+$('executeBtn').addEventListener('click', async () => {
+    const withStudents = classes.filter(c => studentsOf(c.class_id).length > 0);
+    let promo = 0, rep = 0, grad = 0;
+    withStudents.forEach(c => {
+        const list = studentsOf(c.class_id);
+        const r = list.filter(s => repeaters.has(s.student_id)).length;
+        rep += r;
+        if (dest[c.class_id] === 'graduate') grad += list.length - r; else promo += list.length - r;
+    });
+    const ok = await confirmBox(
+        `Promote ${promo} student(s), keep ${rep} repeating and graduate ${grad} for session ${school.current_session}? You can undo this from the page afterwards.`,
+        'Run promotion');
+    if (!ok) return;
+
+    const btn = $('executeBtn');
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running...';
     try {
-        const newClassId = targetId === 'graduate' ? null : parseInt(targetId);
-
-        const { error } = await supabase
-            .from('Students')
-            .update({ class_id: newClassId })
-            .eq('class_id', sourceId);
-
+        const map = withStudents.map(c => dest[c.class_id] === 'graduate'
+            ? { class_id: c.class_id, promotes_to: null, is_final: true }
+            : { class_id: c.class_id, promotes_to: parseInt(dest[c.class_id]), is_final: false });
+        const { data, error } = await supabase.rpc('run_promotion', {
+            p_session: school.current_session, p_map: map, p_repeaters: [...repeaters]
+        });
         if (error) throw error;
-
-        showResult(
-            targetId === 'graduate'
-                ? `✅ ${count} student(s) graduated successfully.`
-                : `✅ ${count} student(s) promoted successfully.`,
-            'success'
-        );
-
-        // Refresh data & reset
-        await loadData();
-        sourceSelect.value = '';
-        targetSelect.innerHTML = '<option value="">Select source first...</option>';
-        sourcePreview.style.display = 'none';
-        capacityWarning.style.display = 'none';
-        promotionSummary.style.display = 'none';
-        executeBtn.disabled = true;
-
+        showResult(`Done. ${data.promoted} promoted, ${data.repeated} repeating, ${data.graduated} graduated. Next: start the new session on Term & Session.`, 'success');
+        await load();
     } catch (err) {
-        console.error('Promotion error:', err);
-        showResult('❌ Failed: ' + err.message, 'error');
+        console.error(err);
+        showResult('Failed: ' + (err.message || err), 'error');
     } finally {
-        executeBtn.disabled = false;
-        executeBtn.innerHTML = '<i class="fas fa-bolt"></i> Execute Promotion';
+        btn.innerHTML = '<i class="fas fa-bolt"></i> Run promotion';
+        render();
     }
 });
 
+$('history').addEventListener('click', async e => {
+    const id = e.target.dataset?.undo;
+    if (!id) return;
+    const ok = await confirmBox('Undo this promotion? Students will go back to their old classes. Anyone already moved again by hand is left as they are.', 'Undo promotion');
+    if (!ok) return;
+    try {
+        const { data, error } = await supabase.rpc('undo_promotion', { p_batch: id });
+        if (error) throw error;
+        showResult(`Undone. ${data.restored} student(s) restored${data.skipped ? `, ${data.skipped} left as they were` : ''}.`, 'success');
+        await load();
+    } catch (err) {
+        showResult('Could not undo: ' + (err.message || err), 'error');
+    }
+});
+
+function showStatus(kind, text) {
+    $('statusBox').innerHTML = `<div class="pm-note pm-${kind}"><span>${esc(text)}</span></div>`;
+}
 function showResult(message, type) {
-    resultMessage.textContent = message;
-    resultMessage.className = `result-message result-${type}`;
-    resultMessage.style.display = 'block';
-    setTimeout(() => { resultMessage.style.display = 'none'; }, 6000);
+    const el = $('resultMessage');
+    el.textContent = message;
+    el.className = `result-message result-${type}`;
+    el.style.display = 'block';
 }
 
-// --- Init ---
-loadData();
+load();
