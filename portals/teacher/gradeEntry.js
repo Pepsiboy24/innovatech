@@ -190,7 +190,7 @@ function renderGradingTable(students) {
 async function saveGrades() {
     const classId = document.getElementById('classSelect').value;
     const subjectId = document.getElementById('subjectSelect').value;
-    const term = document.getElementById('termSelect')?.value || 'Term 1'; // Default or from UI
+    const term = document.getElementById('termSelect')?.value || 'First Term'; // Default or from UI
 
     if (!classId || !subjectId) {
         alert('Please select both a Class and a Subject.');
