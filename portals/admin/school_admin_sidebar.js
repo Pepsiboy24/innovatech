@@ -98,6 +98,10 @@ import { hasFeatureAccess, getCurrentUserTier } from '../../core/tierAccess.js';
                     <i class="fa-solid fa-clock nav-icon"></i>
                     Time Table
                 </a>
+                <a href="/admin/promotions" class="nav-item" data-tier="1">
+                    <i class="fa-solid fa-arrow-up-right-dots nav-icon"></i>
+                    Promotions
+                </a>
                 <a href="/admin/term_session" class="nav-item" data-tier="1">
                     <i class="fa-solid fa-calendar-check nav-icon"></i>
                     Term &amp; Session
