@@ -11,6 +11,16 @@
     <script src="../../assets/js-shared/ui_feedback.js"></script>
     <script type="module" src="./school_admin_sidebar.js"></script>
     <link rel="stylesheet" href="/assets/css/sidebar-skeleton-admin.css">
+    <style>
+        .logo{padding:0 12px 32px 12px;font-size:20px;font-weight:700;color:var(--text-dark);display:flex;justify-content:space-between;align-items:center}
+        .logo-icon{color:var(--primary);font-size:24px}
+        .nav-item{display:flex;align-items:center;padding:12px 16px;color:var(--text-gray);text-decoration:none;transition:all .2s;border-radius:8px;margin-bottom:4px;font-weight:500;font-size:15px}
+        .nav-item:hover{background:var(--bg-light);color:var(--text-dark)}
+        .nav-item.active{background:var(--primary-light);color:var(--primary);font-weight:600}
+        .nav-icon{width:20px;margin-right:12px;font-size:18px;text-align:center}
+        #startBtn{background:var(--primary);color:#fff;border:none}
+        #startBtn:hover{background:var(--primary-hover)}
+    </style>
 </head>
 <body>
     <div class="sidebar" data-sideBar></div>
@@ -31,7 +41,7 @@
                 subjects carry over. Starting a term records each student's class for that term.</span>
         </div>
 
-        <div class="promotion-grid" style="grid-template-columns:1fr 1fr; gap:20px;">
+        <div class="promotion-grid" style="grid-template-columns:1fr 1fr; gap:20px; align-items:start;">
             <div class="promo-card">
                 <h3>Current</h3>
                 <p class="promo-card-subtitle">What the school is on now</p>
