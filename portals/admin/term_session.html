@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+    <script type="module" src="../../core/authGuard.js"></script>
+    <meta charset="UTF-8">
+    <title>Term &amp; Session - EduHubAdmin</title>
+    <link rel="stylesheet" href="./schoolAdminStyles/promotions.css?v=1.1">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=1.1">
+    <script src="../../assets/js-shared/ui_feedback.js"></script>
+    <script type="module" src="./school_admin_sidebar.js"></script>
+    <link rel="stylesheet" href="/assets/css/sidebar-skeleton-admin.css">
+</head>
+<body>
+    <div class="sidebar" data-sideBar></div>
+    <div class="main">
+        <div class="header">
+            <div class="header-left">
+                <div class="icon mobile-menu-btn" data-sideBarOpen><i class="fa fa-bars"></i></div>
+                <div>
+                    <h1 class="page-title">Term &amp; Session</h1>
+                    <p class="page-subtitle">Move the whole school to the next term or a new session</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-banner">
+            <i class="fas fa-info-circle"></i>
+            <span>Grades, fees and report cards follow the <strong>current term</strong> below. Students, classes and
+                subjects carry over. Starting a term records each student's class for that term.</span>
+        </div>
+
+        <div class="promotion-grid" style="grid-template-columns:1fr 1fr; gap:20px;">
+            <div class="promo-card">
+                <h3>Current</h3>
+                <p class="promo-card-subtitle">What the school is on now</p>
+                <p style="font-size:15px;line-height:2;">
+                    Session: <strong id="curSession">...</strong><br>
+                    Term: <strong id="curTerm">...</strong><br>
+                    Next term begins: <strong id="curNext">...</strong><br>
+                    Students enrolled this term: <strong id="curCount">...</strong>
+                </p>
+            </div>
+
+            <div class="promo-card">
+                <h3>Start a term</h3>
+                <p class="promo-card-subtitle" id="suggestion">&nbsp;</p>
+                <label for="sessionInput" style="font-size:13px;">Session</label>
+                <input id="sessionInput" class="promo-select" placeholder="2026/2027" maxlength="9">
+                <label for="termSelect" style="font-size:13px;margin-top:10px;display:block;">Term</label>
+                <select id="termSelect" class="promo-select">
+                    <option>First Term</option>
+                    <option>Second Term</option>
+                    <option>Third Term</option>
+                </select>
+                <label for="nextInput" style="font-size:13px;margin-top:10px;display:block;">Next term begins (optional)</label>
+                <input id="nextInput" type="date" class="promo-select">
+                <button id="startBtn" class="promo-select" style="margin-top:16px;cursor:pointer;font-weight:600;">
+                    <i class="fas fa-play"></i> Start this term
+                </button>
+                <div id="resultMessage" style="margin-top:12px;font-size:14px;"></div>
+            </div>
+        </div>
+
+        <div class="promo-card" style="margin-top:20px;">
+            <h3>Before you start a new session</h3>
+            <ul style="line-height:1.9;font-size:14px;">
+                <li>Finish Third Term results first.</li>
+                <li>Run <a href="/admin/promotions">Promotions</a> to move students up, then start First Term here.</li>
+                <li>Starting a term again for the same session and term only refreshes the class snapshot.</li>
+            </ul>
+        </div>
+    </div>
+    <script type="module" src="./term_session.js"></script>
+</body>
+</html>
