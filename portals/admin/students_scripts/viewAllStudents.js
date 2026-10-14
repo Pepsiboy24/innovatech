@@ -2,6 +2,7 @@
 import { supabaseClient } from './supabase_client.js';
 import { waitForUser, renderToFragment, debounce } from '/core/perf.js';
 import { showSkeleton, hideSkeleton } from '../../../assets/js-shared/ui-engine.js';
+import { resetAndPrintStudents } from '../../../assets/js-shared/loginCards.js';
 
 // --- Module-level migration state ---
 let _migrationStudentId = null;
@@ -149,6 +150,8 @@ function filterStudentsByGrade(students, gradeFilter, classMap) {
 // --- 4. Render Logic ---
 
 function renderStudents(students, classMap = {}) {
+    window.__shownStudents = students;
+    window.__shownClassMap = classMap;
     const tbody = document.querySelector('.students-table tbody');
     if (!tbody) return;
     tbody.innerHTML = '';
@@ -213,6 +216,12 @@ function renderStudents(students, classMap = {}) {
                                     type="button"
                                     onclick="window.openStatusModal('${student.student_id}', '${student.enrollment_status || 'active'}')">
                                     Update Status
+                                </button>
+                                <button
+                                    class="menu-action-btn"
+                                    type="button"
+                                    onclick="window.resetAndPrintCard('${student.student_id}')">
+                                    Reset password &amp; print card
                                 </button>
                             </div>
                         </div>
@@ -587,3 +596,68 @@ function showStudentRegistration() {
 window.checkAndShowSetupWizard = checkAndShowSetupWizard;
 window.showSetupWizard = showSetupWizard;
 window.showStudentRegistration = showStudentRegistration;
+
+
+// --- Reset password(s) and print login cards ---
+function cardInfo(student) {
+    return {
+        student_id: student.student_id,
+        full_name: student.full_name,
+        username: student.username,
+        className: (window.__shownClassMap || {})[student.class_id] || ''
+    };
+}
+
+async function runResetAndPrint(list) {
+    const toast = (m, t) => (typeof window.showToast === 'function' ? window.showToast(m, t, 6000) : alert(m));
+    try {
+        const res = await resetAndPrintStudents(list, (done, total) => {
+            const b = document.getElementById('printCardsBtn');
+            if (b) b.textContent = `Resetting ${done}/${total}...`;
+        });
+        if (res.failed.length) {
+            toast(`${res.done} card(s) ready. ${res.failed.length} failed: ${res.failed.slice(0, 3).map(f => f.name + ' (' + f.error + ')').join('; ')}`, 'warning');
+        } else {
+            toast(`${res.done} login card(s) ready to print.`, 'success');
+        }
+    } catch (e) {
+        toast('Could not make cards: ' + e.message, 'error');
+    } finally {
+        const b = document.getElementById('printCardsBtn');
+        if (b) b.innerHTML = '<i class="fas fa-print"></i> Print login cards';
+    }
+}
+
+window.resetAndPrintCard = async function (studentId) {
+    const student = (window.__shownStudents || []).find(s => s.student_id === studentId);
+    if (!student) return;
+    const ok = await window.showConfirm(
+        `Reset the password for ${student.full_name}? Their old password stops working and a new card is printed.`,
+        'Reset password');
+    if (!ok) return;
+    await runResetAndPrint([cardInfo(student)]);
+};
+
+window.printCardsForShown = async function () {
+    const list = (window.__shownStudents || []).filter(s => (s.enrollment_status || 'active') === 'active');
+    if (!list.length) { alert('No students on screen.'); return; }
+    if (list.length > 60) { alert(`${list.length} students are shown. Pick a class or search first (maximum 60 at a time).`); return; }
+    const ok = await window.showConfirm(
+        `Reset passwords for the ${list.length} student(s) shown and print their cards? Their old passwords stop working. Parents are not changed.`,
+        'Reset and print cards');
+    if (!ok) return;
+    await runResetAndPrint(list.map(cardInfo));
+};
+
+// button next to the status filter
+document.addEventListener('DOMContentLoaded', () => {
+    const filter = document.getElementById('statusFilter');
+    if (!filter || document.getElementById('printCardsBtn')) return;
+    const btn = document.createElement('button');
+    btn.id = 'printCardsBtn';
+    btn.type = 'button';
+    btn.innerHTML = '<i class="fas fa-print"></i> Print login cards';
+    btn.style.cssText = 'padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:600;color:#1e293b;background:#fff;cursor:pointer;';
+    btn.addEventListener('click', () => window.printCardsForShown());
+    filter.parentNode.insertBefore(btn, filter);
+});

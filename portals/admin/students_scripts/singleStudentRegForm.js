@@ -1,6 +1,7 @@
 import { registerNewStudent } from "./singleStudentRegScript.js";
 import { supabaseClient } from './supabase_client.js';
 import { downloadCredentials } from './multipleStudentReg.js';
+import { printLoginCards } from '../../../assets/js-shared/loginCards.js';
 
 // --- State Management ---
 let currentStep = 1;
@@ -229,6 +230,7 @@ const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 function renderCredentials(c) {
   const box = document.getElementById("credentialsBox");
   if (!box) return;
+  const classNameForCard = (document.getElementById("reviewClass")?.textContent || "").trim();
   let html = `
     <div><strong>Student:</strong> ${esc(c.full_name)}</div>
     <div><strong>Login:</strong> <code>${esc(c.login)}</code></div>
@@ -247,6 +249,7 @@ function renderCredentials(c) {
     <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
       <button type="button" class="btn btn-secondary" id="copyCredsBtn">Copy</button>
       <button type="button" class="btn btn-secondary" id="downloadCredsBtn">Download CSV</button>
+      <button type="button" class="btn btn-primary" id="printCardBtn">Print login card</button>
     </div>`;
   box.innerHTML = html;
 
@@ -255,6 +258,13 @@ function renderCredentials(c) {
     if (c.parent && c.parent.created) t += `\n\nParent: ${c.parent_name}\nLogin: ${c.parent.login}\nPassword: ${c.parent.password}`;
     try { await navigator.clipboard.writeText(t); document.getElementById("copyCredsBtn").textContent = "Copied"; }
     catch (_) { alert(t); }
+  });
+  document.getElementById("printCardBtn").addEventListener("click", () => {
+    const cards = [{ kind: "student", name: c.full_name, className: classNameForCard, login: c.login, password: c.password }];
+    if (c.parent && c.parent.created) {
+      cards.push({ kind: "parent", name: c.parent_name, childName: c.full_name, login: c.parent.login, password: c.parent.password });
+    }
+    printLoginCards(cards);
   });
   document.getElementById("downloadCredsBtn").addEventListener("click", () => {
     downloadCredentials([{

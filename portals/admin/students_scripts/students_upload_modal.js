@@ -10,6 +10,7 @@
  * random one-time password, and signs in as  username@schoolcode.
  */
 import { openUploadModal } from '../../../assets/js-shared/upload_modal_ui.js';
+import { printLoginCards, cardsFromResults } from '../../../assets/js-shared/loginCards.js';
 import { excelRowToStudent, previewStudents, createStudents, downloadCredentials } from './multipleStudentReg.js';
 import { lazyScript } from '/core/perf.js';
 
@@ -159,7 +160,8 @@ async function doUpload(file, helpers) {
         const lines = [];
         if (succeeded.length) {
             lines.push(`<div style="color:#86efac;margin-top:6px;">✓ ${succeeded.length} created. A logins sheet was downloaded: <b>keep it safe, passwords are not shown again.</b>
-                <button type="button" onclick="window.__downloadStudentLogins()" style="margin-left:8px;background:#1d4ed8;color:#fff;border:0;border-radius:6px;padding:4px 10px;cursor:pointer;">Download again</button></div>`);
+                <button type="button" onclick="window.__downloadStudentLogins()" style="margin-left:8px;background:#1d4ed8;color:#fff;border:0;border-radius:6px;padding:4px 10px;cursor:pointer;">Download again</button>
+                <button type="button" onclick="window.__printStudentCards()" style="margin-left:8px;background:#047857;color:#fff;border:0;border-radius:6px;padding:4px 10px;cursor:pointer;"><i class="fas fa-print"></i> Print login cards</button></div>`);
         }
         failed.forEach((r) => lines.push(`<div style="color:#fca5a5;margin-top:4px;">⚠ ${esc(r.full_name || 'Row')}: ${esc(r.error)}</div>`));
         warned.forEach((r) => lines.push(`<div style="color:#fcd34d;margin-top:4px;">ℹ ${esc(r.full_name)}: ${esc(r.warnings.join(' '))}</div>`));
@@ -179,6 +181,10 @@ async function doUpload(file, helpers) {
         showToast('Upload error: ' + e.message, 'error');
     }
 }
+
+window.__printStudentCards = () => {
+    if (window.__lastStudentLogins) printLoginCards(cardsFromResults(window.__lastStudentLogins));
+};
 
 window.__downloadStudentLogins = () => {
     if (window.__lastStudentLogins) downloadCredentials(window.__lastStudentLogins);
